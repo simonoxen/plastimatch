@@ -5,19 +5,21 @@
 #define _astroid_dose_h_
 
 #include "plmbase_config.h"
+#include "metadata.h"
 
-class Metadata;
 class Plm_image;
 class Xio_ct_transform;
 
-PLMBASE_C_API void astroid_dose_load (
-        Plm_image *plm,
-        Metadata *meta,
-        const char *filename
+PLMBASE_C_API void 
+astroid_dose_load (
+    Plm_image *plm,
+    Metadata::Pointer& meta,
+    const char *filename
 );
-PLMBASE_C_API void astroid_dose_apply_transform (
-        Plm_image *plm,
-        Xio_ct_transform *transform
+PLMBASE_C_API void 
+astroid_dose_apply_transform (
+    Plm_image *plm,
+    Xio_ct_transform *transform
 );
 
 #endif

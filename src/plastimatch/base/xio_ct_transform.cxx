@@ -31,13 +31,13 @@ Xio_ct_transform::Xio_ct_transform ()
     this->set ("HFS");
 }
 
-Xio_ct_transform::Xio_ct_transform (const Metadata *meta)
+Xio_ct_transform::Xio_ct_transform (const Metadata::Pointer& meta)
 {
     this->set (meta);
 }
 
 void
-Xio_ct_transform::set (const Metadata *meta)
+Xio_ct_transform::set (const Metadata::Pointer& meta)
 {
     std::string ppos = meta->get_metadata(0x0018, 0x5100);
     this->set (ppos.c_str());
@@ -118,7 +118,7 @@ Xio_ct_transform::set_from_rdd (
     this->direction_cosines[4] = 1.0f;
     this->direction_cosines[8] = 1.0f;
 
-    Metadata *meta = rsm->get_image_metadata ();
+    Metadata::Pointer& meta = rsm->get_image_metadata ();
     const Plm_image_header *pih = rsm->get_image_header ();
     std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 

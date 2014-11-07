@@ -203,7 +203,7 @@ astroid_dose_create_volume (
 void
 astroid_dose_load (
     Plm_image *pli,
-    Metadata *meta,
+    Metadata::Pointer& meta,
     const char *filename
 )
 {

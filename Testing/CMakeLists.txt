@@ -1645,18 +1645,18 @@ plm_add_test (
 plm_add_test (
   "plm-warp-dicom-xio-a-stats-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;plm-warp-dicom-xio-a-img.nrrd"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-img.nrrd"
   )
 plmtest_check_interval ("plm-warp-dicom-xio-a-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-661.5"
+  "-661.9"
   "-661.4"
   )
 plm_add_test (
   "plm-warp-dicom-xio-a-stats-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;plm-warp-dicom-xio-a-ss.nrrd"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.nrrd"
   )
 plmtest_check_interval ("plm-warp-dicom-xio-a-check-2"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-stats-2.stdout.txt"
@@ -1834,7 +1834,7 @@ plmtest_check_interval ("plm-warp-xio-a-check-2"
 plm_add_test (
   "plm-warp-xio-a-stats-3"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;plm-warp-xio-a-labelmap.nrrd"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-labelmap.nrrd"
   )
 plmtest_check_interval ("plm-warp-xio-a-check-3"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-3.stdout.txt"
@@ -1845,12 +1845,12 @@ plmtest_check_interval ("plm-warp-xio-a-check-3"
 plm_add_test (
   "plm-warp-xio-a-stats-4"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;plm-warp-xio-a-ss.nrrd"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.nrrd"
   )
 plmtest_check_interval ("plm-warp-xio-a-check-4"
   "${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-stats-4.stdout.txt"
   "S *1 *NVOX *([-0-9.]*)"
-  "1971"
+  "1970"
   "1971"
   )
 add_test ("plm-warp-xio-a-check-5" ${CMAKE_COMMAND} -E compare_files

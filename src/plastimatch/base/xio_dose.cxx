@@ -287,7 +287,7 @@ xio_dose_create_volume (
 void
 xio_dose_load (
     Plm_image *pli,
-    Metadata *meta,
+    Metadata::Pointer& meta,
     const char *filename
 )
 {
@@ -307,7 +307,7 @@ xio_dose_load (
 void
 xio_dose_save (
     const Plm_image::Pointer& pli,
-    Metadata *meta,
+    Metadata::Pointer& meta,
     Xio_ct_transform *transform,
     const char *filename,
     const char *filename_template

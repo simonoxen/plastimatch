@@ -388,6 +388,10 @@ Plm_image::load_native_dicom (const char* fname)
     dicom_loader.parse_directory ();
     this->set (dicom_loader.get_image ());
 
+    /* GCS FIX: Here we need to set the metadata loaded from 
+       DICOM into the Plm_image */
+//    this->set_kkk ???
+
 #else
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */

@@ -16,7 +16,7 @@
 void
 dcmtk_copy_from_metadata (
     DcmDataset *dataset, 
-    const Metadata *meta, 
+    const Metadata::Pointer& meta, 
     const DcmTagKey& tagkey, 
     const char* default_value)
 {
@@ -33,7 +33,7 @@ dcmtk_copy_from_metadata (
 
 void
 dcmtk_copy_into_metadata (
-    Metadata *meta, 
+    Metadata::Pointer& meta, 
     const Dcmtk_file::Pointer& df, 
     const DcmTagKey& tag_key)
 {
@@ -42,7 +42,7 @@ dcmtk_copy_into_metadata (
 
 void
 dcmtk_copy_into_metadata (
-    Metadata *meta, 
+    Metadata::Pointer& meta, 
     const Dcmtk_file* df, 
     const DcmTagKey& tag_key)
 {

@@ -277,7 +277,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 {
     OFCondition ofc;
     std::string s;
-    const Metadata *dose_metadata = 0;
+    Metadata::Pointer dose_metadata;
     if (d_ptr->dicom_metadata) {
         dose_metadata = d_ptr->dicom_metadata->get_dose_metadata ();
     }

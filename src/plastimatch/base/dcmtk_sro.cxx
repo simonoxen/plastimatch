@@ -42,7 +42,7 @@ Dcmtk_sro::save (
     DcmDataset *dataset = fileformat.getDataset();
 
     Rt_study_metadata::Pointer rsm;
-    Metadata *study_meta = 0;
+    Metadata::Pointer study_meta;
     if (!rsm_src || !rsm_reg) {
         print_and_exit ("Sorry, anonymous spatial registration objects "
             "are not yet supported.\n");

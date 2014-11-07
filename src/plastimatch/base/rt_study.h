@@ -97,7 +97,7 @@ public:
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();
 
-    Metadata* get_metadata ();
+    Metadata::Pointer& get_metadata ();
 
     Volume::Pointer get_image_volume_short ();
     Volume::Pointer get_image_volume_float ();

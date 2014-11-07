@@ -26,10 +26,10 @@ public:
     std::string study_uid;
     Slice_list slice_list;
 
-    Metadata study_metadata;
-    Metadata image_metadata;
-    Metadata rtss_metadata;
-    Metadata dose_metadata;
+    Metadata::Pointer study_metadata;
+    Metadata::Pointer image_metadata;
+    Metadata::Pointer rtss_metadata;
+    Metadata::Pointer dose_metadata;
 
 public:
     Rt_study_metadata_private () {
@@ -43,10 +43,15 @@ public:
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
         dose_series_uid = dicom_uid (PLM_UID_PREFIX);
 
-        study_metadata.create_anonymous ();
-        image_metadata.set_parent (&study_metadata);
-        rtss_metadata.set_parent (&study_metadata);
-        dose_metadata.set_parent (&study_metadata);
+        study_metadata = Metadata::New ();
+        image_metadata = Metadata::New ();
+        rtss_metadata = Metadata::New ();
+        dose_metadata = Metadata::New ();
+
+        study_metadata->create_anonymous ();
+        image_metadata->set_parent (study_metadata);
+        rtss_metadata->set_parent (study_metadata);
+        dose_metadata->set_parent (study_metadata);
     }
 public:
     void
@@ -184,25 +189,25 @@ Rt_study_metadata::set_study_uid (const char* uid)
 const std::string& 
 Rt_study_metadata::get_patient_name ()
 {
-    return d_ptr->image_metadata.get_metadata (0x0010, 0x0010);
+    return d_ptr->image_metadata->get_metadata (0x0010, 0x0010);
 }
 
 void
 Rt_study_metadata::set_patient_name (const std::string& name)
 {
-    d_ptr->image_metadata.set_metadata (0x0010, 0x0010, name.c_str());
+    d_ptr->image_metadata->set_metadata (0x0010, 0x0010, name.c_str());
 }
 
 const std::string& 
 Rt_study_metadata::get_patient_id ()
 {
-    return d_ptr->image_metadata.get_metadata (0x0010, 0x0020);
+    return d_ptr->image_metadata->get_metadata (0x0010, 0x0020);
 }
 
 void
 Rt_study_metadata::set_patient_id (const std::string& id)
 {
-    d_ptr->image_metadata.set_metadata (0x0010, 0x0020, id.c_str());
+    d_ptr->image_metadata->set_metadata (0x0010, 0x0020, id.c_str());
 }
 
 const Plm_image_header*
@@ -272,16 +277,16 @@ Rt_study_metadata::num_slices () const
     return d_ptr->slice_list.num_slices ();
 }
 
-Metadata*
+Metadata::Pointer&
 Rt_study_metadata::get_study_metadata ()
 {
-    return &d_ptr->study_metadata;
+    return d_ptr->study_metadata;
 }
 
-const Metadata*
+const Metadata::Pointer&
 Rt_study_metadata::get_study_metadata () const
 {
-    return &d_ptr->study_metadata;
+    return d_ptr->study_metadata;
 }
 
 void
@@ -290,43 +295,43 @@ Rt_study_metadata::set_study_metadata (
     unsigned short key2,
     const std::string& val
 ) {
-    d_ptr->study_metadata.set_metadata (key1, key2, val);
+    d_ptr->study_metadata->set_metadata (key1, key2, val);
 }
 
-Metadata*
+Metadata::Pointer&
 Rt_study_metadata::get_image_metadata ()
 {
-    return &d_ptr->image_metadata;
+    return d_ptr->image_metadata;
 }
 
-const Metadata*
+const Metadata::Pointer&
 Rt_study_metadata::get_image_metadata () const
 {
-    return &d_ptr->image_metadata;
+    return d_ptr->image_metadata;
 }
 
-Metadata*
+Metadata::Pointer&
 Rt_study_metadata::get_rtss_metadata ()
 {
-    return &d_ptr->rtss_metadata;
+    return d_ptr->rtss_metadata;
 }
 
-const Metadata*
+const Metadata::Pointer&
 Rt_study_metadata::get_rtss_metadata () const
 {
-    return &d_ptr->rtss_metadata;
+    return d_ptr->rtss_metadata;
 }
 
-Metadata*
+Metadata::Pointer&
 Rt_study_metadata::get_dose_metadata ()
 {
-    return &d_ptr->dose_metadata;
+    return d_ptr->dose_metadata;
 }
 
-const Metadata*
+const Metadata::Pointer&
 Rt_study_metadata::get_dose_metadata () const
 {
-    return &d_ptr->dose_metadata;
+    return d_ptr->dose_metadata;
 }
 
 void

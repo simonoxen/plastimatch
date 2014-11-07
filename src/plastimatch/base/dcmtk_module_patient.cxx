@@ -11,7 +11,7 @@
 #include "metadata.h"
 
 void
-Dcmtk_module_patient::set (DcmDataset *dataset, const Metadata* meta)
+Dcmtk_module_patient::set (DcmDataset *dataset, const Metadata::Pointer& meta)
 {
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientID, "");

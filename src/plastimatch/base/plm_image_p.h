@@ -9,6 +9,7 @@
 
 class Plm_image_private {
 public:
+    Metadata::Pointer m_meta;
     Volume::Pointer m_vol;
 };
 

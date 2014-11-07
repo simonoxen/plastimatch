@@ -12,9 +12,6 @@
 #include "smart_pointer.h"
 #include "volume.h"
 
-// TODO: Change type of m_meta to Metadata*
-
-class Metadata;
 class Plm_image_header;
 class Plm_image;
 class Plm_image_private;

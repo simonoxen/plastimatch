@@ -332,7 +332,7 @@ Rt_study::load_dose_xio (const char *dose_xio)
     if (dose_xio) {
         d_ptr->m_xio_dose_filename = dose_xio;
         d_ptr->m_dose = Plm_image::New ();
-        Metadata *dose_meta = d_ptr->m_drs->get_dose_metadata ();
+        Metadata::Pointer& dose_meta = d_ptr->m_drs->get_dose_metadata ();
         xio_dose_load (d_ptr->m_dose.get(), dose_meta, dose_xio);
         xio_dose_apply_transform (d_ptr->m_dose.get(), d_ptr->m_xio_transform);
     }
@@ -346,7 +346,7 @@ Rt_study::load_dose_astroid (const char *dose_astroid)
     }
     if (dose_astroid) {
         d_ptr->m_dose = Plm_image::New ();
-        Metadata *dose_meta = d_ptr->m_drs->get_dose_metadata ();
+        Metadata::Pointer& dose_meta = d_ptr->m_drs->get_dose_metadata ();
         astroid_dose_load (d_ptr->m_dose.get(), dose_meta, dose_astroid);
         astroid_dose_apply_transform (d_ptr->m_dose.get(), 
             d_ptr->m_xio_transform);
@@ -461,7 +461,7 @@ Rt_study::get_rt_study_metadata ()
 void 
 Rt_study::set_user_metadata (std::vector<std::string>& metadata)
 {
-    Metadata *study_metadata = d_ptr->m_drs->get_study_metadata ();
+    Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
 
     std::vector<std::string>::iterator it = metadata.begin();
     while (it < metadata.end()) {
@@ -602,7 +602,7 @@ Rt_study::get_xio_dose_filename (void) const
     return d_ptr->m_xio_dose_filename;
 }
 
-Metadata*
+Metadata::Pointer&
 Rt_study::get_metadata (void)
 {
     return d_ptr->m_drs->get_study_metadata();

@@ -113,7 +113,8 @@ itk_dicom_save (
     }
 
     /* PLM (input) metadata */
-    Metadata *meta = 0, *study_meta = 0;
+    Metadata::Pointer meta;
+    Metadata::Pointer study_meta;
     if (rsm) {
         meta = rsm->get_image_metadata ();
         study_meta = rsm->get_image_metadata ();

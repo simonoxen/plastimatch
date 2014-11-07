@@ -64,16 +64,16 @@ public:
     void set_slice_list_complete ();
     int num_slices () const;
 
-    Metadata *get_study_metadata ();
-    const Metadata *get_study_metadata () const;
+    Metadata::Pointer& get_study_metadata ();
+    const Metadata::Pointer& get_study_metadata () const;
     void set_study_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
-    Metadata *get_image_metadata ();
-    const Metadata *get_image_metadata () const;
-    Metadata *get_rtss_metadata ();
-    const Metadata *get_rtss_metadata () const;
-    Metadata *get_dose_metadata ();
-    const Metadata *get_dose_metadata () const;
+    Metadata::Pointer& get_image_metadata ();
+    const Metadata::Pointer& get_image_metadata () const;
+    Metadata::Pointer& get_rtss_metadata ();
+    const Metadata::Pointer& get_rtss_metadata () const;
+    Metadata::Pointer& get_dose_metadata ();
+    const Metadata::Pointer& get_dose_metadata () const;
     void generate_new_uids ();
 };
 

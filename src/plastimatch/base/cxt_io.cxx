@@ -45,7 +45,7 @@ cxt_load (
         exit (-1);
     }
 
-    Metadata *meta = rsm->get_study_metadata ();
+    Metadata::Pointer meta = rsm->get_study_metadata ();
 
     /* Part 1: Dicom info */
     while (1) {
@@ -275,7 +275,7 @@ cxt_save (
     }
 
     /* Part 1: Dicom info */
-    Metadata *meta = rsm->get_study_metadata ();
+    Metadata::Pointer meta = rsm->get_study_metadata ();
     /* GCS FIX: There needs to be a way that tells if these are 
        loaded or some default anonymous value */
     if (rsm) {

@@ -7,10 +7,12 @@
 #include "plmbase_config.h"
 #include <map>
 #include <string>
+#include "smart_pointer.h"
 
 class PLMBASE_API Metadata
 {
 public:
+    SMART_POINTER_SUPPORT (Metadata);
     Metadata ();
     ~Metadata ();
 
@@ -32,14 +34,14 @@ public:
     void
     set_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
-    void set_parent (Metadata *parent) {
+    void set_parent (const Metadata::Pointer& parent) {
         m_parent = parent;
     }
     void create_anonymous ();
     void print_metadata () const;
 
 public:
-    Metadata *m_parent;
+    Metadata::Pointer m_parent;
     std::map<std::string, std::string> m_data;
 
 public:

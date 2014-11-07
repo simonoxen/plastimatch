@@ -6,13 +6,13 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "metadata.h"
 
 class DcmDataset;
-class Metadata;
 
 class PLMBASE_API Dcmtk_module_patient {
 public:
-    static void set (DcmDataset *dataset, const Metadata* meta);
+    static void set (DcmDataset *dataset, const Metadata::Pointer& meta);
 };
 
 #endif

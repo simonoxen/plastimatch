@@ -17,9 +17,9 @@ public:
     float y_offset;
 public:
     Xio_ct_transform ();
-    Xio_ct_transform (const Metadata* meta);
+    Xio_ct_transform (const Metadata::Pointer& meta);
 public:
-    void set (const Metadata* meta);
+    void set (const Metadata::Pointer& meta);
     void set (const char* ppos);
     void set_from_rdd (
         Plm_image *pli,

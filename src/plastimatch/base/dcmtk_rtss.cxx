@@ -246,7 +246,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 {
     OFCondition ofc;
     Rtss::Pointer& cxt = d_ptr->cxt;
-    const Metadata *rtss_metadata = 0;
+    Metadata::Pointer rtss_metadata;
     if (d_ptr->dicom_metadata) {
         rtss_metadata = d_ptr->dicom_metadata->get_rtss_metadata ();
     }

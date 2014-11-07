@@ -12,12 +12,12 @@ class Xio_ct_transform;
 
 PLMBASE_API void xio_dose_load (
     Plm_image *plm,
-    Metadata* meta,
+    Metadata::Pointer& meta,
     const char *filename
 );
 PLMBASE_API void xio_dose_save (
     const Plm_image::Pointer& plm,
-    Metadata* meta,
+    Metadata::Pointer& meta,
     Xio_ct_transform *transform,
     const char *filename,
     const char *filename_template

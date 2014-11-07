@@ -131,14 +131,14 @@ Dcmtk_loader::image_load ()
             df->get_cstr (DCM_StudyTime));
 
         /* Store remaining metadata */
-        Metadata *study_metadata = d_ptr->m_drs->get_study_metadata ();
+        Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientName);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientID);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientSex);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientPosition);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_StudyID);
 
-        Metadata *image_metadata = d_ptr->m_drs->get_image_metadata ();
+        Metadata::Pointer& image_metadata = d_ptr->m_drs->get_image_metadata ();
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
     }
 
@@ -385,7 +385,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     Pstring tmp;
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
-    const Metadata *image_metadata = 0;
+    Metadata::Pointer image_metadata;
     if (drs) {
         image_metadata = drs->get_image_metadata ();
     }

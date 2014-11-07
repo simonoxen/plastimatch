@@ -16,7 +16,6 @@ static std::string KEY_NOT_FOUND = "";
 
 Metadata::Metadata ()
 {
-    m_parent = 0;
 }
 
 Metadata::~Metadata ()
@@ -120,28 +119,3 @@ Metadata::print_metadata () const
         lprintf ("%s | %s\n", it->first.c_str(), it->second.c_str());
     }
 }
-
-#if defined (commentout)
-void
-Metadata::set_from_gdcm_file (
-    gdcm::File *gdcm_file, 
-    unsigned short group,
-    unsigned short elem
-)
-{
-    std::string tmp = gdcm_file->GetEntryValue (group, elem);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	this->set_metadata (make_key (group, elem), tmp);
-    }
-}
-
-void
-Metadata::copy_to_gdcm_file (
-    gdcm::File *gdcm_file, 
-    unsigned short group,
-    unsigned short elem
-) const
-{
-    gdcm_file->InsertValEntry (this->get_metadata (group, elem), group, elem);
-}
-#endif
