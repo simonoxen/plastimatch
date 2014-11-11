@@ -30,7 +30,7 @@ public:
     void init ();
     void debug (void) const;
     void set_dicom_metadata (Rt_study_metadata::Pointer drs);
-    Metadata *get_metadata ();
+    Metadata::Pointer& get_metadata ();
     Volume *get_volume ();
 
     Plm_image::Pointer get_image ();

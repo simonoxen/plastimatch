@@ -149,10 +149,10 @@ Dcmtk_loader::debug (void) const
     }
 }
 
-Metadata *
+Metadata::Pointer&
 Dcmtk_loader::get_metadata ()
 {
-    return &d_ptr->img->m_meta;
+    return d_ptr->img->get_metadata();
 }
 
 Volume *

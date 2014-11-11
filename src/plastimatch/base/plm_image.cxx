@@ -585,7 +585,8 @@ Plm_image::set (const Plm_image::Pointer& pli)
 	break;
     }
 
-    this->m_meta = pli->m_meta;
+    /* GCS FIX: This should be deep copy */
+    d_ptr->m_meta = pli->get_metadata ();
     this->m_original_type = pli->m_original_type;
     this->m_type = pli->m_type;
 }
@@ -1651,4 +1652,10 @@ Plm_image::set_metadata (char *tag, char *value)
 	    this->m_type);
 	break;
     }
+}
+
+Metadata::Pointer&
+Plm_image::get_metadata ()
+{
+    return d_ptr->m_meta;
 }

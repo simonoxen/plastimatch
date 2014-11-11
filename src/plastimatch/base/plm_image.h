@@ -47,7 +47,6 @@ public:
     ~Plm_image ();
 
 public:
-    Metadata m_meta;
     Plm_image_type m_original_type;
     Plm_image_type m_type;
 
@@ -168,6 +167,8 @@ public:
     float spacing (size_t);
 
     /* metadata */
+    Metadata::Pointer& get_metadata ();
+    void set_metadata (Metadata::Pointer& meta);
     void set_metadata (char *tag, char *value);
 
     /* debug */
