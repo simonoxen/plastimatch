@@ -114,6 +114,7 @@ option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
+option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
@@ -768,10 +769,15 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  QT
 ##-----------------------------------------------------------------------------
-#find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
-if (QT4_FOUND)
 
+if (PLM_CONFIG_DISABLE_QT)
+    set (QT4_FOUND false)
+else ()
+    #find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+    find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
+endif ()
+
+if (QT4_FOUND)
   # Debian qtchooser is broken, so we disable.
   # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=730423
   execute_process (
