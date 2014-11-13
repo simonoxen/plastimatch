@@ -72,8 +72,21 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize *bod)
         l = (doublereal*) malloc (sizeof(doublereal)*nmax);
         u = (doublereal*) malloc (sizeof(doublereal)*nmax);
         g = (doublereal*) malloc (sizeof(doublereal)*nmax);
-        wa = (doublereal*) malloc (sizeof(doublereal)
-            *(2*mmax*nmax+4*nmax+12*mmax*mmax+12*mmax));
+	/* GCS 2014-11-13.
+           Depending on the version of ITK, you get different 
+	   versions of the Nocedal code.  The different versions 
+	   have different requirements on the size of wa[].
+	   Instead of detecting the version, we simply ask 
+	   for enough memory to handle either case. */
+        size_t wa_size_2006 =
+            2 * mmax*nmax + 4 * nmax + 12 * mmax*mmax + 12 * mmax;
+        size_t wa_size_2010 =
+            2 * mmax*nmax + 5 * nmax + 11 * mmax*mmax + 8 * mmax;
+        size_t wa_size = wa_size_2006;
+        if (wa_size < wa_size_2010) {
+            wa_size = wa_size_2010;
+        }
+        wa = (doublereal*)malloc(sizeof(doublereal) * wa_size);
 
         if ((nbd == NULL) ||
             (iwa == NULL) ||
