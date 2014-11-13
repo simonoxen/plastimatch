@@ -40,10 +40,14 @@ if "%COMPUTERNAME%"=="COTTONTAIL" (
   @rem SET FFTW_PATH=%HOME%\build\fftw-3.2.2
   @rem SET QT_PATH=C:\QT\4.7.4\bin
   @rem --- 64 bit settings ---
-  SET ITK_PATH=%HOME%\build\vs2010-64\itk-4.3.1-shared\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\vs2010-64\plastimatch-4.3.1-shared
+  @rem  SET ITK_PATH=%HOME%\build\vs2010-64\itk-4.3.1-shared\bin\Release
+  @rem  SET PLASTIMATCH_BASE=%HOME%\build\vs2010-64\plastimatch-4.3.1-shared
+  @rem  SET FFTW_PATH=%HOME%\build\fftw-64
+  @rem  SET QT_PATH=C:\QT\qt-4.8.5-x64-msvc2010\bin
+  @rem --- 64 bit settings ---
+  SET ITK_PATH=%HOME%\build\vs2013-64\itk-4.6.1-shared\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2013-64\plastimatch-4.6.1-shared
   SET FFTW_PATH=%HOME%\build\fftw-64
-  SET QT_PATH=C:\QT\qt-4.8.5-x64-msvc2010\bin
 
 ) else (
   echo "Sorry, couldn't recognize host"
