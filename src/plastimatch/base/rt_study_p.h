@@ -5,7 +5,6 @@
 #define _rt_study_p_h_
 
 #include "plmbase_config.h"
-#include "plmdose_config.h"
 #include "metadata.h"
 #include "rt_study_metadata.h"
 #include "segmentation.h"

@@ -5,7 +5,6 @@
 #define _rt_study_h_
 
 #include "plmbase_config.h"
-#include "plmdose_config.h"
 #include <vector>
 #include "itk_image_type.h"
 #include "plm_file_format.h"
