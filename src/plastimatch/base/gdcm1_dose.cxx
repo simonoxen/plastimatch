@@ -254,7 +254,7 @@ gdcm1_dose_save (
 
     make_directory_recursive (dose_fn);
 
-    const Metadata *meta = rsm->get_dose_metadata ();
+    const Metadata::Pointer& meta = rsm->get_dose_metadata ();
 
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */

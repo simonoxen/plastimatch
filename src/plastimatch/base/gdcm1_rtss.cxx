@@ -76,7 +76,7 @@ gdcm_rtss_load (
 	    rtss_fn);
     }
 
-    Metadata *meta = rsm->get_study_metadata ();
+    Metadata::Pointer& meta = rsm->get_study_metadata ();
 
     /* PatientName */
     set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0010);
@@ -365,7 +365,7 @@ gdcm_rtss_save (
        Document::WriteContent(). So there's no TransferSyntaxUID etc.
        We need a better workaround for the gdcm bug. */
 
-    Metadata *meta = rsm->get_study_metadata();
+    Metadata::Pointer& meta = rsm->get_study_metadata();
 
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);

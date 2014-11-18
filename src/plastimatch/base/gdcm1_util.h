@@ -5,6 +5,8 @@
 #define _gdcm1_util_h_
 
 #include "plmbase_config.h"
+#include "metadata.h"
+
 #if GDCM_VERSION_1
 
 class Metadata;
@@ -17,7 +19,7 @@ gdcm1_get_date_time (
 );
 void
 set_metadata_from_gdcm_file (
-    Metadata *meta, 
+    Metadata::Pointer& meta, 
     /* const */ gdcm::File *gdcm_file, 
     unsigned short group,
     unsigned short elem
@@ -25,7 +27,7 @@ set_metadata_from_gdcm_file (
 void
 set_gdcm_file_from_metadata (
     gdcm::File *gdcm_file, 
-    const Metadata *meta, 
+    const Metadata::Pointer& meta, 
     unsigned short group, 
     unsigned short elem
 );

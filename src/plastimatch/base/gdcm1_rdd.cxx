@@ -47,7 +47,7 @@ gdcm1_load_rdd (
     rdd->set_image_header (Plm_image_header (gs.m_dim, offset, spacing, 0));
 
     /* Store metadata into here */
-    Metadata *meta = rdd->get_study_metadata ();
+    Metadata::Pointer& meta = rdd->get_study_metadata ();
 
     /* PatientName */
     set_metadata_from_gdcm_file (meta, file, 0x0010, 0x0010);
