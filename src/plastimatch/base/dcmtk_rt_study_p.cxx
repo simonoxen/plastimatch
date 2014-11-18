@@ -25,7 +25,8 @@ Dcmtk_rt_study_private::Dcmtk_rt_study_private ()
     dcmtk_uid (dose_instance_uid, PLM_UID_PREFIX);
     slice_data = new std::vector<Dcmtk_slice_data>;
 
-    dicom_metadata = Rt_study_metadata::New ();
+    rt_study_metadata = Rt_study_metadata::New ();
+    filenames_with_uid = true;
 }
 
 Dcmtk_rt_study_private::~Dcmtk_rt_study_private ()

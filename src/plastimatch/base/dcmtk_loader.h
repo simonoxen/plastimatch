@@ -27,9 +27,8 @@ public:
     Dcmtk_loader_private *d_ptr;
 
 public:
-    void init ();
     void debug (void) const;
-    void set_dicom_metadata (Rt_study_metadata::Pointer drs);
+    void set_rt_study_metadata (Rt_study_metadata::Pointer drs);
     Metadata::Pointer& get_metadata ();
     Volume *get_volume ();
 

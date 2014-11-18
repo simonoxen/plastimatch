@@ -36,7 +36,9 @@ public:
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
 
-    Rt_study_metadata::Pointer dicom_metadata;
+    Rt_study_metadata::Pointer rt_study_metadata;
+
+    bool filenames_with_uid;
 
 public:
     Dcmtk_rt_study_private ();

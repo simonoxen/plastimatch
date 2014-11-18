@@ -35,6 +35,9 @@ public:
 
 public:
     Dcmtk_loader_private () {
+        ds_image = 0;
+        ds_rtss = 0;
+        ds_rtdose = 0;
     }
     ~Dcmtk_loader_private () {
         /* Delete Dicom_series objects in map */

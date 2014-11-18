@@ -139,16 +139,23 @@ Dcmtk_rt_study::set_dose (Plm_image::Pointer image)
 }
 
 void 
-Dcmtk_rt_study::set_dicom_metadata (Rt_study_metadata::Pointer dicom_metadata)
+Dcmtk_rt_study::set_rt_study_metadata (
+    Rt_study_metadata::Pointer rt_study_metadata)
 {
-    d_ptr->dicom_metadata = dicom_metadata;
+    d_ptr->rt_study_metadata = rt_study_metadata;
+}
+
+void 
+Dcmtk_rt_study::set_filenames_with_uid (bool filenames_with_uid)
+{
+    d_ptr->filenames_with_uid = filenames_with_uid;
 }
 
 void 
 Dcmtk_rt_study::load (const char *dicom_path)
 {
     Dcmtk_loader dss (dicom_path);
-    dss.set_dicom_metadata (d_ptr->dicom_metadata);
+    dss.set_rt_study_metadata (d_ptr->rt_study_metadata);
     dss.parse_directory ();
 
     d_ptr->img = dss.get_image ();
@@ -163,7 +170,7 @@ Dcmtk_rt_study::save (const char *dicom_dir)
        but this should probably be handled by somewhere else in the 
        code. */
     if (d_ptr->img) {
-        d_ptr->dicom_metadata->generate_new_uids ();
+        d_ptr->rt_study_metadata->generate_new_uids ();
     }
     if (d_ptr->img) {
         this->save_image (dicom_dir);

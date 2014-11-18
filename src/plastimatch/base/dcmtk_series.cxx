@@ -140,7 +140,7 @@ Dcmtk_series::sort (void)
 }
 
 void
-Dcmtk_series::set_dicom_metadata (Rt_study_metadata::Pointer& drs)
+Dcmtk_series::set_rt_study_metadata (Rt_study_metadata::Pointer& drs)
 {
     d_ptr->m_drs = drs;
 }

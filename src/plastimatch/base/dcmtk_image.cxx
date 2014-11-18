@@ -487,7 +487,7 @@ Dcmtk_rt_study::save_image (
         dc[0], dc[3], dc[6], dc[1], dc[4], dc[7]);
 
     Plm_image_header pih (dsd.vol.get());
-    d_ptr->dicom_metadata->set_image_header (pih);
+    d_ptr->rt_study_metadata->set_image_header (pih);
 
     /* Find slope / offset on a per-volume basis */
     float vol_min = FLT_MAX;
@@ -529,8 +529,6 @@ Dcmtk_rt_study::save_image (
         /* GCS FIX #2:  This is possibly correct.  Not 100% sure. */
         float z_loc = dsd.vol->offset[2] + dc[8] * k * dsd.vol->spacing[2];
         dsd.instance_no = k;
-        dsd.fn.format ("%s/image%03d.dcm", dicom_dir, (int) k);
-        make_parent_directories (dsd.fn);
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
         dsd.sloc.format ("%f", z_loc);
         /* GCS FIX #2:  "Ditto" */
@@ -541,10 +539,22 @@ Dcmtk_rt_study::save_image (
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];
-        dcmtk_save_slice (d_ptr->dicom_metadata, &dsd);
 
-        d_ptr->dicom_metadata->set_slice_uid (k, dsd.slice_uid);
+        /* Format filename and prepare output directory */
+        if (d_ptr->filenames_with_uid) {
+            dsd.fn.format ("%s/image%04d_%s.dcm", dicom_dir, (int) k,
+                dsd.slice_uid);
+        } else {
+            dsd.fn.format ("%s/image%04d.dcm", dicom_dir, (int) k);
+        }
+        make_parent_directories (dsd.fn);
+
+        /* Fix the uid into the metadata */
+        d_ptr->rt_study_metadata->set_slice_uid (k, dsd.slice_uid);
+
+        /* Save the file to disk */
+        dcmtk_save_slice (d_ptr->rt_study_metadata, &dsd);
     }
     delete[] dsd.slice_int16;
-    d_ptr->dicom_metadata->set_slice_list_complete ();
+    d_ptr->rt_study_metadata->set_slice_list_complete ();
 }

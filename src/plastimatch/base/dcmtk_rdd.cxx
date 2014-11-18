@@ -22,6 +22,6 @@ dcmtk_load_rdd (
     }
 
     Dcmtk_loader dss (dicom_dir);
-    dss.set_dicom_metadata (rsm);
+    dss.set_rt_study_metadata (rsm);
     dss.parse_directory ();
 }

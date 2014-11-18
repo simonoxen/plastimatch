@@ -19,7 +19,7 @@ Rt_study::load_dcmtk (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;
-    drs.set_dicom_metadata (d_ptr->m_drs);
+    drs.set_rt_study_metadata (d_ptr->m_drs);
     drs.load (dicom_path);
 
     d_ptr->m_img = drs.get_image ();
@@ -33,11 +33,11 @@ Rt_study::load_dcmtk (const char *dicom_path)
 }
 
 void
-Rt_study::save_dcmtk (const char *dicom_dir)
+Rt_study::save_dcmtk (const char *dicom_dir, bool filenames_with_uid)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;
-    drs.set_dicom_metadata (d_ptr->m_drs);
+    drs.set_rt_study_metadata (d_ptr->m_drs);
     drs.set_image (d_ptr->m_img);
     if (d_ptr->m_rtss) {
         /* GCS FIX. This call to prune_empty() is a hack. 
@@ -51,7 +51,8 @@ Rt_study::save_dcmtk (const char *dicom_dir)
         drs.set_rtss (d_ptr->m_rtss->get_structure_set());
     }
     drs.set_dose (d_ptr->m_dose);
-    //ds.generate_new_uids ();   // GCS FIX: Is this needed here?
+
+    drs.set_filenames_with_uid (filenames_with_uid);
     drs.save (dicom_dir);
 #endif
 }
@@ -61,7 +62,7 @@ Rt_study::save_dcmtk_dose (const char *dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     Dcmtk_rt_study drs;
-    drs.set_dicom_metadata (d_ptr->m_drs);
+    drs.set_rt_study_metadata (d_ptr->m_drs);
     drs.set_dose (d_ptr->m_dose);
     drs.save (dicom_dir);
 #endif

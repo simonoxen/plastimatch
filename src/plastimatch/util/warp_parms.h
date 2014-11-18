@@ -51,6 +51,7 @@ public:
     /* Output options */
     Plm_image_type output_type;
     std::string prefix_format;
+    bool dicom_with_uids;
     Xio_version output_xio_version;
 
     /* Algorithm options */
@@ -90,9 +91,11 @@ public:
 	dose_scale = 1.0f;
 	default_val = 0.0f;
 	interp_lin = 1;
-	prefix_format = "mha";
 	output_type = PLM_IMG_TYPE_UNDEFINED;
+	prefix_format = "mha";
+        dicom_with_uids = true;
 	output_xio_version = XIO_VERSION_4_2_1;
+
 	prune_empty = 0;
 	use_itk = 0;
 	simplify_perc = 0;

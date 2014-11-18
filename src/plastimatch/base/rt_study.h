@@ -57,8 +57,10 @@ public:
     void load_cxt (const char *input_fn);
     void load_prefix (const char *input_fn);
 
-    void save_dicom (const std::string& output_dir);
-    void save_dicom (const char *output_dir);
+    void save_dicom (const std::string& output_dir,
+        bool filenames_with_uid = true);
+    void save_dicom (const char *output_dir,
+        bool filenames_with_uid = true);
     void save_dicom_dose (const char *output_dir);
 
     void save_dose (const char* fname);
@@ -108,7 +110,7 @@ public:
     void resample (float spacing[3]);
 
 protected:
-    void save_dcmtk (const char *dicom_dir);
+    void save_dcmtk (const char *dicom_dir, bool filenames_with_uid);
     void save_dcmtk_dose (const char *dicom_dir);
     void save_gdcm (const char *dicom_dir);
     void convert_ss_img_to_cxt ();

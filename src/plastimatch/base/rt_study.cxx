@@ -381,7 +381,7 @@ Rt_study::load_prefix (const char *input_fn)
 }
 
 void
-Rt_study::save_dicom (const char *dicom_dir)
+Rt_study::save_dicom (const char *dicom_dir, bool filenames_with_uid)
 {
     if (!dicom_dir) {
         return;
@@ -395,16 +395,16 @@ Rt_study::save_dicom (const char *dicom_dir)
     }
 
 #if PLM_DCM_USE_DCMTK
-    this->save_dcmtk (dicom_dir);
+    this->save_dcmtk (dicom_dir, filenames_with_uid);
 #else
     this->save_gdcm (dicom_dir);
 #endif
 }
 
 void
-Rt_study::save_dicom (const std::string& dicom_dir)
+Rt_study::save_dicom (const std::string& dicom_dir, bool filenames_with_uid)
 {
-    this->save_dicom (dicom_dir.c_str());
+    this->save_dicom (dicom_dir.c_str(), filenames_with_uid);
 }
 
 void

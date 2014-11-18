@@ -381,7 +381,7 @@ plm_add_test (
 plm_add_test (
   "rect-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 plm_add_test (
   "rect-2"
@@ -1324,12 +1324,12 @@ set_tests_properties (plm-convert-dicom-a-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom;--metadata;0018,5100=FFS"
+  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom;--metadata;0018,5100=FFS"
   )
 plm_add_test (
   "plm-convert-dicom-b-stats" 
   ${PLM_PLASTIMATCH_PATH}/dicom_info
-  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom/image000.dcm"
+  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom/image0000.dcm"
   )
 plmtest_check_string ("plm-convert-dicom-b-check" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-stats.stdout.txt"
@@ -1455,12 +1455,12 @@ plm_add_test (
 plm_add_test (
   "plm-convert-dicom-aw-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
+  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
   )
 plm_add_test (
   "plm-convert-dicom-aw-a-stats" 
   ${PLM_PLASTIMATCH_PATH}/dicom_info
-  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom/image000.dcm"
+  "--input;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom/image0000.dcm"
   )
 plmtest_check_string ("plm-convert-dicom-aw-a-check" 
   "${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-stats.stdout.txt"

@@ -27,13 +27,11 @@
 Dcmtk_loader::Dcmtk_loader ()
 {
     d_ptr = new Dcmtk_loader_private;
-    init ();
 }
 
 Dcmtk_loader::Dcmtk_loader (const char* dicom_path)
 {
     d_ptr = new Dcmtk_loader_private;
-    init ();
 
     /* GCS FIX: Need a way to turn this on via configuration. 
        But for now, just unilaterally disable logging. 
@@ -53,14 +51,7 @@ Dcmtk_loader::~Dcmtk_loader ()
 }
 
 void
-Dcmtk_loader::init ()
-{
-    d_ptr->ds_rtdose = 0;
-    d_ptr->ds_rtss = 0;
-}
-
-void
-Dcmtk_loader::set_dicom_metadata (Rt_study_metadata::Pointer drs)
+Dcmtk_loader::set_rt_study_metadata (Rt_study_metadata::Pointer drs)
 {
     d_ptr->m_drs = drs;
 }
@@ -144,6 +135,7 @@ Dcmtk_loader::debug (void) const
     for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
 	const std::string& key = (*it).first;
 	const Dcmtk_series *ds = (*it).second;
+	UNUSED_VARIABLE (key);
 	UNUSED_VARIABLE (ds);
 	ds->debug ();
     }
@@ -237,7 +229,7 @@ Dcmtk_loader::parse_directory (void)
 
     /* Load image */
     if (d_ptr->ds_image) {
-        d_ptr->ds_image->set_dicom_metadata (d_ptr->m_drs);
+        d_ptr->ds_image->set_rt_study_metadata (d_ptr->m_drs);
         this->image_load ();
     }
 

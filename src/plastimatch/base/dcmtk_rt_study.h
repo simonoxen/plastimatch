@@ -39,6 +39,7 @@ public:
     const char* get_study_time () const;
     const char* get_study_uid () const;
     std::vector<Dcmtk_slice_data>* get_slice_data();
+
 public:
     Plm_image::Pointer get_image ();
     Volume::Pointer get_image_volume_float ();
@@ -50,7 +51,9 @@ public:
     Plm_image::Pointer get_dose ();
     void set_dose (Plm_image::Pointer image);
 
-    void set_dicom_metadata (Rt_study_metadata::Pointer dicom_metadata);
+    void set_rt_study_metadata (Rt_study_metadata::Pointer rt_study_metadata);
+    void set_filenames_with_uid (bool filenames_with_uid);
+
 public:
     void save_image (const char *dicom_path);
     void save_dose (const char *dicom_path);

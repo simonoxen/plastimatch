@@ -433,6 +433,7 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save dicom */
     if (parms->output_dicom.not_empty()) {
         lprintf ("Rt_study_warp: Save dicom.\n");
-        rtds->save_dicom ((const char*) parms->output_dicom);
+        rtds->save_dicom ((const char*) parms->output_dicom,
+            parms->dicom_with_uids);
     }
 }

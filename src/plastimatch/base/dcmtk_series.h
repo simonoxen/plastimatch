@@ -51,7 +51,7 @@ public:
     void insert (Dcmtk_file::Pointer& df);
     void sort (void);
 
-    void set_dicom_metadata (Rt_study_metadata::Pointer& drs);
+    void set_rt_study_metadata (Rt_study_metadata::Pointer& drs);
 
     void debug (void) const;
 };

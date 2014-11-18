@@ -278,14 +278,10 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     OFCondition ofc;
     std::string s;
     Metadata::Pointer dose_metadata;
-    if (d_ptr->dicom_metadata) {
-        dose_metadata = d_ptr->dicom_metadata->get_dose_metadata ();
+    if (d_ptr->rt_study_metadata) {
+        dose_metadata = d_ptr->rt_study_metadata->get_dose_metadata ();
     }
     Volume::Pointer dose_volume = d_ptr->dose->get_volume_float ();
-
-    /* Prepare output file */
-    std::string filename = string_format ("%s/dose.dcm", dicom_dir);
-    make_parent_directories (filename);
 
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
@@ -298,18 +294,18 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        d_ptr->rt_study_metadata->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->dicom_metadata->get_dose_instance_uid());
+        d_ptr->rt_study_metadata->get_dose_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        d_ptr->rt_study_metadata->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -328,7 +324,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_RETIRED_StudyComponentManagementSOPClass);
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        d_ptr->dicom_metadata->get_study_uid());
+        d_ptr->rt_study_metadata->get_study_uid());
 #endif
 
     /* (0008,1140) DCM_ReferencedImageSequence -- MIM likes this */
@@ -338,7 +334,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_CTImageStorage);
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        d_ptr->dicom_metadata->get_ct_series_uid());
+        d_ptr->rt_study_metadata->get_ct_series_uid());
 
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientID, "");
@@ -348,9 +344,9 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->dicom_metadata->get_study_uid());
+        d_ptr->rt_study_metadata->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        d_ptr->dicom_metadata->get_dose_series_uid());
+        d_ptr->rt_study_metadata->get_dose_series_uid());
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
@@ -369,7 +365,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dose_volume->direction_cosines[7]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        d_ptr->dicom_metadata->get_frame_of_reference_uid());
+        d_ptr->rt_study_metadata->get_frame_of_reference_uid());
 
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
@@ -451,7 +447,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_RTPlanStorage);
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        d_ptr->dicom_metadata->get_plan_instance_uid());
+        d_ptr->rt_study_metadata->get_plan_instance_uid());
 
     /* (300c,0060) DCM_ReferencedStructureSetSequence -- MIM likes this */
     dcm_item = 0;
@@ -460,7 +456,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_RTStructureSetStorage);
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        d_ptr->dicom_metadata->get_rtss_instance_uid());
+        d_ptr->rt_study_metadata->get_rtss_instance_uid());
 
     /* Convert image bytes to integer, then add to dataset */
     if (dose_metadata 
@@ -478,12 +474,18 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     /* ----------------------------------------------------------------- */
     /*     Write the output file                                         */
     /* ----------------------------------------------------------------- */
+    std::string filename;
+    if (d_ptr->filenames_with_uid) {
+        filename = string_format ("%s/dose.dcm_%s", dicom_dir,
+            d_ptr->rt_study_metadata->get_dose_series_uid());
+    } else {
+        filename = string_format ("%s/dose.dcm", dicom_dir);
+    }
+    make_parent_directories (filename);
+
     ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
     if (ofc.bad()) {
         print_and_exit ("Error: cannot write DICOM RTDOSE (%s)\n", 
             ofc.text());
     }
-
-    /* Delete the dose copy */
-    // delete dose_copy;
 }

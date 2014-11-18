@@ -14,18 +14,24 @@
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "rt_study.h"
+#include "string_util.h"
 #include "synthetic_mha.h"
 
-typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
-struct synthetic_mha_main_parms {
+class Synthetic_mha_main_parms
+{
+public:
     Pstring output_fn;
     Pstring output_dose_img_fn;
     Pstring output_ss_img_fn;
     Pstring output_ss_list_fn;
     Pstring output_dicom;
     Synthetic_mha_parms sm_parms;
-
+    bool dicom_with_uids;
     std::vector<std::string> m_metadata;
+public:
+    Synthetic_mha_main_parms () {
+        dicom_with_uids = true;
+    }
 };
 
 void
@@ -103,7 +109,8 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     if (parms->output_dicom.not_empty()) {
         rtds.get_rtss()->convert_ss_img_to_cxt ();
-        rtds.save_dicom ((const char*) parms->output_dicom);
+        rtds.save_dicom ((const char*) parms->output_dicom,
+            parms->dicom_with_uids);
     }
 
 }
@@ -148,6 +155,9 @@ parse_fn (
         "data type for output image: {uchar, short, ushort, ulong, float},"
         " default is float", 
         1, "float");
+    parser->add_long_option ("", "dicom-with-uids", 
+        "set to false to remove uids from created dicom filenames, "
+        "default is true", 1, "true");
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
@@ -274,6 +284,10 @@ parse_fn (
         parser->get_string("output-type").c_str());
     if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
         throw dlib::error ("Error, unknown output-type\n");
+    }
+    if (parser->option("dicom-with-uids")) {
+        parms->dicom_with_uids = string_value_true (
+            parser->get_string ("dicom-with-uids"));
     }
 
     /* Main pattern */

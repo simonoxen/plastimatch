@@ -13,6 +13,7 @@
 #include "pstring.h"
 #include "rt_study.h"
 #include "rtds_warp.h"
+#include "string_util.h"
 #include "warp_parms.h"
 
 static void
@@ -109,6 +110,9 @@ parse_fn (
     parser->add_long_option ("", "prefix-format", 
         "file format of rasterized structures, either \"mha\" or \"nrrd\"",
         1, "mha");
+    parser->add_long_option ("", "dicom-with-uids", 
+        "set to false to remove uids from created dicom filenames, "
+        "default is true", 1, "true");
 
     /* Algorithm options */
     parser->add_long_option ("", "algorithm", 
@@ -230,6 +234,10 @@ parse_fn (
         parms->prefix_format = parser->get_string ("prefix-format");
     } else {
         parms->prefix_format = "mha";
+    }
+    if (parser->option("dicom-with-uids")) {
+        parms->dicom_with_uids = string_value_true (
+            parser->get_string ("dicom-with-uids"));
     }
 
     /* Algorithm options */

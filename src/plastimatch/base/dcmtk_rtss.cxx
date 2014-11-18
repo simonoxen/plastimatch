@@ -24,6 +24,7 @@
 #include "print_and_exit.h"
 #include "rtss.h"
 #include "rtss_roi.h"
+#include "string_util.h"
 
 PLMBASE_C_API bool 
 dcmtk_rtss_probe (const char *rtss_fn)
@@ -247,18 +248,13 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     OFCondition ofc;
     Rtss::Pointer& cxt = d_ptr->cxt;
     Metadata::Pointer rtss_metadata;
-    if (d_ptr->dicom_metadata) {
-        rtss_metadata = d_ptr->dicom_metadata->get_rtss_metadata ();
+    if (d_ptr->rt_study_metadata) {
+        rtss_metadata = d_ptr->rt_study_metadata->get_rtss_metadata ();
     }
 
     /* Prepare structure set with slice uids */
-    const Slice_list *slice_list = d_ptr->dicom_metadata->get_slice_list ();
+    const Slice_list *slice_list = d_ptr->rt_study_metadata->get_slice_list ();
     cxt->apply_slice_list (slice_list);
-
-    /* Prepare output file */
-    Pstring rtss_fn;
-    rtss_fn.format ("%s/rtss.dcm", dicom_dir);
-    make_parent_directories (rtss_fn);
 
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
@@ -268,18 +264,18 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        d_ptr->rt_study_metadata->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->dicom_metadata->get_rtss_instance_uid());
+        d_ptr->rt_study_metadata->get_rtss_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        d_ptr->rt_study_metadata->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTSTRUCT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -304,18 +300,18 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 #endif
 
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->dicom_metadata->get_study_uid());
+        d_ptr->rt_study_metadata->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        d_ptr->dicom_metadata->get_rtss_series_uid());
+        d_ptr->rt_study_metadata->get_rtss_series_uid());
     dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "103");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
     dataset->putAndInsertString (DCM_StructureSetName, "AutoSS");
     dataset->putAndInsertOFStringArray (DCM_StructureSetDate, 
-        d_ptr->dicom_metadata->get_study_date());
+        d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StructureSetTime, 
-        d_ptr->dicom_metadata->get_study_time());
+        d_ptr->rt_study_metadata->get_study_time());
 
     /* ----------------------------------------------------------------- */
     /*     Part 2  -- UID's for CT series                                */
@@ -325,7 +321,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dataset->findOrCreateSequenceItem (
         DCM_ReferencedFrameOfReferenceSequence, rfor_item, -2);
     rfor_item->putAndInsertString (DCM_FrameOfReferenceUID, 
-        d_ptr->dicom_metadata->get_frame_of_reference_uid());
+        d_ptr->rt_study_metadata->get_frame_of_reference_uid());
     dataset->findAndGetSequence (
         DCM_ReferencedFrameOfReferenceSequence, rfor_seq);
     DcmItem *rtrstudy_item = 0;
@@ -335,14 +331,14 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         DCM_ReferencedSOPClassUID, 
         UID_RETIRED_StudyComponentManagementSOPClass);
     rtrstudy_item->putAndInsertString (
-        DCM_ReferencedSOPInstanceUID, d_ptr->dicom_metadata->get_study_uid());
+        DCM_ReferencedSOPInstanceUID, d_ptr->rt_study_metadata->get_study_uid());
     DcmItem *rtrseries_item = 0;
     rtrstudy_item->findOrCreateSequenceItem (
         DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
     rtrseries_item->putAndInsertString (
-        DCM_SeriesInstanceUID, d_ptr->dicom_metadata->get_ct_series_uid());
+        DCM_SeriesInstanceUID, d_ptr->rt_study_metadata->get_ct_series_uid());
 
-    for (int k = 0; k < d_ptr->dicom_metadata->num_slices(); k++) {
+    for (int k = 0; k < d_ptr->rt_study_metadata->num_slices(); k++) {
         DcmItem *ci_item = 0;
         rtrseries_item->findOrCreateSequenceItem (
             DCM_ContourImageSequence, ci_item, -2);
@@ -350,7 +346,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
             DCM_ReferencedSOPClassUID, UID_CTImageStorage);
         ci_item->putAndInsertString (
             DCM_ReferencedSOPInstanceUID, 
-            d_ptr->dicom_metadata->get_slice_uid (k));
+            d_ptr->rt_study_metadata->get_slice_uid (k));
     }
 
     /* ----------------------------------------------------------------- */
@@ -364,7 +360,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         tmp.format ("%d", cxt->slist[i]->id);
         ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
         ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
-            d_ptr->dicom_metadata->get_frame_of_reference_uid());
+            d_ptr->rt_study_metadata->get_frame_of_reference_uid());
         ssroi_item->putAndInsertString (DCM_ROIName, cxt->slist[i]->name);
         ssroi_item->putAndInsertString (DCM_ROIGenerationAlgorithm, "");
     }
@@ -478,6 +474,15 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /* ----------------------------------------------------------------- */
     /*     Write the output file                                         */
     /* ----------------------------------------------------------------- */
+    std::string rtss_fn;
+    if (d_ptr->filenames_with_uid) {
+        rtss_fn = string_format ("%s/rtss_%s.dcm", dicom_dir, 
+            d_ptr->rt_study_metadata->get_rtss_series_uid());
+    } else {
+        rtss_fn = string_format ("%s/rtss.dcm", dicom_dir);
+    }
+    make_parent_directories (rtss_fn);
+
     ofc = fileformat.saveFile (rtss_fn.c_str(), EXS_LittleEndianExplicit);
     if (ofc.bad()) {
         print_and_exit ("Error: cannot write DICOM RTSTRUCT (%s)\n", 
