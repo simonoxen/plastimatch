@@ -1107,6 +1107,17 @@ Rpl_volume::compute_wed_volume (
             /* Index within rpl_volume */
             plm_long rijk[3] = { wijk[0], wijk[1], 0 };
 
+	    /*Perform the clipping, so the projection volume start points are the same*/
+
+	    double ray_start[3];
+	    double ray_end[3];
+	    
+	    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2)) {
+	      printf("Error in ray clipping, exiting...\n");
+	      return;
+	    }
+	    //	    volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2);
+
             /* Loop, looking for each output voxel */
             for (wijk[2] = 0; wijk[2] < rvol->dim[2]; wijk[2]++) {
                 plm_long widx = volume_index (rvol->dim, wijk);
@@ -1133,13 +1144,14 @@ Rpl_volume::compute_wed_volume (
                     /* Test if the current input voxel is suitable */
                     if (curr_rpl > req_rpl) {
                         /* Compute coordinate of matching voxel */
+                        double xyz_init[3];
                         double xyz[3];
 
 			/* Get the distance relative to the reqired rad. length.  */
 			double dist = rijk[2]*proj_vol->get_step_length() - ( (curr_rpl - req_rpl)/(curr_rpl-prev_rpl) ) * proj_vol->get_step_length();
 
-                        vec3_scale3 (xyz, ray_data->ray, dist);
-                        vec3_add2 (xyz, ray_data->cp);
+                        vec3_scale3 (xyz_init, ray_data->ray, dist);
+			vec3_add3 (xyz, xyz_init, ray_start);
                         
 			//NEW
 
