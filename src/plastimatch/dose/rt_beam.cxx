@@ -181,38 +181,6 @@ Rt_beam::Rt_beam ()
 Rt_beam::~Rt_beam ()
 {
     delete this->d_ptr;
-	
-	if (this->rpl_vol) {
-        delete this->rpl_vol;
-    }
-
-	if (this->ct_vol_density){
-		delete this->ct_vol_density;
-	}
-
-	if (this->sigma_vol){
-		delete this->sigma_vol;
-	}
-
-	if (this->rpl_vol_lg) {
-		delete this->rpl_vol_lg;
-	}
-
-	if (this->ct_vol_density_lg) {
-		delete this->ct_vol_density_lg;
-	}
-
-	if (this->sigma_vol_lg) {
-		delete this->sigma_vol_lg;
-	}
-
-	if (this->rpl_dose_vol) {
-		delete this->rpl_dose_vol;
-	}
-
-	if (this->aperture_vol) {
-		delete this->aperture_vol;
-	}
 }
 
 bool
