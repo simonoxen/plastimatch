@@ -4,6 +4,7 @@
 #ifndef _Rt_plan_h_
 #define _Rt_plan_h_
 
+#include "plmdose_config.h"
 #include "smart_pointer.h"
 #include "plm_image.h"
 
