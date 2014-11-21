@@ -70,7 +70,7 @@ public:
 
     const Rt_study_metadata::Pointer& get_rt_study_metadata () const;
     Rt_study_metadata::Pointer& get_rt_study_metadata ();
-    void set_user_metadata (std::vector<std::string>& metadata);
+    void set_study_metadata (std::vector<std::string>& metadata);
 
     bool have_image ();
     void set_image (ShortImageType::Pointer& itk_image);

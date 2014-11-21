@@ -459,7 +459,7 @@ Rt_study::get_rt_study_metadata ()
 }
 
 void 
-Rt_study::set_user_metadata (std::vector<std::string>& metadata)
+Rt_study::set_study_metadata (std::vector<std::string>& metadata)
 {
     Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
 

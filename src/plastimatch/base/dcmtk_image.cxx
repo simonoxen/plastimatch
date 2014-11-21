@@ -398,8 +398,16 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         drs->get_study_time());
     dataset->putAndInsertString (DCM_SOPClassUID, UID_CTImageStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
+
+    /* General Study Module */
+    dataset->putAndInsertString (DCM_StudyInstanceUID, drs->get_study_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, drs->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, drs->get_study_time());
+    dcmtk_copy_from_metadata (dataset, image_metadata, 
+        DCM_StudyID, "10001");
+    dcmtk_copy_from_metadata (dataset, image_metadata, 
+        DCM_StudyDescription, "");
+
     dataset->putAndInsertString (DCM_AccessionNumber, "");
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_Modality, "CT");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
@@ -416,10 +424,11 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         PLASTIMATCH_VERSION_STRING);
     dcmtk_copy_from_metadata (dataset, image_metadata, 
         DCM_PatientPosition, "HFS");
-    dataset->putAndInsertString (DCM_StudyInstanceUID, drs->get_study_uid());
+
+    
+
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         drs->get_ct_series_uid());
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
     tmp.format ("%d", dsd->instance_no);
     dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());

@@ -55,7 +55,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     synthetic_mha (&rtds, sm_parms);
 
     /* metadata */
-    rtds.set_user_metadata (parms->m_metadata);
+    rtds.set_study_metadata (parms->m_metadata);
 
     /* Save to file */
     FloatImageType::Pointer img = rtds.get_image()->itk_float();

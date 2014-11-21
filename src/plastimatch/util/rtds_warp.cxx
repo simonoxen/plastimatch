@@ -229,13 +229,13 @@ rtds_warp (Rt_study *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Set user-supplied metadata also prior to loading files,
        because the user supplied patient position is needed to load XiO data */
-    rtds->set_user_metadata (parms->m_metadata);
+    rtds->set_study_metadata (parms->m_metadata);
 
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
 
     /* Set user-supplied metadata (overrides metadata in input files) */
-    rtds->set_user_metadata (parms->m_metadata);
+    rtds->set_study_metadata (parms->m_metadata);
 
     /* Load transform */
     if (parms->xf_in_fn.not_empty()) {
