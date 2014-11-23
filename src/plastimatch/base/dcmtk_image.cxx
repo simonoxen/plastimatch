@@ -390,13 +390,36 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         image_metadata = drs->get_image_metadata ();
     }
 
+    /* Get modality */
+    std::string modality = "CT";
+    if (image_metadata) {
+        std::string metadata_modality = image_metadata->get_metadata (
+            DCM_Modality.getGroup(), DCM_Modality.getElement());
+        if (metadata_modality != "") {
+            modality = metadata_modality;
+        }
+    }
+
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
         drs->get_study_date());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
         drs->get_study_time());
-    dataset->putAndInsertString (DCM_SOPClassUID, UID_CTImageStorage);
+
+    /* The SOPClassUID depends on the modality */
+    if (modality == "MR") {
+        dataset->putAndInsertString (
+            DCM_SOPClassUID, UID_MRImageStorage);
+    }
+    else if (modality == "PT") {
+        dataset->putAndInsertString (
+            DCM_SOPClassUID, UID_NuclearMedicineImageStorage);
+    }
+    else {
+        dataset->putAndInsertString (
+            DCM_SOPClassUID, UID_CTImageStorage);
+    }
     dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
 
     /* General Study Module */
@@ -409,7 +432,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         DCM_StudyDescription, "");
 
     dataset->putAndInsertString (DCM_AccessionNumber, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_Modality, "CT");
+    dataset->putAndInsertString (DCM_Modality, modality.c_str());
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dcmtk_copy_from_metadata (dataset, image_metadata, 

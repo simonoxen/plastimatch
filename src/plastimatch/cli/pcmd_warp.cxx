@@ -151,6 +151,8 @@ parse_fn (
     parser->add_long_option ("", "metadata",
         "patient metadata (you may use this option multiple times), "
         "option written as \"XXXX,YYYY=string\"", 1, "");
+    parser->add_long_option ("", "modality",
+        "modality metadata: such as {CT, MR, PT}, default is CT", 1, "CT");
     parser->add_long_option ("", "patient-id",
         "patient id metadata: string", 1);
     parser->add_long_option ("", "patient-name",
@@ -312,6 +314,11 @@ parse_fn (
     for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {
         parms->m_metadata.push_back (
             parser->option("metadata").argument(0,i));
+    }
+    if (parser->option ("modality")) {
+        std::string arg = parser->get_string ("modality");
+        std::string metadata_string = "0008,0060=" + arg;
+        parms->m_metadata.push_back (metadata_string);
     }
     if (parser->option ("patient-name")) {
         std::string arg = parser->get_string ("patient-name");
