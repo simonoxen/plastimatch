@@ -12,6 +12,7 @@
 #include "bspline.h"    /* for enums */
 #include "plm_image_type.h"
 #include "plm_path.h"
+#include "plm_return_code.h"
 #include "pstring.h"
 #include "smart_pointer.h"
 #include "threading.h"
@@ -54,7 +55,7 @@ public:
     ~Registration_parms();
 public:
     int set_command_string (const std::string& command_string);
-    int set_key_value (
+    Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val);

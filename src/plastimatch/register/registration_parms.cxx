@@ -61,28 +61,28 @@ public:
         this->rp = rp;
     }
 public:
-    virtual int process_section (
+    virtual Plm_return_code process_section (
         const std::string& section)
     {
         if (section == "GLOBAL") {
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "STAGE") {
             rp->append_stage ();
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "COMMENT") {
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "PROCESS") {
             rp->append_process_stage ();
-            return 0;
+            return PLM_SUCCESS;
         }
 
         /* else, unknown section */
-        return -1;
+        return PLM_ERROR;
     }
-    virtual int process_key_value (
+    virtual Plm_return_code process_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val)
@@ -167,7 +167,7 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 #endif
 }
 
-int 
+Plm_return_code
 Registration_parms::set_key_value (
     const std::string& section,
     const std::string& key, 
@@ -182,7 +182,7 @@ Registration_parms::set_key_value (
     bool section_process = false;
 
     if (section == "COMMENT") {
-        return 0;
+        return PLM_SUCCESS;
     }
 
     if (section == "GLOBAL") {
@@ -992,27 +992,27 @@ Registration_parms::set_key_value (
     else {
         goto error_exit;
     }
-    return 0;
+    return PLM_SUCCESS;
 
 key_only_allowed_in_section_global:
     print_and_exit (
         "This key (%s) is only allowed in a global section\n", key.c_str());
-    return -1;
+    return PLM_ERROR;
 
 key_only_allowed_in_section_stage:
     print_and_exit (
         "This key (%s) is only allowed in a stage section\n", key.c_str());
-    return -1;
+    return PLM_ERROR;
 
 key_not_allowed_in_section_process:
     print_and_exit (
         "This key (%s) not is allowed in a process section\n", key.c_str());
-    return -1;
+    return PLM_ERROR;
 
 error_exit:
     print_and_exit (
         "Unknown (key,val) combination: (%s,%s)\n", key.c_str(), val.c_str());
-    return -1;
+    return PLM_ERROR;
 }
 
 int

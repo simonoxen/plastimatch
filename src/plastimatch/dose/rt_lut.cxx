@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plmdose_config.h"
 
 #include "rt_lut.h"
 
@@ -96,6 +97,11 @@ double getstop (double energy)
     return stop_lo + 
         (energy-energy_lo) * (stop_hi-stop_lo) / (energy_hi-energy_lo);
 }
+
+/* Make GCC compiler less whiny */
+#if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+#endif
 
 /* This table has 111 entries */
 const double lookup_proton_range_water[][2] ={

@@ -20,7 +20,7 @@ Parameter_parser::Parameter_parser () {
     key_regularization = true;
 }
 
-int
+Plm_return_code
 Parameter_parser::parse_config_string (
     const char* config_string
 )
@@ -42,7 +42,7 @@ Parameter_parser::parse_config_string (
         if (buf[0] == '[') {
             if (buf[buf.length()-1] != ']') {
                 lprintf ("Parse error: %s\n", buf_ori.c_str());
-                return -1;
+                return PLM_ERROR;
             }
 
             /* Strip off brackets and make upper case */
@@ -50,8 +50,8 @@ Parameter_parser::parse_config_string (
             section = make_uppercase (buf);
 
             /* Inform subclass that a new section is beginning */
-            int rc = this->process_section (section);
-            if (rc != 0) {
+            Plm_return_code rc = this->process_section (section);
+            if (rc != PLM_SUCCESS) {
                 lprintf ("Parse error: %s\n", buf_ori.c_str());
                 return rc;
             }
@@ -76,14 +76,14 @@ Parameter_parser::parse_config_string (
         val = trim (val);
 
         if (key != "") {
-            int rc = this->process_key_value (section, key, val);
-            if (rc != 0) {
+            Plm_return_code rc = this->process_key_value (section, key, val);
+            if (rc != PLM_SUCCESS) {
                 lprintf ("Parse error: %s\n", buf_ori.c_str());
                 return rc;
             }
         }
     }
-    return 0;
+    return PLM_SUCCESS;
 }
 
 void 
@@ -94,7 +94,7 @@ Parameter_parser::enable_key_regularization (
     this->key_regularization = enable;
 }
 
-int
+Plm_return_code
 Parameter_parser::parse_config_string (
     const std::string& config_string
 )
@@ -102,7 +102,7 @@ Parameter_parser::parse_config_string (
     return this->parse_config_string (config_string.c_str());
 }
 
-int
+Plm_return_code
 Parameter_parser::parse_config_file (
     const char* config_fn
 )
@@ -120,7 +120,7 @@ Parameter_parser::parse_config_file (
     return this->parse_config_string (buffer.str());
 }
 
-int
+Plm_return_code
 Parameter_parser::parse_config_file (
     const std::string& config_fn
 )

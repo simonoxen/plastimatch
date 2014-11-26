@@ -5,12 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <ctime>
 
 #include "plm_math.h"
 #include "plm_timer.h"
-#include "rt_dose.h"
-#include "rt_parms.h"
 #include "rt_plan.h"
 #include "volume.h"
 
@@ -18,12 +15,12 @@ int
 main (int argc, char* argv[])
 {
     Plm_timer timer;
-    Rt_parms parms;
+    Rt_plan plan;
     timer.start ();
-    if (!parms.parse_args (argc, argv)) {
+    if (plan.parse_args (argc, argv) != PLM_SUCCESS) {
         return 1;
     }
-
+    plan.compute_plan ();
     printf("Execution time : %f secondes.\n", timer.report ());
     return 0;
 }

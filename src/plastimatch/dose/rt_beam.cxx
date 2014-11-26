@@ -14,8 +14,8 @@
 class Rt_beam_private {
 public:
 
-	/* dose volume */
-	Plm_image::Pointer dose_vol;
+    /* dose volume */
+    Plm_image::Pointer dose_vol;
 
     double source[3];
     double isocenter[3];
@@ -24,57 +24,48 @@ public:
     char homo_approx;
     Particle_type part;
 
-	float photon_energy; // energy for mono-energetic beams
+    float photon_energy; // energy for mono-energetic beams
 
-	float beamWeight;
+    float beamWeight;
 
     Rt_sobp::Pointer sobp;
 
     std::string debug_dir;
 
-	float smearing;
+    float smearing;
 
     float prescription_d_min;
     float prescription_d_max;
     float proximal_margin;
     float distal_margin;
 
-	double step_length;
-	float z_min;
+    double step_length;
+    float z_min;
     float z_max;
     float z_step;
 
     float source_size;
 
-	Aperture::Pointer ap;
-	Plm_image::Pointer target;
+    Aperture::Pointer ap;
+    Plm_image::Pointer target;
 
-	std::string aperture_in;
-	std::string range_compensator_in;
+    std::string aperture_in;
+    std::string range_compensator_in;
 
-	std::string aperture_out;
-	std::string proj_dose_out;
-	std::string proj_img_out;
-	std::string range_compensator_out;
-	std::string sigma_out;
-	std::string wed_out;
+    std::string aperture_out;
+    std::string proj_dose_out;
+    std::string proj_img_out;
+    std::string range_compensator_out;
+    std::string sigma_out;
+    std::string wed_out;
 
-	bool have_manual_peaks;
-	bool have_prescription;
-	
-#if defined (commentout)
-    double E0;                      /* initial ion energy (MeV) */
-    double spread;                  /* beam energy sigma (MeV) */
-    double dres;                    /* spatial resolution of bragg curve (mm)*/
-    double dmax;                    /* maximum w.e.d. (mm) */
-    int num_samples;                /* # of discrete bragg curve samples */
-    double weight;					/* weight of the beam */
-#endif
+    bool have_manual_peaks;
+    bool have_prescription;
 
 public:
     Rt_beam_private ()
     {
-		this->dose_vol = Plm_image::New();
+        this->dose_vol = Plm_image::New();
 
         this->source[0] = -1000.f;
         this->source[1] = 0.f;
@@ -85,44 +76,44 @@ public:
         this->detail = 1;
         this->flavor = 'a';
         this->homo_approx = 'n';
-		this->part = PARTICLE_TYPE_P;
+        this->part = PARTICLE_TYPE_P;
 
-		this->photon_energy = 6.f; 
+        this->photon_energy = 6.f; 
 
-		this->beamWeight = 1.f;
+        this->beamWeight = 1.f;
 
         this->sobp = Rt_sobp::New();
 
         this->debug_dir = "";
 
-		this->smearing = 0.f;
+        this->smearing = 0.f;
 
         this->prescription_d_min = 0.f;
         this->prescription_d_max = 0.f;
         this->proximal_margin = 0.f;
         this->distal_margin = 0.f;
 
-		this->step_length = 1.0;
-		this->z_min = 0.f;
-		this->z_max = 100.f;
-		this->z_step = 1.f;
+        this->step_length = 1.0;
+        this->z_min = 0.f;
+        this->z_max = 100.f;
+        this->z_step = 1.f;
 
         this->source_size = 0.f;
-		
-		ap = Aperture::New();
 
-		this->aperture_in = "";
-		this->range_compensator_in = "";
+        ap = Aperture::New();
 
-		this->aperture_out = "";
-		this->proj_dose_out = "";
-		this->proj_img_out = "";
-		this->range_compensator_out = "";
-		this->sigma_out = "";
-		this->wed_out = "";
+        this->aperture_in = "";
+        this->range_compensator_in = "";
 
-		this->have_manual_peaks = false;
-		this->have_prescription = false;
+        this->aperture_out = "";
+        this->proj_dose_out = "";
+        this->proj_img_out = "";
+        this->range_compensator_out = "";
+        this->sigma_out = "";
+        this->wed_out = "";
+
+        this->have_manual_peaks = false;
+        this->have_prescription = false;
 
 #if defined (commentout)
         this->E0 = 0.0;
@@ -133,49 +124,122 @@ public:
         this->weight = 1.0;
 #endif
     }
+    Rt_beam_private (const Rt_beam_private* rtbp)
+    {
+        this->dose_vol = Plm_image::New();
+
+        this->source[0] = rtbp->source[0];
+        this->source[1] = rtbp->source[1];
+        this->source[2] = rtbp->source[2];
+        this->isocenter[0] = rtbp->isocenter[0];
+        this->isocenter[1] = rtbp->isocenter[1];
+        this->isocenter[2] = rtbp->isocenter[2];
+        this->detail = rtbp->detail;
+        this->flavor = rtbp->flavor;
+        this->homo_approx = rtbp->homo_approx;
+        this->part = rtbp->part;
+
+        this->photon_energy = rtbp->photon_energy;
+
+        this->beamWeight = rtbp->beamWeight;
+
+        /* Copy the sobp object */
+        this->sobp = Rt_sobp::New(rtbp->sobp.get());
+
+        this->debug_dir = rtbp->debug_dir;
+
+        this->smearing = rtbp->smearing;
+
+        this->prescription_d_min = rtbp->prescription_d_min;
+        this->prescription_d_max = rtbp->prescription_d_max;
+        this->proximal_margin = rtbp->proximal_margin;
+        this->distal_margin = rtbp->distal_margin;
+
+        this->step_length = rtbp->step_length;
+        this->z_min = rtbp->z_min;
+        this->z_max = rtbp->z_max;
+        this->z_step = rtbp->z_step;
+
+        this->source_size = rtbp->source_size;
+
+        // GCS FIX commentout_TODO
+        ap = Aperture::New();
+
+        this->aperture_in = rtbp->aperture_in;
+        this->range_compensator_in = rtbp->range_compensator_in;
+
+        this->aperture_out = rtbp->aperture_out;
+        this->proj_dose_out = rtbp->proj_dose_out;
+        this->proj_img_out = rtbp->proj_img_out;
+        this->range_compensator_out = rtbp->range_compensator_out;
+        this->sigma_out = rtbp->sigma_out;
+        this->wed_out = rtbp->wed_out;
+
+//        this->have_manual_peaks = rtbp->have_manual_peaks;
+        this->have_manual_peaks = false;
+
+        this->have_prescription = rtbp->have_prescription;
+    }
 };
 
 Rt_beam::Rt_beam ()
 {
     this->d_ptr = new Rt_beam_private();
-	this->rpl_vol = new Rpl_volume();
+    this->rpl_vol = new Rpl_volume();
 
-	/* Creation of the volumes useful for dose calculation */
+    /* Creation of the volumes useful for dose calculation */
 
-	if (this->get_flavor() == 'a')
+    if (this->get_flavor() == 'a')
     {    
-		this->aperture_vol = new Rpl_volume();
+        this->aperture_vol = new Rpl_volume();
     }
 
     if (this->get_flavor() == 'f')
     {    
-		this->ct_vol_density = new Rpl_volume();
-		this->sigma_vol = new Rpl_volume();
+        this->ct_vol_density = new Rpl_volume();
+        this->sigma_vol = new Rpl_volume();
     }
 
-	if (this->get_flavor() == 'g')
+    if (this->get_flavor() == 'g')
     {    
-		this->ct_vol_density = new Rpl_volume();
-		this->sigma_vol = new Rpl_volume();
+        this->ct_vol_density = new Rpl_volume();
+        this->sigma_vol = new Rpl_volume();
 
-		this->rpl_vol_lg = new Rpl_volume();
-		this->ct_vol_density_lg = new Rpl_volume();
-		this->sigma_vol_lg = new Rpl_volume();
-		this->rpl_dose_vol = new Rpl_volume();
+        this->rpl_vol_lg = new Rpl_volume();
+        this->ct_vol_density_lg = new Rpl_volume();
+        this->sigma_vol_lg = new Rpl_volume();
+        this->rpl_dose_vol = new Rpl_volume();
     }
 
-	if (this->get_flavor() == 'h')
+    if (this->get_flavor() == 'h')
     {    
-		this->ct_vol_density = new Rpl_volume();
-		this->sigma_vol = new Rpl_volume();
+        this->ct_vol_density = new Rpl_volume();
+        this->sigma_vol = new Rpl_volume();
 
-		this->rpl_vol_lg = new Rpl_volume();
-		this->ct_vol_density_lg = new Rpl_volume();
-		this->sigma_vol_lg = new Rpl_volume();
-		this->rpl_dose_vol = new Rpl_volume();
+        this->rpl_vol_lg = new Rpl_volume();
+        this->ct_vol_density_lg = new Rpl_volume();
+        this->sigma_vol_lg = new Rpl_volume();
+        this->rpl_dose_vol = new Rpl_volume();
 
-		this->aperture_vol = new Rpl_volume();
+        this->aperture_vol = new Rpl_volume();
     }
+}
+
+Rt_beam::Rt_beam (const Rt_beam* rt_beam)
+{
+    /* Copy all the private settings (?) */
+    this->d_ptr = new Rt_beam_private (rt_beam->d_ptr);
+    
+    /* The below calculation volumes don't need to be copied 
+       from input beam */
+    this->rpl_vol = 0;
+    this->ct_vol_density = 0;
+    this->sigma_vol = 0;
+    this->rpl_vol_lg = 0;
+    this->ct_vol_density_lg = 0;
+    this->sigma_vol_lg = 0;
+    this->rpl_dose_vol = 0;
+    this->aperture_vol = 0;
 }
 
 Rt_beam::~Rt_beam ()
@@ -260,6 +324,19 @@ Rt_beam::set_isocenter_position (const double* position)
 }
 
 void
+Rt_beam::add_peak ()
+{
+    d_ptr->sobp->add_peak ();
+#if defined (commentout_TODO)
+    if (d_ptr->have_manual_peaks == false) {
+        /* Reset SOBP */
+    }
+    d_ptr->have_manual_peaks = true;
+    d_ptr->
+#endif
+}
+
+void
 Rt_beam::add_peak (
     double E0,                      /* initial ion energy (MeV) */
     double spread,                  /* beam energy sigma (MeV) */
@@ -267,7 +344,7 @@ Rt_beam::add_peak (
     double dmax,                    /* maximum w.e.d. (mm) */
     double weight)
 {
-    d_ptr->sobp->add (E0, spread, dres, dmax, weight);
+    d_ptr->sobp->add_peak (E0, spread, dres, dmax, weight);
 }
 
 int
@@ -319,13 +396,13 @@ Rt_beam::get_sobp()
 }
 
 float
-Rt_beam::get_beamWeight (void) const
+Rt_beam::get_beam_weight (void) const
 {
     return d_ptr->beamWeight;
 }
 
 void
-Rt_beam::set_beamWeight (float beamWeight)
+Rt_beam::set_beam_weight (float beamWeight)
 {
     d_ptr->beamWeight = beamWeight;
 }
@@ -333,25 +410,39 @@ Rt_beam::set_beamWeight (float beamWeight)
 float 
 Rt_beam::get_proximal_margin()
 {
-	return d_ptr->proximal_margin;
+    return d_ptr->proximal_margin;
 }
 	
 float 
 Rt_beam::get_distal_margin()
 {
-	return d_ptr->distal_margin;
+    return d_ptr->distal_margin;
 }
 
 float 
 Rt_beam::get_prescription_min()
 {
-	return d_ptr->prescription_d_min;
+    return d_ptr->prescription_d_min;
+}
+
+void
+Rt_beam::set_prescription_min (float prescription_min)
+{
+    d_ptr->prescription_d_min = prescription_min;
+    d_ptr->have_prescription = true;
 }
 
 float 
 Rt_beam::get_prescription_max()
 {
-	return d_ptr->prescription_d_max;
+    return d_ptr->prescription_d_max;
+}
+
+void
+Rt_beam::set_prescription_max (float prescription_max)
+{
+    d_ptr->prescription_d_max = prescription_max;
+    d_ptr->have_prescription = true;
 }
 
 void
@@ -385,13 +476,13 @@ Rt_beam::set_sobp_prescription_min_max (float d_min, float d_max)
 void
 Rt_beam::set_source_size(float source_size)
 {
-	d_ptr->source_size = source_size;
+    d_ptr->source_size = source_size;
 }
 
 float
 Rt_beam::get_source_size()
 {
-	return d_ptr->source_size;
+    return d_ptr->source_size;
 }
 
 void
@@ -443,6 +534,42 @@ Rt_beam::apply_beam_modifiers ()
     this->rpl_vol->apply_beam_modifiers ();
 }
 
+Plm_image::Pointer&
+Rt_beam::get_target ()
+{
+    return d_ptr->target;
+}
+
+const Plm_image::Pointer&
+Rt_beam::get_target () const 
+{
+    return d_ptr->target;
+}
+
+void 
+Rt_beam::set_target(Plm_image::Pointer& target)
+{
+    d_ptr->target = target;
+}
+
+Plm_image::Pointer&
+Rt_beam::get_dose ()
+{
+    return d_ptr->dose_vol;
+}
+
+const Plm_image::Pointer&
+Rt_beam::get_dose () const 
+{
+    return d_ptr->dose_vol;
+}
+
+void 
+Rt_beam::set_dose(Plm_image::Pointer& dose)
+{
+    d_ptr->dose_vol = dose;
+}
+
 Aperture::Pointer&
 Rt_beam::get_aperture () 
 {
@@ -455,40 +582,36 @@ Rt_beam::get_aperture () const
     return d_ptr->ap;
 }
 
-Plm_image::Pointer&
-Rt_beam::get_target ()
+void
+Rt_beam::set_aperture_vup (const float vup[])
 {
-	return d_ptr->target;
+    this->get_aperture()->vup[0] = vup[0];
+    this->get_aperture()->vup[1] = vup[1];
+    this->get_aperture()->vup[2] = vup[2];
 }
 
-const Plm_image::Pointer&
-	Rt_beam::get_target () const 
+void
+Rt_beam::set_aperture_distance (float ap_distance)
 {
-	return d_ptr->target;
+    this->get_aperture()->set_distance(ap_distance);
 }
 
-void 
-Rt_beam::set_target(Plm_image::Pointer& target)
+void
+Rt_beam::set_aperture_origin (const float ap_origin[])
 {
-	d_ptr->target = target;
+    this->get_aperture()->set_origin (ap_origin);
 }
 
-Plm_image::Pointer&
-Rt_beam::get_dose ()
+void
+Rt_beam::set_aperture_resolution (const int ap_resolution[])
 {
-	return d_ptr->dose_vol;
+    this->get_aperture()->set_dim (ap_resolution);
 }
 
-const Plm_image::Pointer&
-	Rt_beam::get_dose () const 
+void
+Rt_beam::set_aperture_spacing (const float ap_spacing[])
 {
-	return d_ptr->dose_vol;
-}
-
-void 
-Rt_beam::set_dose(Plm_image::Pointer& dose)
-{
-	d_ptr->dose_vol = dose;
+    this->get_aperture()->set_spacing (ap_spacing);
 }
 
 void
@@ -500,7 +623,7 @@ Rt_beam::set_smearing (float smearing)
 float 
 Rt_beam::get_smearing()
 {
-	return d_ptr->smearing;
+    return d_ptr->smearing;
 }
 
 void
@@ -526,166 +649,166 @@ Rt_beam::set_beam_depth (float z_min, float z_max, float z_step)
 void 
 Rt_beam::set_particle_type(Particle_type particle_type)
 {
-	d_ptr->part = particle_type;
+    d_ptr->part = particle_type;
 }
 
 Particle_type 
 Rt_beam::get_particle_type()
 {
-	return d_ptr->part;
+    return d_ptr->part;
 }
 
 void 
-Rt_beam::set_aperture_in(std::string str)
+Rt_beam::set_aperture_in (const std::string& str)
 {
-	d_ptr->aperture_in = str;
+    d_ptr->aperture_in = str;
 }
 
 std::string 
 Rt_beam::get_aperture_in()
 {
-	return d_ptr->aperture_in;
+    return d_ptr->aperture_in;
 }
 
 void 
-Rt_beam::set_range_compensator_in(std::string str)
+Rt_beam::set_range_compensator_in (const std::string& str)
 {
-	d_ptr->range_compensator_in = str;
+    d_ptr->range_compensator_in = str;
 }
 
 std::string 
 Rt_beam::get_range_compensator_in()
 {
-	return d_ptr->range_compensator_in;
+    return d_ptr->range_compensator_in;
 }
 
 void 
 Rt_beam::set_aperture_out(std::string str)
 {
-	d_ptr->aperture_out = str;
+    d_ptr->aperture_out = str;
 }
 
 std::string 
 Rt_beam::get_aperture_out()
 {
-	return d_ptr->aperture_out;
+    return d_ptr->aperture_out;
 }
 
 void 
 Rt_beam::set_proj_dose_out(std::string str)
 {
-	d_ptr->proj_dose_out = str;
+    d_ptr->proj_dose_out = str;
 }
 
 std::string 
 Rt_beam::get_proj_dose_out()
 {
-	return d_ptr->proj_dose_out;
+    return d_ptr->proj_dose_out;
 }
 
 void 
 Rt_beam::set_proj_img_out(std::string str)
 {
-	d_ptr->proj_img_out = str;
+    d_ptr->proj_img_out = str;
 }
 
 std::string 
 Rt_beam::get_proj_img_out()
 {
-	return d_ptr->proj_img_out;
+    return d_ptr->proj_img_out;
 }
 
 void 
 Rt_beam::set_range_compensator_out(std::string str)
 {
-	d_ptr->range_compensator_out = str;
+    d_ptr->range_compensator_out = str;
 }
 
 std::string 
 Rt_beam::get_range_compensator_out()
 {
-	return d_ptr->range_compensator_out;
+    return d_ptr->range_compensator_out;
 }
 
 void 
 Rt_beam::set_sigma_out(std::string str)
 {
-	d_ptr->sigma_out = str;
+    d_ptr->sigma_out = str;
 }
 
 std::string 
 Rt_beam::get_sigma_out()
 {
-	return d_ptr->sigma_out;
+    return d_ptr->sigma_out;
 }
 
 void 
 Rt_beam::set_wed_out(std::string str)
 {
-	d_ptr->wed_out = str;
+    d_ptr->wed_out = str;
 }
 
 std::string 
 Rt_beam::get_wed_out()
 {
-	return d_ptr->wed_out;
+    return d_ptr->wed_out;
 }
 
 void 
 Rt_beam::set_photon_energy(float energy)
 {
-	d_ptr->photon_energy = energy;
+    d_ptr->photon_energy = energy;
 }
 
 float 
 Rt_beam::get_photon_energy()
 {
-	return d_ptr->photon_energy;
+    return d_ptr->photon_energy;
 }
 
 void 
 Rt_beam::set_have_prescription(bool have_prescription)
 {
-	d_ptr->have_prescription = have_prescription;
+    d_ptr->have_prescription = have_prescription;
 }
 
 bool 
 Rt_beam::get_have_prescription()
 {
-	return d_ptr->have_prescription;
+    return d_ptr->have_prescription;
 }
 
 void 
 Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
 {
-	d_ptr->have_manual_peaks = have_manual_peaks;
+    d_ptr->have_manual_peaks = have_manual_peaks;
 }
 	
 bool 
 Rt_beam::get_have_manual_peaks()
 {
-	return d_ptr->have_manual_peaks;
+    return d_ptr->have_manual_peaks;
 }
 
 void 
 Rt_beam::copy_sobp(Rt_sobp::Pointer sobp)
 {
-	d_ptr->sobp->set_dose_lut(sobp->get_d_lut(), sobp->get_e_lut(), sobp->get_num_samples()); /* copy also num_samples */
-	d_ptr->sobp->set_dres(sobp->get_dres());
-	d_ptr->sobp->set_eres(sobp->get_eres());
-	d_ptr->sobp->set_num_peaks(sobp->get_num_peaks());
-	d_ptr->sobp->set_E_min(sobp->get_E_min());
-	d_ptr->sobp->set_E_max(sobp->get_E_max());
-	d_ptr->sobp->set_dmin(sobp->get_dmin());
-	d_ptr->sobp->set_dmax(sobp->get_dmax());
-	d_ptr->sobp->set_dend(sobp->get_dend());
-	d_ptr->sobp->set_particle_type(sobp->get_particle_type());
-	d_ptr->sobp->set_p(sobp->get_p());
-	d_ptr->sobp->set_alpha(sobp->get_alpha());
-	d_ptr->sobp->set_prescription_min(sobp->get_prescription_min());
-	d_ptr->sobp->set_prescription_max(sobp->get_prescription_max());
-	d_ptr->sobp->add_weight(sobp->get_weight()[sobp->get_num_peaks()-1]);
-	d_ptr->sobp->add_depth_dose(sobp->get_depth_dose()[sobp->get_num_peaks()-1]);	
+    d_ptr->sobp->set_dose_lut(sobp->get_d_lut(), sobp->get_e_lut(), sobp->get_num_samples()); /* copy also num_samples */
+    d_ptr->sobp->set_dres(sobp->get_dres());
+    d_ptr->sobp->set_eres(sobp->get_eres());
+    d_ptr->sobp->set_num_peaks(sobp->get_num_peaks());
+    d_ptr->sobp->set_E_min(sobp->get_E_min());
+    d_ptr->sobp->set_E_max(sobp->get_E_max());
+    d_ptr->sobp->set_dmin(sobp->get_dmin());
+    d_ptr->sobp->set_dmax(sobp->get_dmax());
+    d_ptr->sobp->set_dend(sobp->get_dend());
+    d_ptr->sobp->set_particle_type(sobp->get_particle_type());
+    d_ptr->sobp->set_p(sobp->get_p());
+    d_ptr->sobp->set_alpha(sobp->get_alpha());
+    d_ptr->sobp->set_prescription_min(sobp->get_prescription_min());
+    d_ptr->sobp->set_prescription_max(sobp->get_prescription_max());
+    d_ptr->sobp->add_weight(sobp->get_weight()[sobp->get_num_peaks()-1]);
+    d_ptr->sobp->add_depth_dose(sobp->get_depth_dose()[sobp->get_num_peaks()-1]);	
 }
 
 bool

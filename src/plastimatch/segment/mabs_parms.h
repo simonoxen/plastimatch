@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include "plm_path.h"
+#include "plm_return_code.h"
 #include "pstring.h"
 
 class PLMSEGMENT_API Mabs_parms {
@@ -19,7 +20,7 @@ public:
 public:
     bool parse_args (int argc, char** argv);
     void parse_config (const char* config_fn);
-    int set_key_value (
+    Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val);

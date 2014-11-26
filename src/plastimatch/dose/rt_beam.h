@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _Rt_beam_h_
-#define _Rt_beam_h_
+#ifndef _rt_beam_h_
+#define _rt_beam_h_
 
 #include "plmdose_config.h"
 #include <string>
@@ -21,6 +21,7 @@ class Rt_sobp;
 class PLMDOSE_API Rt_beam {
 public:
     Rt_beam ();
+    Rt_beam (const Rt_beam* rt_beam);
     ~Rt_beam ();
 public:
     Rt_beam_private *d_ptr;
@@ -52,6 +53,7 @@ public:
     void set_isocenter_position (const double position[3]);
 
     /*! \brief Add an SOBP pristine peak to this beam */
+    void add_peak ();              /* an empty peak */
     void add_peak (
         double E0,                 /* initial ion energy (MeV) */
         double spread,             /* beam energy sigma (MeV) */
@@ -76,20 +78,21 @@ public:
     /*! \brief Get maximum depth (in mm) in SOBP curve */
     double get_sobp_maximum_depth ();
 
-	/*! \brief Get Sobp */
-	Rt_sobp::Pointer get_sobp();
+    /*! \brief Get Sobp */
+    Rt_sobp::Pointer get_sobp();
 
-	/*! \brief Get "beamWeight" parameter of dose calculation algorithm */
-    float get_beamWeight () const;
-    /*! \brief Set "beamWeight" parameter of dose calculation algorithm */
-    void set_beamWeight (float beamWeight);
+    /*! \brief Get "beam_weight" parameter of dose calculation algorithm */
+    float get_beam_weight () const;
+    /*! \brief Set "beam_weight" parameter of dose calculation algorithm */
+    void set_beam_weight (float beam_weight);
 
-	/*! \Get proximal, distal margins and prescription */
-	float get_proximal_margin();
-	float get_distal_margin();
-	float get_prescription_min();
-	float get_prescription_max();
-
+    /*! \Get proximal, distal margins and prescription */
+    float get_proximal_margin();
+    float get_distal_margin();
+    float get_prescription_min();
+    void set_prescription_min (float prescription_min);
+    float get_prescription_max();
+    void set_prescription_max (float prescription_max);
 
     /*! \brief Set/Get proximal margin; this is subtracted from the 
       minimum depth */
@@ -101,11 +104,11 @@ public:
       as minimum and maximum depth (in mm) */
     void set_sobp_prescription_min_max (float d_min, float d_max);
 
-	/* Set source size in mm */
-	void set_source_size(float source_size);
+    /* Set source size in mm */
+    void set_source_size(float source_size);
 
-	/* Get source size in mm */
-	float get_source_size();
+    /* Get source size in mm */
+    float get_source_size();
 
     /*! \brief Request debugging information to be written to directory */
     void set_debug (const std::string& dir);
@@ -124,82 +127,87 @@ public:
     float lookup_sobp_dose (float depth);
     ///@}
 
-	/* This computes the aperture and range compensator */
-	void compute_beam_modifiers ();
+    /* This computes the aperture and range compensator */
+    void compute_beam_modifiers ();
 
-	/* This modifies the rpl_volume to account for aperture and range compensator */
+    /* This modifies the rpl_volume to account for aperture and range compensator */
     void apply_beam_modifiers ();
 
-	/* Get aperture */
-	Aperture::Pointer& get_aperture ();
-    const Aperture::Pointer& get_aperture () const;
-
-	/* Set/ Get target */
-	Plm_image::Pointer& get_target ();
+    /* Set/ Get target */
+    Plm_image::Pointer& get_target ();
     const Plm_image::Pointer& get_target () const;
-	void set_target(Plm_image::Pointer& target);
+    void set_target(Plm_image::Pointer& target);
 
-	/* Set/ Get dose_volume*/
-	Plm_image::Pointer& get_dose ();
+    /* Set/ Get dose_volume*/
+    Plm_image::Pointer& get_dose ();
     const Plm_image::Pointer& get_dose () const;
-	void set_dose(Plm_image::Pointer& dose);
+    void set_dose(Plm_image::Pointer& dose);
 
-	/* Set smearing */
-	void set_smearing (float smearing);
-	float get_smearing();
+    /* Get aperture */
+    Aperture::Pointer& get_aperture ();
+    const Aperture::Pointer& get_aperture () const;
+    void set_aperture_vup (const float[]);
+    void set_aperture_distance (float);
+    void set_aperture_origin (const float[]);
+    void set_aperture_resolution (const int[]);
+    void set_aperture_spacing (const float[]);
 
-	/* Set/Get step_length */
+    /* Set smearing */
+    void set_smearing (float smearing);
+    float get_smearing();
+
+    /* Set/Get step_length */
     void set_step_length (double ray_step);
     double get_step_length();
 
-	void set_beam_depth (float z_min, float z_max, float z_step);
+    void set_beam_depth (float z_min, float z_max, float z_step);
 
-	/* set the type of particle (proton, helium ions, carbon ions...)*/
+    /* set the type of particle (proton, helium ions, carbon ions...)*/
     void set_particle_type(Particle_type particle_type);
-	Particle_type get_particle_type();
+    Particle_type get_particle_type();
 
-	/* Set/Get intput file names */
-	void set_aperture_in(std::string str);
-	std::string get_aperture_in();
+    /* Set/Get intput file names */
+    void set_aperture_in (const std::string& str);
+    std::string get_aperture_in();
 
-	void set_range_compensator_in(std::string str);
-	std::string get_range_compensator_in();
+    void set_range_compensator_in (const std::string& str);
+    std::string get_range_compensator_in();
 
-	/* Set/Get output file names */
-	void set_aperture_out(std::string str);
-	std::string get_aperture_out();
+    /* Set/Get output file names */
+    void set_aperture_out(std::string str);
+    std::string get_aperture_out();
 
-	void set_proj_dose_out(std::string str);
-	std::string get_proj_dose_out();
+    void set_proj_dose_out(std::string str);
+    std::string get_proj_dose_out();
 
-	void set_proj_img_out(std::string str);
-	std::string get_proj_img_out();
+    void set_proj_img_out(std::string str);
+    std::string get_proj_img_out();
 
-	void set_range_compensator_out(std::string str);
-	std::string get_range_compensator_out();
+    void set_range_compensator_out(std::string str);
+    std::string get_range_compensator_out();
 
-	void set_sigma_out(std::string str);
-	std::string get_sigma_out();
+    void set_sigma_out(std::string str);
+    std::string get_sigma_out();
 
-	void set_wed_out(std::string str);
-	std::string get_wed_out();
+    void set_wed_out(std::string str);
+    std::string get_wed_out();
 
-	void set_photon_energy(float energy);
-	float get_photon_energy();
+    void set_photon_energy(float energy);
+    float get_photon_energy();
 
-	void set_have_prescription(bool have_prescription);
-	bool get_have_prescription();
+    void set_have_prescription(bool have_prescription);
+    bool get_have_prescription();
 
-	void set_have_manual_peaks(bool have_manual_peaks);
-	bool get_have_manual_peaks();
+    void set_have_manual_peaks(bool have_manual_peaks);
+    bool get_have_manual_peaks();
 
-	void copy_sobp(Rt_sobp::Pointer sobp);
+    void copy_sobp(Rt_sobp::Pointer sobp);
 
 public: 
 
-	/* Volumes useful for dose calculation */
-	/* raw volume */
-	Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
+    /* Volumes useful for dose calculation */
+    /* raw volume */
+    Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
     Rpl_volume* ct_vol_density; // contains the ct_density along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
     	
@@ -207,10 +215,10 @@ public:
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* ct_vol_density_lg;
     Rpl_volume* sigma_vol_lg;
-	Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
+    Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
 
-	/* aperture 3D volume to avoid artefacts*/
-	Rpl_volume* aperture_vol;
+    /* aperture 3D volume to avoid artefacts*/
+    Rpl_volume* aperture_vol;
 
 private:
     bool load_xio (const char* fn);

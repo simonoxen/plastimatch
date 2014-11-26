@@ -27,42 +27,42 @@ public:
         this->mp = mp;
     }
 public:
-    virtual int process_section (
+    virtual Plm_return_code process_section (
         const std::string& section)
     {
         if (section == "PREALIGN" || section == "PREALIGNMENT") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "ATLAS-SELECTION") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "TRAINING") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "REGISTRATION") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "STRUCTURES") {
             this->enable_key_regularization (false);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "LABELING") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
         if (section == "OPTIMIZATION_RESULT") {
             this->enable_key_regularization (true);
-            return 0;
+            return PLM_SUCCESS;
         }
 
         /* else, unknown section */
-        return -1;
+        return PLM_ERROR;
     }
-    virtual int process_key_value (
+    virtual Plm_return_code process_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val)
@@ -145,7 +145,7 @@ print_usage ()
     exit (1);
 }
 
-int
+Plm_return_code
 Mabs_parms::set_key_value (
     const std::string& section, 
     const std::string& key, 
@@ -394,12 +394,12 @@ Mabs_parms::set_key_value (
         }
     }
 
-    return 0;
+    return PLM_SUCCESS;
 
 error_exit:
     print_and_exit ("Unknown (sec,key,val) combination: (%s,%s,%s)\n", 
         section.c_str(), key.c_str(), val.c_str());
-    return -1;
+    return PLM_ERROR;
 }
 
 void

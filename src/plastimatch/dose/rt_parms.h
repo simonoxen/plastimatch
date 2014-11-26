@@ -1,13 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _Rt_parms_h_
-#define _Rt_parms_h_
+#ifndef _rt_parms_h_
+#define _rt_parms_h_
 
 #include "plmdose_config.h"
 #include <string>
-#include "plm_path.h"
+#include "plm_return_code.h"
 #include "rt_plan.h"
+#include "smart_pointer.h"
 #include "threading.h"
 
 class Plm_image;
@@ -17,26 +18,27 @@ class Rt_plan;
 class PLMDOSE_API Rt_parms
 {
 public:
+    SMART_POINTER_SUPPORT (Rt_parms);
     Rt_parms_private *d_ptr;
 public:
     Rt_parms ();
+    Rt_parms (Rt_plan* rt_plan);
     ~Rt_parms ();
 
-    bool parse_args (int argc, char** argv);
-
 public:
-    Rt_plan::Pointer& get_plan ();
+    void set_rt_plan (Rt_plan *rt_plan);
+    Plm_return_code parse_args (int argc, char** argv);
+    Plm_return_code set_key_value (
+        const std::string& section,
+        const std::string& key, 
+        const std::string& val);
 
-	/* Save parameters in the beam_storage */
-	void save_beam_parameters(int i, int section);
-	void print_verif(Rt_plan::Pointer plan);
+    void append_beam ();
+    void append_peak ();
 
 protected:
     void handle_end_of_section (int section);
     void parse_config (const char* config_fn);
-    int set_key_val (const char* key, const char* val, int section);
-
-    /* GCS FIX: Copy-paste with wed_parms.h */
 };
 
 #endif

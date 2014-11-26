@@ -16,6 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 set (PLMDOSE_LIBRARY_SRC
   bragg_curve.cxx
   dose_volume_functions.cxx
+  particle_type.cxx particle_type.h 
   rt_beam.cxx
   rt_depth_dose.cxx
   rt_dose.cxx
@@ -23,7 +24,9 @@ set (PLMDOSE_LIBRARY_SRC
   rt_parms.cxx
   rt_plan.cxx  
   rt_sigma.cxx
-  rt_sobp.cxx  
+  rt_sobp.cxx rt_sobp.h 
+  rt_sobp_p.cxx rt_sobp_p.h
+  rt_sobp_optimize.cxx 
   wed_parms.cxx
   )
 

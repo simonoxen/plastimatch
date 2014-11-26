@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include "plm_return_code.h"
 #include "smart_pointer.h"
 
 class Autolabel_feature;
@@ -23,7 +24,7 @@ public:
 
 public:
     void parse_command_file ();
-    int set_key_value (
+    Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val);
