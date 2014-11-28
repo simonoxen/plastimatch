@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #ifndef _direction_matrices_h_
-#define _direction_matrice_h_
+#define _direction_matrices_h_
 
 #include "plmbase_config.h"
 
