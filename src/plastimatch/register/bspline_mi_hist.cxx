@@ -392,9 +392,7 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
     double* j_hist = this->j_hist;
     plm_long i, j, v;
     FILE *fp;
-    //char fn[_MAX_PATH];
     std::string fn;
-    //char buf[_MAX_PATH];
     std::string buf;
 
     buf = string_format ("hist_fix_%02d.csv", it);

@@ -25,22 +25,25 @@ int
 is_directory (const char *dir)
 {
 #if (defined(_WIN32) || defined(WIN32))
-    char pwd[_MAX_PATH];
-    if (!_getcwd (pwd, _MAX_PATH)) {
+    char *pwd;
+    if ((pwd = _getcwd (NULL, 0)) == NULL) {
         return 0;
     }
     if (_chdir (dir) == -1) {
+        free (pwd);
         return 0;
     }
     _chdir (pwd);
+    free (pwd);
+    return 1;
 #else /* UNIX */
     DIR *dp;
     if ((dp = opendir (dir)) == NULL) {
         return 0;
     }
     closedir (dp);
-#endif
     return 1;
+#endif
 }
 
 int

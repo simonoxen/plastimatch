@@ -21,7 +21,7 @@ PLMBASE_API void gdcm_rtss_load (
 PLMBASE_API void gdcm_rtss_save (
     Rtss *cxt,                 /* Input: this is what gets saved */
     const Rt_study_metadata::Pointer& rsm, /* In: need to look at this too */
-    char *rtss_fn              /* Input: name of file to write to */
+    const char *rtss_fn        /* Input: name of file to write to */
 );
 #endif /* GDCM_VERSION_1 */
 

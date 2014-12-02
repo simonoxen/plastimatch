@@ -336,7 +336,7 @@ void
 gdcm_rtss_save (
     Rtss *cxt,   /* Input: this is what gets saved */
     const Rt_study_metadata::Pointer& rsm,    /* In: save this too */
-    char *rtss_fn              /* Input: name of file to write to */
+    const char *rtss_fn   /* Input: name of file to write to */
 )
 {
     int k;

@@ -430,7 +430,7 @@ Segmentation::save_gdcm_rtss (
     const Rt_study_metadata::Pointer& rsm
 )
 {
-    char fn[_MAX_PATH];
+    std::string fn;
 
     /* Perform destructive keyholization of the cxt.  This is necessary 
        because DICOM-RT requires that structures with holes be defined 
@@ -445,10 +445,10 @@ Segmentation::save_gdcm_rtss (
         this->apply_dicom_dir (rsm);
     }
 
-    snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "rtss.dcm");
+    fn = string_format ("%s/%s", output_dir, "rtss.dcm");
 
 #if GDCM_VERSION_1
-    gdcm_rtss_save (d_ptr->m_cxt.get(), rsm, fn);
+    gdcm_rtss_save (d_ptr->m_cxt.get(), rsm, fn.c_str());
 #else
     /* GDCM 2 not implemented -- you're out of luck. */
 #endif
