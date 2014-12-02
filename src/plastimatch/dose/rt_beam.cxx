@@ -46,7 +46,7 @@ public:
 
     float source_size;
 
-    Aperture::Pointer ap;
+    Aperture::Pointer aperture;
     Plm_image::Pointer target;
 
     std::string aperture_in;
@@ -100,7 +100,7 @@ public:
 
         this->source_size = 0.f;
 
-        ap = Aperture::New();
+        aperture = Aperture::New();
 
         this->aperture_in = "";
         this->range_compensator_in = "";
@@ -114,15 +114,6 @@ public:
 
         this->have_manual_peaks = false;
         this->have_prescription = false;
-
-#if defined (commentout)
-        this->E0 = 0.0;
-        this->spread = 0.0;
-        this->dres = 1.0;
-        this->dmax = 0.0;
-        this->num_samples = 0;
-        this->weight = 1.0;
-#endif
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
     {
@@ -144,7 +135,7 @@ public:
         this->beamWeight = rtbp->beamWeight;
 
         /* Copy the sobp object */
-        this->sobp = Rt_sobp::New(rtbp->sobp.get());
+        this->sobp = Rt_sobp::New (rtbp->sobp.get());
 
         this->debug_dir = rtbp->debug_dir;
 
@@ -162,8 +153,8 @@ public:
 
         this->source_size = rtbp->source_size;
 
-        // GCS FIX commentout_TODO
-        ap = Aperture::New();
+        /* Copy the aperture object */
+        aperture = Aperture::New (rtbp->aperture);
 
         this->aperture_in = rtbp->aperture_in;
         this->range_compensator_in = rtbp->range_compensator_in;
@@ -517,7 +508,7 @@ Rt_beam::compute_beam_modifiers ()
         this->get_target()->get_vol(), 0);
 
     /* Apply smearing */
-    d_ptr->ap->apply_smearing (d_ptr->smearing);
+    d_ptr->aperture->apply_smearing (d_ptr->smearing);
 }
 
 void
@@ -565,27 +556,25 @@ Rt_beam::set_dose(Plm_image::Pointer& dose)
 Aperture::Pointer&
 Rt_beam::get_aperture () 
 {
-    return d_ptr->ap;
+    return d_ptr->aperture;
 }
 
 const Aperture::Pointer&
 Rt_beam::get_aperture () const
 {
-    return d_ptr->ap;
+    return d_ptr->aperture;
 }
 
 void
 Rt_beam::set_aperture_vup (const float vup[])
 {
-    this->get_aperture()->vup[0] = vup[0];
-    this->get_aperture()->vup[1] = vup[1];
-    this->get_aperture()->vup[2] = vup[2];
+    d_ptr->aperture->set_vup (vup);
 }
 
 void
 Rt_beam::set_aperture_distance (float ap_distance)
 {
-    this->get_aperture()->set_distance(ap_distance);
+    d_ptr->aperture->set_distance (ap_distance);
 }
 
 void

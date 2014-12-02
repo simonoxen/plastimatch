@@ -18,6 +18,7 @@ public:
 public:
     Aperture ();
     ~Aperture ();
+    Aperture (const Aperture::Pointer&);
 public:
     /*! \name Inputs */
     ///@{
@@ -60,6 +61,10 @@ public:
     void set_spacing (const float* spacing);
     void set_spacing (const double* spacing);
 
+    /*! \brief Get the aperture vup vector, which is the vector 
+      that orients the top of the aperture in room coordinates */
+    void set_vup (const float* vup);
+
     /*! \brief Allocate aperture and range compensator images */
     void allocate_aperture_images ();
 
@@ -72,8 +77,8 @@ public:
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
 
-	/*! \brief Load the aperture volume from a file */
-	void set_aperture_volume (Volume::Pointer ap);
+    /*! \brief Load the aperture volume from a file */
+    void set_aperture_volume (Volume::Pointer ap);
 
     /*! \brief Test if the aperture has a float image describing 
       range compensator thicknesses */
@@ -86,8 +91,8 @@ public:
     /*! \brief Load the range_compensator image from a file */
     void set_range_compensator_image (const char *rc_filename);
 
-	/*! \brief Load the range_compensator volume from a file */
-	void set_range_compensator_volume (Volume::Pointer ap);
+    /*! \brief Load the range_compensator volume from a file */
+    void set_range_compensator_volume (Volume::Pointer ap);
 
     /*! \brief Expand aperture and smear compensator.  The smearing 
       parameters is defined as mm in aperture plane. */

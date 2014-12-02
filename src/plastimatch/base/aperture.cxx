@@ -21,6 +21,20 @@ public:
         spacing[0] = 0;
         spacing[1] = 0;
     }
+    Aperture_private (const Aperture_private* app)
+    {
+        distance = app->distance;
+        dim[0] = app->dim[0];
+        dim[1] = app->dim[1];
+        center[0] = app->center[0];
+        center[1] = app->center[1];
+        spacing[0] = app->spacing[0];
+        spacing[1] = app->spacing[1];
+
+        /* Is this a good idea?? */
+        aperture_image = app->aperture_image;
+        range_compensator_image = app->range_compensator_image;
+    }
 public:
     Plm_image::Pointer aperture_image;
     Plm_image::Pointer range_compensator_image;
@@ -53,6 +67,20 @@ Aperture::Aperture ()
     memset (this->ul_room, 0, 3*sizeof (double));
     memset (this->incr_r, 0, 3*sizeof (double));
     memset (this->incr_c, 0, 3*sizeof (double));
+}
+
+Aperture::Aperture (const Aperture::Pointer& ap)
+{
+    this->d_ptr = new Aperture_private (ap->d_ptr);
+
+    vec3_copy (this->vup, ap->vup);
+    vec3_copy (this->pdn, ap->pdn);
+    vec3_copy (this->prt, ap->prt);
+
+    vec3_copy (this->ic_room, ap->ic_room);
+    vec3_copy (this->ul_room, ap->ul_room);
+    vec3_copy (this->incr_r, ap->incr_r);
+    vec3_copy (this->incr_c, ap->incr_c);
 }
 
 Aperture::~Aperture ()
@@ -167,6 +195,14 @@ Aperture::set_spacing (const double* spacing)
 {
     d_ptr->spacing[0] = spacing[0];
     d_ptr->spacing[1] = spacing[1];
+}
+
+void
+Aperture::set_vup (const float* vup)
+{
+    this->vup[0] = vup[0];
+    this->vup[1] = vup[1];
+    this->vup[2] = vup[2];
 }
 
 void
