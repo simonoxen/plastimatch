@@ -61,7 +61,7 @@ public:
         this->rp = rp;
     }
 public:
-    virtual Plm_return_code process_section (
+    virtual Plm_return_code begin_section (
         const std::string& section)
     {
         if (section == "GLOBAL") {
@@ -82,7 +82,13 @@ public:
         /* else, unknown section */
         return PLM_ERROR;
     }
-    virtual Plm_return_code process_key_value (
+    virtual Plm_return_code end_section (
+        const std::string& section)
+    {
+        /* Do nothing */
+        return PLM_SUCCESS;
+    }
+    virtual Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& val)

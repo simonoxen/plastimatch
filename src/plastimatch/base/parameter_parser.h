@@ -14,9 +14,11 @@ public:
     bool key_regularization;
 public:
     /* Callbacks */
-    virtual Plm_return_code process_section (
+    virtual Plm_return_code begin_section (
         const std::string& section) = 0;
-    virtual Plm_return_code process_key_value (
+    virtual Plm_return_code end_section (
+        const std::string& section) = 0;
+    virtual Plm_return_code set_key_value (
         const std::string& section, 
         const std::string& key, 
         const std::string& val) = 0;

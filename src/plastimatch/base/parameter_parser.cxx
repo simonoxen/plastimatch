@@ -29,6 +29,7 @@ Parameter_parser::parse_config_string (
     std::string buf;
     std::string buf_ori;    /* An extra copy for diagnostics */
     std::string section = "GLOBAL";
+    bool found_first_section = false;
 
     while (getline (ss, buf)) {
         buf_ori = buf;
@@ -47,10 +48,17 @@ Parameter_parser::parse_config_string (
 
             /* Strip off brackets and make upper case */
             buf = buf.substr (1, buf.length()-2);
-            section = make_uppercase (buf);
+            std::string new_section = make_uppercase (buf);
+
+            /* Inform subclass that previous section is ending */
+            if (found_first_section) {
+                this->end_section (section);
+            }
+            found_first_section = true;
 
             /* Inform subclass that a new section is beginning */
-            Plm_return_code rc = this->process_section (section);
+            section = new_section;
+            Plm_return_code rc = this->begin_section (section);
             if (rc != PLM_SUCCESS) {
                 lprintf ("Parse error: %s\n", buf_ori.c_str());
                 return rc;
@@ -70,19 +78,34 @@ Parameter_parser::parse_config_string (
             val = buf.substr (key_loc+1);
         }
         key = trim (key);
+        val = trim (val);
+
+        /* Key becomes lowercase, with "_" & "-" unified */
         if (this->key_regularization) {
             key = regularize_string (key);
         }
-        val = trim (val);
 
-        if (key != "") {
-            Plm_return_code rc = this->process_key_value (section, key, val);
-            if (rc != PLM_SUCCESS) {
-                lprintf ("Parse error: %s\n", buf_ori.c_str());
-                return rc;
-            }
+        /* Handle case of key/value pairs before section */
+        if (!found_first_section) {
+            this->begin_section (section);
+        }
+        found_first_section = true;
+
+        /* No key?  What to do? */
+        if (key == "") {
+            continue;
+        }
+
+        Plm_return_code rc = this->set_key_value (section, key, val);
+        if (rc != PLM_SUCCESS) {
+            lprintf ("Parse error: %s\n", buf_ori.c_str());
+            return rc;
         }
     }
+
+    /* Don't forget to end the last section */
+    this->end_section (section);
+
     return PLM_SUCCESS;
 }
 
