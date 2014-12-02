@@ -324,19 +324,6 @@ Rt_beam::set_isocenter_position (const double* position)
 }
 
 void
-Rt_beam::add_peak ()
-{
-    d_ptr->sobp->add_peak ();
-#if defined (commentout_TODO)
-    if (d_ptr->have_manual_peaks == false) {
-        /* Reset SOBP */
-    }
-    d_ptr->have_manual_peaks = true;
-    d_ptr->
-#endif
-}
-
-void
 Rt_beam::add_peak (
     double E0,                      /* initial ion energy (MeV) */
     double spread,                  /* beam energy sigma (MeV) */
@@ -344,6 +331,11 @@ Rt_beam::add_peak (
     double dmax,                    /* maximum w.e.d. (mm) */
     double weight)
 {
+    if (d_ptr->have_manual_peaks == false) {
+        d_ptr->sobp->clear_peaks ();
+    }
+    d_ptr->have_manual_peaks = true;
+
     d_ptr->sobp->add_peak (E0, spread, dres, dmax, weight);
 }
 

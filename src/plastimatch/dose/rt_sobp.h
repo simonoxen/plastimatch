@@ -47,7 +47,6 @@ public:
     void clear_peaks ();
 
     /* Add a pristine peak to a sobp */
-    void add_peak ();
     void add_peak (Rt_depth_dose* depth_dose);
     void add_peak (double E0, double spread, 
         double dres, double dmax, double weight);

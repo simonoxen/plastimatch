@@ -40,12 +40,6 @@ Rt_sobp::clear_peaks ()
 }
 
 void
-Rt_sobp::add_peak ()
-{
-    /* To be implemented */
-}
-
-void
 Rt_sobp::add_peak (Rt_depth_dose* depth_dose)
 {
     d_ptr->depth_dose.push_back (depth_dose);

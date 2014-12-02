@@ -117,7 +117,6 @@ public:
             return PLM_SUCCESS;
         }
         if (section == "PEAK") {
-            rp->append_peak ();
             return PLM_SUCCESS;
         }
 
@@ -127,6 +126,10 @@ public:
     virtual Plm_return_code end_section (
         const std::string& section)
     {
+        if (section == "PEAK") {
+            rp->append_peak ();
+            return PLM_SUCCESS;
+        }
         return PLM_SUCCESS;
     }
     virtual Plm_return_code set_key_value (
@@ -157,7 +160,9 @@ Rt_parms::append_peak ()
     if (!rt_beam) {
         return;
     }
-    rt_beam->add_peak ();
+    rt_beam->add_peak (
+        d_ptr->E0, d_ptr->spread, d_ptr->depth_res, 
+        d_ptr->max_depth, d_ptr->weight);
 }
 
 #if defined (commentout)
