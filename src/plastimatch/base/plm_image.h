@@ -105,6 +105,7 @@ public:
 
     /* Saving */
     void save_short_dicom (const char* fname, Rt_study_metadata *rsm);	
+    void save_short_dicom (const std::string& fname, Rt_study_metadata *rsm);	
     void save_image (const char* fname);
     void save_image (const Pstring& fname);
     void save_image (const std::string& fname);

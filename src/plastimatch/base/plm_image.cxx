@@ -467,6 +467,14 @@ Plm_image::save_short_dicom (
     }
 }
 
+void
+Plm_image::save_short_dicom (
+    const std::string& fname, 
+    Rt_study_metadata *rsm
+)
+{
+    this->save_short_dicom (fname.c_str(), rsm);
+}
 
 void
 Plm_image::save_image (const char* fname)

@@ -30,21 +30,21 @@ public:
     int num_stages;
     int img_out_fmt;
     Plm_image_type img_out_type;
-    char img_out_fn[_MAX_PATH];
-    char xf_in_fn[_MAX_PATH];
+    std::string img_out_fn;
+    std::string xf_in_fn;
     bool xf_out_itk;
     std::list<std::string> xf_out_fn;
-    char vf_out_fn[_MAX_PATH];
-    char log_fn[_MAX_PATH];
+    std::string vf_out_fn;
+    std::string log_fn;
     float default_value;           /* Replacement when out-of-view */
     int init_type;
     double init[12];
 
     /* for 4D and atlas */
-    char moving_dir[_MAX_PATH];
-    char fixed_dir[_MAX_PATH];
-    char img_out_dir[_MAX_PATH];
-    char vf_out_dir[_MAX_PATH];
+    std::string moving_dir;
+    std::string fixed_dir;
+    std::string img_out_dir;
+    std::string vf_out_dir;
     char moving_jobs[255][_MAX_PATH];
     char fixed_jobs[255][_MAX_PATH];
     int job_idx;

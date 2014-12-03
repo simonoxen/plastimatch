@@ -136,9 +136,7 @@ Stage_parms::Stage_parms ()
     /* Output files */
     img_out_fmt = IMG_OUT_FMT_AUTO;
     img_out_type = PLM_IMG_TYPE_UNDEFINED;
-    *img_out_fn = 0;
     xf_out_itk = false;
-    *vf_out_fn = 0;
 }
 
 Stage_parms::Stage_parms (const Stage_parms& s) 
@@ -247,9 +245,7 @@ Stage_parms::Stage_parms (const Stage_parms& s)
 
     /* ...but not the output filenames */
     img_out_fmt = IMG_OUT_FMT_AUTO;
-    *img_out_fn = 0;
     xf_out_fn.clear ();
-    *vf_out_fn = 0;
 
     /* ...and don't to resume/finalize unless specifically requested */
     resume_stage = false;

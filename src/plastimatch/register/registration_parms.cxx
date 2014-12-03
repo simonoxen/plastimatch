@@ -103,18 +103,10 @@ Registration_parms::Registration_parms()
 
     img_out_fmt = IMG_OUT_FMT_AUTO;
     img_out_type = PLM_IMG_TYPE_UNDEFINED;
-    *img_out_fn = 0;
-    *xf_in_fn = 0;
     xf_out_itk = false;
-    *vf_out_fn = 0;
-    *log_fn = 0;
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
-    *moving_dir = 0;
-    *fixed_dir = 0;
-    *img_out_dir = 0;
-    *vf_out_dir = 0;
     for (int i=0; i<256; i++) {
         moving_jobs[i][0] = '\0';
         fixed_jobs[i][0] = '\0';
@@ -128,6 +120,7 @@ Registration_parms::~Registration_parms()
     delete d_ptr;
 }
 
+#if defined (GCS_FIXME)  // Delete this, replace with compose_filename
 // JAS 2012.02.13 -- TODO: Move somewhere more appropriate
 static void
 check_trailing_slash (char* s)
@@ -139,7 +132,10 @@ check_trailing_slash (char* s)
         strcat (s, "/");
     }
 }
+#endif
 
+
+#if defined (GCS_FIXME)  // Delete this, replace with Dir_list
 int
 populate_jobs (char jobs[255][_MAX_PATH], char* dir)
 {
@@ -172,6 +168,7 @@ populate_jobs (char jobs[255][_MAX_PATH], char* dir)
     return z;
 #endif
 }
+#endif
 
 Plm_return_code
 Registration_parms::set_key_value (
@@ -215,9 +212,10 @@ Registration_parms::set_key_value (
         if (!section_global) goto key_only_allowed_in_section_global;
         d_ptr->moving_fn = val;
     }
+#if defined (GCS_FIXME) // stubbed out until above is fixed
     else if (key == "fixed_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->fixed_dir, val.c_str(), _MAX_PATH);
+        this->fixed_dir = val;
         check_trailing_slash (this->fixed_dir);
         this->num_jobs = populate_jobs (this->fixed_jobs, this->fixed_dir);
     }
@@ -237,16 +235,17 @@ Registration_parms::set_key_value (
         strncpy (this->vf_out_dir, val.c_str(), _MAX_PATH);
         check_trailing_slash (this->vf_out_dir);
     }
+#endif
     else if (key == "xf_in"
         || key == "xform_in"
         || key == "vf_in")
     {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->xf_in_fn, val.c_str(), _MAX_PATH);
+        this->xf_in_fn = val;
     }
     else if (key == "log" || key == "logfile") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->log_fn, val.c_str(), _MAX_PATH);
+        this->log_fn = val;
     }
 
     /* The following keywords are allowed either globally or in stages */
@@ -288,9 +287,9 @@ Registration_parms::set_key_value (
     }
     else if (key == "img_out" || key == "image_out") {
         if (section_global) {
-            strncpy (this->img_out_fn, val.c_str(), _MAX_PATH);
+            this->img_out_fn = val;
         } else if (section_stage) {
-            strncpy (stage->img_out_fn, val.c_str(), _MAX_PATH);
+            stage->img_out_fn = val;
         } else {
             goto key_not_allowed_in_section_process;
         }
@@ -325,9 +324,9 @@ Registration_parms::set_key_value (
     }
     else if (key == "vf_out") {
         if (section_global) {
-            strncpy (this->vf_out_fn, val.c_str(), _MAX_PATH);
+            this->vf_out_fn = val;
         } else if (section_stage) {
-            strncpy (stage->vf_out_fn, val.c_str(), _MAX_PATH);
+            stage->vf_out_fn = val;
         } else {
             goto key_not_allowed_in_section_process;
         }
@@ -1043,6 +1042,7 @@ Registration_parms::parse_command_file (const char* options_fn)
     return this->set_command_string (buffer.str());
 }
 
+#if defined (GCS_FIX)  // Needs re-engineering
 /* JAS 2012.03.13
  *  This is a temp solution */
 /* GCS 2012-12-28: Nb. regp->job_idx must be set prior to calling 
@@ -1105,6 +1105,7 @@ Registration_parms::set_job_paths (void)
         }
     }
 }
+#endif
 
 const std::string& 
 Registration_parms::get_fixed_fn ()

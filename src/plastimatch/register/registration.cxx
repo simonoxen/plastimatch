@@ -239,8 +239,8 @@ save_output (
     int img_out_fmt,
     Plm_image_type img_out_type,
     float default_value, 
-    const char *img_out_fn,
-    const char *vf_out_fn,
+    const std::string& img_out_fn,
+    const std::string& vf_out_fn,
     const std::string& warped_landmarks_fn
 )
 {
@@ -611,7 +611,7 @@ Registration::do_registration ()
     Plm_timer timer1, timer2, timer3;
 
     /* Start logging */
-    logfile_open (regp->log_fn);
+    logfile_open (regp->log_fn.c_str());
 
     timer1.start();
     this->load_global_inputs ();
@@ -629,7 +629,7 @@ Registration::do_registration ()
     this->save_global_outputs ();
     timer3.stop();
     
-    logfile_open (regp->log_fn);
+    logfile_open (regp->log_fn.c_str());
     logfile_printf (
         "Load:   %g\n"
         "Run:    %g\n"

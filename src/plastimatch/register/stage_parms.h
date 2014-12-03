@@ -206,10 +206,10 @@ public:
     /* Output files */
     int img_out_fmt;
     Plm_image_type img_out_type;
-    char img_out_fn[_MAX_PATH];
+    std::string img_out_fn;
     bool xf_out_itk;
     std::list<std::string> xf_out_fn;
-    char vf_out_fn[_MAX_PATH];
+    std::string vf_out_fn;
     std::string debug_dir;
 
 public:
