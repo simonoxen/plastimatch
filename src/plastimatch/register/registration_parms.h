@@ -45,8 +45,6 @@ public:
     std::string fixed_dir;
     std::string img_out_dir;
     std::string vf_out_dir;
-    char moving_jobs[255][_MAX_PATH];
-    char fixed_jobs[255][_MAX_PATH];
     int job_idx;
     int num_jobs;
 

@@ -18,6 +18,12 @@ extension_is (const char* fname, const char* ext)
 	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);
 }
 
+int
+extension_is (const std::string& fname, const char* ext)
+{
+    return extension_is (fname.c_str(), ext);
+}
+
 void
 strip_extension (char* filename)
 {
@@ -78,6 +84,15 @@ file_util_parent (const char *filename)
 	free (tmp);
 	return strdup (".");
     }
+}
+
+std::string
+file_util_parent (const std::string& filename)
+{
+    char *tmp = file_util_parent (filename.c_str());
+    std::string parent (tmp);
+    free (tmp);
+    return parent;
 }
 
 /* Caller must free memory */

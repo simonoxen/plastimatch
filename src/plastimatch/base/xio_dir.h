@@ -29,11 +29,12 @@ public:
 public:
     static int is_xio_patient_dir (std::string dir);
     static int is_xio_studyset_dir (std::string dir);
-    static int is_xio_plan_dir (std::string dir);
+    static int is_xio_plan_dir (const std::string& dir);
 };
 
 PLMBASE_API int xio_dir_num_patients (Xio_dir* xd);
 
-PLMBASE_API Xio_studyset_dir* xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd);
+PLMBASE_API std::string
+xio_plan_dir_get_studyset_dir (const std::string& xtpd);
 
 #endif

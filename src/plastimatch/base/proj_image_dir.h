@@ -5,6 +5,7 @@
 #define _proj_image_dir_h_
 
 #include "plmbase_config.h"
+#include <string>
 
 class Proj_image;
 
@@ -19,7 +20,7 @@ public:
     int num_proj_images;
     char **proj_image_list;
 
-    char *xml_file;
+    std::string xml_file;
     char *img_pat;
     char *mat_pat;
 

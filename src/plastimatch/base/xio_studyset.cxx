@@ -11,7 +11,7 @@
 
 #include "xio_studyset.h"
 
-Xio_studyset::Xio_studyset (const char *input_dir)
+Xio_studyset::Xio_studyset (const std::string& input_dir)
 {
     this->studyset_dir = input_dir;
 

@@ -163,8 +163,8 @@ Rt_study::load_xio (const char *xio_dir)
 {
     Xio_dir xd (xio_dir);
     Xio_patient *xpd;
-    Xio_studyset_dir *xsd;
-    Xio_plan_dir *xtpd;
+    std::string xio_studyset_dir;
+    std::string xio_plan_dir;
 
     if (xd.num_patients() <= 0) {
         print_and_exit ("Error, xio num_patient_dir = %d\n", 
@@ -177,49 +177,45 @@ Rt_study::load_xio (const char *xio_dir)
             (const char*) xpd->m_path);
     }
 
-    if (xpd->num_plan_dir > 0) {
-
-        /* When plans exist, load the first plan */
-        xtpd = &xpd->plan_dir[0];
-        if (xpd->num_studyset_dir > 1) {
-            printf ("Warning: multiple plans found in xio patient directory.\n"
-                "Defaulting to first directory: %s\n", xtpd->path);
-        }
-
-        /* Load the summed XiO dose file */
-        d_ptr->m_dose = Plm_image::New ();
-        printf ("calling xio_dose_load\n");
-        d_ptr->m_xio_dose_filename = std::string(xtpd->path) + "/dose.1";
-        xio_dose_load (d_ptr->m_dose.get(), 
-            //d_ptr->m_meta,
-            d_ptr->m_drs->get_dose_metadata (),
-            d_ptr->m_xio_dose_filename.c_str());
-
-        /* Find studyset associated with plan */
-        xsd = xio_plan_dir_get_studyset_dir (xtpd);
-
-    } else {
-
+    if (xpd->plan_dirs.empty()) {
         /* No plans exist, load only studyset */
-
-        if (xpd->num_studyset_dir <= 0) {
+        if (xpd->studyset_dirs.empty()) {
             print_and_exit ("Error, xio patient has no studyset.");
         }
 
         printf ("Warning: no plans found, only loading studyset.");
 
-        xsd = &xpd->studyset_dir[0];
-        if (xpd->num_studyset_dir > 1) {
+        xio_studyset_dir = xpd->studyset_dirs.front();
+        if (xpd->studyset_dirs.size() > 1) {
             printf (
                 "Warning: multiple studyset found in xio patient directory.\n"
-                "Defaulting to first directory: %s\n", xsd->path);
+                "Defaulting to first directory: %s\n", 
+                xio_studyset_dir.c_str());
         }
+    } else {
+        /* Plans exist, so load the first plan */
+        const std::string& xio_plan_dir = xpd->plan_dirs.front();
+        if (xpd->plan_dirs.size() > 1) {
+            printf ("Warning: multiple plans found in xio patient directory.\n"
+                "Defaulting to first directory: %s\n", xio_plan_dir.c_str());
+        }
+
+        /* Load the summed XiO dose file */
+        d_ptr->m_dose = Plm_image::New ();
+        printf ("calling xio_dose_load\n");
+        d_ptr->m_xio_dose_filename = xio_plan_dir + "/dose.1";
+        xio_dose_load (d_ptr->m_dose.get(), 
+            d_ptr->m_drs->get_dose_metadata (),
+            d_ptr->m_xio_dose_filename.c_str());
+
+        /* Find studyset associated with plan */
+        xio_studyset_dir = xio_plan_dir_get_studyset_dir (xio_plan_dir);
     }
 
-    printf("path is :: %s\n", xsd->path);
+    printf("path is :: %s\n", xio_studyset_dir.c_str());
 
     /* Load the XiO studyset slice list */
-    Xio_studyset xst (xsd->path);
+    Xio_studyset xst (xio_studyset_dir);
 
     /* Load the XiO studyset CT images */
     d_ptr->m_img = Plm_image::New();

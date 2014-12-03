@@ -5,16 +5,10 @@
 #define _xio_patient_h
 
 #include "plmbase_config.h"
+#include <list>
+#include <string>
 #include "pstring.h"
 #include "plm_path.h"
-
-struct Xio_studyset_dir {
-    char path[_MAX_PATH];
-};
-
-struct Xio_plan_dir {
-    char path[_MAX_PATH];
-};
 
 /* This class represents a toplevel patient directory */
 class PLMBASE_API Xio_patient {
@@ -24,13 +18,11 @@ public:
 public:
     Pstring m_path;
     Pstring m_demographic_fn;
-    int num_studyset_dir;
-    int num_plan_dir;
-    Xio_studyset_dir *studyset_dir;
-    Xio_plan_dir *plan_dir;
+    std::list< std::string > studyset_dirs;
+    std::list< std::string > plan_dirs;
 public:
-    void add_studyset_dir (std::string studyset_path);
-    void add_plan_dir (std::string plan_path);
+    void add_studyset_dir (const std::string& studyset_path);
+    void add_plan_dir (const std::string& plan_path);
     void analyze ();
 };
 

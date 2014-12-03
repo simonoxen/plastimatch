@@ -22,45 +22,26 @@ Xio_patient::Xio_patient (
 {
     this->m_path = path;
     this->m_demographic_fn = "";
-    this->num_studyset_dir = 0;
-    this->num_plan_dir = 0;
-    this->studyset_dir = 0;
-    this->plan_dir = 0;
 }
 
 Xio_patient::~Xio_patient () 
 {
-    /* GCS FIX: Let it leak... */
 }
 
 void
 Xio_patient::add_studyset_dir (
-    std::string studyset_path
+    const std::string& studyset_path
 )
 {
-    Xio_studyset_dir *xsd;
-
-    this->studyset_dir = (Xio_studyset_dir*) realloc (this->studyset_dir, 
-	(this->num_studyset_dir+1) * sizeof (Xio_studyset_dir));
-    xsd = &this->studyset_dir[this->num_studyset_dir];
-    this->num_studyset_dir ++;
-
-    strncpy (xsd->path, studyset_path.c_str(), _MAX_PATH);
+    this->studyset_dirs.push_back (studyset_path);
 }
 
 void
 Xio_patient::add_plan_dir (
-    std::string plan_path
+    const std::string& plan_path
 )
 {
-    Xio_plan_dir *xtpd;
-
-    this->plan_dir = (Xio_plan_dir*) realloc (this->plan_dir, 
-	(this->num_plan_dir+1) * sizeof (Xio_plan_dir));
-    xtpd = &this->plan_dir[this->num_plan_dir];
-    this->num_plan_dir ++;
-
-    strncpy (xtpd->path, plan_path.c_str(), _MAX_PATH);
+    this->plan_dirs.push_back (plan_path);
 }
 
 void

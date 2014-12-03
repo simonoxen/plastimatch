@@ -64,10 +64,10 @@ Rt_study::save_gdcm (const char *output_dir)
 	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_drs);
     }
     if (this->has_dose()) {
-	char fn[_MAX_PATH];
+        std::string fn;
 	printf ("Rt_study::save_dicom: gdcm_save_dose()\n");
-	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm1_dose_save (d_ptr->m_dose.get(), d_ptr->m_drs.get(), fn);
+	fn = string_format ("%s/%s", output_dir, "dose.dcm");
+	gdcm1_dose_save (d_ptr->m_dose.get(), d_ptr->m_drs.get(), fn.c_str());
     }
 #endif
 }

@@ -29,9 +29,7 @@ public:
     void clear ();
     bool have_image ();
     void init ();
-    void load (const char* img_filename, const char* mat_filename);
-    void load (const std::string& img_filename, 
-        const std::string& mat_filename = "");
+    void load (const std::string& img_filename, std::string mat_filename = "");
     void load_pfm (const char* img_filename, const char* mat_filename);
     void load_raw (const char* img_filename, const char* mat_filename);
     void load_hnd (const char* img_filename);

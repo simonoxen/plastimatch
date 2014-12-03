@@ -44,7 +44,7 @@ public:
     std::vector<Xio_studyset_slice> slices;
     
 public:
-    Xio_studyset (const char *studyset_dir);
+    Xio_studyset (const std::string& studyset_dir);
     ~Xio_studyset ();
 };
 

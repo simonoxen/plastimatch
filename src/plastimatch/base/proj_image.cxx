@@ -27,7 +27,7 @@ Proj_image::Proj_image (
     this->init ();
     this->xy_offset[0] = xy_offset[0];
     this->xy_offset[1] = xy_offset[1];
-    this->load (img_filename, 0);
+    this->load (img_filename);
 }
 
 Proj_image::Proj_image (
@@ -443,41 +443,28 @@ proj_image_stats (Proj_image *proj)
 
 void
 Proj_image::load (
-    const char* img_filename,
-    const char* mat_filename
+    const std::string& img_filename,
+    std::string mat_filename
 )
 {
-    char tmp[_MAX_PATH];
-
     /* If not specified, try to guess the mat_filename */
-    if (!mat_filename || mat_filename[0] == 0) {
-        strncpy (tmp, img_filename, _MAX_PATH);
-        strip_extension (tmp);
-        strncat (tmp, ".txt", _MAX_PATH);
+    if (mat_filename == "") {
+        std::string tmp = img_filename;
+        tmp = strip_extension (tmp) + ".txt";
         if (file_exists (tmp)) {
             mat_filename = tmp;
         }
     }
 
     if (extension_is (img_filename, ".pfm")) {
-        load_pfm (img_filename, mat_filename);
+        load_pfm (img_filename.c_str(), mat_filename.c_str());
     }
     else if (extension_is (img_filename, ".raw")) {
-        load_raw (img_filename, mat_filename);
+        load_raw (img_filename.c_str(), mat_filename.c_str());
     }
     else if (extension_is (img_filename, ".hnd")) {
-        load_hnd (img_filename);
+        load_hnd (img_filename.c_str());
     }
-}
-
-
-void
-Proj_image::load (
-    const std::string& img_filename,
-    const std::string& mat_filename
-)
-{
-    load (img_filename.c_str(), mat_filename.c_str());
 }
 
 void

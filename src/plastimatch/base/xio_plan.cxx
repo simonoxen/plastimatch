@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,43 +12,39 @@
 #include "print_and_exit.h"
 #include "xio_plan.h"
 
-void
-xio_plan_get_studyset (const char *filename, char *studyset)
+std::string
+xio_plan_get_studyset (const char *filename)
 {
-    FILE *fp;
-
-    fp = fopen (filename, "r");
-    if (!fp) {
-	print_and_exit ("Error opening file %s for read\n", filename);
+    /* Open file */
+    std::ifstream ifs (filename, std::ifstream::in);
+    if (ifs.fail()) {
+        print_and_exit ("Error opening file %s for read\n", filename);
     }
-    CBStream bs ((bNread) fread, fp);
 
     /* Get version string
        0062101a - xio version 4.33.02
        006d101a - xio version 4.50 */
-    CBString version = bs.readLine ('\n');
-    printf ("Version = %s\n", (const char*) version);
+    std::string line;
+    getline (ifs, line);
+    printf ("Version = %s\n", line.c_str());
     int rc, version_int;
-    rc = sscanf ((const char*) version, "%x", &version_int);
+    rc = sscanf (line.c_str(), "%x", &version_int);
     if (rc != 1) {
 	/* Couldn't parse version string -- default to older format. */
 	version_int = 0x62101a;
     }
     printf ("rc = %d, version_int = 0x%x\n", rc, version_int);
-
+    
     /* Skip 4 lines for xio 4.33.02, skip 5 lines for xio 4.50. */
-    bs.readLine ('\n');
-    bs.readLine ('\n');
-    bs.readLine ('\n');
-    bs.readLine ('\n');
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
     if (version_int > 0x62101a) {
-	bs.readLine ('\n');
+        getline (ifs, line);
     }
 
-    /* Read studyset name */
-    CBString line1 = bs.readLine ('\n');
-    strcpy (studyset, (const char *) line1);
-    studyset[strlen (studyset) - 1] = '\0';
-
-    fclose (fp);
+    /* Read and return studyset name */
+    getline (ifs, line);
+    return line;
 }

@@ -34,6 +34,11 @@ public:
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
     Stage_parms auto_parms;
+
+    /* GCS FIX: These were disabled, and are needing some re-engineering */
+    std::list< std::string > moving_jobs;
+    std::list< std::string > fixed_jobs;
+
 public:
     Registration_parms_private () {
         shared = new Shared_parms;
@@ -107,10 +112,6 @@ Registration_parms::Registration_parms()
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
-    for (int i=0; i<256; i++) {
-        moving_jobs[i][0] = '\0';
-        fixed_jobs[i][0] = '\0';
-    }
     job_idx = 0;
     num_jobs = 1;
 }

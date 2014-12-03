@@ -67,7 +67,7 @@ Xio_dir::is_xio_studyset_dir (std::string dir)
 }
 
 int
-Xio_dir::is_xio_plan_dir (std::string dir)
+Xio_dir::is_xio_plan_dir (const std::string& dir)
 {
     itksys::Directory itk_dir;
     if (!itk_dir.Load (dir.c_str())) {
@@ -189,36 +189,29 @@ Xio_dir::num_patients () const
     return (int) this->patient_dir.size();
 }
 
-Xio_studyset_dir*
-xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd)
+std::string 
+xio_plan_dir_get_studyset_dir (const std::string& xio_plan_dir)
 {
-    char studyset[_MAX_PATH];
-    Xio_studyset_dir *xsd;
-    char *plan_dir;
-    char *patient_dir;
+    std::string studyset_dir;
+    std::string plan_dir;
+    std::string patient_dir;
 
-    xsd = (Xio_studyset_dir*) malloc (sizeof (Xio_studyset_dir));
-    
-    if (Xio_dir::is_xio_plan_dir (xtpd->path)) {
+    if (Xio_dir::is_xio_plan_dir (xio_plan_dir)) {
 	/* Get studyset name from plan */
-	std::string plan_file = std::string(xtpd->path) + "/plan";
+	std::string plan_file = xio_plan_dir + "/plan";
 	printf ("plan_file: %s\n", plan_file.c_str());
-	xio_plan_get_studyset (plan_file.c_str(), studyset);
+	studyset_dir = xio_plan_get_studyset (plan_file.c_str());
 
 	/* Obtain patient directory from plan directory */
-	plan_dir = file_util_parent (xtpd->path);
+	plan_dir = file_util_parent (xio_plan_dir);
 	patient_dir = file_util_parent (plan_dir);
 	printf ("plan_dir: %s\n", plan_file.c_str());
-	printf ("patient_dir: %s\n", patient_dir);
+	printf ("patient_dir: %s\n", patient_dir.c_str());
 
 	/* Set studyset directory */
-	std::string studyset_path = std::string(patient_dir) +
-	    "/anatomy/studyset/" + std::string(studyset);
-	strncpy(xsd->path, studyset_path.c_str(), _MAX_PATH);
-
-	free (plan_dir);
-	free (patient_dir);
+	studyset_dir = std::string(patient_dir) +
+	    "/anatomy/studyset/" + studyset_dir;
     }
 
-    return xsd;
+    return studyset_dir;
 }

@@ -12,24 +12,24 @@
 #include "plm_path.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
+#include "string_util.h"
 
 Proj_image_dir::Proj_image_dir (const char *dir)
 {
-    char xml_file[_MAX_PATH];
+    std::string xml_file;
 
     /* Initialize members */
     this->dir = 0;
     this->num_proj_images = 0;
     this->proj_image_list = 0;
-    this->xml_file = 0;
     this->img_pat = 0;
     this->mat_pat = 0;
     this->xy_offset[0] = this->xy_offset[1] = 0;
 
     /* Look for ProjectionInfo.xml */
-    snprintf (xml_file, _MAX_PATH, "%s/%s", dir, "ProjectionInfo.xml");
+    xml_file = string_format ("%s/%s", dir, "ProjectionInfo.xml");
     if (file_exists (xml_file)) {
-	this->xml_file = strdup (xml_file);
+	this->xml_file = xml_file;
     }
 
     /* Load list of file names */
@@ -37,11 +37,11 @@ Proj_image_dir::Proj_image_dir (const char *dir)
 
     /* If base directory doesn't contain images, look in Scan0 directory */
     if (this->num_proj_images == 0) {
-	char scan0_dir[_MAX_PATH];
-	snprintf (scan0_dir, _MAX_PATH, "%s/%s", dir, "Scan0");
+        std::string scan0_dir;
+	scan0_dir = string_format ("%s/%s", dir, "Scan0");
 
 	/* Load list of file names */
-	this->load_filenames (scan0_dir);
+	this->load_filenames (scan0_dir.c_str());
     }
 
     /* No images in either base directory or Scan 0, so give up. */
@@ -59,7 +59,6 @@ Proj_image_dir::Proj_image_dir (const char *dir)
 Proj_image_dir::~Proj_image_dir ()
 {
     if (this->img_pat) free (this->img_pat);
-    if (this->xml_file) free (this->xml_file);
     this->clear_filenames ();
 }
 
@@ -163,10 +162,9 @@ Proj_image_dir::harden_filenames ()
     int i;
 
     for (i = 0; i < this->num_proj_images; i++) {
-	char img_file[_MAX_PATH];
 	char *entry = this->proj_image_list[i];
-	snprintf (img_file, _MAX_PATH, "%s/%s", this->dir, entry);
-	this->proj_image_list[i] = strdup (img_file);
+        std::string img_file = string_format ("%s/%s", this->dir, entry);
+	this->proj_image_list[i] = strdup (img_file.c_str());
 	free (entry);
     }
 }
@@ -205,14 +203,14 @@ Proj_image_dir::select (int first, int skip, int last)
 
     this->clear_filenames ();
     for (i = first; i <= last; i += skip) {
-	char img_file[_MAX_PATH];
-	snprintf (img_file, _MAX_PATH, this->img_pat, i);
+        std::string img_file = string_format (this->img_pat, i);
 	if (file_exists (img_file)) {
 	    this->num_proj_images ++;
 	    this->proj_image_list = (char**) realloc (
 		this->proj_image_list, 
 		this->num_proj_images * sizeof (char*));
-	    this->proj_image_list[this->num_proj_images-1] = strdup (img_file);
+	    this->proj_image_list[this->num_proj_images-1] 
+                = strdup (img_file.c_str());
 	}
     }
 }
