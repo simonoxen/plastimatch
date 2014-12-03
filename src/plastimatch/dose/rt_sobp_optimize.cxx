@@ -20,7 +20,14 @@
 #include "vnl/vnl_cost_function.h"
 
 /* cost function used to optimize the sobp shape */
-double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out);
+double cost_function_calculation (
+    std::vector<std::vector<double> > depth_dose, 
+    std::vector<double> weights, 
+    int num_peaks, 
+    int num_samples, 
+    std::vector<int> depth_in, 
+    std::vector<int> depth_out
+);
 
 /* vxl needs you to wrap the function within a class */
 class cost_function : public vnl_cost_function
@@ -46,21 +53,23 @@ public:
     }
 };
 
-void Rt_sobp::Optimizer() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+// Nelder-Mead type optimizer to get the optimized weights of the beams, 
+// optimized by a cost function (see below)
+void Rt_sobp::Optimizer (int num_peaks)
 {
     double E_max = 0;
     /* Create function object (for function to be minimized) */
     cost_function cf;
 
     cf.num_samples = d_ptr->num_samples;
-    cf.num_peaks = d_ptr->num_peaks;
+    cf.num_peaks = num_peaks;
 	
-    for (int i = 0; i < d_ptr->num_peaks; i++)
+    for (int i = 0; i < num_peaks; i++)
     {
         cf.weights.push_back(0);
     }
 	
-    std::vector<int> energies (d_ptr->num_peaks,0);
+    std::vector<int> energies (num_peaks,0);
     std::vector<double> init_vector (d_ptr->num_samples,0);
 
 
@@ -169,13 +178,12 @@ void Rt_sobp::Optimizer() // the optimizer to get the optimized weights of the b
     this->generate();
 }
 
-void Rt_sobp::Optimizer2() // the optimizer to get the optimized weights of the beams, optimized by a cost function (see below)
+// Maxime Desplanque's better optimizer to get the optimized weights 
+// for pristine peaks
+void Rt_sobp::Optimizer2 (int num_peaks)
 {
     double dose_max = 0;
-    /* Create function object (for function to be minimized) */
-
     int num_samples = d_ptr->num_samples;
-    int num_peaks = d_ptr->num_peaks;
     std::vector<double> weight (num_peaks, 0);
     int depth_max = 0;
 	
@@ -268,7 +276,16 @@ void Rt_sobp::Optimizer2() // the optimizer to get the optimized weights of the 
     //this->generate();
 }
 
-double cost_function_calculation(std::vector<std::vector<double> > depth_dose, std::vector<double> weights, int num_peaks, int num_samples, std::vector<int> depth_in, std::vector<int> depth_out) // cost function to be optimized in order to find the best weights and fit a perfect sobp
+// cost function to be optimized in order to find the 
+// best weights and fit a perfect sobp
+double cost_function_calculation (
+    std::vector<std::vector<double> > depth_dose, 
+    std::vector<double> weights, 
+    int num_peaks, 
+    int num_samples, 
+    std::vector<int> depth_in, 
+    std::vector<int> depth_out
+)
 {
     std::vector<double> diff (num_samples, 0);
     std::vector<double> excess (num_samples, 0);

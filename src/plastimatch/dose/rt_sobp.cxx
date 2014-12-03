@@ -27,6 +27,10 @@ Rt_sobp::Rt_sobp (Particle_type part)
     d_ptr = new Rt_sobp_private(part);
 }
 
+Rt_sobp::Rt_sobp (Rt_sobp::Pointer& rt_sobp)
+{
+    d_ptr = new Rt_sobp_private (rt_sobp->d_ptr);
+}
 
 Rt_sobp::~Rt_sobp ()
 {
@@ -116,7 +120,6 @@ void
 Rt_sobp::set_energyResolution(double eres)
 {
     d_ptr->eres = eres;
-    d_ptr->num_peaks = (int) ((d_ptr->E_max - d_ptr->E_min)/ d_ptr->eres + 1);
 }
 
 double 
@@ -132,7 +135,7 @@ Rt_sobp::optimize ()
         d_ptr->prescription_dmin,
         d_ptr->prescription_dmax,
         d_ptr->dres);
-    this->Optimizer2();
+    this->Optimizer2 (this->optimizer_num_peaks ());
 }
 
 float
@@ -330,16 +333,16 @@ Rt_sobp::get_eres()
     return d_ptr->eres;
 }
 
-void 
-Rt_sobp::set_num_peaks(int num_peaks)
+size_t
+Rt_sobp::get_num_peaks()
 {
-    d_ptr->num_peaks = num_peaks;
+    return d_ptr->depth_dose.size();
 }
 
 int 
-Rt_sobp::get_num_peaks()
+Rt_sobp::optimizer_num_peaks ()
 {
-    return d_ptr->num_peaks;
+    return (int)(((d_ptr->E_max - d_ptr->E_min) / d_ptr->eres) + 1);
 }
 
 void 
@@ -537,7 +540,6 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp pa
         d_ptr->dmin = ((10*d_ptr->alpha)*pow(d_ptr->E_min, d_ptr->p));
         d_ptr->dmax = ((10*d_ptr->alpha)*pow(d_ptr->E_max, d_ptr->p))+1;
         d_ptr->dend = d_ptr->dmax + 20;
-        d_ptr->num_peaks = (int)(((d_ptr->E_max-d_ptr->E_min-1)/d_ptr->eres)+2);
         d_ptr->num_samples = (int)((d_ptr->dend/d_ptr->dres)+1);
         if ((d_ptr->num_samples-1)*d_ptr->dres < d_ptr->dend)
         {
@@ -586,7 +588,6 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // s
         d_ptr->dmin = ((10*d_ptr->alpha)*pow(d_ptr->E_min, d_ptr->p));
         d_ptr->dmax = ((10*d_ptr->alpha)*pow(d_ptr->E_max, d_ptr->p))+1;
         d_ptr->dend = d_ptr->dmax + 20;
-        d_ptr->num_peaks = (int)(((d_ptr->E_max-d_ptr->E_min-1)/d_ptr->eres)+2);
         d_ptr->num_samples = (int)((d_ptr->dend/d_ptr->dres)+1);
 		
         if ((d_ptr->num_samples-1)*d_ptr->dres < d_ptr->dend)
@@ -634,8 +635,6 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp 
         d_ptr->E_min = int(pow((d_ptr->dmin/(10*d_ptr->alpha)),(1/d_ptr->p)));
         d_ptr->E_max = int(pow((d_ptr->dmax/(10*d_ptr->alpha)),(1/d_ptr->p)))+1;
         d_ptr->dend = d_ptr->dmax + 20;
-        d_ptr->num_peaks = (int)(((d_ptr->E_max-d_ptr->E_min-1)/d_ptr->eres)+2);
-
         d_ptr->num_samples = (int)((d_ptr->dend/d_ptr->dres)+1);
 
         if ((d_ptr->num_samples-1)*d_ptr->dres < d_ptr->dend)
@@ -685,8 +684,6 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step) 
         d_ptr->E_min = int(pow((d_ptr->dmin/(10*d_ptr->alpha)),(1/d_ptr->p)));
         d_ptr->E_max = int(pow((d_ptr->dmax/(10*d_ptr->alpha)),(1/d_ptr->p)))+d_ptr->eres;
         d_ptr->dend = d_ptr->dmax + 20;
-        d_ptr->num_peaks = (int)(((d_ptr->E_max-d_ptr->E_min-1)/d_ptr->eres)+2);
-
         d_ptr->num_samples = (int)((d_ptr->dend/d_ptr->dres)+1);
 
         if ((d_ptr->num_samples-1)*d_ptr->dres < d_ptr->dend)

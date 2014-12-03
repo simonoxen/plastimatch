@@ -198,8 +198,8 @@ public:
     void set_have_prescription(bool have_prescription);
     bool get_have_prescription();
 
-    void set_have_manual_peaks(bool have_manual_peaks);
-    bool get_have_manual_peaks();
+    void set_have_copied_peaks(bool have_copied_peaks);
+    bool get_have_copied_peaks();
 
     void copy_sobp(Rt_sobp::Pointer sobp);
 

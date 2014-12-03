@@ -50,15 +50,10 @@ public:
     float prescription_dmin;
     float prescription_dmax;
 
-    /* When a new sobp is created from an existing sobp, it is 
-       copied and implicitly defined.  Modifications of 
-       an implicitly defined sobp (by adding a peak) will 
-       delete any existing peaks. */
-    bool implicitly_defined;
-
 public:
     Rt_sobp_private ();
     Rt_sobp_private (Particle_type);
+    Rt_sobp_private (const Rt_sobp_private*);
     ~Rt_sobp_private ();
 public:
     void set_particle_type (Particle_type);

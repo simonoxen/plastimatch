@@ -15,7 +15,6 @@ Rt_sobp_private::Rt_sobp_private ()
     dres = 1.0;
     num_samples = 0;
     eres = 2.0;
-    num_peaks = 0;
     E_min = 0;
     E_max = 0;
     dmin = 0.0;
@@ -24,7 +23,6 @@ Rt_sobp_private::Rt_sobp_private ()
     prescription_dmin = 50.f;
     prescription_dmax = 100.f;
     set_particle_type (PARTICLE_TYPE_P);
-    implicitly_defined = false;
 }
 
 Rt_sobp_private::Rt_sobp_private (Particle_type particle_type)
@@ -34,7 +32,6 @@ Rt_sobp_private::Rt_sobp_private (Particle_type particle_type)
     dres = 1.0;
     num_samples = 0;
     eres = 2.0;
-    num_peaks = 0;
     E_min = 0;
     E_max = 0;
     dmin = 0.0;
@@ -43,7 +40,23 @@ Rt_sobp_private::Rt_sobp_private (Particle_type particle_type)
     prescription_dmin = 50.f;
     prescription_dmax = 100.f;
     set_particle_type (particle_type);
-    implicitly_defined = false;
+}
+
+Rt_sobp_private::Rt_sobp_private (const Rt_sobp_private* rsp)
+{
+    d_lut = new float[0];
+    e_lut = new float[0];
+    dres = rsp->dres;
+    num_samples = rsp->num_samples;
+    eres = rsp->eres;
+    E_min = rsp->E_min;
+    E_max = rsp->E_max;
+    dmin = rsp->dmin;
+    dmax = rsp->dmax;
+    dend = rsp->dend;
+    prescription_dmin = rsp->prescription_dmin;
+    prescription_dmax = rsp->prescription_dmax;
+    set_particle_type (rsp->particle_type);
 }
 
 Rt_sobp_private::~Rt_sobp_private ()

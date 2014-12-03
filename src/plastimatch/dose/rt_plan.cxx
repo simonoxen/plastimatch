@@ -720,7 +720,7 @@ Rt_plan::compute_plan ()
                 
     float* total_dose_img = (float*) dose_vol->img;
 
-    for (size_t i = 0; i <= this->beam_storage.size(); i++)
+    for (size_t i = 0; i < this->beam_storage.size(); i++)
     {
         printf ("\nStart dose calculation Beam %d\n", (int) i + 1);
         this->beam = this->beam_storage[i];
@@ -747,7 +747,7 @@ Rt_plan::compute_plan ()
         /* MDFIX: is it twice the same operation?? */
         this->beam->set_distal_margin (this->beam->get_distal_margin());
 
-        if (this->beam->get_have_manual_peaks() == true && this->beam->get_have_prescription() == false) {
+        if (this->beam->get_have_copied_peaks() == false && this->beam->get_have_prescription() == false) {
             /* Manually specified, so do not optimize */
             if (!this->beam->generate ()) {
                 return PLM_ERROR;
@@ -924,9 +924,9 @@ Rt_plan::print_verif ()
     printf("\n dist_margin: "); for (int i = 0; i < num_beams; i++) {printf("%lg ** ", this->beam_storage[i]->get_distal_margin());}
 
     printf("\n \n [PEAK]");
-    //printf("\n E0: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_num_peaks(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->E0);}}
-    //printf("\n spread: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_depth_dose().size(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->spread);}}
-    //printf("\n weight: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_depth_dose().size(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->weight);}}
+    printf("\n E0: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_num_peaks(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->E0);}}
+    printf("\n spread: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_depth_dose().size(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->spread);}}
+    printf("\n weight: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < this->beam_storage[i]->get_sobp()->get_depth_dose().size(); j++) { printf("%lg ** ", this->beam_storage[i]->get_sobp()->get_depth_dose()[j]->weight);}}
 
     printf("\n \n [PHOTON_ENERGY]");
     printf("\n photon energy: "); for (int i = 0; i < num_beams; i++) {printf("%lg ** ", this->beam_storage[i]->get_photon_energy());}

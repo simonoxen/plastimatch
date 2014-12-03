@@ -59,7 +59,12 @@ public:
     std::string sigma_out;
     std::string wed_out;
 
-    bool have_manual_peaks;
+    /* When a new sobp is created from an existing sobp, 
+       the peaks are copied (not manual).  Modifications of 
+       an implicitly defined sobp (by adding a peak) will 
+       delete any existing peaks. */
+    bool have_copied_peaks;
+
     bool have_prescription;
 
 public:
@@ -112,7 +117,7 @@ public:
         this->sigma_out = "";
         this->wed_out = "";
 
-        this->have_manual_peaks = false;
+        this->have_copied_peaks = false;
         this->have_prescription = false;
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
@@ -135,7 +140,7 @@ public:
         this->beamWeight = rtbp->beamWeight;
 
         /* Copy the sobp object */
-        this->sobp = Rt_sobp::New (rtbp->sobp.get());
+        this->sobp = Rt_sobp::New (rtbp->sobp);
 
         this->debug_dir = rtbp->debug_dir;
 
@@ -166,9 +171,7 @@ public:
         this->sigma_out = rtbp->sigma_out;
         this->wed_out = rtbp->wed_out;
 
-//        this->have_manual_peaks = rtbp->have_manual_peaks;
-        this->have_manual_peaks = false;
-
+        this->have_copied_peaks = true;
         this->have_prescription = rtbp->have_prescription;
     }
 };
@@ -322,10 +325,10 @@ Rt_beam::add_peak (
     double dmax,                    /* maximum w.e.d. (mm) */
     double weight)
 {
-    if (d_ptr->have_manual_peaks == false) {
+    if (d_ptr->have_copied_peaks == true) {
         d_ptr->sobp->clear_peaks ();
     }
-    d_ptr->have_manual_peaks = true;
+    d_ptr->have_copied_peaks = false;
 
     d_ptr->sobp->add_peak (E0, spread, dres, dmax, weight);
 }
@@ -760,15 +763,15 @@ Rt_beam::get_have_prescription()
 }
 
 void 
-Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
+Rt_beam::set_have_copied_peaks(bool have_copied_peaks)
 {
-    d_ptr->have_manual_peaks = have_manual_peaks;
+    d_ptr->have_copied_peaks = have_copied_peaks;
 }
 	
 bool 
-Rt_beam::get_have_manual_peaks()
+Rt_beam::get_have_copied_peaks()
 {
-    return d_ptr->have_manual_peaks;
+    return d_ptr->have_copied_peaks;
 }
 
 void 
@@ -777,7 +780,6 @@ Rt_beam::copy_sobp(Rt_sobp::Pointer sobp)
     d_ptr->sobp->set_dose_lut(sobp->get_d_lut(), sobp->get_e_lut(), sobp->get_num_samples()); /* copy also num_samples */
     d_ptr->sobp->set_dres(sobp->get_dres());
     d_ptr->sobp->set_eres(sobp->get_eres());
-    d_ptr->sobp->set_num_peaks(sobp->get_num_peaks());
     d_ptr->sobp->set_E_min(sobp->get_E_min());
     d_ptr->sobp->set_E_max(sobp->get_E_max());
     d_ptr->sobp->set_dmin(sobp->get_dmin());

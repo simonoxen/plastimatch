@@ -33,7 +33,7 @@ public:
 public:
     Rt_sobp ();
     Rt_sobp (Particle_type part);
-    Rt_sobp (Rt_sobp*& rt_sobp);
+    Rt_sobp (Rt_sobp::Pointer& rt_sobp);
     ~Rt_sobp ();
 
     void set_resolution (double dres, int num_samples);
@@ -86,8 +86,6 @@ public:
     int get_num_samples();
     void set_eres(int eres);
     int get_eres();
-    void set_num_peaks(int num_peaks);
-    int get_num_peaks();
     void set_E_min(int E_min);
     int get_E_min();
     void set_E_max(int E_max);
@@ -113,6 +111,11 @@ public:
     std::vector<const Rt_depth_dose*> get_depth_dose();
     void add_depth_dose(const Rt_depth_dose* depth_dose);
 
+    size_t get_num_peaks();
+
+    /* Compute number of peaks used when doing automatic peak selection. */
+    int optimizer_num_peaks ();
+
     /* set the minimal and maximal energy to buld the sobp peak */
     void SetMinMaxEnergies(int new_E_min, int new_E_max);
     /* set the minimal and maximal energy to buld the sobp peak and energy step */
@@ -128,8 +131,8 @@ public:
     /* get peaks - not a pointer */
     std::vector<const Rt_depth_dose*> getPeaks();
     /* Weight optimizer */
-    void Optimizer();
-    void Optimizer2();
+    void Optimizer (int num_peaks);
+    void Optimizer2 (int num_peaks);
 
 };
 

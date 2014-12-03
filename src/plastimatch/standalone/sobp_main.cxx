@@ -24,49 +24,49 @@ int main (int argc, char* argv[])
         exit (0);
     }
 
-		sscanf(argv[1],"%d", &particle);
+    sscanf(argv[1],"%d", &particle);
 
-	if(particle ==1)
-	{
-		particle_type = PARTICLE_TYPE_P;
-	}
-	else if (particle ==2)
-	{
-		particle_type = PARTICLE_TYPE_HE;
-	}
-	else if (particle ==3)
-	{
-		particle_type = PARTICLE_TYPE_LI;
-	}
-	else if (particle ==4)
-	{
-		particle_type = PARTICLE_TYPE_BE;
-	}
-	else if (particle ==5)
-	{
-		particle_type = PARTICLE_TYPE_B;
-	}
-	else if (particle ==6)
-	{
-		particle_type = PARTICLE_TYPE_C;
-	}
-	else if (particle ==8)
-	{
-		particle_type = PARTICLE_TYPE_O;
-	}
-	else
-	{
-		particle_type = PARTICLE_TYPE_P;
-		printf("Invalid particle type");
-	}
+    if(particle ==1)
+    {
+        particle_type = PARTICLE_TYPE_P;
+    }
+    else if (particle ==2)
+    {
+        particle_type = PARTICLE_TYPE_HE;
+    }
+    else if (particle ==3)
+    {
+        particle_type = PARTICLE_TYPE_LI;
+    }
+    else if (particle ==4)
+    {
+        particle_type = PARTICLE_TYPE_BE;
+    }
+    else if (particle ==5)
+    {
+        particle_type = PARTICLE_TYPE_B;
+    }
+    else if (particle ==6)
+    {
+        particle_type = PARTICLE_TYPE_C;
+    }
+    else if (particle ==8)
+    {
+        particle_type = PARTICLE_TYPE_O;
+    }
+    else
+    {
+        particle_type = PARTICLE_TYPE_P;
+        printf("Invalid particle type");
+    }
 
-	if (particle_type != PARTICLE_TYPE_P) // no data for ions... to be implemented (ion bragg peaks!!)
-	{
-		particle_type = PARTICLE_TYPE_P;
-		printf("Ions data are not ready yet - beam switched to proton beams");
-	}
+    if (particle_type != PARTICLE_TYPE_P) // no data for ions... to be implemented (ion bragg peaks!!)
+    {
+        particle_type = PARTICLE_TYPE_P;
+        printf("Ions data are not ready yet - beam switched to proton beams");
+    }
 
-	Rt_sobp sobp(particle_type);
+    Rt_sobp sobp(particle_type);
 
     // construction of the sobp using the proximal and distal limits
     if (argv[2][0]=='d')
@@ -84,7 +84,7 @@ int main (int argc, char* argv[])
     }
 
     sobp.printparameters();
-    sobp.Optimizer();
+    sobp.Optimizer(sobp.optimizer_num_peaks());
 
     sobp.print_sobp_curve();
 
