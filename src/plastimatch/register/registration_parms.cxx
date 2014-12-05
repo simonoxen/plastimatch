@@ -138,36 +138,11 @@ check_trailing_slash (char* s)
 
 #if defined (GCS_FIXME)  // Delete this, replace with Dir_list
 int
-populate_jobs (char jobs[255][_MAX_PATH], char* dir)
+populate_jobs ()
 {
-#if defined (_WIN32)
-    // Win32 Version goes here
-    return 0;
-#else
-    DIR *dp;
-    struct dirent *ep;
-    int z=0;
-    char buffer[_MAX_PATH];
-
-    dp = opendir (dir);
-
-    if (dp != NULL) {
-        while ((ep=readdir(dp))) {
-            memset (buffer, 0, _MAX_PATH);
-            if (!strcmp(ep->d_name, ".")) {
-                continue;
-            } else if (!strcmp(ep->d_name, "..")) {
-                continue;
-            }
-            strncpy (jobs[z++], ep->d_name, _MAX_PATH);
-        }
-        (void) closedir (dp);
-    } else {
-        printf ("Error: Could not open %s\n", dir);
-    }
-
-    return z;
-#endif
+    /* This function should read through the directory, 
+       and identify the input files for each registration role 
+       (fixed, moving, etc.) */
 }
 #endif
 
@@ -222,18 +197,18 @@ Registration_parms::set_key_value (
     }
     else if (key == "moving_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->moving_dir, val.c_str(), _MAX_PATH);
+        this->moving_dir = val;
         check_trailing_slash (this->moving_dir);
         this->num_jobs = populate_jobs (this->moving_jobs, this->moving_dir);
     }
     else if (key == "img_out_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->img_out_dir, val.c_str(), _MAX_PATH);
+        this->img_out_dir = val;
         check_trailing_slash (this->img_out_dir);
     }
     else if (key == "vf_out_dir") {
         if (!section_global) goto key_only_allowed_in_section_global;
-        strncpy (this->vf_out_dir, val.c_str(), _MAX_PATH);
+        this->vf_out_dir = val;
         check_trailing_slash (this->vf_out_dir);
     }
 #endif

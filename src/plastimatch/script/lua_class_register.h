@@ -20,7 +20,7 @@ class Registration_parms;
 
 typedef struct lua_register_struct lua_register;
 struct lua_register_struct {
-    char fn[_MAX_PATH];
+    std::string fn;
     Registration_parms *regp;
     lua_image *moving;    
     lua_image *fixed;    

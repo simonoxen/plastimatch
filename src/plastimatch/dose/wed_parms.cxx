@@ -99,63 +99,60 @@ Wed_Parms::get_group_lines(char* groupfile)
 void
 Wed_Parms::parse_group(int argc, char** argv, int linenumber)
 {
+    int linecounter = 0;
+    for (int i=1; i<argc; i++) {
+        if (!strcmp (argv[i], "--group")) {
+            std::string line;
+            std::ifstream text(argv[i+1]);
+            if (text.is_open()) {
+                while (text.good()) {
+                    getline(text,line);
+                    if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
 
-  int linecounter = 0;
+                        if (linecounter == linenumber)  {
 
-  for (int i=1; i<argc; i++) {
-    if (!strcmp (argv[i], "--group")) {
-      std::string line;
-      std::ifstream text(argv[i+1]);
-      if (text.is_open()) {
-	while (text.good()) {
-	  getline(text,line);
-	  if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
+                            std::string pvol_file;
+                            std::string dose_file;
+                            std::string dose_wed_file;
 
-	    if (linecounter == linenumber)  {
+                            std::stringstream linestream(line);
 
-	      std::string pvol_file;
-	      std::string dose_file;
-	      std::string dose_wed_file;
+                            linestream >> pvol_file >> dose_file >> dose_wed_file;
 
-	      std::stringstream linestream(line);
+                            if (pvol_file.size()>=4)  {
+                                if (pvol_file.compare(pvol_file.size()-4,4,".mha"))  {
+                                    print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());
+                                    return;
+                                }
+                            }
+                            else {print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());}
 
-	      linestream >> pvol_file >> dose_file >> dose_wed_file;
-
-	      if (pvol_file.size()>=4)  {
-		if (pvol_file.compare(pvol_file.size()-4,4,".mha"))  {
-		  print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());
-		  return;
-		}
-	      }
-	      else {print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());}
-
-	      if (dose_file.size()>=4)  {
-		if (dose_file.compare(dose_file.size()-4,4,".mha"))  {
-		  print_and_exit ("%s is not an .mha file.\n", dose_file.c_str());
-		  return;
-		}
-	      }
-	      else {print_and_exit ("%s is not in <name>.mha format.\n", dose_file.c_str());}
+                            if (dose_file.size()>=4)  {
+                                if (dose_file.compare(dose_file.size()-4,4,".mha"))  {
+                                    print_and_exit ("%s is not an .mha file.\n", dose_file.c_str());
+                                    return;
+                                }
+                            }
+                            else {print_and_exit ("%s is not in <name>.mha format.\n", dose_file.c_str());}
 
 
-	      //	      std::cout<<pvol_file<<" "<<dose_file<<" "<<dose_wed_file<<std::endl;
+                            //	      std::cout<<pvol_file<<" "<<dose_file<<" "<<dose_wed_file<<std::endl;
 
-	      strncpy (this->input_ct_fn, pvol_file.c_str(), _MAX_PATH);
-	      //	      strncpy (this->input_dose_fn, dose_file.c_str(), _MAX_PATH);
-	      this->input_dose_fn = dose_file.c_str();
+                            this->input_ct_fn = pvol_file;
+                            this->input_dose_fn = dose_file.c_str();
 
-	      //add "_wed" to  pvol_file names
-	      pvol_file.insert (pvol_file.size()-4,"_wed");   
-	      strncpy (this->output_ct_fn, pvol_file.c_str(), _MAX_PATH);
-	      this->output_dose_fn = dose_wed_file.c_str();
+                            //add "_wed" to  pvol_file names
+                            pvol_file.insert (pvol_file.size()-4,"_wed");   
+                            this->output_ct_fn = pvol_file;
+                            this->output_dose_fn = dose_wed_file.c_str();
 
-	    }
-	    linecounter++;
-	  }
-	}
-      }
+                        }
+                        linecounter++;
+                    }
+                }
+            }
+        }
     }
-  }
 }
 
 int
@@ -176,7 +173,7 @@ Wed_Parms::set_key_val (
         }
         //Whether wed or reverse, input patient and rpl vol
         else if (!strcmp (key, "patient")) {
-            strncpy (this->input_ct_fn, val, _MAX_PATH);
+            this->input_ct_fn = val;
         }
         else if (!strcmp (key, "rpl_vol")) {
             this->rpl_vol_fn = val;
@@ -187,21 +184,21 @@ Wed_Parms::set_key_val (
         }
         //If normal wed procedure, input dose
 	if (this->mode==0)  {
-	  if (!strcmp (key, "dose")) {
-	    this->input_dose_fn = val;
-	  }
+            if (!strcmp (key, "dose")) {
+                this->input_dose_fn = val;
+            }
 	}
 	//If reverse wed procedure, input dose_wed
 	if (this->mode==1)  {
-	  if (!strcmp (key, "dose_wed")) {
-	    this->input_dose_fn = val;
-	  }
+            if (!strcmp (key, "dose_wed")) {
+                this->input_dose_fn = val;
+            }
 	}
 	//If in depth/segmentation mode, input segment
 	if (this->mode==2)  {
-	  if (!strcmp (key, "segment")) {
-	    this->input_dose_fn = val;
-	  }
+            if (!strcmp (key, "segment")) {
+                this->input_dose_fn = val;
+            }
 	}
 	
 
@@ -210,35 +207,35 @@ Wed_Parms::set_key_val (
     case 1:
         //If normal wed procedure, output patient_wed and dose_wed
         if (this->mode==0)  {
-	  if (!strcmp (key, "patient_wed")) {
-            strncpy (this->output_ct_fn, val, _MAX_PATH);
-	  }
-	  else if (!strcmp (key, "dose_wed")) {
-            this->output_dose_fn = val;
-	  }
+            if (!strcmp (key, "patient_wed")) {
+                this->output_ct_fn = val;
+            }
+            else if (!strcmp (key, "dose_wed")) {
+                this->output_dose_fn = val;
+            }
 	}
 	//If reverse wed  procedure, output only dose
         if (this->mode==1)  {
-	  if (!strcmp (key, "dose")) {
-            this->output_dose_fn = val;
-	  }
+            if (!strcmp (key, "dose")) {
+                this->output_dose_fn = val;
+            }
 	}
 
 	//If in depth/segmentation mode, output depth matrix
         if (this->mode==2)  {
-	  if (!strcmp (key, "depth")) {
-            this->output_depth_fn = val;
-	  }
-	  else if (!strcmp (key, "aperture")) {
-            this->output_ap_fn = val;
-	  }
+            if (!strcmp (key, "depth")) {
+                this->output_depth_fn = val;
+            }
+            else if (!strcmp (key, "aperture")) {
+                this->output_ap_fn = val;
+            }
 	}
 
 	//If in proj wed mode, output projection wed volume
         if (this->mode==3)  {
-	  if (!strcmp (key, "proj_wed")) {
-            this->output_proj_wed_fn = val;
-	  }
+            if (!strcmp (key, "proj_wed")) {
+                this->output_proj_wed_fn = val;
+            }
 	}
 
 
@@ -339,7 +336,7 @@ Wed_Parms::set_key_val (
         }
         else if (!strcmp (key, "resolution")) {
 	    if (sscanf (val, "%i", &(this->sinogram_res)) != 1) {
-	      goto error_exit;
+                goto error_exit;
             }
         }
 

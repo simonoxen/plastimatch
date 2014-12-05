@@ -22,6 +22,7 @@
 #include "pstring.h"
 #include "rtss.h"
 #include "rtss_roi.h"
+#include "string_util.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
 #include "xio_structures.h"
@@ -263,12 +264,13 @@ xio_structures_load (
 }
 
 /* This is idiotic */
-static void
-format_xio_filename (char *fn, const char *output_dir, float z_loc)
+static std::string
+format_xio_filename (const char *output_dir, float z_loc)
 {
     int neg;
     int z_round, z_ones, z_tenths;
     const char *neg_string;
+    std::string fn;
 
     neg = (z_loc < 0);
     if (neg) z_loc = - z_loc;
@@ -279,18 +281,19 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
     neg_string = neg ? "-" : "";
 
     if (z_ones == 0 && z_tenths == 0) {
-	sprintf (fn, "%s/T.%s0.WC", output_dir, neg_string);
+	fn = string_format ("%s/T.%s0.WC", output_dir, neg_string);
     } 
     else if (z_ones == 0) {
-	sprintf (fn, "%s/T.%s.%d.WC", output_dir, neg_string, z_tenths);
+	fn = string_format ("%s/T.%s.%d.WC", output_dir, neg_string, z_tenths);
     }
     else if (z_tenths == 0) {
-	sprintf (fn, "%s/T.%s%d.WC", output_dir, neg_string, z_ones);
+	fn = string_format ("%s/T.%s%d.WC", output_dir, neg_string, z_ones);
     }
     else {
-	sprintf (fn, "%s/T.%s%d.%d.WC", output_dir, neg_string, 
+	fn = string_format ("%s/T.%s%d.%d.WC", output_dir, neg_string, 
 	    z_ones, z_tenths);
     }
+    return fn;
 }
 
 void
@@ -303,7 +306,7 @@ xio_structures_save (
 )
 {
     FILE *fp;
-    char fn[_MAX_PATH];
+    std::string fn;
 
     printf ("X_S_S: output_dir = %s\n", output_dir);
 
@@ -312,11 +315,11 @@ xio_structures_save (
     }
 
     /* Write contournames */
-    sprintf (fn, "%s/%s", output_dir, "contournames");
+    fn = string_format ("%s/%s", output_dir, "contournames");
     make_parent_directories (fn);
-    fp = fopen (fn, "w");
+    fp = fopen (fn.c_str(), "w");
     if (!fp) {
-	print_and_exit ("Error opening output file %s\n", fn);
+	print_and_exit ("Error opening output file %s\n", fn.c_str());
     }
 
     if (xio_version == XIO_VERSION_4_2_1) {
@@ -348,8 +351,6 @@ xio_structures_save (
 
     /* Write WC files */
     for (plm_long z = 0; z < cxt->m_dim[2]; z++) {
-	char fn[_MAX_PATH];
-
 	float z_offset = 0.0f;
 
 	std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
@@ -361,11 +362,10 @@ xio_structures_save (
 	}
 
 	float z_loc = z_offset + z * cxt->m_spacing[2];
-	format_xio_filename (fn, output_dir, z_loc);
-	//sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
-	fp = fopen (fn, "w");
+	fn = format_xio_filename (output_dir, z_loc);
+	fp = fopen (fn.c_str(), "w");
 	if (!fp) {
-	    print_and_exit ("Error opening output file %s\n", fn);
+	    print_and_exit ("Error opening output file %s\n", fn.c_str());
 	}
 	fprintf (fp, "00061013\n\n");
 	fprintf (fp, "0\n0.000,0.000,0.000\n");

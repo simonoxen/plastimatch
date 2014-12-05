@@ -59,7 +59,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 
 void
 wed_ct_compute (
-    const char* out_fn,
+    const std::string& out_fn,
     Wed_Parms* parms,
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
@@ -177,7 +177,7 @@ wed_ct_compute (
 
 void
 wed_ct_compute (
-    const char* out_fn,
+    const std::string& out_fn,
     Wed_Parms* parms,
     Rt_plan *scene,
     float background
@@ -296,7 +296,7 @@ wed_ct_initialize(Wed_Parms *parms)
 
 	  //If center is not defined in config file (in general,
 	  //it shouldn't be), then default values should be reset
-	  if ((parms->ic[0]==-99.5)&&(parms->ic[2]==-99.5))  {
+	  if ((parms->ic[0]==-99.5)&&(parms->ic[1]==-99.5))  {
 	    Volume *wed_vol = dose_vol->get_volume_float().get();
 	    parms->ic[0] = wed_vol->offset[0] + wed_vol->dim[0];
 	    parms->ic[1] = wed_vol->offset[1] + wed_vol->dim[1];
@@ -352,7 +352,8 @@ wed_ct_initialize(Wed_Parms *parms)
     /* Compute the ct-wed volume */
     if (parms->mode==0)  {
         printf ("Computing patient wed volume...\n");
-        wed_ct_compute (parms->output_ct_fn, parms, ct_vol, &scene, background[0]);
+        wed_ct_compute (parms->output_ct_fn, parms, ct_vol, 
+            &scene, background[0]);
         printf ("done.\n");
     }
   
@@ -360,7 +361,7 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->input_dose_fn != "" && parms->output_dose_fn != "") {
         if ((parms->mode==0)||(parms->mode==1))  {
             printf ("Calculating dose...\n");
-            wed_ct_compute (parms->output_dose_fn.c_str(), 
+            wed_ct_compute (parms->output_dose_fn,
                 parms, dose_vol, &scene, background[1]);
             printf ("Complete...\n");
         }
@@ -369,7 +370,7 @@ wed_ct_initialize(Wed_Parms *parms)
     /* Compute the aperture and range compensator volumes */
     if (parms->mode==2)  {
         printf ("Calculating depths...\n");
-        wed_ct_compute (parms->output_depth_fn.c_str(), 
+        wed_ct_compute (parms->output_depth_fn,
             parms, dose_vol, &scene, background[2]);
         printf ("Complete...\n");
     }
@@ -377,7 +378,7 @@ wed_ct_initialize(Wed_Parms *parms)
     /* Compute the projective wed volume */
     if (parms->mode==3)  {
         printf ("Calculating wed projection...\n");
-        wed_ct_compute (parms->output_proj_wed_fn.c_str(), 
+        wed_ct_compute (parms->output_proj_wed_fn,
             parms, &scene, background[3]);
         printf ("Complete...\n");
     }

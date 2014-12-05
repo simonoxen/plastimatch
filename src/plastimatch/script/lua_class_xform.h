@@ -15,7 +15,7 @@ class Xform;
 
 typedef struct lua_xform_struct lua_xform;
 struct lua_xform_struct {
-    char fn[_MAX_PATH];
+    std::string fn;
     Xform* pxf;
 };
 

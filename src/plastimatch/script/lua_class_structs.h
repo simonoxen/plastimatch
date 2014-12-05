@@ -15,7 +15,7 @@ class Plm_image;
 
 typedef struct lua_ss_struct lua_ss;
 struct lua_ss_struct {
-    char fn[_MAX_PATH];
+    std::string fn;
     Plm_image* ss_img;
 };
 
