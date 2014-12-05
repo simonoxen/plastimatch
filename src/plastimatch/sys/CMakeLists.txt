@@ -33,7 +33,6 @@ set (PLMSYS_LIBRARY_SRC
   plm_int.h
   plm_macros.h
   plm_math.h
-  plm_path.h
   plm_sleep.cxx plm_sleep.h 
   plm_timer.cxx plm_timer.h
   plm_version.h 

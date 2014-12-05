@@ -12,7 +12,6 @@
 
 #include "itk_image_type.h"
 #include "pcmd_warp.h"
-#include "plm_path.h"
 #include "print_and_exit.h"
 
 typedef unsigned short ushort;

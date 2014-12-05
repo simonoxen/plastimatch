@@ -12,7 +12,6 @@
 #include "mha_io.h"
 #include "plm_endian.h"
 #include "plm_fwrite.h"
-#include "plm_path.h"
 #include "print_and_exit.h"
 #include "string_util.h"
 #include "volume.h"

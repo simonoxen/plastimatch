@@ -9,8 +9,6 @@
 #include "itkImage.h"
 #include "itkImageRegionConstIterator.h"
 
-#include "plm_path.h"
-
 #define BUFLEN 1024
 
 char header_pat[] = 

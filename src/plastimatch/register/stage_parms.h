@@ -13,7 +13,6 @@
 #include "bspline.h"            /* for enums */
 #include "bspline_mi_hist.h"    /* for enums */
 #include "plm_image_type.h"
-#include "plm_path.h"
 #include "plm_return_code.h"
 #include "process_parms.h"
 #include "pstring.h"

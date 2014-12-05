@@ -18,7 +18,6 @@
 #include "interpolate_macros.h"
 #include "logfile.h"
 #include "plm_math.h"
-#include "plm_path.h"
 #include "print_and_exit.h"
 #include "volume_header.h"
 #include "volume_macros.h"

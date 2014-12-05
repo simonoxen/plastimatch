@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "mex.h"
 
 #include "plm_config.h"
@@ -9,7 +12,6 @@
 #include "file_util.h"
 #include <math.h>
 #include "plm_math.h"
-#include "plm_path.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "ramp_filter.h"

@@ -13,7 +13,6 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_math.h"
-#include "plm_path.h"
 #include "rasterize_slice.h"
 #include "rasterizer.h"
 #include "rtss.h"

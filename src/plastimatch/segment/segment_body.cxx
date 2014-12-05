@@ -18,7 +18,6 @@
 #include "itk_resample.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_path.h"
 #include "segment_body.h"
 
 /* Thresholds for finding patient & couch */

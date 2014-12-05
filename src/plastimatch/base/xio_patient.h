@@ -8,7 +8,6 @@
 #include <list>
 #include <string>
 #include "pstring.h"
-#include "plm_path.h"
 
 /* This class represents a toplevel patient directory */
 class PLMBASE_API Xio_patient {

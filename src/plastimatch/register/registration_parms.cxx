@@ -18,7 +18,6 @@
 #endif
 
 #include "parameter_parser.h"
-#include "plm_path.h"
 #include "plm_return_code.h"
 #include "print_and_exit.h"
 #include "registration_parms.h"

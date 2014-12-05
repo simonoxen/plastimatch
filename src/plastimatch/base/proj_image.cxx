@@ -10,7 +10,6 @@
 #include "hnd_io.h"
 #include "path_util.h"
 #include "plm_math.h"
-#include "plm_path.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 

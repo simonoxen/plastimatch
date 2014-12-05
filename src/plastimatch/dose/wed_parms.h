@@ -6,7 +6,6 @@
 
 #include "plmdose_config.h"
 #include <string>
-#include "sys/plm_path.h"
 
 class PLMDOSE_API Wed_Parms {
 public:

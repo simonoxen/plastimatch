@@ -11,7 +11,6 @@
 #include "gdcm1_series.h"
 #endif
 #include "plm_image.h"
-#include "plm_path.h"
 #include "rt_study.h"
 #include "rt_study_p.h"
 #include "segmentation.h"

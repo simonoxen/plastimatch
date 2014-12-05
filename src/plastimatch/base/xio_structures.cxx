@@ -17,7 +17,6 @@
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_math.h"
-#include "plm_path.h"
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "rtss.h"
