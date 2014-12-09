@@ -22,6 +22,7 @@
 #include "bspline_loop.txx"
 #include "bspline_macros.h"
 #include "bspline_mse.h"
+#include "bspline_mse.txx"
 #include "bspline_optimize.h"
 #include "bspline_parms.h"
 #include "bspline_state.h"
@@ -938,5 +939,5 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    bspline_loop<Bspline_mse_score_function> (bod);
+    bspline_loop<bspline_mse_score_function> (bod);
 }

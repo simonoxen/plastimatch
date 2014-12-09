@@ -25,9 +25,11 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline.cxx
   bspline_loop.txx
   bspline_landmarks.cxx
-  bspline_mi.cxx
+  bspline_mi.cxx bspline_mi.h
+  bspline_mi.txx
   bspline_mi_hist.cxx
-  bspline_mse.cxx
+  bspline_mse.cxx bspline_mse.h
+  bspline_mse.txx
   bspline_optimize.cxx
   bspline_optimize_lbfgsb.cxx
   bspline_optimize_liblbfgs.cxx
