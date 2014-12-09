@@ -16,6 +16,14 @@
 #include "plm_timer.h"
 #include "string_util.h"
 
+typedef void (*Bspline_score_function) (
+    double& score_incr,       /* Output: score increase for this voxel */
+    float dc_dv[3],           /* Output: dc_dv for this voxel */
+    float m_val,              /* Input:  value in moving image */
+    float f_val,              /* Input:  value in fixed image */
+    float m_grad[3]           /* Input:  gradient in moving image */
+);
+
 void
 Bspline_mse_score_function (
     double& score_incr,       /* Output: score increase for this voxel */
@@ -36,6 +44,7 @@ Bspline_mse_score_function (
 }
 
 
+#if defined (commentout)
 template< void (*Bspline_score_function) (
     double& score_incr,       /* Output: score increase for this voxel */
     float dc_dv[3],           /* Output: dc_dv for this voxel */
@@ -43,6 +52,8 @@ template< void (*Bspline_score_function) (
     float f_val,              /* Input:  value in fixed image */
     float m_grad[3]           /* Input:  gradient in moving image */
 ) >
+#endif
+template< Bspline_score_function >
 void
 bspline_loop (Bspline_optimize *bod)
 {
