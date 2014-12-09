@@ -1,7 +1,7 @@
 project (PLM_Testing)
 
 ## -------------------------------------------------------------------------
-## TODO: create targets like "make check plm-reg-bspline-a"
+## TODO: create targets like "make check plm-reg-bsp-a"
 ## http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
 ## -------------------------------------------------------------------------
 
@@ -25,6 +25,8 @@ option (PLM_DOWNLOAD_TEST_DATA
 ##-----------------------------------------------------------------------------
 set (CONFIG_FILE_LIST
   "plm-bsp-single-c.txt"
+  "plm-bsp-single-h.txt"
+  "plm-bsp-single-k.txt"
   "plm-bsp-cuda.txt"
   "plm-bsp-rect.txt"
   "plm-bsp-resume.txt"
@@ -38,7 +40,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-a.txt"
   "plm-bsp-landmark-b.txt"
   "plm-bsp-landmark-c.txt"
-  "plm-reg-bspline-double.txt"
+  "plm-bsp-double.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
   "plm-reg-roi-b.txt"
@@ -2327,15 +2329,16 @@ set_tests_properties (plm-reg-itk-demons-sym-logd-check-1
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
 ##   plm-bsp-single-c
-##   plm-bspline-single-h
-##   plm-bspline-openmp
+##   plm-bsp-single-h
+##   plm-bsp-single-k
+##   plm-bsp-openmp
 ##   plm-bsp-cuda
 ##   plm-bsp-resume
 ##   plm-bsp-logfile
-##   plm-reg-bspline-ushort
-##   plm-reg-bspline-double
-##   plm-reg-bspline-itk-output
-##   plm-reg-bspline-char-output
+##   plm-bsp-ushort
+##   plm-bsp-double
+##   plm-bsp-itk-output
+##   plm-bsp-char-output
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bsp-single-c" 
@@ -2361,50 +2364,73 @@ set_tests_properties (plm-bsp-single-c-check PROPERTIES
   DEPENDS plm-bsp-single-c-stats)
 
 plm_add_test (
-  "plm-bspline-single-h" 
+  "plm-bsp-single-h" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-h.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h.txt"
   )
 plm_add_test (
-  "plm-bspline-single-h-stats"
+  "plm-bsp-single-h-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bspline-single-h-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-img.mha"
   )
-plmtest_check_interval ("plm-bspline-single-h-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bspline-single-h-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-single-h-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bspline-single-h APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bspline-single-h APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bspline-single-h-stats PROPERTIES 
-  DEPENDS plm-bspline-single-h)
-set_tests_properties (plm-bspline-single-h-check PROPERTIES 
-  DEPENDS plm-bspline-single-h-stats)
+set_property (TEST plm-bsp-single-h APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-single-h APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-single-h-stats PROPERTIES 
+  DEPENDS plm-bsp-single-h)
+set_tests_properties (plm-bsp-single-h-check PROPERTIES 
+  DEPENDS plm-bsp-single-h-stats)
 
 plm_add_test (
-  "plm-bspline-openmp" 
+  "plm-bsp-single-k" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-openmp.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k.txt"
   )
 plm_add_test (
-  "plm-bspline-openmp-stats"
+  "plm-bsp-single-k-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bspline-openmp-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k-img.mha"
   )
-plmtest_check_interval ("plm-bspline-openmp-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bspline-openmp-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-single-k-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bspline-openmp APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bspline-openmp APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bspline-openmp-stats PROPERTIES 
-  DEPENDS plm-bspline-openmp)
-set_tests_properties (plm-bspline-openmp-check PROPERTIES 
-  DEPENDS plm-bspline-openmp-stats)
+set_property (TEST plm-bsp-single-k APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-single-k APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-single-k-stats PROPERTIES 
+  DEPENDS plm-bsp-single-k)
+set_tests_properties (plm-bsp-single-k-check PROPERTIES 
+  DEPENDS plm-bsp-single-k-stats)
+
+plm_add_test (
+  "plm-bsp-openmp" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-openmp.txt"
+  )
+plm_add_test (
+  "plm-bsp-openmp-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-openmp-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-openmp-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-openmp-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  )
+set_property (TEST plm-bsp-openmp APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-openmp APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-openmp-stats PROPERTIES 
+  DEPENDS plm-bsp-openmp)
+set_tests_properties (plm-bsp-openmp-check PROPERTIES 
+  DEPENDS plm-bsp-openmp-stats)
 
 plm_add_test (
   "plm-bsp-cuda" 
@@ -2469,86 +2495,86 @@ set_tests_properties (plm-bsp-logfile-check PROPERTIES
   DEPENDS plm-bsp-logfile)
 
 plm_add_test (
-  "plm-reg-bspline-ushort"
+  "plm-bsp-ushort"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-ushort.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-ushort.txt"
   )
 plm_add_test (
-  "plm-reg-bspline-ushort-stats"
+  "plm-bsp-ushort-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-ushort-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-ushort-img.mha"
   )
-plmtest_check_interval ("plm-reg-bspline-ushort-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-ushort-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-ushort-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-ushort-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "106.6"
   "107.6"
   )
-set_tests_properties (plm-reg-bspline-ushort PROPERTIES 
+set_tests_properties (plm-bsp-ushort PROPERTIES 
   DEPENDS "gauss-ushort-1;gauss-ushort-2")
-set_property (TEST plm-reg-bspline-ushort 
+set_property (TEST plm-bsp-ushort 
   APPEND PROPERTY DEPENDS gauss-ushort-1)
-set_property (TEST plm-reg-bspline-ushort 
+set_property (TEST plm-bsp-ushort 
   APPEND PROPERTY DEPENDS gauss-ushort-2)
-set_tests_properties (plm-reg-bspline-ushort-stats PROPERTIES 
-  DEPENDS plm-reg-bspline-ushort)
-set_tests_properties (plm-reg-bspline-ushort-check PROPERTIES 
-  DEPENDS plm-reg-bspline-ushort-stats)
+set_tests_properties (plm-bsp-ushort-stats PROPERTIES 
+  DEPENDS plm-bsp-ushort)
+set_tests_properties (plm-bsp-ushort-check PROPERTIES 
+  DEPENDS plm-bsp-ushort-stats)
 
 plm_add_test (
-  "plm-reg-bspline-double"
+  "plm-bsp-double"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-double.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-double.txt"
   )
 plm_add_test (
-  "plm-reg-bspline-double-stats"
+  "plm-bsp-double-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-double-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-double-img.mha"
   )
-plmtest_check_interval ("plm-reg-bspline-double-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-double-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-double-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-double-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "107.6"
   "108.6"
   )
-set_tests_properties (plm-reg-bspline-double PROPERTIES 
+set_tests_properties (plm-bsp-double PROPERTIES 
   DEPENDS "gauss-double-1;gauss-double-2")
-set_tests_properties (plm-reg-bspline-double-stats PROPERTIES 
-  DEPENDS plm-reg-bspline-double)
-set_tests_properties (plm-reg-bspline-double-check PROPERTIES 
-  DEPENDS plm-reg-bspline-double-stats)
+set_tests_properties (plm-bsp-double-stats PROPERTIES 
+  DEPENDS plm-bsp-double)
+set_tests_properties (plm-bsp-double-check PROPERTIES 
+  DEPENDS plm-bsp-double-stats)
 
 plm_add_test (
-  "plm-reg-bspline-itk-output"
+  "plm-bsp-itk-output"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-itk-output.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-itk-output.txt"
   )
-set_property (TEST plm-reg-bspline-itk-output APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-reg-bspline-itk-output APPEND PROPERTY DEPENDS gauss-2)
+set_property (TEST plm-bsp-itk-output APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-itk-output APPEND PROPERTY DEPENDS gauss-2)
 
 plm_add_test (
-  "plm-reg-bspline-char-output"
+  "plm-bsp-char-output"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-bspline-char-output.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bsp-char-output.txt"
   )
 plm_add_test (
-  "plm-reg-bspline-char-output-stats"
+  "plm-bsp-char-output-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output.mha"
   )
 plmtest_check_interval (
-  "plm-reg-bspline-char-output-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output-stats.stdout.txt"
+  "plm-bsp-char-output-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output-stats.stdout.txt"
   "MIN *([-0-9.]*)"
   "-128.1"
   "-127.9"
   )
-set_tests_properties (plm-reg-bspline-char-output PROPERTIES 
+set_tests_properties (plm-bsp-char-output PROPERTIES 
   DEPENDS "rect-2;rect-3")
-set_tests_properties (plm-reg-bspline-char-output-stats PROPERTIES 
-  DEPENDS plm-reg-bspline-char-output)
-set_tests_properties (plm-reg-bspline-char-output-check PROPERTIES 
-  DEPENDS plm-reg-bspline-char-output-stats)
+set_tests_properties (plm-bsp-char-output-stats PROPERTIES 
+  DEPENDS plm-bsp-char-output)
+set_tests_properties (plm-bsp-char-output-check PROPERTIES 
+  DEPENDS plm-bsp-char-output-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 3)
@@ -3152,7 +3178,7 @@ set_tests_properties (plm-compose-b-check PROPERTIES
 plm_add_test (
   "plm-compose-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;${PLM_BUILD_TESTING_DIR}/plm-bspline-single-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
+  "compose;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
   )
 plm_add_test (
   "plm-compose-c-warp" 
@@ -3869,14 +3895,14 @@ if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "^(ppc|powerpc)")
   set_tests_properties (debug-landmark-warp-b-stats PROPERTIES 
     DEPENDS landmark-warp-b-stats)
 
-  plmtest_debug (debug-plm-reg-bspline-char-output
-    "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output.stdout.txt"
-    "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output.stderr.txt")
-  plmtest_debug (debug-plm-reg-bspline-char-output-stats
-    "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output-stats.stdout.txt"
-    "${PLM_BUILD_TESTING_DIR}/plm-reg-bspline-char-output-stats.stderr.txt")
-  set_tests_properties (debug-plm-reg-bspline-char-output PROPERTIES 
-    DEPENDS plm-reg-bspline-char-output)
-  set_tests_properties (debug-plm-reg-bspline-char-output-stats PROPERTIES 
-    DEPENDS plm-reg-bspline-char-output-stats)
+  plmtest_debug (debug-plm-bsp-char-output
+    "${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output.stdout.txt"
+    "${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output.stderr.txt")
+  plmtest_debug (debug-plm-bsp-char-output-stats
+    "${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output-stats.stdout.txt"
+    "${PLM_BUILD_TESTING_DIR}/plm-bsp-char-output-stats.stderr.txt")
+  set_tests_properties (debug-plm-bsp-char-output PROPERTIES 
+    DEPENDS plm-bsp-char-output)
+  set_tests_properties (debug-plm-bsp-char-output-stats PROPERTIES 
+    DEPENDS plm-bsp-char-output-stats)
 endif ()

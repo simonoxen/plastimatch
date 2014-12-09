@@ -19,6 +19,7 @@
 #include "bspline_correspond.h"
 #include "bspline_cuda.h"
 #include "bspline_interpolate.h"
+#include "bspline_loop.txx"
 #include "bspline_macros.h"
 #include "bspline_mse.h"
 #include "bspline_optimize.h"

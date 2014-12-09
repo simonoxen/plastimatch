@@ -2,9 +2,9 @@
 fixed=@PLM_BUILD_TESTING_DIR@/gauss-double-1.mha
 moving=@PLM_BUILD_TESTING_DIR@/gauss-double-2.mha
 
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bspline-double-vf.mha
-xform_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bspline-double-xf.txt
-img_out=@PLM_BUILD_TESTING_DIR@/plm-reg-bspline-double-img.mha
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-double-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-double-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-double-img.mha
 
 [STAGE]
 xform=bspline

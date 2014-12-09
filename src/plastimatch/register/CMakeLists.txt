@@ -23,6 +23,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLMREGISTER_LIBRARY_SRC
   bspline.cxx
+  bspline_loop.txx
   bspline_landmarks.cxx
   bspline_mi.cxx
   bspline_mi_hist.cxx

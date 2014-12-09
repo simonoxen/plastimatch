@@ -38,6 +38,7 @@ do_dicom_info (Dicom_info_parms *parms)
     ImageIOType::Pointer dicomIO = ImageIOType::New();
     dicomIO->SetMaxSizeLoadEntry(0xffff);
 
+    printf ("Reading input file: %s\n", parms->input_dir.c_str());
     reader->SetFileName(parms->input_dir);
     reader->SetImageIO(dicomIO);
   
