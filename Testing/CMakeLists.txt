@@ -1746,7 +1746,7 @@ plmtest_check_interval ("plm-convert-cxt-check"
   "1648003"
   "1648003"
   )
-set_tests_properties (plm-convert-cxt PROPERTIES DEPENDS plm-convert-dicom-c)
+set_tests_properties (plm-convert-cxt PROPERTIES DEPENDS plm-convert-dicom-a)
 set_tests_properties (plm-convert-cxt-stats PROPERTIES DEPENDS plm-convert-cxt)
 set_tests_properties (plm-convert-cxt-check PROPERTIES 
   DEPENDS plm-convert-cxt-stats)
@@ -3403,7 +3403,7 @@ plmtest_check_interval ("plm-union-check"
   "1271"
   )
 set_tests_properties (plm-union 
-  PROPERTIES DEPENDS "rect-10-mask-1;rect-11-mask")
+  PROPERTIES DEPENDS "rect-10-roi-1;rect-11-roi")
 set_tests_properties (plm-union-stats PROPERTIES DEPENDS plm-union)
 set_tests_properties (plm-union-check PROPERTIES DEPENDS plm-union-stats)
 
