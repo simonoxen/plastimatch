@@ -8,9 +8,16 @@
 
 class Bspline_optimize;
 
-PLMREGISTER_C_API void bspline_score_c_mse (Bspline_optimize *bod);
-PLMREGISTER_C_API void bspline_score_g_mse (Bspline_optimize *bod);
-PLMREGISTER_C_API void bspline_score_h_mse (Bspline_optimize *bod);
-PLMREGISTER_C_API void bspline_score_i_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_c_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_g_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_h_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_i_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_k_mse (Bspline_optimize *bod);
+
+PLMREGISTER_API void
+bspline_score_normalize (
+    Bspline_optimize *bod,
+    double raw_score
+);
 
 #endif

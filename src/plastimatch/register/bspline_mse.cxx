@@ -924,3 +924,19 @@ bspline_score_c_mse (
     ssd->time_smetric = timer->report ();
     delete timer;
 }
+
+/* -----------------------------------------------------------------------
+   FUNCTION: bspline_score_k_mse()
+
+   This is the same as 'c', except using templates.
+
+   This is the older "fast" single-threaded MSE implementation, modified 
+   to respect direction cosines (and ROI support removed).
+   ----------------------------------------------------------------------- */
+void
+bspline_score_k_mse (
+    Bspline_optimize *bod
+)
+{
+    bspline_loop<Bspline_mse_score_function> (bod);
+}

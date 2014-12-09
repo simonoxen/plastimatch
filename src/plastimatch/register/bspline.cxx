@@ -476,6 +476,9 @@ bspline_score (Bspline_optimize *bod)
             case 'i':
                 bspline_score_i_mse (bod);
                 break;
+            case 'k':
+                bspline_score_k_mse (bod);
+                break;
             default:
 #if (OPENMP_FOUND)
                 bspline_score_g_mse (bod);
