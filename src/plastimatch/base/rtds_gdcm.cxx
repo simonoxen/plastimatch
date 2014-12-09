@@ -14,6 +14,7 @@
 #include "rt_study.h"
 #include "rt_study_p.h"
 #include "segmentation.h"
+#include "string_util.h"
 
 void
 Rt_study::load_gdcm (const char *dicom_dir)
