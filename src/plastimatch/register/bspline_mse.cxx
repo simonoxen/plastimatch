@@ -939,5 +939,5 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    bspline_loop<bspline_mse_score_function> (bod);
+    bspline_loop_a<bspline_mse_score_function_a> (bod);
 }
