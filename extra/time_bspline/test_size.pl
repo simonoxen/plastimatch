@@ -1,0 +1,25 @@
+#! /usr/bin/perl
+
+@sizes = ( 100, 200, 300 );
+#@sizes = ( 100 );
+@flavors = ( c, k );
+#@flavors = ( f );
+
+foreach $s (@sizes) {
+	$cmd = "plastimatch synth --output size_test_fixed.mha --pattern gauss --gauss-center \"0 0 0\" --dim=$s";
+	`$cmd`;
+	$offset = $s * 0.1;
+	$cmd = "plastimatch synth --output size_test_moving.mha --pattern gauss --gauss-center \"$offset $offset 0\" --dim=$s";
+	`$cmd`;
+    foreach $f (@flavors) {
+	$cmd = "bspline -A cpu -G 0 -f $f -M mse -m 1 -s \"15 15 15\" ./size_test_fixed.mha ./size_test_moving.mha";
+	open (CMD, "$cmd|");
+	$timer = -1;
+	while (<CMD>) {
+	    /^\[.*\[\s*(\S*)\s*s/ or next;
+	    $timer = $1;
+	}
+	print "$s,$f,$timer\n";
+    }
+}
+

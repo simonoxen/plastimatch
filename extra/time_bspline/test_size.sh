@@ -4,7 +4,6 @@
 #                algorithm flavors and volumes sizes
 # 
 # James Shackleford (tshack@drexel.edu)
-# Last updated: Feb 28th, 2011
 ##############################################################################
 
 
@@ -22,18 +21,19 @@ synth_mha='/home/jshack/src/plastimatch/trunk/build/synthetic_mha'
 
 # Test Volume sizes
 min_size=100
-max_size=560
-size_step=10
+max_size=300
+size_step=100
 
 # Similarity Metric (mse, mi)
-metric='mi'
+metric='mse'
+#metric='mi'
 
 # Hardware (cpu, cuda, etc)
 hardware='cpu'
 #hardware='cuda'
 
 # Algorithm flavors to test
-flavors=( c d e )
+flavors=( c k )
 #flavors=( a )
 
 # GPU Selection
@@ -49,17 +49,14 @@ grid=15
 ######################################
 hostmachine=`uname -n`
 case "$hostmachine" in
-    "physics.mgh.harvard.edu")
-        bspline="$HOME/build/plastimatch-3.18.0/bspline"
-	synth_mha="$HOME/build/plastimatch-3.18.0/synthetic_mha"
-	;;
-    "gelato" \
+    "sherbert" \
+    | "gelato" \
     | "wormwood" \
     | "slumber" \
     | "redfish")
         # These machines have build directory in path
         bspline=bspline
-	synth_mha=synthetic_mha
+	synth_mha='plastimatch synth'
 	;;
     *)
         # Unknown machine.  Use settings from above
@@ -93,15 +90,16 @@ ctrl_c ()
     echo "Caught signal Ctrl-C!"
     echo "Cleaning up temp files"
 
-    if [ -f $test_vol_fix ]
-    then
-        rm $test_vol_fix
-    fi
+#    if [ -f $test_vol_fix ]
+#    then
+#        rm $test_vol_fix
+#    fi
 
-    if [ -f $test_vol_mov ]
-    then
-        rm $test_vol_mov
-    fi
+#    if [ -f $test_vol_mov ]
+#    then
+#        rm $test_vol_mov
+#	;
+#    fi
 
     echo "Exiting..."
     echo
@@ -279,7 +277,9 @@ do
         # probably a better way of parsing the output to find
         # the execution time, but right now I simply look for
         # the surrounding square bracket [
+#        tmp=`$bspline -A $hardware -G $gpuid -f ${flavors[$f]} -M $metric -m 0 -s "$grid $grid $grid" $test_vol_fix $test_vol_mov | grep "\[" | awk 'BEGIN{} {print $12}'`
         tmp=`$bspline -A $hardware -G $gpuid -f ${flavors[$f]} -M $metric -m 0 -s "$grid $grid $grid" $test_vol_fix $test_vol_mov | grep "\[" | awk 'BEGIN{} {print $12}'`
+	echo $bspline -A $hardware -G $gpuid -f ${flavors[$f]} -M $metric -m 0 -s "$grid $grid $grid" $test_vol_fix $test_vol_mov
         out=$out$tmp','
     done
     echo # just a blank line for view pleasure
