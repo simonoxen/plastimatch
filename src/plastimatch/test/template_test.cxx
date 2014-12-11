@@ -33,6 +33,12 @@ template < class G > void d (int x) {
     G::g (x);
 }
 
+/* Even more complex */
+
+template < class J, template<class J> class I> void h (J x) {
+    I<J>::g (x);
+}
+
 int main 
 (
     int argc,
@@ -43,4 +49,5 @@ int main
     a<c>(x);
     G<int>::g (x);
     d< G<int> >(x);
+    h< int, G >(x);
 }
