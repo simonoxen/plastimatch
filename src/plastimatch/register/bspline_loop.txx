@@ -176,16 +176,23 @@ bspline_loop_a (Bspline_optimize *bod)
     delete timer;
 }
 
-typedef void (*Bspline_score_function_b) (
-    float m_val,              /* Input:  value in moving image */
-    float f_val               /* Input:  value in fixed image */
+typedef void (*Bspline_loop_function_b) (
+    Bspline_optimize *bod,    /* In/out: generic optimization data */
+    plm_long fidx,            /* Input:  index of voxel in fixed image */
+    plm_long midx_f,          /* Input:  index (floor) in moving image*/
+    plm_long mijk_r[3],       /* Input:  coords (rounded) in moving image*/
+    plm_long pidx,            /* Input:  Region index of fixed voxel */
+    plm_long qidx,            /* Input:  Offset index of fixed voxel */
+    float li_1[3],            /* Input:  linear interpolation fraction */
+    float li_2[3],            /* Input:  linear interpolation fraction */
+    void *user_data           /* In/out: private function data */
 );
 
 /* This is version "b" of the template, which is a merged version of 
    mse "c" and mi "c" */
-template< Bspline_score_function_b bspline_score_function_b >
+template< Bspline_loop_function_b bspline_loop_function_b >
 void
-bspline_loop_b (Bspline_optimize *bod)
+bspline_loop_b (Bspline_optimize *bod, void *user_data)
 {
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
@@ -198,14 +205,14 @@ bspline_loop_b (Bspline_optimize *bod)
     Volume *moving_grad = parms->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
-    plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
+    plm_long fijk[3], fidx;     /* Indices within fixed image (vox) */
     float mijk[3];              /* Indices within moving image (vox) */
     float fxyz[3];              /* Position within fixed image (mm) */
     float mxyz[3];              /* Position within moving image (mm) */
-    plm_long mijk_f[3], mvf;      /* Floor */
-    plm_long mijk_r[3], mvr;      /* Round */
-    plm_long p[3], pidx;          /* Region index of fixed voxel */
-    plm_long q[3], qidx;          /* Offset index of fixed voxel */
+    plm_long mijk_f[3], mvf;    /* Floor */
+    plm_long mijk_r[3], mvr;    /* Round */
+    plm_long p[3], pidx;        /* Region index of fixed voxel */
+    plm_long q[3], qidx;        /* Offset index of fixed voxel */
 
     float dc_dv[3];
     float li_1[3];           /* Fraction of interpolant in lower index */
@@ -297,10 +304,14 @@ bspline_loop_b (Bspline_optimize *bod)
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Compute linear index of fixed image voxel */
-                fv = volume_index (fixed->dim, fijk);
+                fidx = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
                 mvf = volume_index (moving->dim, mijk_f);
+
+                /* Run the target function */
+                bspline_loop_function_b (bod, fidx, mvf, mijk_r, 
+                    pidx, qidx, li_1, li_2, user_data);
 
 #if defined (commentout)
                 /* MSE */
