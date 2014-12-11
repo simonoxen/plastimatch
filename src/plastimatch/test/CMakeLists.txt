@@ -30,6 +30,9 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (test_overflow test_overflow.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+    plm_add_executable (template_test template_test.cxx
+	"" "" 
+	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
     # Test executable -- cuda
     if (CUDA_FOUND)
