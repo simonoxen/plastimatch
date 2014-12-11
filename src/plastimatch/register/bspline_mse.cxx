@@ -927,7 +927,7 @@ bspline_score_c_mse (
 }
 
 /* -----------------------------------------------------------------------
-   FUNCTION: bspline_score_k_mse()
+   FUNCTION: bspline_score_k_mse(), bspline_score_l_mse()
 
    This is the same as 'c', except using templates.
 
@@ -939,15 +939,19 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
+    bspline_loop_a<bspline_mse_score_function_a> (bod);
+}
+
+void
+bspline_score_l_mse (
+    Bspline_optimize *bod
+)
+{
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score *ssd = &bst->ssd;
 
-#if defined (commentout)
-    bspline_loop_a<bspline_mse_score_function_a> (bod);
-#endif
-    
     double score_acc = 0.;
 
     Plm_timer* timer = new Plm_timer;
