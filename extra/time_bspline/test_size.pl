@@ -2,7 +2,7 @@
 
 @sizes = ( 100, 200, 300 );
 #@sizes = ( 100 );
-@flavors = ( c, k );
+@flavors = ( l, c );
 #@flavors = ( f );
 
 foreach $s (@sizes) {

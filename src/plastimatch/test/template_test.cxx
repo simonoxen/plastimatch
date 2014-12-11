@@ -34,7 +34,6 @@ template < class G > void d (int x) {
 }
 
 /* Even more complex */
-
 template < class J, template<class J> class I> void h (J x) {
     I<J>::g (x);
 }

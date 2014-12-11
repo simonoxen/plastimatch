@@ -176,21 +176,12 @@ bspline_loop_a (Bspline_optimize *bod)
     delete timer;
 }
 
-typedef void (*Bspline_loop_function_b) (
-    Bspline_optimize *bod,    /* In/out: generic optimization data */
-    plm_long fidx,            /* Input:  index of voxel in fixed image */
-    plm_long midx_f,          /* Input:  index (floor) in moving image*/
-    plm_long mijk_r[3],       /* Input:  coords (rounded) in moving image*/
-    plm_long pidx,            /* Input:  Region index of fixed voxel */
-    plm_long qidx,            /* Input:  Offset index of fixed voxel */
-    float li_1[3],            /* Input:  linear interpolation fraction */
-    float li_2[3],            /* Input:  linear interpolation fraction */
-    void *user_data           /* In/out: private function data */
-);
+//#define VERSION_1 1
+#define VERSION_2 1
 
 /* This is version "b" of the template, which is a merged version of 
    mse "c" and mi "c" */
-template< Bspline_loop_function_b bspline_loop_function_b >
+template< class Bspline_loop_class >
 void
 bspline_loop_b (Bspline_optimize *bod, void *user_data)
 {
@@ -310,8 +301,18 @@ bspline_loop_b (Bspline_optimize *bod, void *user_data)
                 mvf = volume_index (moving->dim, mijk_f);
 
                 /* Run the target function */
-                bspline_loop_function_b (bod, fidx, mvf, mijk_r, 
+#if defined (VERSION_1)
+                Bspline_loop_class::loop_function (
+                    bod, fidx, mvf, mijk_r, 
                     pidx, qidx, li_1, li_2, user_data);
+#endif
+#if defined (VERSION_2)
+                Bspline_loop_class::loop_function (
+                    bod, ssd, 
+                    moving, f_img, m_img, m_grad, 
+                    fidx, mvf, mijk_r, 
+                    pidx, qidx, li_1, li_2, user_data);
+#endif
 
 #if defined (commentout)
                 /* MSE */
