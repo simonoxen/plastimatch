@@ -763,6 +763,9 @@ bspline_score_c_mse (
     Bspline_optimize *bod
 )
 {
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
+
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
@@ -819,9 +822,6 @@ bspline_score_c_mse (
         corr_fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     /* GCS FIX: region of interest is not used */
     LOOP_Z (fijk, fxyz, fixed) {
@@ -939,7 +939,7 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    bspline_loop_a<bspline_mse_score_function_a> (bod);
+    bspline_loop_k<bspline_mse_score_function_k> (bod);
 }
 
 void
@@ -947,17 +947,15 @@ bspline_score_l_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_parms *parms = bod->get_bspline_parms ();
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
+
     Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
     Bspline_score *ssd = &bst->ssd;
 
     double score_acc = 0.;
 
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
-    bspline_loop_b<Bspline_mse_score_function_b> (bod, 
+    bspline_loop_l<Bspline_mse_score_function_l> (bod, 
         //(void*) &score_acc
         score_acc
     );
@@ -974,6 +972,26 @@ bspline_score_m_mse (
     Bspline_optimize *bod
 )
 {
+    /* The timer should be moved back into bspline_loop, however 
+       it requires that start/end routines for bspline_loop_user 
+       have consistent interface for all users */
+       
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
+
+    Bspline_score *ssd = &bod->get_bspline_state()->ssd;
+
+    /* Create/initialize bspline_loop_user */
+    Bspline_mse_m bmsf (bod);
+
+    /* Run the loop */
+    bspline_loop_m (bmsf, bod);
+
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, bmsf.score_acc);
+
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 void

@@ -3,7 +3,8 @@
 @sizes = ( 100, 200, 300 );
 #@sizes = ( 100 );
 @flavors = ( c, l, k );
-#@flavors = ( f );
+@flavors = ( c, 'm' );
+#@flavors = ( 'm' );
 
 foreach $s (@sizes) {
     $cmd = "plastimatch synth --output size_test_fixed.mha --pattern gauss --gauss-center \"0 0 0\" --dim=$s";
