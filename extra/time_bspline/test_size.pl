@@ -15,6 +15,7 @@ foreach $s (@sizes) {
     # Throw one away
     $f = @flavors[0];
     $cmd = "bspline -A cpu -G 0 -f $f -M mse -m 0 -s \"15 15 15\" ./size_test_fixed.mha ./size_test_moving.mha";
+    `$cmd`;
 
     foreach $repeat (0..2) {
     foreach $f (@flavors) {
