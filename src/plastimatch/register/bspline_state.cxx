@@ -10,12 +10,6 @@
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
-#if (OPENMP_FOUND)
-#include <omp.h>
-#endif
-#if (SSE2_FOUND)
-#include <xmmintrin.h>
-#endif
 
 #include "bspline.h"
 #if (CUDA_FOUND)
