@@ -17,10 +17,10 @@
 #include "string_util.h"
 
 /* Similar to above, but more complex */
-template< class Bspline_loop_class >
+template< class Bspline_loop_user >
 void
 bspline_loop_k (
-    Bspline_loop_class& bspline_loop_class,
+    Bspline_loop_user& bspline_loop_user,
     Bspline_optimize *bod
 )
 {
@@ -30,15 +30,15 @@ bspline_loop_k (
 
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume *fixed_roi  = parms->fixed_roi;
+    Volume *moving_roi = parms->moving_roi;
 
     Bspline_score* ssd = &bst->ssd;
     plm_long fijk[3], fidx;     /* Indices within fixed image (vox) */
     float mijk[3];              /* Indices within moving image (vox) */
     float fxyz[3];              /* Position within fixed image (mm) */
     float mxyz[3];              /* Position within moving image (mm) */
-    plm_long mijk_f[3], mvf;    /* Floor */
+    plm_long mijk_f[3], midx_f;    /* Floor */
     plm_long mijk_r[3];         /* Round */
     plm_long p[3], pidx;        /* Region index of fixed voxel */
     plm_long q[3], qidx;        /* Offset index of fixed voxel */
@@ -119,64 +119,14 @@ bspline_loop_k (
                 fidx = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = volume_index (moving->dim, mijk_f);
+                midx_f = volume_index (moving->dim, mijk_f);
 
                 /* Run the target function */
-                bspline_loop_class.loop_function (
-                    bod, bxf, ssd, 
-                    moving, f_img, m_img, 
-                    //m_grad, 
-                    fidx, mvf, mijk_r, 
+                bspline_loop_user.loop_function (
+                    bod, bxf, bst, ssd, 
+                    fixed, moving, f_img, m_img, 
+                    fidx, midx_f, mijk_r, 
                     pidx, qidx, li_1, li_2);
-
-#if defined (commentout)
-                /* MSE */
-                /* Compute moving image intensity using linear interpolation */
-                /* Macro is slightly faster than function */
-                LI_VALUE (m_val, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
-
-                /* This replaces the commented out code */
-                double score_incr;
-                mvr = volume_index (moving->dim, mijk_r);
-                bspline_score_function (
-                    score_incr,
-                    dc_dv,
-                    m_val,
-                    f_img[fv],
-                    &m_grad[3*mvr]);
-                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
-                score_acc += score_incr;
-                ssd->num_vox++;
-
-                /* MI PASS #1 */
-                LI_VALUE (m_val, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving
-                );
-                /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                bspline_mi_hist_add_pvi_8 (
-                    mi_hist, fixed, moving, 
-                    fv, mvf, li_1, li_2
-                );
-
-                
-                /* MI PASS #2 */
-                /* Compute dc_dv */
-                bspline_mi_pvi_8_dc_dv_dcos (
-                    dc_dv, mi_hist, bst,
-                    fixed, moving, 
-                    fv, mvf, mijk,
-                    num_vox_f, li_1, li_2
-                );
-                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
-#endif
-                
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
     } /* LOOP_THRU_ROI_Z */
@@ -186,7 +136,6 @@ bspline_loop_k (
         fclose (dc_dv_fp);
         fclose (corr_fp);
     }
-
 }
 
 #endif

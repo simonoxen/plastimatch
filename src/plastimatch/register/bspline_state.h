@@ -31,6 +31,10 @@ public:
     void* dev_ptrs;      /* GPU Device Pointers */
     Bspline_regularize rst;   /* Analytic regularization */
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
+public:
+    Bspline_score* get_bspline_score () {
+        return &ssd;
+    }
 };
 
 #endif

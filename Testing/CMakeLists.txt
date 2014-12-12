@@ -27,6 +27,8 @@ set (CONFIG_FILE_LIST
   "plm-bsp-single-c.txt"
   "plm-bsp-single-h.txt"
   "plm-bsp-single-k.txt"
+  "plm-bsp-mi-c.txt"
+  "plm-bsp-mi-k.txt"
   "plm-bsp-cuda.txt"
   "plm-bsp-rect.txt"
   "plm-bsp-resume.txt"
@@ -2408,6 +2410,52 @@ set_tests_properties (plm-bsp-single-k-stats PROPERTIES
   DEPENDS plm-bsp-single-k)
 set_tests_properties (plm-bsp-single-k-check PROPERTIES 
   DEPENDS plm-bsp-single-k-stats)
+
+plm_add_test (
+  "plm-bsp-mi-c" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c.txt"
+  )
+plm_add_test (
+  "plm-bsp-mi-c-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-mi-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-177.0"
+  "-176.0"
+  )
+set_property (TEST plm-bsp-mi-c APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mi-c APPEND PROPERTY DEPENDS gauss-3)
+set_tests_properties (plm-bsp-mi-c-stats PROPERTIES 
+  DEPENDS plm-bsp-mi-c)
+set_tests_properties (plm-bsp-mi-c-check PROPERTIES 
+  DEPENDS plm-bsp-mi-c-stats)
+
+plm_add_test (
+  "plm-bsp-mi-k" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-k.txt"
+  )
+plm_add_test (
+  "plm-bsp-mi-k-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-k-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-mi-k-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-k-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-177.0"
+  "-176.0"
+  )
+set_property (TEST plm-bsp-mi-k APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mi-k APPEND PROPERTY DEPENDS gauss-3)
+set_tests_properties (plm-bsp-mi-k-stats PROPERTIES 
+  DEPENDS plm-bsp-mi-k)
+set_tests_properties (plm-bsp-mi-k-check PROPERTIES 
+  DEPENDS plm-bsp-mi-k-stats)
 
 plm_add_test (
   "plm-bsp-openmp" 

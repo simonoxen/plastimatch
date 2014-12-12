@@ -24,12 +24,13 @@ public:
     void
     loop_function (
         Bspline_optimize *bod,    /* In/out: generic optimization data */
-        Bspline_xform *bxf,
-        Bspline_score *ssd,
-        Volume *moving,
-        float* f_img,
-        float* m_img,
-//        float* m_grad,
+        Bspline_xform *bxf,       /* Input:  coefficient values */
+        Bspline_state *bst,       /* Input:  state of bspline */
+        Bspline_score *ssd,       /* In/out: score and gradient */
+        const Volume *fixed,      /* Input:  fixed image */
+        const Volume *moving,     /* Input:  moving image */
+        const float *f_img,       /* Input:  raw intensity array for fixed */
+        const float *m_img,       /* Input:  raw intensity array for moving */
         plm_long fidx,            /* Input:  index of voxel in fixed image */
         plm_long midx_f,          /* Input:  index (floor) in moving image*/
         plm_long mijk_r[3],       /* Input:  coords (rounded) in moving image*/

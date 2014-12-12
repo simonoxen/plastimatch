@@ -499,7 +499,8 @@ bspline_score (Bspline_optimize *bod)
         } /* end MSE */
 
         /* Metric: Mutual Information with roi or intensity min/max values*/
-        else if ((parms->metric == BMET_MI && (have_roi || have_histogram_minmax_val)) ) {
+        else if (parms->metric == BMET_MI && (have_roi || have_histogram_minmax_val))
+        {
             switch (parms->implementation) {
             case 'c':
                 bspline_score_c_mi (bod);
@@ -514,6 +515,9 @@ bspline_score (Bspline_optimize *bod)
                 bspline_score_h_mi (bod);
                 break;
 #endif
+            case 'k':
+                bspline_score_k_mi (bod);
+                break;
             default:
 #if (OPENMP_FOUND)
                 bspline_score_h_mi (bod);
@@ -550,6 +554,9 @@ bspline_score (Bspline_optimize *bod)
                 bspline_score_i_mi (bod);
                 break;
 #endif
+            case 'k':
+                bspline_score_k_mi (bod);
+                break;
             default:
 #if (OPENMP_FOUND)
                 bspline_score_g_mi (bod);

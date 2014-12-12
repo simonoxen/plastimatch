@@ -949,13 +949,13 @@ bspline_score_k_mse (
     Bspline_score *ssd = &bod->get_bspline_state()->ssd;
 
     /* Create/initialize bspline_loop_user */
-    Bspline_mse_k bmsf (bod);
+    Bspline_mse_k blu (bod);
 
     /* Run the loop */
-    bspline_loop_k (bmsf, bod);
+    bspline_loop_k (blu, bod);
 
     /* Normalize score for MSE */
-    bspline_score_normalize (bod, bmsf.score_acc);
+    bspline_score_normalize (bod, blu.score_acc);
 
     ssd->time_smetric = timer->report ();
     delete timer;
