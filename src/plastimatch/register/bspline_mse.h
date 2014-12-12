@@ -14,6 +14,8 @@ PLMREGISTER_API void bspline_score_h_mse (Bspline_optimize *bod);
 PLMREGISTER_API void bspline_score_i_mse (Bspline_optimize *bod);
 PLMREGISTER_API void bspline_score_k_mse (Bspline_optimize *bod);
 PLMREGISTER_API void bspline_score_l_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_m_mse (Bspline_optimize *bod);
+PLMREGISTER_API void bspline_score_n_mse (Bspline_optimize *bod);
 
 PLMREGISTER_API void
 bspline_score_normalize (

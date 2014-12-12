@@ -177,13 +177,21 @@ bspline_loop_a (Bspline_optimize *bod)
 }
 
 //#define VERSION_1 1
-#define VERSION_2 1
+//#define VERSION_2 1
+#define VERSION_3 1
 
 /* This is version "b" of the template, which is a merged version of 
    mse "c" and mi "c" */
 template< class Bspline_loop_class >
 void
-bspline_loop_b (Bspline_optimize *bod, void *user_data)
+bspline_loop_b (Bspline_optimize *bod, 
+#if VERSION_1 || VERSION_2
+    void *user_data
+#endif
+#if VERSION_3
+    double& score_acc
+#endif
+)
 {
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
@@ -301,17 +309,24 @@ bspline_loop_b (Bspline_optimize *bod, void *user_data)
                 mvf = volume_index (moving->dim, mijk_f);
 
                 /* Run the target function */
-#if defined (VERSION_1)
+#if VERSION_1
                 Bspline_loop_class::loop_function (
                     bod, fidx, mvf, mijk_r, 
                     pidx, qidx, li_1, li_2, user_data);
 #endif
-#if defined (VERSION_2)
+#if VERSION_2
                 Bspline_loop_class::loop_function (
-                    bod, ssd, 
+                    bod, bxf, ssd, 
                     moving, f_img, m_img, m_grad, 
                     fidx, mvf, mijk_r, 
                     pidx, qidx, li_1, li_2, user_data);
+#endif
+#if VERSION_3
+                Bspline_loop_class::loop_function (
+                    bod, bxf, ssd, 
+                    moving, f_img, m_img, m_grad, 
+                    fidx, mvf, mijk_r, 
+                    pidx, qidx, li_1, li_2, score_acc);
 #endif
 
 #if defined (commentout)

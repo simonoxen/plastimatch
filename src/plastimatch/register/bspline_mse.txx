@@ -24,7 +24,8 @@ bspline_mse_score_function_a (
 }
 
 //#define VERSION_1 1
-#define VERSION_2 1
+//#define VERSION_2 1
+#define VERSION_3 1
 
 class Bspline_mse_score_function_b
 {
@@ -32,7 +33,8 @@ public:
     static void
     loop_function (
         Bspline_optimize *bod,    /* In/out: generic optimization data */
-#if defined (VERSION_2)
+#if VERSION_2 || VERSION_3
+        Bspline_xform *bxf,
         Bspline_score *ssd,
         Volume *moving,
         float* f_img,
@@ -46,12 +48,16 @@ public:
         plm_long qidx,            /* Input:  offset index of fixed voxel */
         float li_1[3],            /* Input:  linear interpolation fraction */
         float li_2[3],            /* Input:  linear interpolation fraction */
+#if VERSION_1 || VERSION_2
         void *user_data           /* In/out: private function data */
-//        double& score_acc
+#endif
+#if VERSION_3
+        double& score_acc
+#endif
     )
     {
+#if VERSION_1
         Bspline_xform *bxf = bod->get_bspline_xform ();
-#if defined (VERSION_1)
         Bspline_parms *parms = bod->get_bspline_parms ();
         Bspline_state *bst = bod->get_bspline_state ();
         Bspline_score *ssd = &bst->ssd;
@@ -65,8 +71,6 @@ public:
 #endif
         float m_val;
         float dc_dv[3];
-
-        double *score_acc = (double*) user_data;
 
         /* Get value in fixed image */
         float f_val = f_img[fidx];
@@ -86,7 +90,13 @@ public:
         float diff = m_val - f_val;
 
         /* Update score */
+#if VERSION_1 || VERSION_2
+        double *score_acc = (double*) user_data;
         *score_acc += diff * diff;
+#endif
+#if VERSION_3
+        score_acc += diff * diff;
+#endif
 
         /* Compute spatial gradient using nearest neighbors */
         dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */

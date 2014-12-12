@@ -957,11 +957,28 @@ bspline_score_l_mse (
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
-    bspline_loop_b<Bspline_mse_score_function_b> (bod, (void*) &score_acc);
+    bspline_loop_b<Bspline_mse_score_function_b> (bod, 
+        //(void*) &score_acc
+        score_acc
+    );
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, score_acc);
 
     ssd->time_smetric = timer->report ();
     delete timer;
+}
+
+void
+bspline_score_m_mse (
+    Bspline_optimize *bod
+)
+{
+}
+
+void
+bspline_score_n_mse (
+    Bspline_optimize *bod
+)
+{
 }
