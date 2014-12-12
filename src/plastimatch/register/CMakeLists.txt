@@ -37,6 +37,7 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_optimize_steepest.cxx
   bspline_parms.cxx bspline_parms.h
   bspline_score.cxx bspline_score.h 
+  bspline_stage.cxx bspline_stage.h 
   bspline_state.cxx bspline_state.h 
   bspline_regularize.cxx bspline_regularize.h 
   bspline_regularize_analytic.cxx
@@ -58,7 +59,6 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx
   itk_tps.cxx
   landmark_warp.cxx 
-  plm_bspline.cxx
   process_parms.cxx
   rbf_cluster.cxx
   rbf_gauss.cxx

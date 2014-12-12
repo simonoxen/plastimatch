@@ -7,6 +7,7 @@
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkMultiThreader.h"
 
+#include "bspline_stage.h"
 #include "bspline_xform.h"
 #include "dlib_threads.h"
 #include "gpuit_demons.h"
@@ -15,7 +16,6 @@
 #include "itk_image_stats.h"
 #include "itk_registration.h"
 #include "logfile.h"
-#include "plm_bspline.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_timer.h"

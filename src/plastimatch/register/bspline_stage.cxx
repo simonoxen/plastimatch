@@ -12,9 +12,9 @@
 #include "bspline_optimize.h"
 #include "bspline_regularize.h"
 #include "bspline_parms.h"
+#include "bspline_stage.h"
 #include "logfile.h"
 #include "mha_io.h"
-#include "plm_bspline.h"
 #include "plm_image_header.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -30,7 +30,7 @@
 #include "volume_resample.h"
 #include "xform.h"
 
-class Plm_bspline_private {
+class Bspline_stage_private {
 public:
     Registration_parms *regp;
     Registration_data *regd;
@@ -46,18 +46,18 @@ public:
     Volume::Pointer f_roi_ss;
     Volume::Pointer m_roi_ss;
 public:
-    Plm_bspline_private () {
+    Bspline_stage_private () {
         xf_out = Xform::New ();
     }
 };
 
-Plm_bspline::Plm_bspline (
+Bspline_stage::Bspline_stage (
     Registration_parms *regp,
     Registration_data *regd,
     const Stage_parms *stage,
     Xform *xf_in)
 {
-    d_ptr = new Plm_bspline_private;
+    d_ptr = new Bspline_stage_private;
     d_ptr->regp = regp;
     d_ptr->regd = regd;
     d_ptr->stage = stage;
@@ -66,7 +66,7 @@ Plm_bspline::Plm_bspline (
     initialize ();
 }
 
-Plm_bspline::~Plm_bspline ()
+Bspline_stage::~Bspline_stage ()
 {
     this->cleanup ();
     delete d_ptr;
@@ -99,7 +99,7 @@ update_roi (Volume::Pointer& roi, Volume::Pointer& image, float min_val,
 }
 
 void
-Plm_bspline::run_stage ()
+Bspline_stage::run_stage ()
 {
     Xform *xf_out = d_ptr->xf_out.get();
     Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
@@ -109,7 +109,7 @@ Plm_bspline::run_stage ()
 }
 
 void
-Plm_bspline::initialize ()
+Bspline_stage::initialize ()
 {
     Registration_data *regd = d_ptr->regd;
     const Stage_parms *stage = d_ptr->stage;
@@ -382,7 +382,7 @@ Plm_bspline::initialize ()
 }
 
 void
-Plm_bspline::cleanup ()
+Bspline_stage::cleanup ()
 {
 }
 
@@ -394,7 +394,7 @@ do_gpuit_bspline_stage (
     const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
-    Plm_bspline pb (regp, regd, stage, xf_in.get());
+    Bspline_stage pb (regp, regd, stage, xf_in.get());
     pb.run_stage ();
     xf_out = pb.d_ptr->xf_out;
     return xf_out;

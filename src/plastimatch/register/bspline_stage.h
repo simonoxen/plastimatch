@@ -1,28 +1,28 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _plm_bspline_h_
-#define _plm_bspline_h_
+#ifndef _bspline_stage_h_
+#define _bspline_stage_h_
 
 #include "plmregister_config.h"
 #include "xform.h"
 
-class Plm_bspline_private;
+class Bspline_stage_private;
 class Registration_parms;
 class Registration_data;
 class Stage_parms;
 class Volume;
 
-class PLMREGISTER_API Plm_bspline {
+class PLMREGISTER_API Bspline_stage {
 public:
-    Plm_bspline_private *d_ptr;
+    Bspline_stage_private *d_ptr;
 public:
-    Plm_bspline (
+    Bspline_stage (
         Registration_parms *regp, 
         Registration_data *regd, 
         const Stage_parms *stage, 
         Xform *xf_in);
-    ~Plm_bspline ();
+    ~Bspline_stage ();
 
 public:
     void run_stage ();
