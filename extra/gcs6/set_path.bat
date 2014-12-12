@@ -23,9 +23,11 @@ if "%COMPUTERNAME%"=="COTTONTAIL" (
   SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.16.0
 ) else if "%COMPUTERNAME%"=="W0109966" (
   echo Setting for W0109966
-  SET ITK_PATH=%HOME%\build\vs2013\itk-4.5.2-shared\bin\Release
   SET FFTW_PATH=%HOME%\build\fftw-3.2.2
+  SET ITK_PATH=%HOME%\build\vs2013\itk-4.5.2-shared\bin\Release
   SET PLASTIMATCH_BASE=%HOME%\build\vs2013\plastimatch
+@rem  SET ITK_PATH=%HOME%\build\vs2008\itk-4.5.2-shared\bin\Release
+@rem  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch
 ) else if "%COMPUTERNAME%"=="RO_GSHARPDIPS" (
   echo Setting for RO_GSHARPDIPS
   SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
