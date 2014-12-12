@@ -64,11 +64,11 @@ enum Stage_type {
 
 enum Registration_metric_type {
     METRIC_NONE,
-    METRIC_MSE,
+    METRIC_GRADIENT_MAGNITUDE,
     METRIC_MI,
     METRIC_MI_MATTES,
-    METRIC_NMI,
-    METRIC_GM
+    METRIC_MSE,
+    METRIC_NMI
 };
 
 enum Resample_type {

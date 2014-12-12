@@ -25,6 +25,7 @@ enum BsplineThreading {
 };
 
 enum BsplineMetric {
+    BMET_GM,
     BMET_MSE,
     BMET_MI
 };
@@ -70,6 +71,7 @@ public:
     /* Image Volumes */
     Volume* fixed;               /* Not owned by Bspline_parms */
     Volume* moving;              /* Not owned by Bspline_parms */
+    Volume* fixed_grad;         /* Not owned by Bspline_parms */
     Volume* moving_grad;         /* Not owned by Bspline_parms */
     Volume* fixed_roi;           /* Not owned by Bspline_parms */
     Volume* moving_roi;          /* Not owned by Bspline_parms */

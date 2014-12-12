@@ -87,7 +87,6 @@ bspline_optimize_liblbfgs (Bspline_optimize *bod)
     lbfgs_parameter_t param;
     lbfgsfloatval_t *x;
 
-    Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
     x = lbfgs_malloc (bxf->num_coeff);

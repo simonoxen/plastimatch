@@ -29,6 +29,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-single-k.txt"
   "plm-bsp-mi-c.txt"
   "plm-bsp-mi-k.txt"
+  "plm-bsp-gm-k.txt"
   "plm-bsp-cuda.txt"
   "plm-bsp-rect.txt"
   "plm-bsp-resume.txt"
@@ -2456,6 +2457,29 @@ set_tests_properties (plm-bsp-mi-k-stats PROPERTIES
   DEPENDS plm-bsp-mi-k)
 set_tests_properties (plm-bsp-mi-k-check PROPERTIES 
   DEPENDS plm-bsp-mi-k-stats)
+
+plm_add_test (
+  "plm-bsp-gm-k" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-gm-k.txt"
+  )
+plm_add_test (
+  "plm-bsp-gm-k-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-gm-k-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-gm-k-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-gm-k-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-177.0"
+  "-176.0"
+  )
+set_property (TEST plm-bsp-gm-k APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-gm-k APPEND PROPERTY DEPENDS gauss-3)
+set_tests_properties (plm-bsp-gm-k-stats PROPERTIES 
+  DEPENDS plm-bsp-gm-k)
+set_tests_properties (plm-bsp-gm-k-check PROPERTIES 
+  DEPENDS plm-bsp-gm-k-stats)
 
 plm_add_test (
   "plm-bsp-openmp" 

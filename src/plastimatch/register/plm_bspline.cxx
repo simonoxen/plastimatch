@@ -39,11 +39,12 @@ public:
     Xform::Pointer xf_out;
     Bspline_parms bsp_parms;
 
-    Volume::Pointer moving_ss;
     Volume::Pointer fixed_ss;
+    Volume::Pointer moving_ss;
+    Volume::Pointer fixed_grad;
     Volume::Pointer moving_grad;
-    Volume::Pointer m_roi_ss;
     Volume::Pointer f_roi_ss;
+    Volume::Pointer m_roi_ss;
 public:
     Plm_bspline_private () {
         xf_out = Xform::New ();
@@ -224,12 +225,19 @@ Plm_bspline::initialize ()
     /* Make spatial gradient image */
     Volume *moving_grad = volume_make_gradient (d_ptr->moving_ss.get());
     d_ptr->moving_grad = Volume::New (moving_grad);
+    if (stage->metric_type == METRIC_GRADIENT_MAGNITUDE) {
+        Volume *fixed_grad = volume_make_gradient (d_ptr->fixed_ss.get());
+        d_ptr->fixed_grad = Volume::New (fixed_grad);
+    }
 
     /* --- Initialize parms --- */
 
     /* Images */
     bsp_parms->fixed = d_ptr->fixed_ss.get();
     bsp_parms->moving = d_ptr->moving_ss.get();
+    if (d_ptr->fixed_grad) {
+        bsp_parms->fixed_grad = d_ptr->fixed_grad.get();
+    }
     bsp_parms->moving_grad = d_ptr->moving_grad.get();
     if (f_roi) {
         bsp_parms->fixed_roi = d_ptr->f_roi_ss.get();
@@ -250,6 +258,9 @@ Plm_bspline::initialize ()
 
     /* Metric */
     switch (stage->metric_type) {
+    case METRIC_GRADIENT_MAGNITUDE:
+        bsp_parms->metric = BMET_GM;
+        break;
     case METRIC_MSE:
         bsp_parms->metric = BMET_MSE;
         break;

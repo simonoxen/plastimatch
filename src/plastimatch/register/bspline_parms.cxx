@@ -36,6 +36,7 @@ Bspline_parms::Bspline_parms ()
 
     this->fixed = NULL;
     this->moving = NULL;
+    this->fixed_grad = NULL;
     this->moving_grad = NULL;
     this->fixed_roi = NULL;
     this->moving_roi = NULL;

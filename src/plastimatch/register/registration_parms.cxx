@@ -508,7 +508,13 @@ Registration_parms::set_key_value (
     }
     else if (key == "metric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (val == "mse" || val == "MSE") {
+        if (val == "gm") {
+            stage->metric_type = METRIC_GRADIENT_MAGNITUDE;
+        }
+        else if (val == "mattes") {
+            stage->metric_type = METRIC_MI_MATTES;
+        }
+        else if (val == "mse" || val == "MSE") {
             stage->metric_type = METRIC_MSE;
         }
         else if (val == "mi" || val == "MI") {
@@ -516,9 +522,6 @@ Registration_parms::set_key_value (
         }
         else if (val == "nmi" || val == "NMI") {
             stage->metric_type = METRIC_NMI;
-        }
-        else if (val == "mattes") {
-            stage->metric_type = METRIC_MI_MATTES;
         }
         else {
             goto error_exit;
