@@ -939,39 +939,6 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    bspline_loop_k<bspline_mse_score_function_k> (bod);
-}
-
-void
-bspline_score_l_mse (
-    Bspline_optimize *bod
-)
-{
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
-    Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_score *ssd = &bst->ssd;
-
-    double score_acc = 0.;
-
-    bspline_loop_l<Bspline_mse_score_function_l> (bod, 
-        //(void*) &score_acc
-        score_acc
-    );
-
-    /* Normalize score for MSE */
-    bspline_score_normalize (bod, score_acc);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
-}
-
-void
-bspline_score_m_mse (
-    Bspline_optimize *bod
-)
-{
     /* The timer should be moved back into bspline_loop, however 
        it requires that start/end routines for bspline_loop_user 
        have consistent interface for all users */
@@ -982,16 +949,30 @@ bspline_score_m_mse (
     Bspline_score *ssd = &bod->get_bspline_state()->ssd;
 
     /* Create/initialize bspline_loop_user */
-    Bspline_mse_m bmsf (bod);
+    Bspline_mse_k bmsf (bod);
 
     /* Run the loop */
-    bspline_loop_m (bmsf, bod);
+    bspline_loop_k (bmsf, bod);
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, bmsf.score_acc);
 
     ssd->time_smetric = timer->report ();
     delete timer;
+}
+
+void
+bspline_score_l_mse (
+    Bspline_optimize *bod
+)
+{
+}
+
+void
+bspline_score_m_mse (
+    Bspline_optimize *bod
+)
+{
 }
 
 void
