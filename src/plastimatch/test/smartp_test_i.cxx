@@ -1,7 +1,19 @@
 #include <stdio.h>
-//#include <tr1/memory>
+
 #include "smart_pointer.h"
-//#include "dlib/smart_pointers.h"
+
+# if SHARED_PTR_USE_MEMORY
+#  include <memory>
+#  define plm_shared_ptr std::shared_ptr
+# elif TR1_SHARED_PTR_USE_TR1_MEMORY
+#  include <tr1/memory>
+#  define plm_shared_ptr std::tr1::shared_ptr
+# elif TR1_SHARED_PTR_USE_MEMORY
+#  include <memory>
+#  define plm_shared_ptr std::tr1::shared_ptr
+# endif
+
+#include "dlib/smart_pointers.h"
 
 class A {
 public:
@@ -14,6 +26,8 @@ public:
     ~A () {
         delete val;
     }
+private:
+    A (const A&);
 };
 
 void
@@ -52,6 +66,8 @@ public:
 //    static B::Pointer New () {
 //        return B::Pointer (new B);
 //    }
+private:
+    B (const B&);
 };
 
 void
@@ -74,15 +90,45 @@ test_2 ()
 #endif
 }
 
+class C {
+public:
+    typedef plm_shared_ptr<C> Pointer;
+#if defined (commentout)
+    template<class U1, class U2, class U3,
+             class U4, class U5, class U6
+             > static C::Pointer New (
+                 U1 u1, U2 u2, U3 u3,
+                 U4 u4, U5 u5, U6 u6
+             ) {
+        return C::Pointer (new C (u1, u2, u3, u4, u5, u6));
+    }
+#endif
+    template<class U1, class U2, class U3,
+             class U4, class U5, class U6
+             > static C::Pointer New (
+                 U1& u1, U2& u2, U3& u3,
+                 U4& u4, U5& u5, U6& u6
+             ) {
+        return C::Pointer (new C (u1, u2, u3, u4, u5, u6));
+    }
+public:
+    int *val;
+public:
+    C (const A& a, B& b, A& c, B& d, B& e, A& f) {
+        val = new int;
+        *val = 3;
+    }
+    ~C () {
+        delete val;
+    }
+};
+
 void
 test_3 ()
 {
-#if defined (commentout)
-    std::tr1::shared_ptr<A> a (new A);
-
-    /* This doesn't compile */
-    a = 0;
-#endif
+    A a;
+    B b;
+    C::Pointer c = C::New (a, b, a, b, b, a);
 }
 
 int 

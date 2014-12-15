@@ -19,20 +19,20 @@ typedef itk::Matrix < double, 3, 3 > DirectionType;
 class Direction_cosines_private;
 
 class PLMBASE_API Direction_cosines {
-  public:
+public:
     Direction_cosines_private *d_ptr;
 
-  public:
+public:
     Direction_cosines ();
     Direction_cosines (const float *dm);
     Direction_cosines (const DirectionType& itk_dc);
     ~Direction_cosines ();
 
-  public:
+public:
     operator const float* () const;
     operator float* ();
     bool operator==(const Direction_cosines& dc) const;
-  public:
+public:
     void set_identity ();
 
     /* Presets */
@@ -51,6 +51,9 @@ class PLMBASE_API Direction_cosines {
     std::string get_string () const;
 protected:
     void solve_inverse ();
+private:
+    Direction_cosines (const Direction_cosines&);
+    void operator= (const Direction_cosines&);
 };
 
 #endif

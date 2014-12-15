@@ -388,6 +388,7 @@ else ()
   set (SSE2_FOUND false)
 endif ()
 find_package (Subversion)
+find_package (TR1)
 find_package (wxWidgets)
 
 ##-----------------------------------------------------------------------------

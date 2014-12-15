@@ -23,6 +23,15 @@ include (CheckCXXSourceCompiles)
 
 check_cxx_source_compiles(
     "
+        #include <memory>
+        int main() {
+            std::shared_ptr<int> ptr;
+            return 0;
+        }
+    "
+    SHARED_PTR_USE_MEMORY)
+check_cxx_source_compiles(
+    "
         #include <tr1/memory>
         int main() {
             std::tr1::shared_ptr<int> ptr;
@@ -40,50 +49,18 @@ check_cxx_source_compiles(
     "
     TR1_SHARED_PTR_USE_MEMORY)
 
-set (TR1_SHARED_PTR -NOTFOUND)
+set (SHARED_PTR -NOTFOUND)
+if (SHARED_PTR_USE_MEMORY)
+  set (SHARED_PTR_FOUND TRUE)
+endif ()
 if (TR1_SHARED_PTR_USE_TR1_MEMORY)
-  set (TR1_SHARED_PTR_FOUND TRUE)
-endif (TR1_SHARED_PTR_USE_TR1_MEMORY)
+  set (SHARED_PTR_FOUND TRUE)
+endif ()
 if (TR1_SHARED_PTR_USE_MEMORY)
-  set (TR1_SHARED_PTR_FOUND TRUE)
-endif (TR1_SHARED_PTR_USE_MEMORY)
+  set (SHARED_PTR_FOUND TRUE)
+endif ()
 
-mark_as_advanced (TR1_SHARED_PTR_FOUND)
+mark_as_advanced (SHARED_PTR_FOUND)
+mark_as_advanced (SHARED_PTR_USE_MEMORY)
 mark_as_advanced (TR1_SHARED_PTR_USE_TR1_MEMORY)
 mark_as_advanced (TR1_SHARED_PTR_USE_MEMORY)
-
-# ---------------------------------------------------------------------------
-# std::tr1::unordered_map<K, V>
-# ---------------------------------------------------------------------------
-
-check_cxx_source_compiles(
-    "
-        #include <tr1/unordered_map>
-        int main() {
-            std::tr1::unordered_map<int, int> m;
-            return 0;
-        }
-    "
-    TR1_UNORDERED_MAP_USE_TR1_UNORDERED_MAP)
-check_cxx_source_compiles(
-    "
-        #include <unordered_map>
-        int main() {
-            std::tr1::unordered_map<int, int> m;
-            return 0;
-        }
-    "
-    TR1_UNORDERED_MAP_USE_UNORDERED_MAP)
-
-set (TR1_UNORDERED_MAP -NOTFOUND)
-if (TR1_UNORDERED_MAP_USE_TR1_UNORDERED_MAP)
-  set (TR1_UNORDERED_MAP_FOUND TRUE)
-endif (TR1_UNORDERED_MAP_USE_TR1_UNORDERED_MAP)
-if (TR1_UNORDERED_MAP_USE_UNORDERED_MAP)
-  set (TR1_UNORDERED_MAP_FOUND TRUE)
-endif (TR1_UNORDERED_MAP_USE_UNORDERED_MAP)
-
-mark_as_advanced (TR1_UNORDERED_MAP_FOUND)
-mark_as_advanced (TR1_UNORDERED_MAP_USE_TR1_UNORDERED_MAP)
-mark_as_advanced (TR1_UNORDERED_MAP_USE_UNORDERED_MAP)
-

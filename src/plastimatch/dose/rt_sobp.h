@@ -33,7 +33,7 @@ public:
 public:
     Rt_sobp ();
     Rt_sobp (Particle_type part);
-    Rt_sobp (Rt_sobp::Pointer& rt_sobp);
+    Rt_sobp (const Rt_sobp::Pointer& rt_sobp);
     ~Rt_sobp ();
 
     void set_resolution (double dres, int num_samples);

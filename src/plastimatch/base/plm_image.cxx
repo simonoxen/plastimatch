@@ -89,7 +89,7 @@ Plm_image::Plm_image (Volume::Pointer& vol)
     this->init ();
     this->set_volume (vol);
 }
-Plm_image::Plm_image (Volume *vol)
+Plm_image::Plm_image (Volume* vol)
 {
     this->init ();
     this->set_volume (vol);

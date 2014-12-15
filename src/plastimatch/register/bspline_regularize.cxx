@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 
+#include <stdlib.h>
 #include "bspline_regularize.h"
 #include "print_and_exit.h"
 

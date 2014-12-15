@@ -27,7 +27,7 @@ Rt_sobp::Rt_sobp (Particle_type part)
     d_ptr = new Rt_sobp_private(part);
 }
 
-Rt_sobp::Rt_sobp (Rt_sobp::Pointer& rt_sobp)
+Rt_sobp::Rt_sobp (const Rt_sobp::Pointer& rt_sobp)
 {
     d_ptr = new Rt_sobp_private (rt_sobp->d_ptr);
 }
