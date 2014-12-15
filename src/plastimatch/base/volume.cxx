@@ -63,6 +63,18 @@ Volume::Volume (
 }
 
 Volume::Volume (
+    const plm_long dim[3], 
+    const float offset[3], 
+    const float spacing[3], 
+    const Direction_cosines& direction_cosines, 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes
+) {
+    create (dim, offset, spacing, direction_cosines.get_matrix(), 
+        vox_type, vox_planes);
+}
+
+Volume::Volume (
     const Volume_header& vh, 
     enum Volume_pixel_type vox_type, 
     int vox_planes
@@ -214,12 +226,6 @@ Volume::set_origin (const float origin[3])
     for (int d = 0; d < 3; d++) {
         this->offset[d] = origin[d];
     }
-}
-
-float*
-Volume::get_direction_cosines ()
-{
-    return this->direction_cosines;
 }
 
 void 

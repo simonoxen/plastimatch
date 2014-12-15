@@ -11,8 +11,6 @@
 #include "smart_pointer.h"
 #include "volume_macros.h"
 
-//TODO: Change type of directions_cosines to Direction_cosines*
-
 class Volume_header;
 
 enum Volume_pixel_type {
@@ -63,6 +61,14 @@ public:
         const float offset[3], 
         const float spacing[3], 
         const float direction_cosines[9], 
+        enum Volume_pixel_type vox_type, 
+        int vox_planes
+    );
+    Volume (
+        const plm_long dim[3], 
+        const float offset[3], 
+        const float spacing[3], 
+        const Direction_cosines& direction_cosines, 
         enum Volume_pixel_type vox_type, 
         int vox_planes
     );
@@ -120,7 +126,18 @@ public:
       of the volume in world space as one traverses the pixels
       in the raw array of values.
     */
-    float* get_direction_cosines (void);
+    Direction_cosines& get_direction_cosines (void) {
+        return direction_cosines;
+    }
+    const Direction_cosines& get_direction_cosines (void) const {
+        return direction_cosines;
+    }
+    float* get_direction_matrix (void) {
+        return direction_cosines.get_matrix();
+    }
+    const float* get_direction_matrix (void) const {
+        return direction_cosines.get_matrix();
+    }
     /*! \brief Set the direction cosines.  
       Direction cosines hold the orientation of a volume. 
       They are defined as the unit length direction vectors 

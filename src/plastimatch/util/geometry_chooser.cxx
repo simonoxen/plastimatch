@@ -140,7 +140,8 @@ Geometry_chooser::set_spacing (const float spacing[3])
 }
 
 void 
-Geometry_chooser::set_direction_cosines (const float direction_cosines[9])
+Geometry_chooser::set_direction_cosines (
+    const Direction_cosines& direction_cosines)
 {
     d_ptr->pih_manual.set_direction_cosines (direction_cosines);
     d_ptr->have_direction_cosines = true;

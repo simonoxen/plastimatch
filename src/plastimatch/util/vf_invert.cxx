@@ -90,7 +90,8 @@ Vf_invert::set_spacing (const float spacing[3])
 void 
 Vf_invert::set_direction_cosines (const float direction_cosines[9])
 {
-    d_ptr->gchooser.set_direction_cosines (direction_cosines);
+    Direction_cosines dc (direction_cosines);
+    d_ptr->gchooser.set_direction_cosines (dc);
 }
 
 void 

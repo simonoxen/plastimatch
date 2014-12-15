@@ -8,6 +8,7 @@
 #include "itk_image_type.h"
 #include "plm_int.h"
 
+class Direction_cosines;
 class Geometry_chooser_private;
 class Plm_image_header;
 
@@ -60,7 +61,7 @@ public:
     /*! \brief Set the image spacing manually. */
     void set_spacing (const float spacing[3]);
     /*! \brief Set the image direction cosines manually. */
-    void set_direction_cosines (const float direction_cosines[9]);
+    void set_direction_cosines (const Direction_cosines& direction_cosines);
     ///@}
 
     /*! \name Outputs */

@@ -123,6 +123,12 @@ but it becomes non-alphabetic:
 
   calling_a_function (region, origin, spacing, direction_cosines);
 
+Direction_cosines, direction_matrix, Itk_direction
+--------------------------------------------------
+A "direction matrix" is a raw matrix of nine numbers.
+The ITK version is called an Itk_direction.
+A Direction_cosine is a container that also holds the inverse.
+
 UChar, Char, ...
 ----------------
 The ordering is: 

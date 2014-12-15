@@ -514,7 +514,7 @@ Dcmtk_rt_study::save_image (
     dsd.vol = this->get_image_volume_float();
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
-    float *dc = dsd.vol->direction_cosines.get();
+    float *dc = dsd.vol->get_direction_matrix();
     dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[3], dc[6], dc[1], dc[4], dc[7]);
 

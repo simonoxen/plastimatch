@@ -84,7 +84,7 @@ deduce_geometry (Resample_parms* parms)
 	have_geometry = true;
     } 
     if (parms->m_have_direction_cosines) {
-        parms->gchooser.set_direction_cosines (parms->m_dc.get());
+        parms->gchooser.set_direction_cosines (parms->m_dc);
     }
     return have_geometry;
 }

@@ -24,6 +24,7 @@ class PLMBASE_API Direction_cosines {
 
   public:
     Direction_cosines ();
+    Direction_cosines (const float *dm);
     Direction_cosines (const DirectionType& itk_dc);
     ~Direction_cosines ();
 
@@ -40,8 +41,8 @@ class PLMBASE_API Direction_cosines {
     void set_rotated_3 ();
     void set_skewed ();
 
-    const float* get () const;
-    float* get ();
+    const float* get_matrix () const;
+    float* get_matrix ();
     const float* get_inverse () const;
     void set (const float dc[]);
     void set (const DirectionType& itk_dc);

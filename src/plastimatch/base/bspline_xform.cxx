@@ -127,7 +127,7 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
         (unsigned int) bxf->vox_per_rgn[0], 
         (unsigned int) bxf->vox_per_rgn[1], 
         (unsigned int) bxf->vox_per_rgn[2]);
-    float *direction_cosines = bxf->dc.get ();
+    float *direction_cosines = bxf->dc.get_matrix ();
     fprintf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n", 
         direction_cosines[0], 
         direction_cosines[1], 
@@ -616,5 +616,5 @@ void
 Bspline_xform::get_volume_header (Volume_header *vh)
 {
     vh->set (this->img_dim, this->img_origin, this->img_spacing, 
-        this->dc.get());
+        this->dc.get_matrix());
 }

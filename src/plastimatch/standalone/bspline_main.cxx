@@ -96,7 +96,7 @@ main (int argc, char* argv[])
             roi_offset,
             fixed->dim,
             options.vox_per_rgn,
-            fixed->direction_cosines.get()
+            fixed->get_direction_matrix()
         );
     }
 

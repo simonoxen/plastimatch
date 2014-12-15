@@ -24,6 +24,12 @@ Direction_cosines::Direction_cosines ()
     this->set_identity ();
 }
 
+Direction_cosines::Direction_cosines (const float *dm)
+{
+    this->d_ptr = new Direction_cosines_private;
+    this->set (dm);
+}
+
 Direction_cosines::Direction_cosines (const DirectionType& itk_dc)
 {
     this->d_ptr = new Direction_cosines_private;
@@ -177,13 +183,13 @@ Direction_cosines::set (const DirectionType& itk_dc)
 }
 
 const float *
-Direction_cosines::get () const
+Direction_cosines::get_matrix () const
 {
     return d_ptr->direction_matrix;
 }
 
 float *
-Direction_cosines::get ()
+Direction_cosines::get_matrix ()
 {
     return d_ptr->direction_matrix;
 }
