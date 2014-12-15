@@ -14,6 +14,7 @@
 #include "registration_data.h"
 #include "stage_parms.h"
 #include "volume.h"
+#include "volume_grad.h"
 #include "volume_resample.h"
 #include "xform.h"
 
@@ -49,7 +50,7 @@ do_gpuit_demons_stage_internal (
     fixed_ss = volume_subsample_vox_legacy (
         fixed, stage->resample_rate_fixed);
 
-    moving_grad = Volume::New(volume_make_gradient (moving_ss.get()));
+    moving_grad = Volume::New (volume_make_gradient (moving_ss.get()));
 
     demons_default_parms (&parms);
     parms.max_its = stage->max_its;

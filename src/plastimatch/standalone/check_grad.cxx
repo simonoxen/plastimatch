@@ -18,6 +18,7 @@
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "volume.h"
+#include "volume_grad.h"
 
 enum Check_grad_process {
     CHECK_GRAD_PROCESS_FWD,

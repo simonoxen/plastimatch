@@ -25,6 +25,7 @@
 #include "mha_io.h"
 #include "vf.h"
 #include "volume.h"
+#include "volume_grad.h"
 
 int
 main (int argc, char* argv[])

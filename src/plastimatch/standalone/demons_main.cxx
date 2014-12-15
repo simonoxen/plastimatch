@@ -12,6 +12,7 @@
 #include "vf.h"
 #include "vf_stats.h"
 #include "volume.h"
+#include "volume_grad.h"
 
 int
 main (int argc, char* argv[])

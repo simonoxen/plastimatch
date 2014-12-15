@@ -103,6 +103,7 @@ set (PLMBASE_LIBRARY_SRC
   vf_stats.cxx
   vf.cxx
   volume_conv.cxx
+  volume_grad.cxx volume_grad.h 
   volume_header.cxx
   volume_limit.cxx
   volume_resample.cxx

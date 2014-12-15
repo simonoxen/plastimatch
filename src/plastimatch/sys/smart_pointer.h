@@ -41,6 +41,14 @@
                  U1 u1, U2 u2, U3 u3) {                   \
         return T::Pointer (                               \
             new T(u1, u2, u3));                           \
+    }                                                     \
+    template<class U1, class U2, class U3,                \
+             class U4, class U5, class U6                 \
+             > static T::Pointer New (                    \
+                 U1 u1, U2 u2, U3 u3,                     \
+                 U4 u4, U5 u5, U6 u6) {                   \
+        return T::Pointer (                               \
+            new T(u1, u2, u3, u4, u5, u6));               \
     }
 
 #endif

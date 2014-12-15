@@ -180,7 +180,6 @@ PLMBASE_C_API void volume_convert_to_uchar (Volume* ref);
 PLMBASE_C_API void volume_convert_to_uint16 (Volume* ref);
 PLMBASE_C_API void volume_convert_to_uint32 (Volume* ref);
 PLMBASE_C_API Volume* volume_difference (Volume* vol, Volume* warped);
-PLMBASE_C_API Volume* volume_make_gradient (Volume* ref);
 PLMBASE_C_API void volume_matrix3x3inverse (float *out, const float *m);
 
 #endif
