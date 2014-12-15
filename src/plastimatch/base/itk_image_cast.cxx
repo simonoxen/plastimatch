@@ -5,12 +5,6 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#if (defined(_WIN32) || defined(WIN32))
-#include <direct.h>
-#include <io.h>
-#else
-#include <dirent.h>
-#endif
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"

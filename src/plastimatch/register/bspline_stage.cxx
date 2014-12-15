@@ -42,7 +42,6 @@ public:
 
     Volume::Pointer fixed_ss;
     Volume::Pointer moving_ss;
-    Volume::Pointer fixed_grad;
     Volume::Pointer moving_grad;
     Volume::Pointer f_roi_ss;
     Volume::Pointer m_roi_ss;
@@ -138,23 +137,21 @@ Bspline_stage::initialize ()
         m_roi = regd->moving_roi->get_volume_uchar();
     }
 
-    /* Note: Image subregion registration not yet supported */
-
     /* Convert images to gpuit format */
     fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
     moving->convert (PT_FLOAT);             /* Maybe not necessary? */
 
     /* Subsample images */
-#if defined (commentout)
-    d_ptr->moving_ss = volume_subsample_vox_legacy (
-        moving, stage->resample_rate_moving);
-    d_ptr->fixed_ss = volume_subsample_vox_legacy (
-        fixed, stage->resample_rate_fixed);
-#endif
-    d_ptr->moving_ss = registration_resample_volume (
-        moving, stage, stage->resample_rate_moving);
     d_ptr->fixed_ss = registration_resample_volume (
         fixed, stage, stage->resample_rate_fixed);
+    d_ptr->moving_ss = registration_resample_volume (
+        moving, stage, stage->resample_rate_moving);
+
+    /* Gradient magnitude uses different fixed and moving images */
+    if (stage->metric_type == METRIC_GRADIENT_MAGNITUDE) {
+        d_ptr->fixed_ss = volume_gradient_magnitude (d_ptr->fixed_ss);
+        d_ptr->moving_ss = volume_gradient_magnitude (d_ptr->moving_ss);
+    }
 
     //Set parameter values for min/max histogram values
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
@@ -226,19 +223,12 @@ Bspline_stage::initialize ()
     /* Make spatial gradient image */
     Volume *moving_grad = volume_make_gradient (d_ptr->moving_ss.get());
     d_ptr->moving_grad = Volume::New (moving_grad);
-    if (stage->metric_type == METRIC_GRADIENT_MAGNITUDE) {
-        Volume *fixed_grad = volume_make_gradient (d_ptr->fixed_ss.get());
-        d_ptr->fixed_grad = Volume::New (fixed_grad);
-    }
 
     /* --- Initialize parms --- */
 
     /* Images */
     bsp_parms->fixed = d_ptr->fixed_ss.get();
     bsp_parms->moving = d_ptr->moving_ss.get();
-    if (d_ptr->fixed_grad) {
-        bsp_parms->fixed_grad = d_ptr->fixed_grad.get();
-    }
     bsp_parms->moving_grad = d_ptr->moving_grad.get();
     if (f_roi) {
         bsp_parms->fixed_roi = d_ptr->f_roi_ss.get();
@@ -326,13 +316,9 @@ Bspline_stage::initialize ()
     default:
         print_and_exit ("Undefined regularization type in gpuit_bspline\n");
     }
-    /* JAS 2011.08.17
-     * This needs to be integrated with the above switch 
-     * young_modulus is regularization implementation 'd' */
     if (stage->regularization_lambda != 0) {
         bsp_parms->reg_parms->lambda = stage->regularization_lambda;
     }
-
     logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
         bsp_parms->reg_parms->implementation,
         bsp_parms->reg_parms->lambda);

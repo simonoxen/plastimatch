@@ -183,6 +183,9 @@ protected:
 public:
     /* Some day, these should become protected */
     Volume* clone_raw ();
+private:
+    Volume (const Volume&);
+    void operator= (const Volume&);
 };
 
 PLMBASE_C_API void vf_convert_to_interleaved (Volume* ref);

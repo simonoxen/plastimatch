@@ -6,9 +6,8 @@
 #include "logfile.h"
 #include "volume_grad.h"
 
-/* In mm coordinates */
-void
-volume_calc_grad_dcos (Volume* vout, const Volume* vref)
+static void
+volume_calc_grad (Volume* vout, const Volume* vref)
 {
     plm_long i, j, k;
     plm_long i_n, j_n, k_n;     /* n is next */
@@ -73,13 +72,65 @@ volume_calc_grad_dcos (Volume* vout, const Volume* vref)
 	    }
 	}
     }
-    lprintf ("volume_calc_grad_dcos complete.\n");
+    lprintf ("volume_calc_grad complete.\n");
 }
 
-void
-volume_calc_grad (Volume* vout, const Volume* vref)
+static void
+volume_calc_grad_mag (Volume* vout, const Volume* vref)
 {
-    volume_calc_grad_dcos (vout, vref);
+    plm_long i, j, k;
+    plm_long i_n, j_n, k_n;     /* n is next */
+    int i_p, j_p, k_p;          /* p is prev */
+    plm_long idx_p, idx_n;
+    float *out_img, *ref_img;
+
+    out_img = (float*) vout->img;
+    ref_img = (float*) vref->img;
+
+    plm_long v = 0;
+    for (k = 0; k < vref->dim[2]; k++) {
+	k_p = k - 1;
+	k_n = k + 1;
+	if (k == 0) k_p = 0;
+	if (k == vref->dim[2]-1) k_n = vref->dim[2]-1;
+	for (j = 0; j < vref->dim[1]; j++) {
+	    j_p = j - 1;
+	    j_n = j + 1;
+	    if (j == 0) j_p = 0;
+	    if (j == vref->dim[1]-1) j_n = vref->dim[1]-1;
+	    for (i = 0; i < vref->dim[0]; i++, v++) {
+		float diff;
+		i_p = i - 1;
+		i_n = i + 1;
+		if (i == 0) i_p = 0;
+		if (i == vref->dim[0]-1) i_n = vref->dim[0]-1;
+		
+                /* No need to consider direction cosines because 
+                   we're only computing the magnitude */
+		out_img[v] = 0.f;
+
+		idx_p = volume_index (vref->dim, i_p, j, k);
+		idx_n = volume_index (vref->dim, i_n, j, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[0];
+		out_img[v] += diff * diff;
+
+		idx_p = volume_index (vref->dim, i, j_p, k);
+		idx_n = volume_index (vref->dim, i, j_n, k);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[1];
+		out_img[v] += diff * diff;
+
+		idx_p = volume_index (vref->dim, i, j, k_p);
+		idx_n = volume_index (vref->dim, i, j, k_n);
+		diff = (float) (ref_img[idx_n] - ref_img[idx_p]) 
+		    / 2.0 / vref->spacing[2];
+		out_img[v] += diff * diff;
+                out_img[v] = sqrt (out_img[v]);
+	    }
+	}
+    }
+    lprintf ("volume_calc_grad_mag complete.\n");
 }
 
 #if defined (commentout)
@@ -102,6 +153,17 @@ volume_make_gradient (Volume* ref)
         ref->dim, ref->offset, ref->spacing, 
 	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     volume_calc_grad (grad, ref);
+
+    return grad;
+}
+
+Volume::Pointer
+volume_gradient_magnitude (const Volume::Pointer& ref)
+{
+    Volume::Pointer grad = Volume::New (
+        ref->dim, ref->offset, ref->spacing, 
+	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
+    volume_calc_grad_mag (grad.get(), ref.get());
 
     return grad;
 }

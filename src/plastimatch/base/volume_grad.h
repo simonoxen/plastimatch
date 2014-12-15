@@ -10,6 +10,7 @@
 
 PLMBASE_API Volume* volume_make_gradient (Volume* ref);
 //PLMBASE_API Volume::Pointer volume_make_gradient (Volume* ref);
-PLMBASE_API Volume::Pointer volume_gradient_magnitude (Volume* ref);
+PLMBASE_API Volume::Pointer volume_gradient_magnitude (
+    const Volume::Pointer& ref);
 
 #endif
