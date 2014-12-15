@@ -84,7 +84,7 @@ Plm_image::Plm_image (Plm_image_type type, const Plm_image_header& pih)
     this->init ();
     this->create (type, pih);
 }
-Plm_image::Plm_image (Volume::Pointer& vol)
+Plm_image::Plm_image (const Volume::Pointer& vol)
 {
     this->init ();
     this->set_volume (vol);
@@ -600,7 +600,7 @@ Plm_image::set (const Plm_image::Pointer& pli)
 }
 
 void 
-Plm_image::set_volume (Volume::Pointer& v, Plm_image_type type)
+Plm_image::set_volume (const Volume::Pointer& v, Plm_image_type type)
 {
     this->free ();
     d_ptr->m_vol = v;
@@ -609,7 +609,7 @@ Plm_image::set_volume (Volume::Pointer& v, Plm_image_type type)
 }
 
 void 
-Plm_image::set_volume (Volume::Pointer& v)
+Plm_image::set_volume (const Volume::Pointer& v)
 {
     switch (v->pix_type) {
     case PT_UCHAR:

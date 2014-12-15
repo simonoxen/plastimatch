@@ -41,7 +41,7 @@ public:
     Plm_image (CharImageType::Pointer img);
     Plm_image (ShortImageType::Pointer img);
     Plm_image (FloatImageType::Pointer img);
-    Plm_image (Volume::Pointer& vol);
+    Plm_image (const Volume::Pointer& vol);
     Plm_image (Volume* vol);
     Plm_image (Plm_image_type type, const Plm_image_header& pih);
     ~Plm_image ();
@@ -114,8 +114,8 @@ public:
 
     /* assignment */
     void set (const Plm_image::Pointer& pli);
-    void set_volume (Volume::Pointer& v, Plm_image_type type);
-    void set_volume (Volume::Pointer& v);
+    void set_volume (const Volume::Pointer& v, Plm_image_type type);
+    void set_volume (const Volume::Pointer& v);
     void set_volume (Volume *v, Plm_image_type type);
     void set_volume (Volume *v);
     void set_itk (UCharImageType::Pointer img);

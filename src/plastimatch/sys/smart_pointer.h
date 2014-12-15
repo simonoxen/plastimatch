@@ -37,44 +37,43 @@
     }                                                           \
     template<class U1                                           \
              > static T::Pointer New (                          \
-                 U1 u1) {                                       \
+                 const U1& u1) {                                \
         return T::Pointer (                                     \
             new T(u1));                                         \
     }                                                           \
     template<class U1, class U2                                 \
              > static T::Pointer New (                          \
-                 U1 u1, U2 u2) {                                \
+                 const U1& u1, const U2& u2) {                  \
         return T::Pointer (                                     \
             new T(u1, u2));                                     \
     }                                                           \
     template<class U1, class U2, class U3                       \
              > static T::Pointer New (                          \
-                 U1 u1, U2 u2, U3 u3) {                         \
+                 const U1& u1, const U2& u2, const U3& u3) {    \
         return T::Pointer (                                     \
             new T(u1, u2, u3));                                 \
     }                                                           \
     template<class U1, class U2, class U3,                      \
              class U4, class U5, class U6                       \
              > static T::Pointer New (                          \
-                 U1 u1, U2 u2, U3 u3,                           \
-                 U4& u4, U5 u5, U6 u6) {                        \
+                 const U1& u1, const U2& u2, const U3& u3,      \
+                 const U4& u4, const U5& u5, const U6& u6) {    \
         return T::Pointer (                                     \
             new T(u1, u2, u3, u4, u5, u6));                     \
     }
 
-/* The above code seems to not work as well as I'd thought.
+/* A warning for the future.
    (1) Template parameter assignment produces types, and therefore 
    arguments to New() are pass-by value
-   (2) Therefore, classes without copy constructors require 
-   explicit reference in signature (see U4& in six-parameter macro
-   (3) Ideally, we can make everything const, such as:
-    template<class U1                                           \
-             > static T::Pointer New (                          \
-                 const U1& u1) {                                \
-        return T::Pointer (                                     \
-            new T(u1));                                         \
-    }                                                           \
-    But this doesn't acutally work.  (Why not?)
+   (2a) Therefore, classes without copy constructors require 
+   explicit reference in signature; for example:
+       template <class U> foo (U& u);
+   (2b) In principle, using a reference should be faster, because
+   a copy constructor is not needed.
+   (3) However, you cannot overload based on reference.  The gcc
+   compiler (probably others too) can't resolve:
+       template <class U> foo (U u);
+       template <class U> foo (const U& u);
 */
 
 #endif
