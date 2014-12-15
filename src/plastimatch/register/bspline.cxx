@@ -37,6 +37,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_gm.h"
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
 #include "bspline_mi.h"
@@ -447,174 +448,21 @@ bspline_score (Bspline_optimize *bod)
     Reg_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
-    bool have_roi = fixed_roi || moving_roi;
-    bool have_histogram_minmax_val=(parms->mi_fixed_image_minVal!=0)||(parms->mi_fixed_image_maxVal!=0)||(parms->mi_moving_image_minVal!=0)||(parms->mi_moving_image_maxVal!=0);
-
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
-    /* CPU Implementations */
-    if (parms->threading == BTHR_CPU) {
-            
-        /* Metric: Mean Squared Error */
-        if (parms->metric == BMET_MSE && have_roi) {
-            bspline_score_i_mse (bod);
-        }
-        else if (parms->metric == BMET_MSE) {
-            switch (parms->implementation) {
-            case 'c':
-                bspline_score_c_mse (bod);
-                break;
-            case 'g':
-                bspline_score_g_mse (bod);
-                break;
-            case 'h':
-                bspline_score_h_mse (bod);
-                break;
-            case 'i':
-                bspline_score_i_mse (bod);
-                break;
-            case 'k':
-                bspline_score_k_mse (bod);
-                break;
-            case 'l':
-                bspline_score_l_mse (bod);
-                break;
-            case 'm':
-                bspline_score_m_mse (bod);
-                break;
-            case 'n':
-                bspline_score_n_mse (bod);
-                break;
-            default:
-#if (OPENMP_FOUND)
-                bspline_score_g_mse (bod);
-#else
-                bspline_score_h_mse (bod);
-#endif
-                break;
-            }
-        } /* end MSE */
-
-        /* Metric: Mutual Information with roi or intensity min/max values*/
-        else if (parms->metric == BMET_MI && (have_roi || have_histogram_minmax_val))
-        {
-            switch (parms->implementation) {
-            case 'c':
-                bspline_score_c_mi (bod);
-                break;
-#if (OPENMP_FOUND)
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'g':
-            case 'h':
-            case 'i':
-                bspline_score_h_mi (bod);
-                break;
-#endif
-            case 'k':
-                bspline_score_k_mi (bod);
-                break;
-            default:
-#if (OPENMP_FOUND)
-                bspline_score_h_mi (bod);
-#else
-                bspline_score_c_mi (bod);
-#endif
-                break;
-            }
-        }
-
-        /* Metric: Mutual Information without roi */
-        else if (parms->metric == BMET_MI) {
-            switch (parms->implementation) {
-            case 'c':
-                bspline_score_c_mi (bod);
-                break;
-#if (OPENMP_FOUND)
-            case 'd':
-                bspline_score_d_mi (bod);
-                break;
-            case 'e':
-                bspline_score_e_mi (bod);
-                break;
-            case 'f':
-                bspline_score_f_mi (bod);
-                break;
-            case 'g':
-                bspline_score_g_mi (bod);
-                break;
-            case 'h':
-                bspline_score_h_mi (bod);
-                break;
-            case 'i':
-                bspline_score_i_mi (bod);
-                break;
-#endif
-            case 'k':
-                bspline_score_k_mi (bod);
-                break;
-            default:
-#if (OPENMP_FOUND)
-                bspline_score_g_mi (bod);
-#else
-                bspline_score_c_mi (bod);
-#endif
-                break;
-            }
-        } /* end MI */
-
-    } /* end CPU Implementations */
-
-
-    /* CUDA Implementations */
-#if (CUDA_FOUND)
-    else if (parms->threading == BTHR_CUDA) {
-            
-        /* Metric: Mean Squared Error */
-        if (parms->metric == BMET_MSE) {
-
-            /* Be sure we loaded the CUDA plugin */
-            LOAD_LIBRARY_SAFE (libplmregistercuda);
-            LOAD_SYMBOL (CUDA_bspline_mse_j, libplmregistercuda);
-
-            switch (parms->implementation) {
-            case 'j':
-                CUDA_bspline_mse_j (bod);
-                break;
-            default:
-                CUDA_bspline_mse_j (bod);
-                break;
-            }
-
-            /* Unload plugin when done */
-            UNLOAD_LIBRARY (libplmregistercuda);
-        } /* end MSE */
-
-        /* Metric: Mutual Information */
-        else if (parms->metric == BMET_MI) {
-
-            /* Be sure we loaded the CUDA plugin */
-            LOAD_LIBRARY_SAFE (libplmregistercuda);
-            LOAD_SYMBOL (CUDA_bspline_mi_a, libplmregistercuda);
-
-            switch (parms->implementation) {
-            case 'a':
-                CUDA_bspline_mi_a (bod);
-                break;
-            default:
-                CUDA_bspline_mi_a (bod);
-                break;
-            }
-
-            UNLOAD_LIBRARY (libplmregistercuda);
-        } /* end MI */
-
-    } /* CUDA Implementations */
-#endif
+    if (parms->metric == BMET_MSE) {
+        bspline_score_mse (bod);
+    }
+    else if (parms->metric == BMET_MI) {
+        bspline_score_mi (bod);
+    }
+    else if (parms->metric == BMET_GM) {
+        bspline_score_gm (bod);
+    }
+    else {
+        /* ?? */
+    }
 
     /* Regularize */
     if (reg_parms->lambda > 0.0f) {

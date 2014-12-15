@@ -23,4 +23,6 @@ bspline_score_normalize (
     double raw_score
 );
 
+PLMREGISTER_API void bspline_score_mse (Bspline_optimize *bod);
+
 #endif

@@ -3240,3 +3240,121 @@ bspline_score_k_mi (
     ssd->time_smetric = timer->report ();
     delete timer;
 }
+
+void
+bspline_score_mi (
+    Bspline_optimize *bod
+)
+{
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    Reg_parms* reg_parms = parms->reg_parms;
+    Bspline_landmarks* blm = parms->blm;
+
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
+    bool have_roi = fixed_roi || moving_roi;
+    bool have_histogram_minmax_val = 
+        (parms->mi_fixed_image_minVal!=0)
+        || (parms->mi_fixed_image_maxVal!=0)
+        || (parms->mi_moving_image_minVal!=0)
+        || (parms->mi_moving_image_maxVal!=0);
+
+    /* CPU Implementations */
+    if (parms->threading == BTHR_CPU) {
+            
+        /* Metric: Mutual Information with roi or intensity min/max values*/
+        if (have_roi || have_histogram_minmax_val) {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mi (bod);
+                break;
+#if (OPENMP_FOUND)
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+            case 'h':
+            case 'i':
+                bspline_score_h_mi (bod);
+                break;
+#endif
+            case 'k':
+                bspline_score_k_mi (bod);
+                break;
+            default:
+#if (OPENMP_FOUND)
+                bspline_score_h_mi (bod);
+#else
+                bspline_score_c_mi (bod);
+#endif
+                break;
+            }
+        }
+
+        /* Metric: Mutual Information without roi */
+        else {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mi (bod);
+                break;
+#if (OPENMP_FOUND)
+            case 'd':
+                bspline_score_d_mi (bod);
+                break;
+            case 'e':
+                bspline_score_e_mi (bod);
+                break;
+            case 'f':
+                bspline_score_f_mi (bod);
+                break;
+            case 'g':
+                bspline_score_g_mi (bod);
+                break;
+            case 'h':
+                bspline_score_h_mi (bod);
+                break;
+            case 'i':
+                bspline_score_i_mi (bod);
+                break;
+#endif
+            case 'k':
+                bspline_score_k_mi (bod);
+                break;
+            default:
+#if (OPENMP_FOUND)
+                bspline_score_g_mi (bod);
+#else
+                bspline_score_c_mi (bod);
+#endif
+                break;
+            }
+        } /* end MI */
+
+    } /* end CPU Implementations */
+
+
+    /* CUDA Implementations */
+#if (CUDA_FOUND)
+    else if (parms->threading == BTHR_CUDA) {
+            
+        /* Be sure we loaded the CUDA plugin */
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_a, libplmregistercuda);
+
+        switch (parms->implementation) {
+        case 'a':
+            CUDA_bspline_mi_a (bod);
+            break;
+        default:
+            CUDA_bspline_mi_a (bod);
+            break;
+        }
+
+        UNLOAD_LIBRARY (libplmregistercuda);
+
+    } /* CUDA Implementations */
+#endif
+}

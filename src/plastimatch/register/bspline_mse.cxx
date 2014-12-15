@@ -981,3 +981,93 @@ bspline_score_n_mse (
 )
 {
 }
+
+void
+bspline_score_mse (
+    Bspline_optimize *bod
+)
+{
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    Reg_parms* reg_parms = parms->reg_parms;
+    Bspline_landmarks* blm = parms->blm;
+
+    Volume* fixed_roi  = parms->fixed_roi;
+    Volume* moving_roi = parms->moving_roi;
+    bool have_roi = fixed_roi || moving_roi;
+
+    /* CPU Implementations */
+    if (parms->threading == BTHR_CPU) {
+            
+        if (have_roi) {
+            switch (parms->implementation) {
+            case 'c':
+            case 'k':
+                bspline_score_k_mse (bod);
+                break;
+            default:
+                bspline_score_i_mse (bod);
+                break;
+            }
+        } else {
+            switch (parms->implementation) {
+            case 'c':
+                bspline_score_c_mse (bod);
+                break;
+            case 'g':
+                bspline_score_g_mse (bod);
+                break;
+            case 'h':
+                bspline_score_h_mse (bod);
+                break;
+            case 'i':
+                bspline_score_i_mse (bod);
+                break;
+            case 'k':
+                bspline_score_k_mse (bod);
+                break;
+            case 'l':
+                bspline_score_l_mse (bod);
+                break;
+            case 'm':
+                bspline_score_m_mse (bod);
+                break;
+            case 'n':
+                bspline_score_n_mse (bod);
+                break;
+            default:
+#if (OPENMP_FOUND)
+                bspline_score_g_mse (bod);
+#else
+                bspline_score_h_mse (bod);
+#endif
+                break;
+            }
+        }
+    }
+
+#if (CUDA_FOUND)
+    /* CUDA Implementations */
+    else if (parms->threading == BTHR_CUDA) {
+
+        /* Be sure we loaded the CUDA plugin */
+        LOAD_LIBRARY_SAFE (libplmregistercuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_j, libplmregistercuda);
+
+        switch (parms->implementation) {
+        case 'j':
+            CUDA_bspline_mse_j (bod);
+            break;
+        default:
+            CUDA_bspline_mse_j (bod);
+            break;
+        }
+
+        /* Unload plugin when done */
+        UNLOAD_LIBRARY (libplmregistercuda);
+
+    }
+#endif
+}

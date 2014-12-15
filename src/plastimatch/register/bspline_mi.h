@@ -17,4 +17,6 @@ PLMREGISTER_API void bspline_score_h_mi (Bspline_optimize *bod);
 PLMREGISTER_API void bspline_score_i_mi (Bspline_optimize *bod);
 PLMREGISTER_API void bspline_score_k_mi (Bspline_optimize *bod);
 
+PLMREGISTER_API void bspline_score_mi (Bspline_optimize *bod);
+
 #endif
