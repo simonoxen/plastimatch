@@ -16,8 +16,6 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 
-class Gamma_parms;
-
 /*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
 */
 enum Gamma_labelmap_mode {
@@ -26,42 +24,22 @@ enum Gamma_labelmap_mode {
     FAIL   /*!< output binary (1/0) image of type uchar, 1 if gamma>1 */ 
 };
 
-/*! \class Gamma_parms
-    \brief This is the Gamma_parms class.
-    * Used to pass input and output parameters for gamma analysis
-	to/from find_dose_threshold() and do_gamma_analysis() */
-class Gamma_parms {
-public:
-    
-    Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
-    Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
-    Plm_image *img_mask; /*!< input mask image for gamma analysis*/
-    Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
-
-    Gamma_labelmap_mode mode; /*!< output mode selector for 3D Slicer plugin*/
-
-public:
-    Gamma_parms () { /*!< Constructor for Gamma_parms, sets default values (mode GAMMA) 
-                       for the 3D Slicer plugin */
-        img_in1 = 0;
-        img_in2 = 0;
-        img_mask = 0;
-        labelmap_out = 0;
-        mode = NONE;
-    }
-};
-
-
 class Gamma_dose_comparison_private {
 public:
     Gamma_dose_comparison_private ()
     {
+        img_in1 = 0;
+        img_in2 = 0;
+        img_mask = 0;
+        labelmap_out = 0;
+
         have_gamma_image = false;
         gamma_image = Plm_image::New();
 
         dta_tolerance = 3.0;
         dose_difference_tolerance = 0.03;
         gamma_max = 2.0;
+        mode = NONE;
 
         have_reference_dose = false;
         reference_dose = 0.f;
@@ -74,12 +52,14 @@ public:
         analysis_num_pass = 0;
     }
 public:
-    Gamma_parms gp;
+    Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
+    Plm_image *img_in2; /*!< input dose image 2 for gamma analysis*/
+    Plm_image *img_mask; /*!< input mask image for gamma analysis*/
+    Plm_image *labelmap_out; /*!< output uchar type labelmap, voxel value = 1/0 for pass/fail */
 
     /* Gamma image is float type image, voxel value = calculated gamma value */
     bool have_gamma_image;
     Plm_image::Pointer gamma_image;
-
 
     /* distance-to-agreement (DTA) criterion, input parameter */ 
     float dta_tolerance;
@@ -89,6 +69,7 @@ public:
     float dose_difference_tolerance;
     /* maximum gamma to calculate */
     float gamma_max;
+    Gamma_labelmap_mode mode; /*!< output mode selector for 3D Slicer plugin*/
 
     /* reference dose value, used for gamma analysis and analysis 
        thresholding.  */
@@ -123,58 +104,58 @@ Gamma_dose_comparison::~Gamma_dose_comparison () {
 void 
 Gamma_dose_comparison::set_reference_image (const char* image_fn)
 {
-    d_ptr->gp.img_in1 = new Plm_image (image_fn);
+    d_ptr->img_in1 = new Plm_image (image_fn);
 }
 
 void 
 Gamma_dose_comparison::set_reference_image (Plm_image* image)
 {
-    d_ptr->gp.img_in1 = image;
+    d_ptr->img_in1 = image;
 }
 
 void 
 Gamma_dose_comparison::set_reference_image (
     const FloatImageType::Pointer image)
 {
-    d_ptr->gp.img_in1 = new Plm_image (image);
+    d_ptr->img_in1 = new Plm_image (image);
 }
 
 void 
 Gamma_dose_comparison::set_compare_image (const char* image_fn)
 {
-    d_ptr->gp.img_in2 = new Plm_image (image_fn);
+    d_ptr->img_in2 = new Plm_image (image_fn);
 }
 
 void 
 Gamma_dose_comparison::set_compare_image (Plm_image* image)
 {
-    d_ptr->gp.img_in2 = image;
+    d_ptr->img_in2 = image;
 }
 
 void 
 Gamma_dose_comparison::set_compare_image (
     const FloatImageType::Pointer image)
 {
-    d_ptr->gp.img_in2 = new Plm_image (image);
+    d_ptr->img_in2 = new Plm_image (image);
 }
 
 void 
 Gamma_dose_comparison::set_mask_image (const char* image_fn)
 {
-  d_ptr->gp.img_mask = new Plm_image (image_fn);
+  d_ptr->img_mask = new Plm_image (image_fn);
 }
 
 void 
 Gamma_dose_comparison::set_mask_image (Plm_image* image)
 {
-  d_ptr->gp.img_mask = image;
+  d_ptr->img_mask = image;
 }
 
 void 
 Gamma_dose_comparison::set_mask_image (
   const UCharImageType::Pointer image)
 {
-  d_ptr->gp.img_mask = new Plm_image (image);
+  d_ptr->img_mask = new Plm_image (image);
 }
 
 float
@@ -231,12 +212,12 @@ Gamma_dose_comparison::run ()
     d_ptr->have_gamma_image = true;
 
     // Threshold mask image to have values 1 and 0 and resample it to reference
-    if (d_ptr->gp.img_mask) {
+    if (d_ptr->img_mask) {
         d_ptr->do_mask_threshold ();
-        resample_image_to_reference (d_ptr->gp.img_in1, d_ptr->gp.img_mask);
+        resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);
     }
 
-    resample_image_to_reference (d_ptr->gp.img_in1, d_ptr->gp.img_in2);
+    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);
     d_ptr->do_gamma_analysis ();
 }
 
@@ -261,9 +242,9 @@ Gamma_dose_comparison::get_pass_image ()
     if (!d_ptr->have_gamma_image) {
         this->run();
     }
-    d_ptr->gp.mode = PASS;
+    d_ptr->mode = PASS;
     d_ptr->do_gamma_threshold ();
-    return d_ptr->gp.labelmap_out;
+    return d_ptr->labelmap_out;
 }
 
 UCharImageType::Pointer
@@ -278,9 +259,9 @@ Gamma_dose_comparison::get_fail_image ()
     if (!d_ptr->have_gamma_image) {
         this->run();
     }
-    d_ptr->gp.mode = FAIL;
+    d_ptr->mode = FAIL;
     d_ptr->do_gamma_threshold ();
-    return d_ptr->gp.labelmap_out;
+    return d_ptr->labelmap_out;
 }
 
 UCharImageType::Pointer
@@ -320,19 +301,19 @@ Gamma_dose_comparison::resample_image_to_reference (
 void 
 Gamma_dose_comparison_private::find_reference_max_dose ()
 {
-    FloatImageType::Pointer img_in1 = gp.img_in1->itk_float();
+    FloatImageType::Pointer itk_1 = img_in1->itk_float();
     typedef itk::ImageRegionIteratorWithIndex< 
         FloatImageType > FloatIteratorType;
     typedef itk::ImageRegion<3> FloatRegionType;
     
-    FloatRegionType all_of_img1 = img_in1->GetLargestPossibleRegion();
-    FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
+    FloatRegionType all_of_img1 = itk_1->GetLargestPossibleRegion();
+    FloatIteratorType itk_1_iterator (itk_1, all_of_img1);
     float maxlevel1=-1e20;
-    for (img_in1_iterator.GoToBegin(); 
-         !img_in1_iterator.IsAtEnd(); 
-         ++img_in1_iterator)
+    for (itk_1_iterator.GoToBegin(); 
+         !itk_1_iterator.IsAtEnd(); 
+         ++itk_1_iterator)
     {
-        float level1 = img_in1_iterator.Get();
+        float level1 = itk_1_iterator.Get();
         if (level1 > maxlevel1) maxlevel1 = level1;         
     } 
     this->dose_max = maxlevel1;
@@ -348,14 +329,14 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     Plm_image_header pih;
     float gamma;
 
-    FloatImageType::Pointer img_in1 = gp.img_in1->itk_float();
-    FloatImageType::Pointer img_in2 = gp.img_in2->itk_float();
+    FloatImageType::Pointer itk_1 = img_in1->itk_float();
+    FloatImageType::Pointer itk_2 = img_in2->itk_float();
     UCharImageType::Pointer mask_img;
-    if (gp.img_mask) {
-        mask_img = gp.img_mask->itk_uchar();
+    if (img_mask) {
+        mask_img = img_mask->itk_uchar();
     }
 
-    pih.set_from_itk_image (img_in1);
+    pih.set_from_itk_image (itk_1);
     pih.get_dim (dim_in );
     pih.get_origin (origin_in );
     pih.get_spacing (spacing_in );
@@ -396,12 +377,12 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
     typedef itk::ImageRegion<3> FloatRegionType;
     
-    FloatRegionType all_of_img1 = img_in1->GetLargestPossibleRegion();
-    FloatRegionType all_of_img2 = img_in2->GetLargestPossibleRegion();
+    FloatRegionType all_of_img1 = itk_1->GetLargestPossibleRegion();
+    FloatRegionType all_of_img2 = itk_2->GetLargestPossibleRegion();
     FloatRegionType subset_of_img2;
 
 
-    FloatIteratorType img_in1_iterator (img_in1, all_of_img1);
+    FloatIteratorType itk_1_iterator (itk_1, all_of_img1);
     FloatIteratorType gamma_img_iterator (gamma_img, gamma_img->GetLargestPossibleRegion());
     UCharIteratorType mask_img_iterator;
     if (mask_img) {
@@ -438,9 +419,9 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         mask_img_iterator.GoToBegin();
     }
 
-    for (img_in1_iterator.GoToBegin(); 
-         !img_in1_iterator.IsAtEnd(); 
-         ++img_in1_iterator)
+    for (itk_1_iterator.GoToBegin(); 
+         !itk_1_iterator.IsAtEnd(); 
+         ++itk_1_iterator)
     {
         // skip masked out voxels
         // (mask may be interpolated so we use a value of 0.5 for threshold)
@@ -455,10 +436,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         }
 
         //calculate gamma for this voxel of input image
-        level1 = img_in1_iterator.Get();
-        k1=img_in1_iterator.GetIndex();
-        img_in1->TransformIndexToPhysicalPoint( k1, phys );
-        img_in2->TransformPhysicalPointToIndex( phys, k2 );
+        level1 = itk_1_iterator.Get();
+        k1=itk_1_iterator.GetIndex();
+        itk_1->TransformIndexToPhysicalPoint( k1, phys );
+        itk_2->TransformPhysicalPointToIndex( phys, k2 );
 
         //k2 is the voxel index of the k1's physical (mm) position in img2
     
@@ -474,16 +455,16 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         subset_of_img2.SetSize (region_size);
         subset_of_img2.Crop (all_of_img2);
 
-        FloatIteratorType img_in2_iterator (img_in2, subset_of_img2);
+        FloatIteratorType itk_2_iterator (itk_2, subset_of_img2);
 
         // calculate gamma, take a minimum of ... over the subset_of_img2
         gamma = 1e20;
-        for (img_in2_iterator.GoToBegin(); 
-             !img_in2_iterator.IsAtEnd(); 
-             ++img_in2_iterator)
+        for (itk_2_iterator.GoToBegin(); 
+             !itk_2_iterator.IsAtEnd(); 
+             ++itk_2_iterator)
         {
-            k3 = img_in2_iterator.GetIndex();
-            level2 = img_in2_iterator.Get();
+            k3 = itk_2_iterator.GetIndex();
+            level2 = itk_2_iterator.Get();
             dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
                 (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
                 (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
@@ -515,18 +496,18 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 void 
 Gamma_dose_comparison_private::do_gamma_threshold ()
 { 
-    FloatImageType::Pointer ref_img = gp.img_in1->itk_float();
+    FloatImageType::Pointer ref_img = img_in1->itk_float();
     FloatImageType::Pointer gamma_img = this->gamma_image->itk_float();
 
     /* Create labelmap image if not already created */
-    if (!gp.labelmap_out) {
-        gp.labelmap_out = new Plm_image;
+    if (!labelmap_out) {
+        labelmap_out = new Plm_image;
         UCharImageType::Pointer gamma_labelmap = UCharImageType::New();
         itk_image_header_copy (gamma_labelmap, gamma_img);
         gamma_labelmap->Allocate();
-        gp.labelmap_out = new Plm_image (gamma_labelmap);
+        labelmap_out = new Plm_image (gamma_labelmap);
     }
-    UCharImageType::Pointer gamma_labelmap = gp.labelmap_out->itk_uchar();
+    UCharImageType::Pointer gamma_labelmap = labelmap_out->itk_uchar();
 
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
         UCharIteratorType;
@@ -548,7 +529,7 @@ Gamma_dose_comparison_private::do_gamma_threshold ()
     {
         float ref_dose = ref_it.Get();
         float gamma = gam_it.Get();
-        switch (gp.mode) {
+        switch (mode) {
         case PASS:
             if ((gamma >=0) && (gamma <= 1) && ref_dose > 0) {
                 lab_it.Set (1);
@@ -574,7 +555,7 @@ Gamma_dose_comparison_private::do_gamma_threshold ()
 void 
 Gamma_dose_comparison_private::do_mask_threshold ()
 { 
-    UCharImageType::Pointer mask_img = gp.img_mask->itk_uchar();
+    UCharImageType::Pointer mask_img = img_mask->itk_uchar();
 
     typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
         UCharIteratorType;
