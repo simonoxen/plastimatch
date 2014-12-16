@@ -2471,8 +2471,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-gm-k-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-gm-k-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-177.0"
-  "-176.0"
+  "-122.5"
+  "-121.5"
   )
 set_property (TEST plm-bsp-gm-k APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-gm-k APPEND PROPERTY DEPENDS gauss-3)
