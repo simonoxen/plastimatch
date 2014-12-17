@@ -12,7 +12,7 @@
 #include "print_and_exit.h"
 #include "pstring.h"
 #include "rt_study.h"
-#include "rtds_warp.h"
+#include "rt_study_warp.h"
 #include "string_util.h"
 #include "warp_parms.h"
 
@@ -349,7 +349,7 @@ do_command_warp (int argc, char* argv[])
 {
     Warp_parms parms;
     Plm_file_format file_type;
-    Rt_study rtds;
+    Rt_study rt_study;
 
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
@@ -375,7 +375,7 @@ do_command_warp (int argc, char* argv[])
     }
 
     /* Process warp */
-    rtds_warp (&rtds, file_type, &parms);
+    rt_study_warp (&rt_study, file_type, &parms);
 
     printf ("Finished!\n");
 }

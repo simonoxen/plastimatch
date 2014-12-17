@@ -39,7 +39,7 @@ set (PLMUTIL_LIBRARY_SRC
   proj_image_filter.cxx
   plm_series.cxx
   plm_study.cxx
-  rtds_warp.cxx 
+  rt_study_warp.cxx rt_study_warp.h 
   sift.cxx
   simplify_points.cxx 
   ss_img_stats.cxx 
