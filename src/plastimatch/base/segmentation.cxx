@@ -28,6 +28,7 @@
 #include "rt_study.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "segmentation.h"
 #include "ss_list_io.h"

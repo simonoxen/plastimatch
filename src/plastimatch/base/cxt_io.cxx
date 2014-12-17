@@ -13,6 +13,7 @@
 #include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
 
 #define CXT_BUFLEN 2048

@@ -99,7 +99,8 @@ static inline void vec4_copy (double* v1, const double* v2) {
     v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2]; v1[3] = v2[3];
 }
 
-static inline double vec3_dot (const double* v1, const double* v2) {
+template<class T> static inline double 
+vec3_dot (const T* v1, const T* v2) {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
 
@@ -119,7 +120,8 @@ static inline void vec3_sub2 (double* v1, const double* v2) {
     v1[0] -= v2[0]; v1[1] -= v2[1]; v1[2] -= v2[2];
 }
 
-static inline void vec3_sub3 (double* v1, const double* v2, const double* v3) {
+template<class T> static inline void 
+vec3_sub3 (T* v1, const T* v2, const T* v3) {
     v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
 }
 
@@ -132,22 +134,44 @@ static inline void vec_zero (double* v1, int n) {
 }
 
 /* Length & distance */
-static inline double vec3_len (const double* v1) {
+template<class T> static inline T
+vec3_lensq (const T* v1) {
+    return vec3_dot(v1,v1);
+}
+
+template<class T> static T vec3_len (const T*);
+
+template<> inline double
+vec3_len<> (const double* v1) {
     return sqrt(vec3_dot(v1,v1));
+}
+
+template<> inline float
+vec3_len<float> (const float* v1) {
+    return sqrtf(vec3_dot(v1,v1));
 }
 
 static inline void vec3_normalize1 (double* v1) {
     vec3_scale2 (v1, 1 / vec3_len(v1));
 }
 
-static inline double vec3_dist (const double* v1, const double* v2) {
-    double tmp[3];
+template<class T> static inline T 
+vec3_distsq (const T* v1, const T* v2) {
+    T tmp[3];
+    vec3_sub3 (tmp, v1, v2);
+    return vec3_lensq(tmp);
+}
+
+template<class T> static inline T 
+vec3_dist (const T* v1, const T* v2) {
+    T tmp[3];
     vec3_sub3 (tmp, v1, v2);
     return vec3_len(tmp);
 }
 
 /* Cross product */
-static inline void vec3_cross (double* v1, const double* v2, const double* v3)
+template<class T> static inline void 
+vec3_cross (T* v1, const T* v2, const T* v3)
 {
     v1[0] = v2[1] * v3[2] - v2[2] * v3[1];
     v1[1] = v2[2] * v3[0] - v2[0] * v3[2];

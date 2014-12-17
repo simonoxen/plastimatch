@@ -91,6 +91,7 @@ set (PLMBASE_LIBRARY_SRC
   rt_study_metadata.cxx rt_study_metadata.h 
   rtog_io.cxx
   rtss.cxx rtss.h 
+  rtss_contour.cxx rtss_contour.h 
   rtss_roi.cxx rtss_roi.h 
   segmentation.cxx segmentation.h 
   slice_extract.cxx

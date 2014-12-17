@@ -8,31 +8,8 @@
 
 #include "plm_math.h"
 #include "pstring.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
-
-Rtss_contour::Rtss_contour ()
-{
-    this->slice_no = -1;
-    this->ct_slice_uid = "";
-    this->num_vertices = 0;
-    this->x = 0;
-    this->y = 0;
-    this->z = 0;
-}
-
-Rtss_contour::~Rtss_contour ()
-{
-    free (this->x);
-    free (this->y);
-    free (this->z);
-
-    this->slice_no = -1;
-    this->ct_slice_uid = "";
-    this->num_vertices = 0;
-    this->x = 0;
-    this->y = 0;
-    this->z = 0;
-}
 
 Rtss_roi::Rtss_roi ()
 {

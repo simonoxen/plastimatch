@@ -17,6 +17,7 @@
 #include "itk_image.h"
 #include "itk_image_type.h"
 #include "rtss.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "slice_extract.h"
 #include "ss_img_extract.h"

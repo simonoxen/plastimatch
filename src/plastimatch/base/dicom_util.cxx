@@ -19,6 +19,7 @@
 #else /* GDCM_VERSION_2 */
 #include "gdcm2_util.h"
 #endif
+#include "plm_uid_prefix.h"
 
 void
 dicom_get_date_time (
@@ -82,4 +83,10 @@ dicom_uid (const char *uid_root)
     char uid[100];
     dicom_uid (uid, uid_root);
     return std::string (uid);
+}
+
+std::string
+dicom_uid ()
+{
+    return dicom_uid (PLM_UID_PREFIX);
 }

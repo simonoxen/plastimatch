@@ -8,6 +8,7 @@
 #include <list>
 #include <vector>
 
+#include "direction_cosines.h"
 #include "plm_int.h"
 #include "pstring.h"
 #include "rt_study_metadata.h"
@@ -31,6 +32,7 @@ public:
     plm_long rast_dim[3];
     float rast_spacing[3];
     float rast_offset[3];
+    Direction_cosines rast_dc;
     /* Structures */
     size_t num_structures;
     Rtss_roi **slist;
@@ -53,9 +55,9 @@ public:
     static 
     Rtss* clone_empty (Rtss* cxt_out, 
 	Rtss* cxt_in);
-    void find_default_geometry (Plm_image_header *pih);
+//    void find_default_geometry (Plm_image_header *pih);
     void find_rasterization_geometry (float offset[3], 
-	float spacing[3], plm_long dims[3]);
+	float spacing[3], plm_long dims[3], Direction_cosines& dc);
     void find_rasterization_geometry (Plm_image_header *pih);
     Pstring find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);

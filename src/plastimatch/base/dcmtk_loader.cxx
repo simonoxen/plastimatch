@@ -16,6 +16,7 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
+#include "dicom_util.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "path_util.h"
@@ -68,20 +69,24 @@ Dcmtk_loader::insert_file (const char* fn)
 
     /* Get the SeriesInstanceUID */
     const char *c = NULL;
+    std::string series_uid;
     c = df->get_cstr (DCM_SeriesInstanceUID);
-    if (!c) {
-	/* No SeriesInstanceUID? */
-	return;
+    if (c) {
+        series_uid = std::string (c);
+    } else {
+	/* 2014-12-17.  Oncentra data missing SeriesInstanceUID? 
+           If that happens, make something up. */
+        series_uid = dicom_uid ();
     }
 
     /* Look for the SeriesInstanceUID in the map */
     Dcmtk_series_map::iterator it;
-    it = d_ptr->m_smap.find (std::string(c));
+    it = d_ptr->m_smap.find (series_uid);
 
     /* If we didn't find the UID, add a new entry into the map */
     if (it == d_ptr->m_smap.end()) {
 	std::pair<Dcmtk_series_map::iterator,bool> ret 
-	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (std::string(c), 
+	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (series_uid, 
 		    new Dcmtk_series()));
 	if (ret.second == false) {
 	    print_and_exit (

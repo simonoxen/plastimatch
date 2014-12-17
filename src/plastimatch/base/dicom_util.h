@@ -23,7 +23,7 @@ dicom_get_date_time (
 PLMBASE_C_API char*
 dicom_uid (char *uid, const char *uid_root);
 
-PLMBASE_API std::string
-dicom_uid (const char *uid_root);
+PLMBASE_API std::string dicom_uid (const char *uid_root);
+PLMBASE_API std::string dicom_uid ();
 
 #endif

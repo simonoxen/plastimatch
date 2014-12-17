@@ -13,6 +13,7 @@
 #include "plm_int.h"
 #include "plm_math.h"
 #include "pstring.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "rtss.h"
 #include "rt_study_metadata.h"
@@ -312,7 +313,8 @@ void
 Rtss::find_rasterization_geometry (
     float offset[3],
     float spacing[3],
-    plm_long dims[3]
+    plm_long dims[3],
+    Direction_cosines& dc
 )
 {
     int first = 1;
@@ -421,10 +423,11 @@ Rtss::find_rasterization_geometry (Plm_image_header *pih)
     plm_long dim[3];
     float origin[3];
     float spacing[3];
+    Direction_cosines dc;
 
-    this->find_rasterization_geometry (origin, spacing, dim);
+    this->find_rasterization_geometry (origin, spacing, dim, dc);
 
-    pih->set_from_gpuit (dim, origin, spacing, 0);
+    pih->set_from_gpuit (dim, origin, spacing, dc);
 }
 
 void
@@ -433,7 +436,8 @@ Rtss::set_rasterization_geometry (void)
     this->find_rasterization_geometry (
 	this->rast_offset,
 	this->rast_spacing,
-	this->rast_dim
+	this->rast_dim,
+        this->rast_dc
     );
     printf ("rast_dim = %u %u %u\n", 
 	(unsigned int) this->rast_dim[0], 

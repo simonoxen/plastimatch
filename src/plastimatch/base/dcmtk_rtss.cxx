@@ -23,6 +23,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "rtss.h"
+#include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "string_util.h"
 
