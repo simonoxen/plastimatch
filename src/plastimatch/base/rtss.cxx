@@ -323,6 +323,18 @@ Rtss::find_rasterization_geometry (
     float min_z = 0.f, max_z = 0.f;
     std::set<float> z_values;
 
+    /* GCS TODO: Here is where the direction cosine detector goes */
+#if defined (commentout)
+    for (size_t i = 0; i < this->num_structures; i++) {
+	Rtss_roi *curr_structure = this->slist[i];
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
+	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
+            curr_polyline->find_direction_cosines ();
+            continue;
+        }
+    }
+#endif
+
     /* Scan points to find image size, spacing */
     for (size_t i = 0; i < this->num_structures; i++) {
 	Rtss_roi *curr_structure = this->slist[i];

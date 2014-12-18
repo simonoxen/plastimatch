@@ -91,7 +91,8 @@ static inline void vec3_add3 (double* v1, const double* v2, const double* v3) {
     v1[0] = v2[0] + v3[0]; v1[1] = v2[1] + v3[1]; v1[2] = v2[2] + v3[2];
 }
 
-static inline void vec3_copy (double* v1, const double* v2) {
+template<class T> static inline void 
+vec3_copy (T* v1, const T* v2) {
     v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
 }
 
