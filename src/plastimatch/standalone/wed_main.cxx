@@ -193,6 +193,7 @@ wed_ct_initialize(Wed_Parms *parms)
 
     Plm_image::Pointer dose_vol;
     Rt_plan scene;
+    scene.beam = new Rt_beam;
     float background[4];
 
     /*
