@@ -33,6 +33,7 @@ Unspecified future release
 *  MSVC express multicore strategy (done -- use MSVC 2013)
 *  Native rigid registration
 *  Normalized MI
+*  patient mask to support MRI
 *  plastimatch filter gradient magnitude
 *  Proton/photon/electron dose calculation
 ** Add multi-beam to command file
