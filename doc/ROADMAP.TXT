@@ -12,6 +12,13 @@
 *  plastimatch dmap (done)
 *  plastimatch threshold (done)
 
+High priority future release
+
+*  Extend B-spline loop template to other flavors
+*  Multi-value registration
+*  Native translation registration (partly done, needs mi)
+*  Overlap fraction
+
 Unspecified future release
 
 *  Autolabel (la,tsv1,tsv2)
@@ -19,15 +26,14 @@ Unspecified future release
 *  Copy-free conversion between itk and native volumes
 *  CUDA demons
 ** (What is wrong with current one?)
-*  Multi-value registration
 *  RTK wrapping
 *  DRR/FDK dicom
 *  Evaluate native vs itk jacobian
 *  Irregular slice spacing
 *  MSVC express multicore strategy (done -- use MSVC 2013)
-*  Native translation registration (partly done, needs mi)
 *  Native rigid registration
 *  Normalized MI
+*  plastimatch filter gradient magnitude
 *  Proton/photon/electron dose calculation
 ** Add multi-beam to command file
 ** Remove duplication of code for photons
@@ -41,3 +47,5 @@ Cleanup
 
 *  Better handling of ??_parms class
 *  Rename volume::offset -> volume::origin
+*  Missing parameters in documentation
+*  Registration tutorial based on NA-MIC case library
