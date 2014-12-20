@@ -85,9 +85,12 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     dz = rz / (nz - 1);
 
     /* Calculate offset */
-    topx = ox - (rx / 2);
-    topy = oy - (ry / 2);
-    topz = -oz - (rz / 2);
+    //topx = ox - (rx / 2);
+    //topy = oy - (ry / 2);
+    //topz = -oz - (rz / 2);
+    topx = ox - rx/2 - dx/4;
+    topy = oy - ry/2;
+    topz = -oz - rz/2 - dz/4;
 
     /* Put info into header */
     adh->dim[0] = nx;

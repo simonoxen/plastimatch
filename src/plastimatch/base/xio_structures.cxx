@@ -211,15 +211,19 @@ add_cms_structure (
 				    filename, &buf[line_loc]);
 		}
 
-                /* GCS 2014-10-16.  As reported by Thomas Botticello 
-                   and others, the XiO structures are off by 1/2 pixel.
-                   This adjustment must be done before coourdinate 
-                   transformation xio to dicom (e.g. prone).
-                */
+        /* GCS 2014-10-16.  As reported by Thomas Botticello 
+           and others, the XiO structures are off by 1/2 pixel.
+           This adjustment must be done before coourdinate 
+           transformation xio to dicom (e.g. prone).
+        */
+        /* ND 2014-12-18 intent to provide final fix for this 
+            NOTE: There is an inherent residual error that cannot be fixed due 
+            to XiO's rounding of values at the time of import.
+        */
 		curr_polyline->x[point_idx] = x 
                     - 0.5 * studyset.ct_pixel_spacing[0];
 		curr_polyline->y[point_idx] = -y
-                    + 0.5 * studyset.ct_pixel_spacing[1];
+                    - 0.5 * studyset.ct_pixel_spacing[1];
 		curr_polyline->z[point_idx] = z_loc;
 		point_idx ++;
 		line_loc += this_loc;
