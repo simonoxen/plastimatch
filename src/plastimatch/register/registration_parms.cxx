@@ -842,6 +842,18 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }   
+    else if (key == "overlap_penalty_lambda") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%g", &stage->overlap_penalty_lambda) != 1) {
+            goto error_exit;
+        }
+    }   
+    else if (key == "overlap_penalty_fraction") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%g", &stage->overlap_penalty_fraction) != 1) {
+            goto error_exit;
+        }
+    }   
     else if (key == "res_vox" || key == "res" || key == "ss") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         Plm_return_code rc = stage->set_resample (val);

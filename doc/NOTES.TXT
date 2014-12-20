@@ -1,3 +1,14 @@
+***** Overlap fraction *****
+
+The overlap fraction should (?) be tied to score at initial iteration.
+This requires stashing the initial score somewhere.  But this needs to 
+be done in a general way for various optimizers.
+
+Furthermore, the "best score" concept is probably not implemented for 
+the non-Nocedal optimizers.
+
+This is a TODO.
+
 ***** Programmability redux *****
 
 Option 1) Internal programmability, with lua

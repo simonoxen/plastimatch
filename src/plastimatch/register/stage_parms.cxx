@@ -133,6 +133,9 @@ Stage_parms::Stage_parms ()
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
+    /* Overlap penalty */
+    overlap_penalty_lambda = 1.0;
+    overlap_penalty_fraction = 0.01;
     /* Output files */
     img_out_fmt = IMG_OUT_FMT_AUTO;
     img_out_type = PLM_IMG_TYPE_UNDEFINED;
@@ -239,6 +242,9 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;
+    /* Overlap penalty */
+    overlap_penalty_lambda = s.overlap_penalty_lambda;
+    overlap_penalty_fraction = s.overlap_penalty_fraction;
     /* Output files */
     img_out_type = s.img_out_type;
     xf_out_itk = s.xf_out_itk;
