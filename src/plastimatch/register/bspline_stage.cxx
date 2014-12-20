@@ -360,9 +360,15 @@ Bspline_stage::initialize ()
         logfile_printf ("Set debug directory to %s (%d)\n", 
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
 
-        /* Write moving grad */
+        /* Write fixed, moving, moving_grad */
         std::string fn;
-        fn = string_format ("%s/%02d_moving_grad.mha", 
+        fn = string_format ("%s/%02d/moving.mha",
+            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+        write_mha (fn.c_str(), d_ptr->moving_ss.get());
+        fn = string_format ("%s/%02d/fixed.mha",
+            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+        write_mha (fn.c_str(), d_ptr->fixed_ss.get());
+        fn = string_format ("%s/%02d/moving_grad.mha", 
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
         write_mha (fn.c_str(), d_ptr->moving_grad.get());
     }

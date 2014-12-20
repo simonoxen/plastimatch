@@ -9,6 +9,7 @@
 #include <io.h>        // windows //
 #endif
 
+#include "file_util.h"
 #include "mha_io.h"
 #include "plm_endian.h"
 #include "plm_fwrite.h"
@@ -48,7 +49,7 @@ write_mha_internal (
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
 	exit (-1);
     }
-    fp = fopen (filename,"wb");
+    fp = plm_fopen (filename,"wb");
     if (!fp) {
 	fprintf (stderr, "Can't open file %s for write\n", filename);
 	return;

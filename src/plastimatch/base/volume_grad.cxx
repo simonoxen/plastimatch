@@ -162,7 +162,7 @@ volume_gradient_magnitude (const Volume::Pointer& ref)
 {
     Volume::Pointer grad = Volume::New (
         ref->dim, ref->offset, ref->spacing, 
-	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
+	ref->direction_cosines, PT_FLOAT, 1);
     volume_calc_grad_mag (grad.get(), ref.get());
 
     return grad;
