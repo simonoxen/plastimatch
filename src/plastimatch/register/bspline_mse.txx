@@ -86,6 +86,15 @@ public:
        accumulation does not. */
     double score_acc;
 public:
+    class Thread_data {
+    public:
+        double tile_score;
+    public:
+        Thread_data () {
+            tile_score = 0.;
+        }
+    };
+public:
     Bspline_mse_l (Bspline_optimize *bod)
     {
         Bspline_parms *parms = bod->get_bspline_parms ();

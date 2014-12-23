@@ -6,6 +6,10 @@
 
 #include "plmregister_config.h"
 #include <string>
+#if OPENMP_FOUND
+#include <omp.h>
+#endif
+
 #include "bspline_macros.h"
 #include "bspline_mse.h"
 #include "bspline_optimize.h"
@@ -201,8 +205,8 @@ bspline_loop_tile_serial (
     }
 
     // Serial across tiles
-    plm_long idx_tile;
-    LOOP_THRU_VOL_TILES (idx_tile, bxf) {
+    plm_long pidx;
+    LOOP_THRU_VOL_TILES (pidx, bxf) {
         int rc;
 
         int ijk_tile[3];
@@ -231,7 +235,7 @@ bspline_loop_tile_serial (
         memset(sets_z, 0, 64*sizeof(float));
 
         // Get tile coordinates from index
-        COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
+        COORDS_FROM_INDEX (ijk_tile, pidx, bxf->rdims); 
 
         // Serial through voxels in tile
         LOOP_THRU_TILE_Z (q, bxf) {
@@ -256,7 +260,7 @@ bspline_loop_tile_serial (
                     fidx = volume_index (fixed->dim, fijk);
 
                     // Calc. deformation vector (dxyz) for voxel
-                    bspline_interp_pix_c (dxyz, bxf, idx_tile, q);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     int rc;
@@ -309,7 +313,7 @@ bspline_loop_tile_serial (
         bspline_sort_sets (
             cond_x, cond_y, cond_z,
             sets_x, sets_y, sets_z,
-            idx_tile, bxf
+            pidx, bxf
         );
 
     } /* LOOP_THRU_VOL_TILES */
@@ -340,6 +344,7 @@ bspline_loop_tile_serial (
    Equivalent to "MSE I" method.
    Respects direction cosines and ROI images.
    ----------------------------------------------------------------------- */
+#if OPENMP_FOUND
 template< class Bspline_loop_user >
 void
 bspline_loop_tile_parallel (
@@ -392,11 +397,27 @@ bspline_loop_tile_parallel (
         corr_fp = plm_fopen (fn.c_str(), "wb");
     }
 
-    // Serial across tiles
-    plm_long idx_tile;
-    LOOP_THRU_VOL_TILES (idx_tile, bxf) {
-        int rc;
+    /* Allocate and initialize private thread data */
+    int num_threads = 1;
+#pragma omp parallel
+#pragma omp master
+    {
+        num_threads = omp_get_num_threads ();
+    }
+    typename Bspline_loop_user::Thread_data thread_data_array 
+        = new typename Bspline_loop_user::Thread_data[num_threads];
 
+    // Parallel across tiles
+    plm_long pidx;
+#pragma omp parallel for
+    LOOP_THRU_VOL_TILES (pidx, bxf) {
+
+        /* Get pointer to private data for this thread */
+        int thread_num = omp_get_thread_num ();
+        typename Bspline_loop_user::Thread_data *thread_data 
+            = thread_data_array[thread_num];
+
+        int rc;
         int ijk_tile[3];
         plm_long q[3];
 
@@ -423,7 +444,7 @@ bspline_loop_tile_parallel (
         memset(sets_z, 0, 64*sizeof(float));
 
         // Get tile coordinates from index
-        COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
+        COORDS_FROM_INDEX (ijk_tile, pidx, bxf->rdims); 
 
         // Serial through voxels in tile
         LOOP_THRU_TILE_Z (q, bxf) {
@@ -448,7 +469,7 @@ bspline_loop_tile_parallel (
                     fidx = volume_index (fixed->dim, fijk);
 
                     // Calc. deformation vector (dxyz) for voxel
-                    bspline_interp_pix_c (dxyz, bxf, idx_tile, q);
+                    bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
                     int rc;
@@ -501,7 +522,7 @@ bspline_loop_tile_parallel (
         bspline_sort_sets (
             cond_x, cond_y, cond_z,
             sets_x, sets_y, sets_z,
-            idx_tile, bxf
+            pidx, bxf
         );
 
     } /* LOOP_THRU_VOL_TILES */
@@ -525,5 +546,6 @@ bspline_loop_tile_parallel (
         fclose (corr_fp);
     }
 }
+#endif /* OPENMP_FOUND */
 
 #endif
