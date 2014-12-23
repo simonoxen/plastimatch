@@ -3200,7 +3200,7 @@ bspline_score_k_mi (
     blu1.set_mi_hist (mi_hist);
 
     /* Run the loop */
-    bspline_loop_k (blu1, bod);
+    bspline_loop_voxel_serial (blu1, bod);
 
     /* Draw histogram images if user wants them */
     if (parms->xpm_hist_dump) {
@@ -3235,7 +3235,75 @@ bspline_score_k_mi (
     blu2.set_mi_hist (mi_hist);
 
     /* Run the loop */
-    bspline_loop_k (blu2, bod);
+    bspline_loop_voxel_serial (blu2, bod);
+
+    ssd->time_smetric = timer->report ();
+    delete timer;
+}
+
+/* Mutual information version of implementation "l" */
+void
+bspline_score_l_mi (
+    Bspline_optimize *bod
+)
+{
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
+
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_score* ssd = &bst->ssd;
+    Bspline_mi_hist_set* mi_hist = bst->mi_hist;
+
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
+
+    /* Create/initialize bspline_loop_user (PASS 1) */
+    Bspline_mi_k_pass_1 blu1 (bod);
+    blu1.set_mi_hist (mi_hist);
+
+    /* Run the loop */
+    bspline_loop_voxel_serial (blu1, bod);
+
+    /* Draw histogram images if user wants them */
+    if (parms->xpm_hist_dump) {
+        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+    }
+
+    /* Display histrogram stats in debug mode */
+    if (parms->debug) {
+        plm_long zz;
+        double tmp;
+        for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
+            tmp += f_hist[zz];
+        }
+        printf ("f_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins; zz++) {
+            tmp += m_hist[zz];
+        }
+        printf ("m_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) {
+            tmp += j_hist[zz];
+        }
+        printf ("j_hist total: %f\n", tmp);
+    }
+
+    /* Compute score */
+    ssd->smetric = mi_hist_score (mi_hist, ssd->num_vox);
+
+    /* Create/initialize bspline_loop_user (PASS 2) */
+    Bspline_mi_k_pass_2 blu2 (bod);
+    blu2.set_mi_hist (mi_hist);
+
+    /* Run the loop */
+    bspline_loop_voxel_serial (blu2, bod);
 
     ssd->time_smetric = timer->report ();
     delete timer;
@@ -3284,6 +3352,9 @@ bspline_score_mi (
             case 'k':
                 bspline_score_k_mi (bod);
                 break;
+            case 'l':
+                bspline_score_l_mi (bod);
+                break;
             default:
 #if (OPENMP_FOUND)
                 bspline_score_h_mi (bod);
@@ -3322,6 +3393,9 @@ bspline_score_mi (
 #endif
             case 'k':
                 bspline_score_k_mi (bod);
+                break;
+            case 'l':
+                bspline_score_l_mi (bod);
                 break;
             default:
 #if (OPENMP_FOUND)

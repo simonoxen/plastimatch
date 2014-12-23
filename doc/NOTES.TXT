@@ -1,35 +1,45 @@
-***** MI methods *****
+***** Bspline methods *****
 
-Method i
+Method mi-i
 Tile loop to create histogram (hist_add omp_v2)
 Condense loop to create gradient
 
-Method h 
+Method mi-h 
 Serial loop to create histogram
 Condense loop to create gradient
 
-Method g == method h
+Method mi-g == method mi-h
 
-Method f
+Method mi-f
 Tile loop to create histogram (hist_add omp_crit)
 Condense loop to create gradient
 
-Method e
+Method mi-e
 Tile loop to create histogram (hist_add omp_v1)
 Condense loop to create gradient
 
 Method d == method h
 
-Method c
+Method mi-c
 Serial loop to create histogram
 Serial loop to create gradient
 
+Method mse-i
+Parallel tile
+
+Method mse-h
+Serial tile
+
+Method mse-g == mse-i
+
+Method mse-c
+Serial voxel
 
 Method k
 Serial loop
 
 Method l
-Serial tile loop, with sets
+Serial tile loop, condense with sets
 
 
 ***** Overlap fraction *****

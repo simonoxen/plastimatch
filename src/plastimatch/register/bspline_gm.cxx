@@ -62,7 +62,7 @@ bspline_score_k_gm (
     Bspline_gm_k blu (bod);
 
     /* Run the loop */
-    bspline_loop_k (blu, bod);
+    bspline_loop_voxel_serial (blu, bod);
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, blu.score_acc);
