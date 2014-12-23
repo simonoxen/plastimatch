@@ -4,12 +4,10 @@
 #ifndef _bspline_macros_h_
 #define _bspline_macros_h_
 
-//#include "plmregister_config.h"
-#include "sys/plm_int.h"
-#include "volume_macros.h"
-
-/* EXTERNAL DEPENDS */
+#include "plmbase_config.h"
 #include "bspline_xform.h"
+#include "plm_int.h"
+#include "volume_macros.h"
 
 /***************************************************************
  * MACROS FOR VOXEL CENTRIC ALGORITHMS                         *
@@ -148,7 +146,7 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
 /* ITERATORS */
 
 /* For linearlly cycling through regions/tiles in the volume */
-#define LOOP_THRU_VOL_TILES(idx_tile, bxf)                                                    \
+#define LOOP_THRU_VOL_TILES(idx_tile, bxf)                              \
     for (idx_tile = 0; idx_tile < (bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2]); idx_tile++)
 
 /* For cycling through local coordinates within a tile */
