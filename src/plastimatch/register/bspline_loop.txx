@@ -43,7 +43,7 @@ bspline_loop_k (
     float mijk[3];              /* Indices within moving image (vox) */
     float fxyz[3];              /* Position within fixed image (mm) */
     float mxyz[3];              /* Position within moving image (mm) */
-    plm_long mijk_f[3], midx_f;    /* Floor */
+    plm_long mijk_f[3], midx_f; /* Floor */
     plm_long mijk_r[3];         /* Round */
     plm_long p[3], pidx;        /* Region index of fixed voxel */
     plm_long q[3], qidx;        /* Offset index of fixed voxel */
@@ -170,7 +170,6 @@ bspline_loop_l (
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
 
-
     plm_long cond_size = 64*bxf->num_knots*sizeof(float);
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
@@ -211,24 +210,19 @@ bspline_loop_l (
     // Serial across tiles
     plm_long idx_tile;
     LOOP_THRU_VOL_TILES (idx_tile, bxf) {
-#if defined (commentout)
         int rc;
 
         int ijk_tile[3];
-        plm_long ijk_local[3];
+        plm_long q[3];
 
-        float xyz_fixed[3];
-        plm_long ijk_fixed[3];
-        plm_long idx_fixed;
+        plm_long fijk[3], fidx;     /* Indices within fixed image (vox) */
+        float fxyz[3];              /* Position within fixed image (mm) */
+        float mijk[3];              /* Indices within moving image (vox) */
+        float mxyz[3];              /* Position within moving image (mm) */
+        plm_long mijk_f[3], midx_f; /* Floor */
+        plm_long mijk_r[3], midx_r; /* Round */
 
         float dxyz[3];
-
-        float xyz_moving[3];
-        float ijk_moving[3];
-        plm_long ijk_moving_floor[3];
-        plm_long ijk_moving_round[3];
-        plm_long idx_moving_floor;
-        plm_long idx_moving_round;
 
         float li_1[3], li_2[3];
         float m_val, diff;
@@ -247,91 +241,109 @@ bspline_loop_l (
         COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
 
         // Serial through voxels in tile
-        LOOP_THRU_TILE_Z (ijk_local, bxf) {
-            LOOP_THRU_TILE_Y (ijk_local, bxf) {
-                LOOP_THRU_TILE_X (ijk_local, bxf) {
+        LOOP_THRU_TILE_Z (q, bxf) {
+            LOOP_THRU_TILE_Y (q, bxf) {
+                LOOP_THRU_TILE_X (q, bxf) {
 
                     // Construct coordinates into fixed image volume
-                    GET_VOL_COORDS (ijk_fixed, ijk_tile, ijk_local, bxf);
+                    GET_VOL_COORDS (fijk, ijk_tile, q, bxf);
 
+#if defined (commentout)
                     // Make sure we are inside the region of interest
-                    if (ijk_fixed[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
                         continue;
-                    if (ijk_fixed[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
                         continue;
-                    if (ijk_fixed[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
                         continue;
+#endif
+
+                    /* Discard fixed image voxels outside of roi */
+                    if (fixed_roi) {
+                        if (!inside_roi (fxyz, fixed_roi)) continue;
+                    }
 
                     // Compute physical coordinates of fixed image voxel
                     /* To remove DCOS support, switch to 
-                       GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf); */
-                    GET_WORLD_COORDS (xyz_fixed, ijk_fixed, 
+                       GET_REAL_SPACE_COORDS (fxyz, fijk, bxf); */
+                    GET_WORLD_COORDS (fxyz, fijk, 
                         fixed, bxf);
 
                     // Construct the image volume index
-                    idx_fixed = volume_index (fixed->dim, ijk_fixed);
+                    fidx = volume_index (fixed->dim, fijk);
 
                     // Calc. deformation vector (dxyz) for voxel
-                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, q);
 
-                    // Calc. moving image coordinate from the deformation vector
-                    /* To remove DCOS support, change function call to 
-                       bspline_find_correspondence() */
-                    rc = bspline_find_correspondence_dcos (
-                        xyz_moving, ijk_moving, xyz_fixed, dxyz, moving);
+                    /* Find correspondence in moving image */
+                    int rc;
+                    rc = bspline_find_correspondence_dcos_roi (
+                        mxyz, mijk, fxyz, dxyz, moving, moving_roi);
 
-                    // Return code is 0 if voxel is pushed outside of moving image
+                    /* If voxel is not inside moving image */
                     if (!rc) continue;
 
                     if (parms->debug) {
                         fprintf (corr_fp, 
-                            "%d %d %d %f %f %f\n",
-                            (unsigned int) ijk_fixed[0], 
-                            (unsigned int) ijk_fixed[1], 
-                            (unsigned int) ijk_fixed[2], 
-                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                            "%d %d %d, %f %f %f -> %f %f %f, %f %f %f\n",
+                            (unsigned int) fijk[0], 
+                            (unsigned int) fijk[1], 
+                            (unsigned int) fijk[2], 
+                            fxyz[0], fxyz[1], fxyz[2],
+                            mijk[0], mijk[1], mijk[2],
+                            fxyz[0] + dxyz[0], fxyz[1] + dxyz[1], 
+                            fxyz[2] + dxyz[2]);
                     }
 
                     // Compute linear interpolation fractions
                     li_clamp_3d (
-                        ijk_moving,
-                        ijk_moving_floor,
-                        ijk_moving_round,
+                        mijk,
+                        mijk_f,
+                        mijk_r,
                         li_1,
                         li_2,
                         moving
                     );
 
                     // Find linear indices for moving image
-                    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
-                    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
+                    midx_f = volume_index (moving->dim, mijk_f);
+                    midx_r = volume_index (moving->dim, mijk_r);
 
+                    /* Run the target function */
+                    bspline_loop_user.loop_function (
+                        bod, bxf, bst, ssd, 
+                        fixed, moving, f_img, m_img, 
+                        fidx, midx_f, mijk_r, 
+                        li_1, li_2, q, 
+                        sets_x, sets_y, sets_z);
+
+#if defined (commentout)
                     // Calc. moving voxel intensity via linear interpolation
                     LI_VALUE (
                         m_val, 
                         li_1[0], li_2[0],
                         li_1[1], li_2[1],
                         li_1[2], li_2[2],
-                        idx_moving_floor,
+                        midx_f,
                         m_img, moving
                     );
 
                     // Compute intensity difference
-                    diff = m_val - f_img[idx_fixed];
+                    diff = m_val - f_img[fidx];
 
                     // Store the score!
                     score_tile += diff * diff;
                     ssd->num_vox++;
 
                     // Compute dc_dv
-                    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
-                    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
-                    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
+                    dc_dv[0] = diff * m_grad[3 * midx_r + 0];
+                    dc_dv[1] = diff * m_grad[3 * midx_r + 1];
+                    dc_dv[2] = diff * m_grad[3 * midx_r + 2];
 
                     /* Generate condensed tile */
                     bspline_update_sets_b (sets_x, sets_y, sets_z,
-                        ijk_local, dc_dv, bxf);
-
+                        q, dc_dv, bxf);
+#endif
                 } /* LOOP_THRU_TILE_X */
             } /* LOOP_THRU_TILE_Y */
         } /* LOOP_THRU_TILE_Z */
@@ -344,19 +356,18 @@ bspline_loop_l (
             idx_tile, bxf
         );
 
-#endif
     } /* LOOP_THRU_VOL_TILES */
 
 
-#if defined (commentout)
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  A single bin summation is
      * dc_dp for the single control point associated with the bin.
      * The number of total bins is equal to the number of control
      * points in the control grid.
      */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
+#if defined (commentout)
     /* Normalize score for MSE */
     bspline_score_normalize (bod, score_tile);
 #endif

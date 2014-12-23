@@ -279,7 +279,7 @@ bspline_score_i_mse (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -503,7 +503,7 @@ bspline_score_h_mse (
      * The number of total bins is equal to the number of control
      * points in the control grid.
      */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -734,7 +734,7 @@ bspline_score_g_mse (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -976,7 +976,7 @@ bspline_score_l_mse (
     Bspline_score *ssd = &bod->get_bspline_state()->ssd;
 
     /* Create/initialize bspline_loop_user */
-    Bspline_mse_k blu (bod);
+    Bspline_mse_l blu (bod);
 
     /* Run the loop */
     bspline_loop_l (blu, bod);

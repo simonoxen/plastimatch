@@ -1,3 +1,37 @@
+***** MI methods *****
+
+Method i
+Tile loop to create histogram (hist_add omp_v2)
+Condense loop to create gradient
+
+Method h 
+Serial loop to create histogram
+Condense loop to create gradient
+
+Method g == method h
+
+Method f
+Tile loop to create histogram (hist_add omp_crit)
+Condense loop to create gradient
+
+Method e
+Tile loop to create histogram (hist_add omp_v1)
+Condense loop to create gradient
+
+Method d == method h
+
+Method c
+Serial loop to create histogram
+Serial loop to create gradient
+
+
+Method k
+Serial loop
+
+Method l
+Serial tile loop, with sets
+
+
 ***** Overlap fraction *****
 
 The overlap fraction should (?) be tied to score at initial iteration.

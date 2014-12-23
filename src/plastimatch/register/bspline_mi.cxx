@@ -1131,7 +1131,7 @@ bspline_mi_pvi_6_dc_dv (
 
 /* -----------------------------------------------------------------------
    Scoring functions
-   ----------------------------------------------------------------------- */
+  ----------------------------------------------------------------------- */
 
 /* B-Spline Registration using Mutual Information
  * Implementation I
@@ -1443,7 +1443,7 @@ bspline_score_i_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z,
+    bspline_condense_grad (cond_x, cond_y, cond_z,
         bxf, ssd);
 
     free (cond_x);
@@ -1725,7 +1725,7 @@ bspline_score_h_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result will be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -1971,7 +1971,7 @@ bspline_score_g_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result will be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -2273,7 +2273,7 @@ bspline_score_f_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z,
+    bspline_condense_grad (cond_x, cond_y, cond_z,
         bxf, ssd);
 
     free (cond_x);
@@ -2602,7 +2602,7 @@ bspline_score_e_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z,
+    bspline_condense_grad (cond_x, cond_y, cond_z,
         bxf, ssd);
 
     free (cond_x);
@@ -2911,7 +2911,7 @@ bspline_score_d_mi (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result will be dc_dp. */
-    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);

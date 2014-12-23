@@ -351,8 +351,8 @@ bspline_update_grad_b (
 }
 
 void
-bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
-                   Bspline_xform* bxf, Bspline_score* ssd)
+bspline_condense_grad (float* cond_x, float* cond_y, float* cond_z,
+    Bspline_xform* bxf, Bspline_score* ssd)
 {
     plm_long kidx, sidx;
 

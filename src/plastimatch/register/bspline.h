@@ -47,7 +47,7 @@ PLMREGISTER_API void bspline_save_debug_state (
     Bspline_xform* bxf
 );
 void dump_xpm_hist (Bspline_mi_hist_set* mi_hist, char* file_base, int iter);
-void bspline_make_grad (
+void bspline_condense_grad (
     float* cond_x, float* cond_y, float* cond_z,
     Bspline_xform* bxf,
     Bspline_score* ssd
