@@ -2,16 +2,16 @@
 fixed=@PLM_BUILD_TESTING_DIR@/gauss-1.mha
 moving=@PLM_BUILD_TESTING_DIR@/gauss-2.mha
 
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-single-c-vf.mha
-xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-single-c-xf.txt
-img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-single-c-img.mha
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-mse-l-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-mse-l-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-mse-l-img.mha
 
 [STAGE]
 xform=bspline
 optim=lbfgsb
 impl=plastimatch
 threading=single
-alg_flavor=c
+alg_flavor=l
 max_its=5
 convergence_tol=3
 grad_tol=0.1

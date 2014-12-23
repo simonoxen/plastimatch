@@ -966,6 +966,26 @@ bspline_score_l_mse (
     Bspline_optimize *bod
 )
 {
+    /* The timer should be moved back into bspline_loop, however 
+       it requires that start/end routines for bspline_loop_user 
+       have consistent interface for all users */
+       
+    Plm_timer* timer = new Plm_timer;
+    timer->start ();
+
+    Bspline_score *ssd = &bod->get_bspline_state()->ssd;
+
+    /* Create/initialize bspline_loop_user */
+    Bspline_mse_k blu (bod);
+
+    /* Run the loop */
+    bspline_loop_l (blu, bod);
+
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, blu.score_acc);
+
+    ssd->time_smetric = timer->report ();
+    delete timer;
 }
 
 void

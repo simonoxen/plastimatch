@@ -24,9 +24,10 @@ option (PLM_DOWNLOAD_TEST_DATA
 ## Configure test input files
 ##-----------------------------------------------------------------------------
 set (CONFIG_FILE_LIST
-  "plm-bsp-single-c.txt"
-  "plm-bsp-single-h.txt"
-  "plm-bsp-single-k.txt"
+  "plm-bsp-mse-c.txt"
+  "plm-bsp-mse-h.txt"
+  "plm-bsp-mse-k.txt"
+  "plm-bsp-mse-l.txt"
   "plm-bsp-mi-c.txt"
   "plm-bsp-mi-k.txt"
   "plm-bsp-gm-k.txt"
@@ -2335,9 +2336,10 @@ set_tests_properties (plm-reg-itk-demons-sym-logd-check-1
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
-##   plm-bsp-single-c
-##   plm-bsp-single-h
-##   plm-bsp-single-k
+##   plm-bsp-mse-c
+##   plm-bsp-mse-h
+##   plm-bsp-mse-k
+##   plm-bsp-mse-l
 ##   plm-bsp-openmp
 ##   plm-bsp-cuda
 ##   plm-bsp-resume
@@ -2348,73 +2350,96 @@ set_tests_properties (plm-reg-itk-demons-sym-logd-check-1
 ##   plm-bsp-char-output
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "plm-bsp-single-c" 
+  "plm-bsp-mse-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-c.txt"
   )
 plm_add_test (
-  "plm-bsp-single-c-stats"
+  "plm-bsp-mse-c-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-c-img.mha"
   )
-plmtest_check_interval ("plm-bsp-single-c-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-c-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-mse-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-c-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bsp-single-c APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bsp-single-c APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bsp-single-c-stats PROPERTIES 
-  DEPENDS plm-bsp-single-c)
-set_tests_properties (plm-bsp-single-c-check PROPERTIES 
-  DEPENDS plm-bsp-single-c-stats)
+set_property (TEST plm-bsp-mse-c APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mse-c APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-mse-c-stats PROPERTIES 
+  DEPENDS plm-bsp-mse-c)
+set_tests_properties (plm-bsp-mse-c-check PROPERTIES 
+  DEPENDS plm-bsp-mse-c-stats)
 
 plm_add_test (
-  "plm-bsp-single-h" 
+  "plm-bsp-mse-h" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-h.txt"
   )
 plm_add_test (
-  "plm-bsp-single-h-stats"
+  "plm-bsp-mse-h-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-h-img.mha"
   )
-plmtest_check_interval ("plm-bsp-single-h-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-mse-h-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-h-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bsp-single-h APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bsp-single-h APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bsp-single-h-stats PROPERTIES 
-  DEPENDS plm-bsp-single-h)
-set_tests_properties (plm-bsp-single-h-check PROPERTIES 
-  DEPENDS plm-bsp-single-h-stats)
+set_property (TEST plm-bsp-mse-h APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mse-h APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-mse-h-stats PROPERTIES 
+  DEPENDS plm-bsp-mse-h)
+set_tests_properties (plm-bsp-mse-h-check PROPERTIES 
+  DEPENDS plm-bsp-mse-h-stats)
 
 plm_add_test (
-  "plm-bsp-single-k" 
+  "plm-bsp-mse-k" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-k.txt"
   )
 plm_add_test (
-  "plm-bsp-single-k-stats"
+  "plm-bsp-mse-k-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k-img.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-k-img.mha"
   )
-plmtest_check_interval ("plm-bsp-single-k-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-single-k-stats.stdout.txt"
+plmtest_check_interval ("plm-bsp-mse-k-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-k-stats.stdout.txt"
   "AVE *([-0-9.]*)"
   "${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
-set_property (TEST plm-bsp-single-k APPEND PROPERTY DEPENDS gauss-1)
-set_property (TEST plm-bsp-single-k APPEND PROPERTY DEPENDS gauss-2)
-set_tests_properties (plm-bsp-single-k-stats PROPERTIES 
-  DEPENDS plm-bsp-single-k)
-set_tests_properties (plm-bsp-single-k-check PROPERTIES 
-  DEPENDS plm-bsp-single-k-stats)
+set_property (TEST plm-bsp-mse-k APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mse-k APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-mse-k-stats PROPERTIES 
+  DEPENDS plm-bsp-mse-k)
+set_tests_properties (plm-bsp-mse-k-check PROPERTIES 
+  DEPENDS plm-bsp-mse-k-stats)
+
+plm_add_test (
+  "plm-bsp-mse-l" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-l.txt"
+  )
+plm_add_test (
+  "plm-bsp-mse-l-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-l-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-mse-l-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-l-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  )
+set_property (TEST plm-bsp-mse-l APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mse-l APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-mse-l-stats PROPERTIES 
+  DEPENDS plm-bsp-mse-l)
+set_tests_properties (plm-bsp-mse-l-check PROPERTIES 
+  DEPENDS plm-bsp-mse-l-stats)
 
 plm_add_test (
   "plm-bsp-mi-c" 
@@ -3254,7 +3279,7 @@ set_tests_properties (plm-compose-b-check PROPERTIES
 plm_add_test (
   "plm-compose-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;${PLM_BUILD_TESTING_DIR}/plm-bsp-single-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
+  "compose;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-h-xf.txt;${PLM_BUILD_TESTING_DIR}/plm-reg-compose-vf.mha;${PLM_BUILD_TESTING_DIR}/plm-compose-c-vf.mha"
   )
 plm_add_test (
   "plm-compose-c-warp" 
