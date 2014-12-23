@@ -19,9 +19,12 @@ public:
     ~nki2mha_converter();
     QString CorrectSingle_NKI2MHA(const char* filePath);
     QString CorrectSingle_NKI2DCM(const char* filePath);
+	QString CorrectSingle_NKI2DCM( const char* filePath, QString patientID, QString patientName);
+
     QString CorrectSingle_NKI2RAW( const char* filePath );
 
     QString CorrectSingle_MHA2DCM(const char* filePath );
+	QString CorrectSingle_MHA2DCM( const char* filePath, QString patientID, QString patientName);
     //void LoadBadPixelMap(const char* filePath);
     //void BadPixReplacement(YK16GrayImage* targetImg);
     //void SaveBadPixelMap(vector<BADPIXELMAP>& vBadPixels);

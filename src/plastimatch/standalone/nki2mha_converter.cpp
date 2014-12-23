@@ -134,23 +134,44 @@ void nki2mha_converter::SLT_Correct_NKI2DCM()
     if (listSize < 1)
         return;
 
+	QString strPatientID = ui.lineEditPatientID->text();
+	QString strPatientName = ui.lineEditPatientName->text();
+
+	bool bPatientIDExist = false;
+
+	if (strPatientID.length() > 1 && strPatientName.length() > 1)
+	{
+	  bPatientIDExist = true;  	  
+	}
+
 
     int cnt = 0;
     for (int i = 0 ; i<listSize ; i++)
     {
+	  if (listSize > 1)
+	  {
+		int index = i+1;
+		strPatientID = strPatientID + QString("%1").arg(index);
+	  }
+
         QString filePath = m_strlistPath.at(i);
 
         QFileInfo fileInfo  = QFileInfo(filePath);
         QString extName = fileInfo.completeSuffix();
         QString corrFilePath;
 
-
         if (extName == "scan" || extName == "SCAN")
-        {
-            corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
+        {		 
+		  if (bPatientIDExist)
+		  	corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);		  
+		  else
+			corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
         }
         else if (extName == "mha" || extName == "MHA")
         {
+		  if (bPatientIDExist)
+			corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);
+		  else
             corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData());			
         }
 
@@ -244,8 +265,55 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
     return newDirPath;
 }
 
+QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath, QString patientID, QString patientName )
+{
+  Volume *v = nki_load (filePath);
+  if (!v)
+  {
+	printf("file reading error\n");	
+	return "";
+  }	
 
-QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath )
+  Plm_image plm_img(v);
+
+  //QString endFix = "_DCM";
+
+  QFileInfo srcFileInfo = QFileInfo(filePath);
+  QDir dir = srcFileInfo.absoluteDir();
+  QString baseName = srcFileInfo.completeBaseName();	
+
+  //baseName.append(endFix);	
+  //QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+
+
+  //baseName.append(endFix);	
+  //QString newDirPath = dir.absolutePath() + "\\" + baseName;
+  QString dirName;
+
+  if (patientID.length() > 1)
+	dirName = patientID;
+  else
+	dirName = baseName;    
+
+  QString newDirPath = dir.absolutePath() + "\\" + dirName;
+
+  QDir dirNew(newDirPath);
+  if (!dirNew.exists()){
+	dirNew.mkdir(".");
+  }		
+
+  Rt_study_metadata rsm;
+  rsm.set_patient_id(patientID.toLocal8Bit().constData());
+  rsm.set_patient_name(patientName.toLocal8Bit().constData());
+
+  plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), &rsm);	
+
+  return newDirPath;
+
+}
+
+
+QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath)
 {
     //Volume *v = nki_load (filePath);
     Volume *v  = read_mha(filePath);
@@ -281,6 +349,53 @@ QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath )
     //plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), 0, baseName.toLocal8Bit().constData(),baseName.toLocal8Bit().constData());	
 
     return newDirPath;
+}
+
+QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath, QString patientID, QString patientName)
+{
+  //Volume *v = nki_load (filePath);
+  Volume *v  = read_mha(filePath);
+
+  if (!v)
+  {
+	printf("file reading error\n");	
+	return "";
+  }	
+
+  Plm_image plm_img(v);
+
+  //QString endFix = "_DCM";
+
+  QFileInfo srcFileInfo = QFileInfo(filePath);
+  QDir dir = srcFileInfo.absoluteDir();
+  QString baseName = srcFileInfo.completeBaseName();	
+
+  //baseName.append(endFix);	
+  //QString newDirPath = dir.absolutePath() + "\\" + baseName;
+  QString dirName;
+
+  if (patientID.length() > 1)
+	dirName = patientID;
+  else
+	dirName = baseName;    
+  
+  QString newDirPath = dir.absolutePath() + "\\" + dirName;
+
+
+  QDir dirNew(newDirPath);
+  if (!dirNew.exists()){
+	dirNew.mkdir(".");
+  }
+  //ID: baseName.toLocal8Bit().constData();
+  //Name: baseName.toLocal8Bit().constData();
+  Rt_study_metadata rsm;
+  rsm.set_patient_id(patientID.toLocal8Bit().constData());
+  rsm.set_patient_name(patientName.toLocal8Bit().constData());
+
+  plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), &rsm);	
+  //plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), 0, baseName.toLocal8Bit().constData(),baseName.toLocal8Bit().constData());	
+
+  return newDirPath;
 }
 
 
