@@ -60,6 +60,10 @@ set (CONFIG_FILE_LIST
   "plm-reg-trans-b.txt"
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
+  "proton-dose-a-1.txt"
+  "proton-dose-f-1.txt"
+  "proton-dose-g-1.txt"
+  "proton-dose-h-1.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
   configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
@@ -3921,7 +3925,10 @@ set_tests_properties (vf-invert-trans-1-check
 
 ## -------------------------------------------------------------------------
 ## bragg-curve
-## proton-dose
+## proton-dose-a-1    Flavor a, automatic compensator
+## proton-dose-f-1    Flavor f, automatic compensator
+## proton-dose-g-1    Flavor g, automatic compensator
+## proton-dose-h-1    Flavor h, automatic compensator
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -3933,13 +3940,33 @@ add_test (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_BUILD_TESTING_DIR}/bragg-curve.txt")
 set_tests_properties (bragg-curve-check PROPERTIES DEPENDS bragg-curve)
 
-# Disabled until 2012.05.18 or 2012.05.19
-#plm_add_test (
-#  "proton-dose"
-#  ${PLM_PLASTIMATCH_PATH}/proton_dose
-#  "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_BUILD_TESTING_DIR}/rect-2.mha;${PLM_BUILD_TESTING_DIR}/proton-dose.mha"
-#  )
-#set_tests_properties (proton-dose PROPERTIES DEPENDS rect-2)
+plm_add_test (
+    "proton-dose-a-1"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-a-1.txt"
+    )
+set_tests_properties (proton-dose-a-1 PROPERTIES DEPENDS rect-2)
+
+# plm_add_test (
+#     "proton-dose-f-1"
+#     ${PLM_PLASTIMATCH_PATH}/proton_dose
+#     "${PLM_BUILD_TESTING_DIR}/proton-dose-f-1.txt"
+#     )
+# set_tests_properties (proton-dose-f-1 PROPERTIES DEPENDS rect-2)
+
+# plm_add_test (
+#     "proton-dose-g-1"
+#     ${PLM_PLASTIMATCH_PATH}/proton_dose
+#     "${PLM_BUILD_TESTING_DIR}/proton-dose-g-1.txt"
+#     )
+# set_tests_properties (proton-dose-g-1 PROPERTIES DEPENDS rect-2)
+
+# plm_add_test (
+#     "proton-dose-h-1"
+#     ${PLM_PLASTIMATCH_PATH}/proton_dose
+#     "${PLM_BUILD_TESTING_DIR}/proton-dose-h-1.txt"
+#     )
+# set_tests_properties (proton-dose-h-1 PROPERTIES DEPENDS rect-2)
 
 ## -------------------------------------------------------------------------
 ## i hate myself
