@@ -76,16 +76,18 @@ Rtss_roi::adjust_name (Pstring *name_out, const Pstring *name_in)
 void
 Rtss_roi::set_color (const char* color_string)
 {
-    int r, g, b;
-    if (3 == sscanf (color_string, "%d %d %d", &r, &g, &b)) {
-	/* Parsed OK */
-    }
-    else if (3 == sscanf (color_string, "%d\\%d\\%d", &r, &g, &b)) {
-	/* Parsed OK */
-    } else {
-	r = 255;
-	g = 0;
-	b = 0;
+    int r = 255, g = 0, b = 0;
+    if (color_string) {
+        if (3 == sscanf (color_string, "%d %d %d", &r, &g, &b)) {
+            /* Parsed OK */
+        }
+        else if (3 == sscanf (color_string, "%d\\%d\\%d", &r, &g, &b)) {
+            /* Parsed OK */
+        } else {
+            r = 255;
+            g = 0;
+            b = 0;
+        }
     }
 
     this->color.format ("%d %d %d", r, g, b);
