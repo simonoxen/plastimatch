@@ -472,6 +472,8 @@ Rt_plan::compute_dose ()
                     this->beam->rpl_dose_vol->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
                     this->beam->rpl_dose_vol->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
                 }
+				
+
                 /* update the dose_vol with the CT values before to calculate the dose */
                 this->beam->rpl_dose_vol->compute_rpl_void();
                 time_dose_misc += timer.report ();

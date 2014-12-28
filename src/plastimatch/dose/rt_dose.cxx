@@ -918,7 +918,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
                 else
                 {
                     rg_length = rpl_volume->get_rgdepth(ap_ij, distance);
-                    central_axis_dose = ppp->lookup_energy((float)rg_length);
+                    central_axis_dose = ppp->lookup_energy((float)rg_length) * ct_density;
 
                     sigma = sigma_volume->get_rgdepth(ap_ij, distance);
                     sigma_x3 = (int) ceil(3 * sigma);
@@ -1159,7 +1159,8 @@ compute_dose_ray_sharp (
                     continue;
                 }
                 rg_length = rpl_img[idx3d_sm];
-                central_axis_dose = ppp->lookup_energy(rg_length);
+                central_axis_dose = ppp->lookup_energy(rg_length) * ct_density;
+
                 if (central_axis_dose <= 0) 
                 {
                     continue;
@@ -1236,6 +1237,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
     double sigma_travel = 0;
     double sigma_3 = 0;
     double rg_length = 0;
+	double ct_density = 0;
     double central_sector_dose = 0;
     double radius = 0;
     double theta = 0;
@@ -1252,14 +1254,13 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
             for (ijk[2] = 0; ijk[2] < ct_dim[2]; ijk[2]++){
                 idx = ijk[0] + ct_dim[0] * (ijk[1] + ct_dim[1] * ijk[2]);
 
-                //if (ct_img[idx] <= -1000) {continue;} // if this pixel is in the air, no dose delivered
-
                 /* calculation of the pixel coordinates in the room coordinates */
                 xyz[0] = (double) dose_vol->offset[0] + ijk[0] * dose_vol->spacing[0];
                 xyz[1] = (double) dose_vol->offset[1] + ijk[1] * dose_vol->spacing[1];
                 xyz[2] = (double) dose_vol->offset[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
 
                 sigma_3 = 3 * plan->beam->sigma_vol_lg->get_rgdepth(xyz);
+
                 if (sigma_3 <= 0)
                 {
                     continue;
@@ -1285,6 +1286,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                             vec3_add2(xyz_travel,tmp_xy);
 							
                             rg_length = plan->beam->rpl_vol->get_rgdepth(xyz_travel);
+							ct_density = plan->beam->ct_vol_density_lg->get_rgdepth(xyz_travel);
 							
                             if (rg_length <= 0)
                             {
@@ -1302,7 +1304,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                                 }
                                 else
                                 {
-                                    central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* (1/(sigma_travel*sqrt(2*M_PI)));
+                                    central_sector_dose = plan->beam->lookup_sobp_dose((float) rg_length)* ct_density * (1/(sigma_travel*sqrt(2*M_PI)));
                                     dr = sigma_3 / (2* radius_sample);
                                     // * is normalized to a radius =1, 
                                     // need to be adapted to a 3_sigma 

@@ -968,6 +968,13 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
         for (int s = 0; s < dim[2]; s++)
         {
             idx = s * dim[0] * dim[1] + apert_idx;
+			if (s == dim[2]-1 || dim[2] == 0)
+			{
+				max_dist = offset + (double) dim[2] * this->get_vol()->spacing[2];
+				printf("Warning: Range > ray_length in volume => Some rays stop outside of the volume image.\n");
+				printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
+				return max_dist;
+			}
 
             if (img[idx] > range)
             {
@@ -987,14 +994,8 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
             }
         }
     }
-    if (max_dist == 0)
-    {
-        printf("Error: All the rays miss the volume!! No max range defined.\n");
-    }
-    else
-    {
-      printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
-    }
+
+    printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
     return max_dist;
 }
 

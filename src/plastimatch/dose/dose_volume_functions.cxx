@@ -24,7 +24,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
 		dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
 
     float sigma_margins = 3 * *sigma_max;
-    double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +10; // after this the volume will be void, the particules will not go farther + 2mm of margins
+    double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +5; // after this the volume will be void, the particules will not go farther + 2mm of margins
 
     ap_ul_pixel[0] = -volume->get_aperture()->get_center()[0]*volume->get_aperture()->get_spacing()[0];
     ap_ul_pixel[1] = -volume->get_aperture()->get_center()[1]*volume->get_aperture()->get_spacing()[1];
