@@ -8,6 +8,11 @@ NCIA
 
   Includes LIDC and RIDER databases of lung CT images
 
+Internet Brain Segmentation Repository
+  http://www.nitrc.org/projects/ibsr/
+
+  A database of labeled brain MRI.
+
 ELCAP
   http://www.via.cornell.edu/lungdb.html
 
