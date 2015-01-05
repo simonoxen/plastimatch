@@ -253,7 +253,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 pv_cache[s] = p * v;
 
                 inv_rad_len[s] = 1.0f / LR_interpolation(density_ray[s]);
-                stop_cache[s] = getstop (E) * WER_interpolation(density_ray[s]) * density_ray[s]; // dE/dx_mat = dE /dx_watter * WER * density (lut in g/cm2)
+                stop_cache[s] = getstop (E) / WER_interpolation(density_ray[s]) * density_ray[s]; // dE/dx_mat = dE /dx_watter / WER * density (lut in g/cm2)
 
                 sum = 0;
                 inverse_rad_length_integrated = 0;
