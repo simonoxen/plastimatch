@@ -1281,6 +1281,9 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
     double ray_adj_len; //calculated length each adjacent ray to the voxel
     double rad_depth_input; //input length to calculate rgdepth
 
+    double ray_start[3];
+    double ray_end[3];
+
     plm_long wijk[3]; //index within wed_volume
     int ap_ij[2]; //ray indox of rvol
     plm_long dijk[3]; //Index within dew_volume
@@ -1386,14 +1389,21 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     //Vector along ray from source to aperture
                     vec3_sub3(dummy_adj_ray,ray_adj[i]->p2,src);
 
-                    //Compute length, then ray from source to target position, using
+                    //Compute length, then ray from "ray start" to target position, using
                     //ratio of coordinate-aperture to coordinate lengths.
                     ray_adj_len = (vec3_len(coord_vec)/coord_ap_len)*vec3_len(dummy_adj_ray);
                     vec3_scale3(adj_ray_coord,ray_adj[i]->ray,ray_adj_len);
-                    //Get vector from front clipping plane to target position
+
+		    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
+		      printf("Error in ray clipping, exiting...\n");
+		      return;
+		    }
+
                     vec3_add2(adj_ray_coord,src);
-                    vec3_sub2(adj_ray_coord,ray_adj[i]->cp);
-                    rad_depth_input = vec3_len(adj_ray_coord);
+		    vec3_sub2(adj_ray_coord,ray_start);
+		    
+		    rad_depth_input = vec3_len(adj_ray_coord);	    
+
                     //Now look up the radiation length, using the provided function,
                     //knowing the ray and the length along it.
                     ap_ij[0] = (int) ray_lookup[i][0];
@@ -1401,6 +1411,7 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     /* GCS FIX: I think the ray_lookup stuff is 
                        3D interpolation, should reduce this code to 
                        use the 3D interpolated version of get_rgdepth() */
+
                     ray_rad_len[i] = this->get_rgdepth (
                         ap_ij, rad_depth_input);
 
