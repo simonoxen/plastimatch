@@ -8,6 +8,11 @@ NCIA
 
   Includes LIDC and RIDER databases of lung CT images
 
+PDDCA
+  http://www.imagenglab.com/pddca_18.html
+
+  40 cases from RTOG 0522 with new manual segmentation.
+
 Internet Brain Segmentation Repository
   http://www.nitrc.org/projects/ibsr/
 
