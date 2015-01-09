@@ -78,7 +78,9 @@ public:
     float noise_std;
     float cylinder_radius[3];
     float cylinder_center[3];
-    int gabor_uv[2];
+    bool gabor_use_k_fib;
+    int gabor_k_fib[2];
+    float gabor_k[3];
     
     int num_multi_sphere;
 

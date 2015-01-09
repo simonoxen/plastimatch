@@ -23,14 +23,16 @@ public:
 
     Filter_type filter_type;
     float gauss_width;
-    int gabor_uv[2];
+    bool gabor_use_k_fib;
+    int gabor_k_fib[2];
 
 public:
     Filter_parms () {
         filter_type = FILTER_TYPE_UNDEFINED;
         gauss_width = 10.f;
-        gabor_uv[0] = 0;
-        gabor_uv[1] = 0;
+        gabor_use_k_fib = false;
+        gabor_k_fib[0] = 0;
+        gabor_k_fib[1] = 1;
     }
 };
 

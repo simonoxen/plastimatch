@@ -196,9 +196,10 @@ parse_fn (
         "number of donut rings (2 rings for traditional donut)", 1, "2");
         
     /* Gabor options */
-    parser->add_long_option ("", "gabor-uv", 
-        "integer index of gabor pattern (within triangular region "
-        "\"0,0\", \"0,3\", and \"3,0\")", 1, "0 0");
+    parser->add_long_option ("", "gabor-k-fib", 
+        "choose gabor direction at index i within fibonacci spiral "
+        "of length n; specified as \"i n\" where i and n are integers, "
+        "and i is between 0 and n-1", 1, "");
 
     /* Gaussian options */
     parser->add_long_option ("", "gauss-center", 
@@ -504,7 +505,10 @@ parse_fn (
     parser->assign_float_13 (sm_parms->cylinder_radius, "cylinder-radius");
 
     /* Gabor options */
-    parser->assign_int_2 (sm_parms->gabor_uv, "gabor-uv");
+    if (parser->option ("gabor-k-fib")) {
+        sm_parms->gabor_use_k_fib = true;
+        parser->assign_int_2 (sm_parms->gabor_k_fib, "gabor-k-fib");
+    }
 
     /* Metadata options */
     for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {

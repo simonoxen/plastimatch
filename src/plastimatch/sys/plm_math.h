@@ -73,6 +73,9 @@
 #endif
 #endif
 
+/* How small is too small of a vector to normalize ? */
+#define FLOAT_SMALL_VECTOR_LENGTH 1e-6
+
 /* exp10() is not in C/C++ standard */
 static inline double exp10_ (double m) {
     return exp (2.3025850929940456840179914546844 * m);
@@ -113,7 +116,8 @@ static inline void vec3_scale2 (double* v1, double a) {
     v1[0] *= a; v1[1] *= a; v1[2] *= a;
 }
 
-static inline void vec3_scale3 (double* v1, const double* v2, double a) {
+template<class T, class U> static inline void 
+vec3_scale3 (T* v1, const T* v2, U a) {
     v1[0] = a * v2[0]; v1[1] = a * v2[1]; v1[2] = a * v2[2];
 }
 

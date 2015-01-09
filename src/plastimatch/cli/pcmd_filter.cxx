@@ -32,8 +32,8 @@ create_gabor_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
         smp.gauss_center[i] = 0.f;
         smp.gauss_std[i] = parms->gauss_width;
     }
-    smp.gabor_uv[0] = parms->gabor_uv[0];
-    smp.gabor_uv[1] = parms->gabor_uv[1];
+    smp.gabor_k_fib[0] = parms->gabor_k_fib[0];
+    smp.gabor_k_fib[1] = parms->gabor_k_fib[1];
     smp.pattern = PATTERN_GABOR;
     smp.background = 0;
     smp.foreground = 1;
@@ -157,9 +157,10 @@ parse_fn (
     parser->add_long_option ("", "kernel", "kernel image filename", 1, "");
     parser->add_long_option ("", "gauss-width",
         "the width (in mm) of a uniform Gaussian smoothing filter", 1, "");
-    parser->add_long_option ("", "gabor-uv", 
-        "integer index of gabor pattern (within triangular region "
-        "\"0,0\", \"0,3\", and \"3,0\")", 1, "0 0");
+    parser->add_long_option ("", "gabor-k-fib", 
+        "choose gabor direction at index i within fibonacci spiral "
+        "of length n; specified as \"i n\" where i and n are integers, "
+        "and i is between 0 and n-1", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -205,7 +206,10 @@ parse_fn (
     if (parser->option ("gauss-width")) {
         parms->gauss_width = parser->get_float("gauss-width");
     }
-    parser->assign_int_2 (parms->gabor_uv, "gabor-uv");
+    if (parser->option ("gabor-k-fib")) {
+        parms->gabor_use_k_fib = true;
+        parser->assign_int_2 (parms->gabor_k_fib, "gabor-k-fib");
+    }
 }
 
 void

@@ -9,6 +9,7 @@ Technical reference
    windows_packaging
    special_builds
    api
+   filters
    mutual_information
    regularization
    dicom_conformance

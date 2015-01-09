@@ -81,8 +81,12 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
     num_multi_sphere = 33;
     noise_mean = 0;
     noise_std = 1.f;
-    gabor_uv[0] = 0;
-    gabor_uv[1] = 1;
+    gabor_use_k_fib = false;
+    gabor_k_fib[0] = 0;
+    gabor_k_fib[1] = 1;
+    gabor_k[0] = 1.;
+    gabor_k[1] = 0.;
+    gabor_k[2] = 0.;
 }
 
 Synthetic_mha_parms::~Synthetic_mha_parms ()
@@ -637,41 +641,40 @@ synthetic_mha (
 
     /* Figure out Gabor projection vector -- n.b. it is a horrible hack */
     if (parms->pattern == PATTERN_GABOR) {
-        switch (parms->gabor_uv[0]) {
-        case 0:
-            parms->d_ptr->gabor_proj[0] = 1.0
-                * cos(parms->gabor_uv[1] * M_PI_4);
-            parms->d_ptr->gabor_proj[1] = 1.0
-                * sin(parms->gabor_uv[1] * M_PI_4);
-            parms->d_ptr->gabor_proj[2] = 0.0;
-            break;
-        case 1:
-            parms->d_ptr->gabor_proj[0] = M_SQRT3_OVER_2
-                * cos((0.125 + parms->gabor_uv[1]) * M_PI_3);
-            parms->d_ptr->gabor_proj[1] = M_SQRT3_OVER_2
-                * sin((0.125 + parms->gabor_uv[1]) * M_PI_3);
-            parms->d_ptr->gabor_proj[2] = 0.5;
-            break;
-        case 2:
-            parms->d_ptr->gabor_proj[0] = 0.5
-                * cos(parms->gabor_uv[1] * M_PI_2);
-            parms->d_ptr->gabor_proj[1] = 0.5
-                * sin(parms->gabor_uv[1] * M_PI_2);
-            parms->d_ptr->gabor_proj[2] = M_SQRT3_OVER_2;
-            break;
-        case 3:
-        default:
-            parms->d_ptr->gabor_proj[0] = 0.0;
-            parms->d_ptr->gabor_proj[1] = 0.0;
-            parms->d_ptr->gabor_proj[2] = 1.0;
-            break;
+        if (parms->gabor_use_k_fib) {
+            /* Fibonacci method selected. */
+            /* N.b. I'm not sure which is the better value for phi.
+               So let's use the golden section value. */
+            //float phi = (3. - sqrt(5.)) * M_PI;
+            float phi = (((sqrt(5.) + 1.) / 2.) - 1.) * M_PI;
+            float longitude = fmodf (phi * parms->gabor_k_fib[0], 2 * M_PI);
+            float latitude_sin = -1. + 2. * ((float) parms->gabor_k_fib[0]) / 
+                parms->gabor_k_fib[1];
+            float latitude = asinf (latitude_sin);
+            float latitude_cos = cos (latitude);
+            parms->d_ptr->gabor_proj[0] = latitude_cos * cos (longitude);
+            parms->d_ptr->gabor_proj[1] = latitude_cos * sin (longitude);
+            parms->d_ptr->gabor_proj[2] = latitude_sin;
+            
+            lprintf ("Gabor: %d %d -> (%f %f) -> (%f %f %f)\n", 
+                parms->gabor_k_fib[0],
+                parms->gabor_k_fib[1],
+                longitude, latitude, 
+                parms->d_ptr->gabor_proj[0],
+                parms->d_ptr->gabor_proj[1],
+                parms->d_ptr->gabor_proj[2]);
         }
-        lprintf ("Gabor: %d %d -> (%f %f %f)\n", 
-            parms->gabor_uv[0],
-            parms->gabor_uv[1],
-            parms->d_ptr->gabor_proj[0],
-            parms->d_ptr->gabor_proj[1],
-            parms->d_ptr->gabor_proj[2]);
+        else {
+            /* Standard "k" vector supplied.  Need to normalize it. */
+            float len = vec3_len (parms->gabor_k);
+            if (len < FLOAT_SMALL_VECTOR_LENGTH) {
+                parms->gabor_k[0] = 1.;
+                parms->gabor_k[1] = 0.;
+                parms->gabor_k[2] = 0.;
+                len = 1.;
+            }
+            vec3_scale3 (parms->d_ptr->gabor_proj, parms->gabor_k, len);
+        }
         float sum = 0.f;
         for (int d = 0; d < 3; d++) {
             sum += parms->gauss_std[d] * parms->gauss_std[d];
