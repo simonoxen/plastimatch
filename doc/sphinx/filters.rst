@@ -16,7 +16,7 @@ which is described as:
 
 .. math::
    S \cdot \mathrm{exp} \left( -\frac{|{\bf x}|^2}{\sigma^2} \right) 
-   \cdot \mathrm{exp} \left( j \, \omega {\bf k}^T {\bf x} \right)
+   \cdot \mathrm{exp} \left( j \, \pi \omega {\bf k}^T {\bf x} \right)
 
 Where **x** is the voxel position (relative to the center of the kernel), 
 *:sigma:* is the filter width, and *S* is an arbitrary scaling factor.
@@ -26,8 +26,19 @@ the vector **k** is internally normalized to be a unit vector
 by plastimatch, so that larger **k** vectors do not increase 
 the modulation.
 
+The value of **k** can be set manually, or can be selected according 
+to lie on a Fibanocci spiral.  The Fibanocci spiral method is convenient 
+for choosing a set of **k** vectors that are approximately evenly 
+spaced on the unit sphere.
 
+The values for :omega: and :sigma: can be interlinked.  If :omega: is set, 
+but :sigma: is not set, or vice versa, the other will be set automatically 
+according to the following formula, which seems to work well:
 
+.. math::
+   \omega = 4.5 \cdot \sigma^2
+
+At the current time, only the real component of the Gabor filter is generated.
 
 Gauss
 -----

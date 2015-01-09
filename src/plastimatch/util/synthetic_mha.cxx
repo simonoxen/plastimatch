@@ -536,13 +536,15 @@ synth_gabor (
     *intens = (1 - f) * parms->background + f * parms->foreground;
     *label = (f > 0.2) ? 1 : 0;
 
-    /* Then modulate by cos */
+    /* Get the distance from the central plane in direction of 
+       projection vector ("k" vector) */
     float proj_dist = 0.f;
     for (int d = 0; d < 3; d++) {
         proj_dist += rel[d] * parms->d_ptr->gabor_proj[d];
     }
-    /* GCS FIX : Another hack.  Look up actual Gabor equation. */
-    *intens *= cos(1.5 * M_PI * proj_dist / parms->d_ptr->gabor_freq);
+
+    /* Modulate by cos for real part, or sin for imaginary part */
+    *intens *= cos(parms->d_ptr->gabor_freq * proj_dist);
 }
 
 void
@@ -639,8 +641,9 @@ synthetic_mha (
         dose_img_it.GoToBegin();
     }
 
-    /* Figure out Gabor projection vector -- n.b. it is a horrible hack */
+    /* Figure out Gabor settings */
     if (parms->pattern == PATTERN_GABOR) {
+        /* Figure out projection direction */
         if (parms->gabor_use_k_fib) {
             /* Fibonacci method selected. */
             /* N.b. I'm not sure which is the better value for phi.
@@ -675,11 +678,14 @@ synthetic_mha (
             }
             vec3_scale3 (parms->d_ptr->gabor_proj, parms->gabor_k, len);
         }
+
+        /* Automatically set frequency based on width.  
+           The value 1.5 is a heuristic. */
         float sum = 0.f;
         for (int d = 0; d < 3; d++) {
             sum += parms->gauss_std[d] * parms->gauss_std[d];
         }
-        parms->d_ptr->gabor_freq = sqrt(sum);
+        parms->d_ptr->gabor_freq = M_PI * 1.5 / sqrt(sum);
         parms->image_normalization = Synthetic_mha_parms::NORMALIZATION_GABOR;
     }
 
