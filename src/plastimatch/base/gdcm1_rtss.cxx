@@ -22,8 +22,9 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "rt_study_metadata.h"
-#include "rtss_roi.h"
 #include "rtss.h"
+#include "rtss_contour.h"
+#include "rtss_roi.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
