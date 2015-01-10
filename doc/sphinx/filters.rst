@@ -10,7 +10,8 @@ in more detail the mathematics and implementation of these filters.
 Gabor
 -----
 The Gabor filter is a complex filter, and has real and imaginary 
-components.  Plastimatch implements only a 
+components.  
+Plastimatch implements only a 
 uniform and symmetric form of the Gabor kernel, 
 which is described as:
 
