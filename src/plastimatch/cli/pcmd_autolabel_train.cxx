@@ -12,7 +12,7 @@
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    std::cout << "Usage: plastimatch autolabel-train [options]\n";
+    std::cout << "Usage: plastimatch autolabel-train [options] command_file\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }

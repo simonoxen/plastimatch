@@ -29,19 +29,8 @@ parse_fn (
     parser->add_default_options ();
 
     /* Basic options */
-    parser->add_long_option ("", "output-csv", 
-	"Output csv filename", 1, "");
-    parser->add_long_option ("", "output-fcsv", 
-	"Output fcsv filename", 1, "");
-    parser->add_long_option ("", "input", 
-	"Input image filename (required)", 1, "");
-    parser->add_long_option ("", "network-dir", 
-	"Input directory containing training files (required)", 1, "");
-    parser->add_long_option ("", "eac", 
-	"Enforce anatomic constraints", 0);
-    parser->add_long_option ("", "task", 
-	"Labeling task (required), choices are "
-	"{la,tsv1,tsv2}", 1, "");
+    parser->add_long_option ("", "train", 
+	"Run training on the problem specified in the command file");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -49,33 +38,14 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
+    /* Check that only one argument was given */
+    if (parser->number_of_arguments() != 1) {
+	throw (dlib::error (
+                "Error.  Only one configuration file can be used."));
+    }
+
     /* Get filename of command file */
     parms->cmd_file_fn = (*parser)[0].c_str();
-
-    /* Check that an input file was given */
-    parser->check_required ("input");
-
-    /* Check that an output file was given */
-    if (!parser->option("output-csv") && !parser->option("output-fcsv")) {
-	throw (dlib::error ("Error.  Please specify an output file "
-		"using one of the --output options"));
-    }
-
-    /* Check that an network file was given */
-    parser->check_required ("network-dir");
-
-    /* Check that a task was given */
-    parser->check_required ("task");
-
-    /* Copy values into output struct */
-    parms->output_csv_fn = parser->get_string("output-csv").c_str();
-    parms->output_fcsv_fn = parser->get_string("output-fcsv").c_str();
-    parms->input_fn = parser->get_string("input").c_str();
-    parms->network_dir = parser->get_string("network-dir").c_str();
-    if (parser->option("eac")) {
-	parms->enforce_anatomic_constraints = true;
-    }
-    parms->task = parser->get_string("task").c_str();
 }
 
 void

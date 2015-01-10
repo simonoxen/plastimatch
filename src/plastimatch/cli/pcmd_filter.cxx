@@ -32,6 +32,7 @@ create_gabor_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
         smp.gauss_center[i] = 0.f;
         smp.gauss_std[i] = parms->gauss_width;
     }
+    smp.gabor_use_k_fib = parms->gabor_use_k_fib;
     smp.gabor_k_fib[0] = parms->gabor_k_fib[0];
     smp.gabor_k_fib[1] = parms->gabor_k_fib[1];
     smp.pattern = PATTERN_GABOR;
