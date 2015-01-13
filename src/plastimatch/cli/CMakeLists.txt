@@ -39,6 +39,7 @@ set (PLASTIMATCH_SRC
   pcmd_jacobian.cxx
   pcmd_mabs.cxx 
   pcmd_mask.cxx 
+  pcmd_ml_convert.cxx pcmd_ml_convert.h 
   pcmd_probe.cxx 
   pcmd_register.cxx pcmd_register.h 
   pcmd_resample.cxx 

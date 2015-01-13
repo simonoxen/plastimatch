@@ -140,7 +140,7 @@ Plm_image::free_volume ()
 bool
 Plm_image::have_image ()
 {
-    return m_type == PLM_IMG_TYPE_UNDEFINED;
+    return m_type != PLM_IMG_TYPE_UNDEFINED;
 }
 
 

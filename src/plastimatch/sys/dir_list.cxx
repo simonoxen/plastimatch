@@ -13,20 +13,30 @@
 #endif
 
 #include "dir_list.h"
+#include "path_util.h"
+
+class Dir_list_private
+{
+public:
+    std::string dir;
+};
 
 Dir_list::Dir_list ()
 {
+    d_ptr = new Dir_list_private;
     this->init ();
 }
 
 Dir_list::Dir_list (const char* dir)
 {
+    d_ptr = new Dir_list_private;
     this->init ();
     this->load (dir);
 }
 
 Dir_list::Dir_list (const std::string& dir)
 {
+    d_ptr = new Dir_list_private;
     this->init ();
     this->load (dir.c_str());
 }
@@ -40,6 +50,7 @@ Dir_list::~Dir_list ()
 	}
 	free (this->entries);
     }
+    delete d_ptr;
 }
 
 void
@@ -90,4 +101,15 @@ Dir_list::load (const char* dir)
     }
     closedir (dp);
 #endif
+
+    d_ptr->dir = dir;
+}
+
+std::string
+Dir_list::entry (int idx)
+{
+    if (idx < 0 || idx > num_entries) {
+        return "";
+    }
+    return compose_filename (d_ptr->dir, entries[idx]);
 }

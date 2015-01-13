@@ -172,9 +172,9 @@ make_tempfile (void)
 	have permissions. 
 	http://msdn.microsoft.com/en-us/library/x8x7sakw(VS.80).aspx */
 
+    /* GCS FIX: The temporary file doesn't get deleted on windows */
     char *parms_fn = _tempnam (0, "plastimatch_");
     FILE *fp = fopen (parms_fn, "wb+");
-    printf ("parms_fn = %s\n", parms_fn);
 # else
     FILE *fp = tmpfile ();
 # endif

@@ -7,8 +7,12 @@
 #include "plmsys_config.h"
 #include <string>
 
+class Dir_list_private;
+
 class PLMSYS_API Dir_list
 {
+public:
+    Dir_list_private *d_ptr;
 public:
     int num_entries;
     char** entries;
@@ -20,6 +24,7 @@ public:
 
     void init ();
     void load (const char* dir);
+    std::string entry (int idx);
 };
 
 #endif

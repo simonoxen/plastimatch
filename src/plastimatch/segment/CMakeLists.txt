@@ -36,6 +36,7 @@ set (PLMSEGMENT_LIBRARY_SRC
   mabs_stats.cxx
   mabs_staple.cxx
   mabs_vote.cxx
+  ml_convert.cxx
   segment_body.cxx
  )
 
