@@ -112,6 +112,7 @@ void Ml_convert::run ()
             fprintf (current, " %d:%f\n", idx, v);
         }
         idx ++;
+        break;
     }
 
     /* Finally, re-write temp file into output file */
@@ -119,6 +120,9 @@ void Ml_convert::run ()
     rewind (current);
     FILE *final_output = plm_fopen (d_ptr->output_filename.c_str(), "wb");
     while (int c = getc (current)) {
+        if (c == EOF) {
+            break;
+        }
         putc (c, final_output);
     }
     fclose (fp[0]);
