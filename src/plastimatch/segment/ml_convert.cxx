@@ -10,6 +10,7 @@
 #include "logfile.h"
 #include "ml_convert.h"
 #include "plm_image.h"
+#include "plm_timer.h"
 
 class Ml_convert_private
 {
@@ -47,6 +48,8 @@ void Ml_convert::set_output_filename (const std::string& output_filename)
 
 void Ml_convert::run ()
 {
+    Plm_timer pli;
+
     /* Create files for ping-pong -- unfortunately we have to use FILE* 
        due to lack of fstream support for temporary filenames */
     FILE *fp[2], *current, *previous;
@@ -54,6 +57,11 @@ void Ml_convert::run ()
     fp[1] = make_tempfile ();
     current = fp[0];
     previous = fp[0];
+
+#define BUFSIZE 1024*1024
+    char buf[BUFSIZE];
+    size_t chars_in_buf = 0;
+    char *buf_ptr;
 
     /* Load labelmap */
     lprintf ("Processing labelmap\n");
@@ -84,7 +92,7 @@ void Ml_convert::run ()
         if (!feature->have_image()) {
             continue;
         }
-        FloatImageType::Pointer feature_itk = labelmap->itk_float();
+        FloatImageType::Pointer feature_itk = feature->itk_float();
 
         /* Set up input and output file */
         lprintf ("Processing %s\n", dir_list.entries[i]);
@@ -99,32 +107,57 @@ void Ml_convert::run ()
         rewind (current);
         
         /* Loop through pixels, appending them to each line of file */
+        pli.start ();
+        buf_ptr = 0;
         itk::ImageRegionIterator< FloatImageType > feature_it (
             feature_itk, feature_itk->GetLargestPossibleRegion ());
         for (feature_it.GoToBegin(); !feature_it.IsAtEnd(); ++feature_it) {
+            /* Get pixel value */
             float v = (float) feature_it.Get();
-            while (int c = getc (previous)) {
-                if (c == '\n') {
+
+            /* Copy existing line from previous file into current file */
+            bool eol_found = false;
+            while (1) {
+                if (chars_in_buf == 0) {
+                    chars_in_buf = fread (buf, 1, BUFSIZE, previous);
+                    if (chars_in_buf == 0) {
+                        break;
+                    }
+                    buf_ptr = buf;
+                }
+                size_t write_size = 0;
+                for (write_size = 0; write_size < chars_in_buf; write_size++) {
+                    if (buf_ptr[write_size] == '\n') {
+                        eol_found = true;
+                        break;
+                    }
+                }
+                fwrite (buf_ptr, 1, write_size, current);
+                buf_ptr += write_size;
+                chars_in_buf -= write_size;
+                if (eol_found) {
+                    buf_ptr += 1;
+                    chars_in_buf -= 1;
                     break;
                 }
-                putc (c, current);
             }
-            fprintf (current, " %d:%f\n", idx, v);
+
+            /* Append new value */
+            fprintf (current, " %s:%f\n", dir_list.entries[i], v);
         }
         idx ++;
-        break;
+        printf ("Time = %f\n", (float) pli.report());
     }
 
-    /* Finally, re-write temp file into output file */
+    /* Finally, re-write temp file into final output file */
     lprintf ("Processing final output\n");
     rewind (current);
     FILE *final_output = plm_fopen (d_ptr->output_filename.c_str(), "wb");
-    while (int c = getc (current)) {
-        if (c == EOF) {
-            break;
-        }
-        putc (c, final_output);
+    pli.start ();
+    while ((chars_in_buf = fread (buf, 1, BUFSIZE, current)) != 0) {
+        fwrite (buf, 1, chars_in_buf, final_output);
     }
+    printf ("Time = %f\n", (float) pli.report());
     fclose (fp[0]);
     fclose (fp[1]);
     fclose (final_output);
