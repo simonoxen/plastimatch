@@ -17,9 +17,9 @@
 #include <dirent.h>
 #endif
 
+#include "logfile.h"
 #include "parameter_parser.h"
 #include "plm_return_code.h"
-#include "print_and_exit.h"
 #include "registration_parms.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
@@ -990,22 +990,22 @@ Registration_parms::set_key_value (
     return PLM_SUCCESS;
 
 key_only_allowed_in_section_global:
-    print_and_exit (
+    lprintf (
         "This key (%s) is only allowed in a global section\n", key.c_str());
     return PLM_ERROR;
 
 key_only_allowed_in_section_stage:
-    print_and_exit (
+    lprintf (
         "This key (%s) is only allowed in a stage section\n", key.c_str());
     return PLM_ERROR;
 
 key_not_allowed_in_section_process:
-    print_and_exit (
+    lprintf (
         "This key (%s) not is allowed in a process section\n", key.c_str());
     return PLM_ERROR;
 
 error_exit:
-    print_and_exit (
+    lprintf (
         "Unknown (key,val) combination: (%s,%s)\n", key.c_str(), val.c_str());
     return PLM_ERROR;
 }
