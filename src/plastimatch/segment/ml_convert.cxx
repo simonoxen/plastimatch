@@ -73,7 +73,7 @@ void Ml_convert::run ()
     itk::ImageRegionIterator< UCharImageType > labelmap_it (labelmap_itk, rg);
     for (labelmap_it.GoToBegin(); !labelmap_it.IsAtEnd(); ++labelmap_it) {
         unsigned char v = (unsigned char) labelmap_it.Get();
-        fprintf (current, "%d|\n", v == 0 ? -1 : 1);
+        fprintf (current, "%d |\n", v == 0 ? -1 : 1);
     }
 
     /* Loop through feature files */
