@@ -32,7 +32,6 @@ public:
     std::string fixed_fn;
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
-    Stage_parms auto_parms;
 
     /* GCS FIX: These were disabled, and are needing some re-engineering */
     std::list< std::string > moving_jobs;

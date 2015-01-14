@@ -236,9 +236,14 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     num_matching_points= s.num_matching_points;
     num_hist_levels= s.num_hist_levels;
     /* Native grid search */
+    gridsearch_strategy = s.gridsearch_strategy;
     gridsearch_min_overlap[0] = s.gridsearch_min_overlap[0];
     gridsearch_min_overlap[1] = s.gridsearch_min_overlap[1];
     gridsearch_min_overlap[2] = s.gridsearch_min_overlap[2];
+    gridsearch_step_size_type = s.gridsearch_step_size_type;
+    gridsearch_step_size[0] = s.gridsearch_step_size[0];
+    gridsearch_step_size[1] = s.gridsearch_step_size[1];
+    gridsearch_step_size[2] = s.gridsearch_step_size[2];
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;
