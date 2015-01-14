@@ -240,13 +240,15 @@ void
 Rt_plan::set_target (const std::string& target_fn)
 {
     d_ptr->target_fn = target_fn;
-#if defined (commentout_TODO)
     d_ptr->target = Plm_image::New (new Plm_image (target_fn));
 
-    /* compute_segdepth_volume assumes float */
+    /* Need float, because compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-	this->beam->set_target(d_ptr->target);
-#endif
+
+    /* Loop through beams, and reset target on them */
+    for (size_t i = 0; i < this->beam_storage.size(); i++) {
+        this->beam_storage[i]->set_target(d_ptr->target);
+    }
 }
 
 void
@@ -295,6 +297,7 @@ Rt_plan::append_beam ()
         new_beam = new Rt_beam;
     }
     this->beam_storage.push_back (new_beam);
+    new_beam->set_target (d_ptr->target);
     return new_beam;
 }
 
