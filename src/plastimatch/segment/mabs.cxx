@@ -52,10 +52,12 @@ public:
 
     /* ".../train_dir/convert" */
     std::string convert_dir;
-    /* ".../train_dir/atlas-train" */
-    std::string atlas_train_dir;
     /* ".../train_dir/prealign" */
     std::string prealign_dir;
+    /* prealign_dir, if it exists.  Otherwise, convert_dir */
+    std::string preprocessed_dir;
+    /* ".../train_dir/atlas-train" */
+    std::string atlas_train_dir;
     /* ".../train_dir/mabs-train" */
     std::string mabs_train_dir;
 
@@ -402,6 +404,9 @@ Mabs::load_process_dir_list (const std::string& dir)
         /* Add directory to atlas_dir_list */
         d_ptr->process_dir_list.push_back (path);
     }
+
+    lprintf ("Found %d cases to process from directory %s\n",
+        d_ptr->process_dir_list.size(), dir.c_str());
 }
 
 bool
@@ -517,7 +522,7 @@ Mabs::run_registration_loop ()
 
             /* Parse the registration command string */
             int rc = reg.set_command_string (command_string);
-            if (rc) {
+            if (rc != PLM_SUCCESS) {
                 lprintf ("Skipping command file \"%s\" "
                     "due to parse error.\n", command_file.c_str());
                 continue;
@@ -745,7 +750,7 @@ Mabs::atlas_selection ()
     timer.start();
 
     /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
+    this->load_process_dir_list (d_ptr->preprocessed_dir);
 
     /* Define stuff to save ranking */
     std::list<std::pair<std::string, double> > ranked_atlases; // Only ranked, not selected
@@ -899,7 +904,7 @@ Mabs::train_atlas_selection ()
     timer.start();
 
     /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
+    this->load_process_dir_list (d_ptr->preprocessed_dir);
 
     /* Define stuff to save ranking */
     std::map<std::string, std::list<std::pair<std::string, double> > > train_ranked_atlases; // Only ranked, not selected
@@ -962,7 +967,7 @@ Mabs::train_atlas_selection ()
         /* Load image & structures from "prep" directory */
         if (compute_new_ranking) {
             std::string fn = string_format ("%s/%s/img.nrrd", 
-                d_ptr->prealign_dir.c_str(), patient_id.c_str());
+                d_ptr->preprocessed_dir.c_str(), patient_id.c_str());
             d_ptr->ref_rtds->load_image (fn.c_str());
         }
         
@@ -1303,7 +1308,7 @@ Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
     /* Set up files & directories for this job */
     std::string atlas_input_path;
     atlas_input_path = string_format ("%s/%s",
-        d_ptr->prealign_dir.c_str(), atlas_id.c_str());
+        d_ptr->preprocessed_dir.c_str(), atlas_id.c_str());
     lprintf ("atlas_input_path: %s\n",
         atlas_input_path.c_str());
     std::string atlas_output_path;
@@ -1462,7 +1467,7 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
     /* Set up files & directories for this job */
     std::string atlas_input_path;
     atlas_input_path = string_format ("%s/%s",
-        d_ptr->prealign_dir.c_str(), atlas_id.c_str());
+        d_ptr->preprocessed_dir.c_str(), atlas_id.c_str());
     lprintf ("atlas_input_path: %s\n",
         atlas_input_path.c_str());
     std::string current_dir;
@@ -1542,7 +1547,7 @@ Mabs::staple_segmentation_label ()
         std::string atl_name = basename (d_ptr->output_dir);
 
         std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
-            d_ptr->prealign_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
+            d_ptr->preprocessed_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
 
         std::string final_segmentation_img_fn = string_format (
             "%s/%s_staple.nrrd", 
@@ -1815,6 +1820,13 @@ Mabs::set_parms (const Mabs_parms *parms)
         "%s/prealign", d_ptr->traindir_base.c_str());
     d_ptr->mabs_train_dir = string_format (
         "%s/mabs-train", d_ptr->traindir_base.c_str());
+    if (is_directory (d_ptr->prealign_dir)) {
+        d_ptr->preprocessed_dir = d_ptr->prealign_dir;
+    } else {
+        d_ptr->preprocessed_dir = d_ptr->convert_dir;
+    }
+
+    std::string preprocessed_dir;
 
     /* Convert section */
     d_ptr->convert_resample = false;
@@ -1888,10 +1900,7 @@ Mabs::train_internal ()
     }
 
     /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
-    lprintf ("Loaded %d cases from %s\n",
-        d_ptr->process_dir_list.size(),
-        d_ptr->prealign_dir.c_str());
+    this->load_process_dir_list (d_ptr->preprocessed_dir);
  
     /* If set, run train atlas selection */
     if (d_ptr->parms->enable_atlas_selection)
@@ -1919,10 +1928,10 @@ Mabs::train_internal ()
         /* Load image & structures from "prep" directory */
         timer.start();
         std::string fn = string_format ("%s/%s/img.nrrd", 
-            d_ptr->prealign_dir.c_str(), patient_id.c_str());
+            d_ptr->preprocessed_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds->load_image (fn.c_str());
         fn = string_format ("%s/%s/structures", 
-            d_ptr->prealign_dir.c_str(), patient_id.c_str());
+            d_ptr->preprocessed_dir.c_str(), patient_id.c_str());
         d_ptr->ref_rtds->load_prefix (fn.c_str());
         d_ptr->time_io += timer.report();
         
@@ -1937,7 +1946,7 @@ Mabs::train_internal ()
                 atl_it != d_ptr->selected_atlases_train[patient_id].end(); atl_it++)
             {
                 std::string complete_atlas_path = string_format("%s/%s",
-                    d_ptr->prealign_dir.c_str(), atl_it->first.c_str());
+                    d_ptr->preprocessed_dir.c_str(), atl_it->first.c_str());
                 atlases_for_train_subject.push_back(complete_atlas_path);
             }
             
@@ -1995,7 +2004,7 @@ Mabs::segment ()
     d_ptr->ref_rtds->load (d_ptr->segment_input_fn.c_str());
 
     /* Parse atlas directory */
-    this->load_process_dir_list (d_ptr->prealign_dir);
+    this->load_process_dir_list (d_ptr->preprocessed_dir);
 
     /* Set atlas_list */
     d_ptr->atlas_list = d_ptr->process_dir_list;
@@ -2016,7 +2025,7 @@ Mabs::segment ()
                 atl_it != d_ptr->selected_atlases.end(); atl_it++)
             {
                 std::string complete_atlas_path = string_format("%s/%s",
-                    d_ptr->prealign_dir.c_str(), atl_it->first.c_str());
+                    d_ptr->preprocessed_dir.c_str(), atl_it->first.c_str());
                 atlases_for_subject.push_back(complete_atlas_path);
             }
             
