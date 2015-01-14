@@ -512,21 +512,26 @@ Mabs::run_registration_loop ()
                 continue;
             }
 
-            /* Make a registration command string */
-            lprintf ("Processing command file: %s\n", command_file.c_str());
-            std::string command_string = slurp_file (command_file);
-
+            /* Set up the registration data structure */
             Registration reg;
             Registration_parms::Pointer regp = reg.get_registration_parms ();
             Registration_data::Pointer regd = reg.get_registration_data ();
 
             /* Parse the registration command string */
+            std::string command_string = slurp_file (command_file);
             int rc = reg.set_command_string (command_string);
             if (rc != PLM_SUCCESS) {
                 lprintf ("Skipping command file \"%s\" "
                     "due to parse error.\n", command_file.c_str());
                 continue;
             }
+
+            /* Give some feedback about which registration we are 
+               going to run */
+            lprintf ("** TASK: %s %s %s\n",
+                d_ptr->ref_id.c_str(),
+                atlas_id.c_str(),
+                registration_id.c_str());
 
             /* Set input files */
             Plm_image::Pointer fixed_image = Plm_image::New ();
