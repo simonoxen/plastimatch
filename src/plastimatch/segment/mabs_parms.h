@@ -25,6 +25,9 @@ public:
         const std::string& val);
 
 public:
+    /* [CONVERT] */
+    std::string convert_spacing;
+    
     /* [PREALIGNMENT] */
     std::string prealign_mode;
     std::string prealign_reference;

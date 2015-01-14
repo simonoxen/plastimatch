@@ -90,6 +90,12 @@ parse_int13 (int *arr, const char *string)
 }
 
 Plm_return_code
+parse_int13 (float *arr, const std::string& string)
+{
+    return parse_int13 (arr, string.c_str());
+}
+
+Plm_return_code
 parse_float13 (float *arr, const char *string)
 {
     int rc;
@@ -102,6 +108,12 @@ parse_float13 (float *arr, const char *string)
     } else {
         return PLM_ERROR;
     }
+}
+
+Plm_return_code
+parse_float13 (float *arr, const std::string& string)
+{
+    return parse_float13 (arr, string.c_str());
 }
 
 int

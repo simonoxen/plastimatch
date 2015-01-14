@@ -30,6 +30,10 @@ public:
     virtual Plm_return_code begin_section (
         const std::string& section)
     {
+        if (section == "CONVERT") {
+            this->enable_key_regularization (true);
+            return PLM_SUCCESS;
+        }
         if (section == "PREALIGN" || section == "PREALIGNMENT") {
             this->enable_key_regularization (true);
             return PLM_SUCCESS;
@@ -78,6 +82,9 @@ public:
 
 Mabs_parms::Mabs_parms ()
 {
+    /* [CONVERT] */
+    this->convert_spacing = "";
+
     /* [PREALIGNMENT] */
     this->prealign_mode="disabled";
     this->prealign_reference = "";
@@ -157,6 +164,15 @@ Mabs_parms::set_key_value (
     const std::string& val
 )
 {
+    /* [CONVERT] */
+    if (section == "CONVERT") {
+        if (key == "spacing") {
+            this->convert_spacing = val;
+        }
+        else {
+            goto error_exit;
+        }
+    }
     /* [PREALIGNMENT] */
     if (section == "PREALIGN" || section == "PREALIGNMENT") {
         if (key == "mode") {

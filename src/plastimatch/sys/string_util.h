@@ -17,7 +17,11 @@ PLMSYS_API std::string make_uppercase (const std::string& s);
 PLMSYS_API std::string regularize_string (const std::string& s);
 PLMSYS_API void string_util_rtrim_whitespace (char *s);
 PLMSYS_API Plm_return_code parse_int13 (int *arr, const char *string);
+PLMSYS_API Plm_return_code parse_int13 (int *arr, 
+    const std::string& string);
 PLMSYS_API Plm_return_code parse_float13 (float *arr, const char *string);
+PLMSYS_API Plm_return_code parse_float13 (float *arr,
+    const std::string& string);
 PLMSYS_API int parse_dicom_float2 (float *arr, const char *string);
 PLMSYS_API int parse_dicom_float3 (float *arr, const char *string);
 PLMSYS_API int parse_dicom_float6 (float *arr, const char *string);

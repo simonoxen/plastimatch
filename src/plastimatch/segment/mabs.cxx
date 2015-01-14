@@ -96,6 +96,10 @@ public:
 
     std::list<std::pair<std::string, double> > selected_atlases;
 
+    /* Convert parameters */
+    bool convert_resample;
+    float convert_spacing[3];
+
     /* Prealign parameters */
     bool prealign_resample;
     float prealign_spacing[3];
@@ -158,6 +162,8 @@ public:
         write_warped_images = true;
         have_ref_structure = false;
         this->reset_timers ();
+
+        convert_resample = false;
 
         prealign_resample = false;
 
@@ -657,11 +663,6 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
     rtds.load_dicom_dir (input_dir.c_str());
     d_ptr->time_io += timer.report();
 
-    /* Save the image as raw files */
-    timer.start();
-    std::string fn = string_format ("%s/img.nrrd", output_dir.c_str());
-    rtds.get_image()->save_image (fn.c_str());
-
     /* Remove structures which are not part of the atlas */
     timer.start();
     Segmentation::Pointer rtss = rtds.get_rtss();
@@ -682,10 +683,23 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
         }
     }
 
-    /* Rasterize structure sets and save */
+    /* Rasterize structure set */
     Plm_image_header pih (rtds.get_image().get());
     rtss->rasterize (&pih, false, false);
     d_ptr->time_extract += timer.report();
+
+    /* If so specified, resample the images */
+    if (d_ptr->convert_resample) {
+        timer.start();
+        rtds.resample (d_ptr->convert_spacing);
+        d_ptr->time_extract += timer.report();
+    }
+
+    /* Save the image as raw files */
+    timer.start();
+    std::string fn = string_format ("%s/img.nrrd", output_dir.c_str());
+    rtds.get_image()->save_image (fn.c_str());
+    d_ptr->time_io += timer.report();
 
     /* Save structures which are part of the atlas */
     std::string prefix = string_format ("%s/structures", output_dir.c_str());
@@ -1779,7 +1793,7 @@ Mabs::run_segmentation_loop ()
 void 
 Mabs::set_parms (const Mabs_parms *parms)
 {
-    int rc;
+    Plm_return_code rc;
 
     d_ptr->parms = parms;
 
@@ -1802,18 +1816,22 @@ Mabs::set_parms (const Mabs_parms *parms)
     d_ptr->mabs_train_dir = string_format (
         "%s/mabs-train", d_ptr->traindir_base.c_str());
 
-    /* Training section */
-    d_ptr->stats.set_distance_map_algorithm (parms->distance_map_algorithm);
+    /* Convert section */
+    d_ptr->convert_resample = false;
+    rc = parse_float13 (d_ptr->convert_spacing, parms->convert_spacing);
+    if (rc == PLM_SUCCESS) {
+        d_ptr->convert_resample = true;
+    }
 
     /* Prealgnment section */
     d_ptr->prealign_resample = false;
-    rc = sscanf (parms->prealign_spacing.c_str(), "%f %f %f", 
-        &d_ptr->prealign_spacing[0], 
-        &d_ptr->prealign_spacing[1], 
-        &d_ptr->prealign_spacing[2]);
-    if (rc == 3) {
+    rc = parse_float13 (d_ptr->prealign_spacing, parms->prealign_spacing);
+    if (rc == PLM_SUCCESS) {
         d_ptr->prealign_resample = true;
     }
+
+    /* Training section */
+    d_ptr->stats.set_distance_map_algorithm (parms->distance_map_algorithm);
 
     /* Segmentation training */
     d_ptr->write_distance_map_files = parms->write_distance_map_files;
