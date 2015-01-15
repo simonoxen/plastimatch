@@ -115,7 +115,7 @@ wed_ct_compute (
 
             float *sin_img = (float*) sinogram_vol->img;
             float *proj_img = (float*) proj_wed_vol->img;
-			plm_long ijk[3] = {0,0,0};
+            plm_long ijk[3] = {0,0,0};
             plm_long n_voxels_sin = sinogram_vol->dim[0]*sinogram_vol->dim[1]*sinogram_vol->dim[2];
             plm_long n_voxels_proj = proj_wed_vol->dim[0]*proj_wed_vol->dim[1]*proj_wed_vol->dim[2];
             float *sin_array = new float[n_voxels_sin];
@@ -141,7 +141,7 @@ wed_ct_compute (
                 src2[1] = sin(angle)*radius_len + iso[1];
 
                 scene->beam->set_source_position (src2);
-				scene->init();
+                scene->init();
                 rpl_vol = scene->beam->rpl_vol;
                 rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
 
@@ -339,8 +339,6 @@ wed_ct_initialize(Wed_Parms *parms)
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }
-
-    scene.debug ();
 
     /* Save rpl volume if requested */
     if (parms->rpl_vol_fn != "") {

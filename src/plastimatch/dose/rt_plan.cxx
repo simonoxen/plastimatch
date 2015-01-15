@@ -323,32 +323,6 @@ Rt_plan::set_debug (bool debug)
 }
 
 void
-Rt_plan::debug ()
-{
-    Aperture::Pointer& ap = this->beam->get_aperture();
-    Rt_beam* beam = this->beam;
-
-    printf ("BEAM\n");
-    printf ("  -- [POS] Source :   %g %g %g\n", 
-        beam->get_source_position(0), beam->get_source_position(1), 
-        beam->get_source_position(2));
-    printf ("  -- [POS] Isocenter: %g %g %g\n", 
-        beam->get_isocenter_position(0), beam->get_isocenter_position(1), 
-        beam->get_isocenter_position(2));
-    printf ("APERTURE\n");
-    printf ("  -- [NUM] Res   : %i %i\n", ap->get_dim(0), ap->get_dim(1));
-    printf ("  -- [DIS] Offset: %g\n", ap->get_distance());
-    printf ("  -- [POS] Center: %g %g %g\n", ap->ic_room[0], ap->ic_room[1], ap->ic_room[2]);
-    printf ("  -- [POS] UpLeft: %g %g %g\n", ap->ul_room[0], ap->ul_room[1], ap->ul_room[2]);
-    printf ("  -- [VEC] Up    : %g %g %g\n", ap->vup[0], ap->vup[1], ap->vup[2]);
-    printf ("  -- [VEC] Normal: %g %g %g\n", ap->nrm[0], ap->nrm[1], ap->nrm[2]);
-    printf ("  -- [VEC] Right : %g %g %g\n", ap->prt[0], ap->prt[1], ap->prt[2]);
-    printf ("  -- [VEC] Down  : %g %g %g\n", ap->pdn[0], ap->pdn[1], ap->pdn[2]);
-    printf ("  -- [VEC] col++ : %g %g %g\n", ap->incr_c[0], ap->incr_c[1], ap->incr_c[2]);
-    printf ("  -- [VEC] row++ : %g %g %g\n", ap->incr_r[0], ap->incr_r[1], ap->incr_r[2]);
-}
-
-void
 Rt_plan::set_threading (Threading threading)
 {
     /* Not used yet */
@@ -363,7 +337,7 @@ Rt_plan::set_normalization_dose(float normalization_dose)
 float
 Rt_plan::get_normalization_dose()
 {
-	return d_ptr->normalization_dose;
+    return d_ptr->normalization_dose;
 }
 
 void

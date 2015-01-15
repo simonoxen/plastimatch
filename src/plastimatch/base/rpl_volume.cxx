@@ -372,7 +372,7 @@ Plm_image::Pointer Rpl_volume::get_ct()
     return d_ptr->ct;
 }
 
-void Rpl_volume::set_ct_limit(Volume_limit* ct_limit)
+void Rpl_volume::set_ct_limit (Volume_limit* ct_limit)
 {
     d_ptr->ct_limit.lower_limit[0] = ct_limit->lower_limit[0];
     d_ptr->ct_limit.lower_limit[1] = ct_limit->lower_limit[1];
@@ -380,8 +380,8 @@ void Rpl_volume::set_ct_limit(Volume_limit* ct_limit)
     d_ptr->ct_limit.upper_limit[0] = ct_limit->upper_limit[0];
     d_ptr->ct_limit.upper_limit[1] = ct_limit->upper_limit[1];
     d_ptr->ct_limit.upper_limit[2] = ct_limit->upper_limit[2];
-
 }
+
 Volume_limit* Rpl_volume::get_ct_limit()
 {
     return &d_ptr->ct_limit;
@@ -444,7 +444,6 @@ Rpl_volume::compute_ray_data ()
     proj_vol->debug ();
     lprintf ("Ref vol:\n");
     ct_vol->debug ();
-
     /* Make two passes through the aperture grid.  The first pass 
        is used to find the clipping planes.  The second pass actually 
        traces the rays. */
@@ -494,6 +493,7 @@ Rpl_volume::compute_ray_data ()
 
 	    /* Test if ray intersects volume and create intersection points */
             ray_data->intersects_volume = false;
+
 	    if (!volume_limit_clip_ray (&d_ptr->ct_limit, ip1, ip2, src, ray))
             {
 		continue;
@@ -534,7 +534,9 @@ Rpl_volume::compute_ray_data ()
                 ray_data->front_dist = vec3_dist (p2, ip1);
             }
             if (ray_data->front_dist < d_ptr->front_clipping_dist) {
-                d_ptr->front_clipping_dist = ray_data->front_dist - 0.001; // - 0.001 mm to avoid the closest ray to intersect the volume with a step inferior to its neighbours. The minimal ray will be the only one to touch the volume when offset_step = 0.
+                /* GCS FIX.  This should not be here.  */
+                // - 0.001 mm to avoid the closest ray to intersect the volume with a step inferior to its neighbours. The minimal ray will be the only one to touch the volume when offset_step = 0.
+                d_ptr->front_clipping_dist = ray_data->front_dist - 0.001;
             }
 
             /* Compute distance to back intersection point, and set 
@@ -632,7 +634,6 @@ Rpl_volume::compute_rpl ()
 {
     int ires[2];
 
-
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
@@ -655,7 +656,7 @@ Rpl_volume::compute_rpl ()
     this->compute_ray_data ();
 
     if (d_ptr->front_clipping_dist == DBL_MAX) {
-        print_and_exit ("Sorry, total failure intersecting volume\n");
+        print_and_exit ("Sorry, total failure intersecting volume (compute_rpl)\n");
     }
 
     lprintf ("FPD = %f, BPD = %f\n", 
@@ -664,7 +665,7 @@ Rpl_volume::compute_rpl ()
     /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
     double clipping_dist[2] = {
-      d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
     d_ptr->proj_vol->allocate ();
  
@@ -744,7 +745,7 @@ Rpl_volume::compute_rpl_RSP()
     this->compute_ray_data ();
 
     if (d_ptr->front_clipping_dist == DBL_MAX) {
-        print_and_exit ("Sorry, total failure intersecting volume\n");
+        print_and_exit ("Sorry, total failure intersecting volume (compute_rpl_RSP)\n");
     }
 
     lprintf ("FPD = %f, BPD = %f\n", 
@@ -833,7 +834,7 @@ Rpl_volume::compute_rpl_void ()
     this->compute_ray_data ();
 
     if (d_ptr->front_clipping_dist == DBL_MAX) {
-        print_and_exit ("Sorry, total failure intersecting volume\n");
+        print_and_exit ("Sorry, total failure intersecting volume (compute_rpl_void)\n");
     }
 
     lprintf ("FPD = %f, BPD = %f\n", 
@@ -891,7 +892,7 @@ Rpl_volume::compute_rpl_rglength_wo_rg_compensator ()
     this->compute_ray_data ();
 
     if (d_ptr->front_clipping_dist == DBL_MAX) {
-        print_and_exit ("Sorry, total failure intersecting volume\n");
+        print_and_exit ("Sorry, total failure intersecting volume (compute_rpl_rglength_wo_rg_compensator)\n");
     }
 
     lprintf ("FPD = %f, BPD = %f\n", 

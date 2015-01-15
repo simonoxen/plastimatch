@@ -21,6 +21,8 @@ public:
 
     /* dir == 0 if lower_limit corresponds to lower index */
     int dir[3];
+public:
+    void print ();
 };
 
 PLMBASE_C_API int volume_limit_clip_ray (

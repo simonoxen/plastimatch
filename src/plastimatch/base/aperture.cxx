@@ -13,13 +13,13 @@ class Aperture_private {
 public:
     Aperture_private ()
     {
-        distance = 0.0;
-        dim[0] = 0;
-        dim[1] = 0;
-        center[0] = 0;
-        center[1] = 0;
-        spacing[0] = 0;
-        spacing[1] = 0;
+        distance = 800;
+        dim[0] = 10;
+        dim[1] = 10;
+        center[0] = 4.5;
+        center[1] = 4.5;
+        spacing[0] = 1;
+        spacing[1] = 1;
     }
     Aperture_private (const Aperture_private* app)
     {
@@ -60,7 +60,6 @@ Aperture::Aperture ()
     this->prt[0] = 0.0;
     this->prt[1] = 1.0;
     this->prt[2] = 0.0;
-
 
     //memset (this->ic,   0, 2*sizeof (double));
     memset (this->ic_room, 0, 3*sizeof (double));
@@ -247,13 +246,13 @@ Aperture::get_aperture_volume ()
 void 
 Aperture::set_aperture_image (const char *ap_filename)
 {
-	d_ptr->aperture_image = Plm_image::New (new Plm_image(ap_filename));
+    d_ptr->aperture_image = Plm_image::New (new Plm_image(ap_filename));
 }
 
 void
 Aperture::set_aperture_volume (Volume::Pointer ap)
 {
-	d_ptr->aperture_image->set_volume(ap);
+    d_ptr->aperture_image->set_volume(ap);
 }
 
 bool
@@ -265,7 +264,7 @@ Aperture::have_range_compensator_image ()
 Plm_image::Pointer&
 Aperture::get_range_compensator_image ()
 {
-	return d_ptr->range_compensator_image;
+    return d_ptr->range_compensator_image;
 }
 
 Volume::Pointer&
@@ -284,7 +283,7 @@ Aperture::set_range_compensator_image (const char *rc_filename)
 void
 Aperture::set_range_compensator_volume (Volume::Pointer rc)
 {
-	d_ptr->aperture_image->set_volume(rc);
+    d_ptr->aperture_image->set_volume(rc);
 }
 
 void 

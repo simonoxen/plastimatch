@@ -4,6 +4,7 @@
 #include "plmbase_config.h"
 #include <stdio.h>
 
+#include "logfile.h"
 #include "plm_math.h"
 #include "ray_trace.h"
 #include "volume.h"
@@ -230,4 +231,13 @@ void
 volume_limit_set (Volume_limit *vol_limit, const Volume::Pointer& vol)
 {
     volume_limit_set (vol_limit, vol.get());
+}
+
+void
+Volume_limit::print ()
+{
+    lprintf ("Volume_limit:\n%g %g / %g %g / %g %g\n",
+        lower_limit[0], upper_limit[0], 
+        lower_limit[1], upper_limit[1], 
+        lower_limit[2], upper_limit[2]);
 }
