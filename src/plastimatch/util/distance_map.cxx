@@ -391,7 +391,7 @@ Distance_map_private::run_native_danielsson ()
     }
     
     /* Free temporary memory */
-    free (dm);
+    delete[] dm;
 
     /* Fixate distance map into private class */
     this->output = dmap->itk_float ();
