@@ -5,6 +5,7 @@
 #define _Rt_sigma_h_
 
 #include "rt_plan.h"
+#include "rpl_volume.h"
 
 void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string size, int* margins);
 

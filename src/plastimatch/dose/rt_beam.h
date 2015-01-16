@@ -208,12 +208,12 @@ public:
     /* Volumes useful for dose calculation */
     /* raw volume */
     Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
-    Rpl_volume* ct_vol_density; // contains the ct_density along the ray
+    Rpl_volume* rpl_ct_vol_HU; // contains the HU units along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
     	
     /* larger volumes for Hong and divergent geometry algorithms */
     Rpl_volume* rpl_vol_lg;
-    Rpl_volume* ct_vol_density_lg;
+    Rpl_volume* rpl_ct_vol_HU_lg;
     Rpl_volume* sigma_vol_lg;
     Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
 

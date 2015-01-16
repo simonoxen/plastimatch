@@ -190,28 +190,28 @@ Rt_beam::Rt_beam ()
 
     if (this->get_flavor() == 'f')
     {    
-        this->ct_vol_density = new Rpl_volume();
+        this->rpl_ct_vol_HU = new Rpl_volume();
         this->sigma_vol = new Rpl_volume();
     }
 
     if (this->get_flavor() == 'g')
     {    
-        this->ct_vol_density = new Rpl_volume();
+        this->rpl_ct_vol_HU = new Rpl_volume();
         this->sigma_vol = new Rpl_volume();
 
         this->rpl_vol_lg = new Rpl_volume();
-        this->ct_vol_density_lg = new Rpl_volume();
+        this->rpl_ct_vol_HU_lg = new Rpl_volume();
         this->sigma_vol_lg = new Rpl_volume();
         this->rpl_dose_vol = new Rpl_volume();
     }
 
     if (this->get_flavor() == 'h')
     {    
-        this->ct_vol_density = new Rpl_volume();
+        this->rpl_ct_vol_HU = new Rpl_volume();
         this->sigma_vol = new Rpl_volume();
 
         this->rpl_vol_lg = new Rpl_volume();
-        this->ct_vol_density_lg = new Rpl_volume();
+        this->rpl_ct_vol_HU_lg = new Rpl_volume();
         this->sigma_vol_lg = new Rpl_volume();
         this->rpl_dose_vol = new Rpl_volume();
 
@@ -227,10 +227,10 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     /* The below calculation volumes don't need to be copied 
        from input beam */
     this->rpl_vol = 0;
-    this->ct_vol_density = 0;
+    this->rpl_ct_vol_HU = 0;
     this->sigma_vol = 0;
     this->rpl_vol_lg = 0;
-    this->ct_vol_density_lg = 0;
+    this->rpl_ct_vol_HU_lg = 0;
     this->sigma_vol_lg = 0;
     this->rpl_dose_vol = 0;
     this->aperture_vol = 0;
@@ -509,7 +509,6 @@ Rt_beam::compute_beam_modifiers ()
     /* Compute the aperture and compensator */
     this->rpl_vol->compute_beam_modifiers (
         this->get_target()->get_vol(), 0);
-
     /* Apply smearing */
     d_ptr->aperture->apply_smearing (d_ptr->smearing);
 }

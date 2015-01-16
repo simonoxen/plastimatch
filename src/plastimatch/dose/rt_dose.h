@@ -83,5 +83,6 @@ void compute_dose_ray_shackleford (
 );
 
 double get_dose_norm(char flavor, double energy, double PB_density);
+void add_rcomp_length_to_rpl_volume(Rt_beam* beam);
 
 #endif

@@ -39,6 +39,7 @@ public:
     int num_steps;
     double step_length;
     int image_dim[2];
+	double image_spacing[2];
     double clipping_dist[2];
     double nrm[3];
     double src[3];
@@ -85,6 +86,8 @@ Proj_volume::set_geometry (
     /* save input settings */
     d_ptr->image_dim[0] = image_dim[0];
     d_ptr->image_dim[1] = image_dim[1];
+	d_ptr->image_spacing[0] = image_spacing[0];
+	d_ptr->image_spacing[1] = image_spacing[1];
     d_ptr->src[0] = src[0];
     d_ptr->src[1] = src[1];
     d_ptr->src[2] = src[2];
@@ -165,9 +168,10 @@ Proj_volume::allocate ()
     plm_long dim[3] = { d_ptr->image_dim[0], d_ptr->image_dim[1], 
                         d_ptr->num_steps };
     float origin[3] = { 0, 0, 0 };
-    float spacing[3] = { 1, 1, 1 };
+	float spacing[3] = { 1,1,1};
     float direction_cosines[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
 
+	printf("%lg %lg %lg \n", (float) dim[0], (float) dim[1], (float) dim[2]);
     d_ptr->vol->create (dim, origin, spacing,
         direction_cosines, PT_FLOAT, 1);
 }

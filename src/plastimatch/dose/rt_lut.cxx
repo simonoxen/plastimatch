@@ -5,31 +5,6 @@
 
 #include "rt_lut.h"
 
-float LR_interpolation(float density)
-{
-    return 36.08f*pow(density,-1.548765f); // in cm
-}
-
-float WER_interpolation(float density) // interpolation between adip, water, muscle, PMMA and bone
-{
-    if (density <=1)
-    {
-        return 0.3825f * density + .6175f;
-    }
-    else if (density > 1 && density <=1.04)
-    {
-        return .275f * density + .725f;
-    }
-    else if (density > 1.04 && density <= 1.19)
-    {
-        return .1047f * density + .9021f;
-    }
-    else
-    {
-        return .0803f * density + .9311f;
-    }
-}
-
 double getrange(double energy)
 {
     int i_lo = 0, i_hi = 110;
@@ -102,6 +77,26 @@ double getstop (double energy)
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #endif
+
+double compute_X0_from_HU(double CT_HU)
+{
+    if (CT_HU <= -1000)
+	{
+		return 30390;
+	}
+	else if (CT_HU > -1000 && CT_HU< 0)
+	{
+		return exp(3.7271E-06 * CT_HU * CT_HU -3.009E-03 * CT_HU + 3.5857);
+	}
+	else if (CT_HU >= 0 && CT_HU < 55)
+	{
+		return -0.0284 * CT_HU + 36.08;
+	}
+	else
+	{
+		return 9.8027E-06 * CT_HU * CT_HU -.028939 * CT_HU + 36.08;
+	}
+}
 
 /* This table has 111 entries */
 const double lookup_proton_range_water[][2] ={

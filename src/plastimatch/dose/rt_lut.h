@@ -6,11 +6,10 @@
 
 #include <math.h>
 
-float LR_interpolation(float density);
-float WER_interpolation(float density);
-
 double getrange(double energy);
 double getstop(double energy);
+
+double compute_X0_from_HU(double CT_HU); // Radiation length
 
 extern const double lookup_proton_range_water[][2];
 extern const double lookup_proton_stop_water[][2];

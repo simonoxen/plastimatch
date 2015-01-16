@@ -21,13 +21,13 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
     if (size == "small")
     {
         sigma_vol = plan->beam->sigma_vol;
-        ct_vol = plan->beam->ct_vol_density;
+        ct_vol = plan->beam->rpl_ct_vol_HU;
         rgl_vol = plan->beam->rpl_vol;
     }
     else if (size == "large")
     {
         sigma_vol = plan->beam->sigma_vol_lg;
-        ct_vol = plan->beam->ct_vol_density_lg;
+        ct_vol = plan->beam->rpl_ct_vol_HU_lg;
         rgl_vol = plan->beam->rpl_vol_lg;
     }
     else
@@ -183,7 +183,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     plm_long dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
 
     std::vector<float> sigma_ray (dim[2],0);
-    std::vector<float> density_ray (dim[2],0);
+    std::vector<float> HU_ray (dim[2],0);
     std::vector<float> range_length_ray (dim[2], 0);
 
     /* some variables useful for the sigma integration */
@@ -206,6 +206,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     printf ("sigma_img: %d %d %d\n", (int) sigma_vol->get_vol()->dim[0], 
         (int) sigma_vol->get_vol()->dim[1], (int) sigma_vol->get_vol()->dim[2]);
     printf("dim: %d %d %d\n", (int) dim[0], (int) dim[1], (int) dim[2]);
+
 	
     for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {   
@@ -217,7 +218,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 idx = dim[0]*dim[1]*s + apert_idx;
                 range_length_ray[s] = rpl_img[idx];   // at this point sigma is still a range_length volume without range compensator
                 sigma_ray[s] = 0;
-                density_ray[s] = ct_img[idx];           // the density ray is initialized with density
+				HU_ray[s] = ct_img[idx];           // the density ray is initialized with density
             }
     
             //Now we can compute the sigma rays!!!!
@@ -252,8 +253,8 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 v = c*sqrt(1-pow((mc2/(E+mc2)),2)); //in m.s-1
                 pv_cache[s] = p * v;
 
-                inv_rad_len[s] = 1.0f / LR_interpolation(density_ray[s]);
-                stop_cache[s] = getstop (E) / WER_interpolation(density_ray[s]) * density_ray[s]; // dE/dx_mat = dE /dx_watter / WER * density (lut in g/cm2)
+                inv_rad_len[s] = 1.0f / compute_X0_from_HU(HU_ray[s]);
+				stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * getstop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
 
                 sum = 0;
                 inverse_rad_length_integrated = 0;

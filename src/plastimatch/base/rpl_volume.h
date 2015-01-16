@@ -10,6 +10,15 @@
 #include "plm_image.h"
 #include "ray_trace_callback.h"
 
+float compute_PrSTPR_from_HU(float);
+float compute_PrSTPR_Schneider_weq_from_HU (float CT_HU); // Stopping Power Ratio - Schneider's model
+float compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU); // Stopping power Ratio - XiO values from MGH
+float compute_PrWER_from_HU(float CT_HU); // WER = STRP / density
+
+extern const double lookup_PrSTPR_XiO_MGH[][2];
+
+float compute_density_from_HU (float CT_HU); // density VS HU - Schneider's model: broken curve
+
 class Proj_volume;
 class Ray_data;
 class Rpl_volume_private;
@@ -64,12 +73,12 @@ public:
     double get_max_wed ();
     double get_min_wed ();
 
-    void compute_rpl ();
-    void compute_rpl_RSP();
-    void compute_rpl_ct ();
-    void compute_rpl_void ();
-    void compute_rpl_rglength_wo_rg_compensator ();
-    void compute (Volume *ct_vol);
+	void compute_rpl_ct_density (); // compute density volume
+	void compute_rpl_HU ();	// compute HU volume
+    void compute_rpl_void ();	// compute void volume
+
+	void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
+	void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
 
     double compute_farthest_penetrating_ray_on_nrm(float range); // return the distance from aperture to the farthest which rg_lenght > range
 
@@ -107,7 +116,6 @@ protected:
         double rc_thk,               /* I: range compensator thickness */
         int* ires                    /* I: ray cast resolution */
     );
-
 };
 
 #endif

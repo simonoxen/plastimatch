@@ -809,7 +809,7 @@ Volume::get_ijk_from_xyz (float ijk[3], const float xyz[3], bool* in)
 
     for (int i = 0; i < 3; i++)
     {
-        ijk[i] = (float) floor(xyz[i]-this->offset[i])/this->spacing[i];
+        ijk[i] = (float) (xyz[i]-this->offset[i])/this->spacing[i];
         if (ijk[i] < 0 || ijk[i] >= this->dim[i] -1)
         {
             *in = false;

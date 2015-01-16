@@ -102,7 +102,7 @@ ray_trace_uniform (
         pix_density = li_value (li_frac1[0], li_frac2[0], li_frac1[1], li_frac2[1], li_frac1[2], li_frac2[2], idx, img, vol);
         //if (pt/phy_step_mag < 30 && pt/phy_step_mag > 24){
         //	printf("%lg - %lg %lg %lg - %lg %lg %lg\n", pt/phy_step_mag, mijk[0], li_frac1[1], li_frac1[2], li_frac2[0], li_frac2[1], li_frac2[2]);}
-        if (pix_density <= -999 || pix_density >= 1000) {pix_density = -1000;}
+        //if (pix_density <= -999 || pix_density >= 4000) {pix_density = -1000;}
 		
         // I am passing the current step along the ray (z) through
         // vox_index here... not exactly great but not horrible.
