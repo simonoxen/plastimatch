@@ -420,7 +420,9 @@ Mabs::check_seg_checkpoint (std::string folder)
             folder.c_str());
         return true;
     }
-    else {return false;}
+    else {
+        return false;
+    }
 }
 
 /* The following variables should be set before running this:
@@ -450,16 +452,6 @@ Mabs::run_registration_loop ()
             input_dir.c_str(), atlas_id.c_str());
         std::string atlas_output_path = string_format ("%s/%s",
             d_ptr->output_dir.c_str(), atlas_id.c_str());
-
-        /* Check if this registration is already complete.
-           We might be able to skip it. */
-        std::string atl_checkpoint_fn = string_format (
-            "%s/checkpoint.txt", atlas_output_path.c_str());
-        if (file_exists (atl_checkpoint_fn)) {
-            lprintf ("Atlas registration complete for %s\n",
-                atlas_output_path.c_str());
-            continue;
-        }
 
         /* Load image & structures from "prep" directory */
         timer.start();
@@ -654,10 +646,6 @@ Mabs::run_registration_loop ()
             touch_file (reg_checkpoint_fn);
 
         } /* end for each registration parameter */
-
-        /* Create checkpoint file which means that training for 
-           this atlas example is complete */
-        touch_file (atl_checkpoint_fn);
     } /* end for each atlas image */
 }
 
