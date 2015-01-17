@@ -291,6 +291,12 @@ Mabs_parms::set_key_value (
         if (key == "atlas_dir") {
             this->atlas_dir = val;
         }
+        else if (key == "training_dir") {
+            this->training_dir = val;
+        }
+        else if (key == "convert_dir") {
+            this->convert_dir = val;
+        }
         else if (key == "fusion_criteria") {
             if (val == "gaussian" || val == "GAUSSIAN" || val == "Gaussian") {
                 this->fusion_criteria = "gaussian";
@@ -300,7 +306,7 @@ Mabs_parms::set_key_value (
             }
 
             else if (val == "gaussian,staple" || val == "GAUSSIAN,STAPLE" || val == "Gaussian,Staple" ||
-                     val == "staple,gaussian" || val == "STAPLE,GAUSSIAN" || val == "Staple,Gaussian") {
+                val == "staple,gaussian" || val == "STAPLE,GAUSSIAN" || val == "Staple,Gaussian") {
                 this->fusion_criteria = "gaussian_and_staple";
             }
         }
@@ -321,9 +327,6 @@ Mabs_parms::set_key_value (
         }
         else if (key == "confidence_weight") {
             this->confidence_weight = val;
-        }
-        else if (key == "training_dir") {
-            this->training_dir = val;
         }
         else if (key == "write_distance_map_files") {
             if (val == "0") {
