@@ -32,9 +32,9 @@ message ("STDERR: ${STDERR}")
 
 # For CMake version 2.8 and higher, we can set execute permission
 # http://www.mail-archive.com/cmake@cmake.org/msg26920.html
-set (CMD_FN "${PLM_BUILD_TESTING_DIR}/${TESTNAME}.cmd")
+set (CMD_FN "${PLM_BUILD_TESTING_DIR}/${PLM_TEST_NAME}.cmd")
 if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
-  set (CMD_FN "${PLM_BUILD_TESTING_DIR}/tmp/${TESTNAME}.cmd")
+  set (CMD_FN "${PLM_BUILD_TESTING_DIR}/tmp/${PLM_TEST_NAME}.cmd")
 endif ()
 file (WRITE ${CMD_FN} ${PLM_TEST_COMMAND})
 foreach (PARM ${PARMS})
@@ -48,10 +48,10 @@ if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
     GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
 endif ()
 
-set (STDOUT_FN "${PLM_BUILD_TESTING_DIR}/${TESTNAME}.stdout.txt")
+set (STDOUT_FN "${PLM_BUILD_TESTING_DIR}/${PLM_TEST_NAME}.stdout.txt")
 file (WRITE ${STDOUT_FN} ${STDOUT})
 
-set (STDERR_FN "${PLM_BUILD_TESTING_DIR}/${TESTNAME}.stderr.txt")
+set (STDERR_FN "${PLM_BUILD_TESTING_DIR}/${PLM_TEST_NAME}.stderr.txt")
 file (WRITE ${STDERR_FN} ${STDERR})
 
 

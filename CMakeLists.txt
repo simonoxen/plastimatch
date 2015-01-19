@@ -976,7 +976,7 @@ else ()
   set (PLM_FFTW_PATH_HACK "")
 endif ()
 
-macro (PLM_ADD_TEST TESTNAME PLM_TEST_COMMAND PARMS)
+macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
   # Optional extra parameters are passed through ${ARGN}
   # Allowed EXTRA_PARMS are:
   # "-DWORKING_DIR=XXX;-DEXPECTED_ERRNO=XXX"
@@ -986,8 +986,8 @@ macro (PLM_ADD_TEST TESTNAME PLM_TEST_COMMAND PARMS)
   # with replacement string, which will get substituted back within the 
   # cmake script itself
   string (REPLACE "=" "&equal&" TMP_PARMS "${PARMS}")
-  add_test (${TESTNAME} ${CMAKE_COMMAND} 
-    -DTESTNAME=${TESTNAME}
+  add_test (${PLM_TEST_NAME} ${CMAKE_COMMAND} 
+    -DPLM_TEST_NAME=${PLM_TEST_NAME}
     ${PLM_ITK_LIBRARY_PATH_HACK}
     ${PLM_PLASTIMATCH_PATH_HACK}
     ${PLM_FFTW_PATH_HACK}

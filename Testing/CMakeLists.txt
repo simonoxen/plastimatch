@@ -31,6 +31,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-mi-c.txt"
   "plm-bsp-mi-k.txt"
   "plm-bsp-gm-k.txt"
+  "plm-bsp-sm-multi-a.txt"
   "plm-bsp-cuda.txt"
   "plm-bsp-rect.txt"
   "plm-bsp-resume.txt"
@@ -67,9 +68,10 @@ set (CONFIG_FILE_LIST
   "proton-dose-h-1.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
-  configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
-    "${PLM_BUILD_TESTING_DIR}/${CONFIG_FILE}"
-    @ONLY)
+    string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
+    configure_file ("${PLM_TESTING_DATA_DIR}/${CONFIG_FILE}"
+	"${PLM_BUILD_TESTING_DIR}/${CONFIG_FILE}"
+	@ONLY)
 endforeach ()
 
 ## -------------------------------------------------------------------------
@@ -2509,6 +2511,29 @@ set_tests_properties (plm-bsp-gm-k-stats PROPERTIES
   DEPENDS plm-bsp-gm-k)
 set_tests_properties (plm-bsp-gm-k-check PROPERTIES 
   DEPENDS plm-bsp-gm-k-stats)
+
+plm_add_test (
+  "plm-bsp-sm-multi-a" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-sm-multi-a.txt"
+  )
+plm_add_test (
+  "plm-bsp-sm-multi-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-sm-multi-a-img.mha"
+  )
+# plmtest_check_interval ("plm-bsp-sm-multi-a-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-sm-multi-a-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "-122.5"
+#   "-121.5"
+#   )
+set_property (TEST plm-bsp-sm-multi-a APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-sm-multi-a APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-sm-multi-a-stats PROPERTIES 
+  DEPENDS plm-bsp-sm-multi-a)
+# set_tests_properties (plm-bsp-sm-multi-a-check PROPERTIES 
+#   DEPENDS plm-bsp-sm-multi-a-stats)
 
 plm_add_test (
   "plm-bsp-openmp" 
