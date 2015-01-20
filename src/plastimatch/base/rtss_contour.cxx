@@ -6,6 +6,7 @@
 #include "logfile.h"
 #include "plm_math.h"
 #include "rtss_contour.h"
+#include <algorithm>
 
 Rtss_contour::Rtss_contour ()
 {
