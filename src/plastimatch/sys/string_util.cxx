@@ -321,7 +321,33 @@ bool string_value_true (const std::string& s)
 template <typename T>
 std::string PLM_to_string(T value)
 {
-	std::ostringstream os ;
-	os << value ;
-	return os.str() ;
+    std::ostringstream os ;
+    os << value ;
+    return os.str() ;
+}
+
+/* http://stackoverflow.com/questions/236129/split-a-string-in-c
+   This version also trims, therefore different than the one described 
+   in stackoverflow. */
+std::vector<std::string>& string_split (
+    const std::string &s, 
+    char delim, 
+    std::vector<std::string> &elems)
+{
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        item = trim (item);
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+std::vector<std::string> string_split (
+    const std::string &s, 
+    char delim)
+{
+    std::vector<std::string> elems;
+    string_split (s, delim, elems);
+    return elems;
 }

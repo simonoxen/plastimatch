@@ -131,7 +131,10 @@ public:
     int optim_subtype;       /* used for demons types (diffeomorphic, etc.) */
     char alg_flavor;
     Threading threading_type;
-    Registration_metric_type metric_type;
+    /* Similarity metric */
+    std::vector<Registration_metric_type> metric_type;
+    std::vector<float> metric_lambda;
+    /* Regularization */
     Regularization_type regularization_type;
     float regularization_lambda;
     /* Image resampling */

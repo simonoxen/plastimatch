@@ -41,4 +41,7 @@ PLMSYS_API bool string_value_true (const std::string& s);
 
 template <typename T> PLMSYS_API std::string PLM_to_string(T value);
 
+std::vector<std::string>& string_split (const std::string &s, char delim, std::vector<std::string> &elems);
+std::vector<std::string> string_split (const std::string &s, char delim);
+
 #endif

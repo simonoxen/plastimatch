@@ -48,7 +48,8 @@ Stage_parms::Stage_parms ()
     optim_subtype = OPTIMIZATION_SUB_FSF;
     alg_flavor = 0;
     threading_type = THREADING_CPU_OPENMP;
-    metric_type = METRIC_MSE;
+    metric_type.push_back (METRIC_MSE);
+    metric_lambda.push_back (1.0);
     regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
     demons_gradient_type = SYMMETRIC;
     regularization_lambda = 0.0f;
@@ -162,6 +163,7 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     alg_flavor = s.alg_flavor;
     threading_type = s.threading_type;
     metric_type = s.metric_type;
+    metric_lambda = s.metric_lambda;
     regularization_type = s.regularization_type;
     regularization_lambda = s.regularization_lambda;
     /* Image resample */

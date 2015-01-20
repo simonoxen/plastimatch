@@ -505,25 +505,32 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
-    else if (key == "metric") {
+    else if (key == "metric" || key == "smetric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (val == "gm") {
-            stage->metric_type = METRIC_GRADIENT_MAGNITUDE;
-        }
-        else if (val == "mattes") {
-            stage->metric_type = METRIC_MI_MATTES;
-        }
-        else if (val == "mse" || val == "MSE") {
-            stage->metric_type = METRIC_MSE;
-        }
-        else if (val == "mi" || val == "MI") {
-            stage->metric_type = METRIC_MI;
-        }
-        else if (val == "nmi" || val == "NMI") {
-            stage->metric_type = METRIC_NMI;
-        }
-        else {
+        std::vector<std::string> metric_vec = string_split (val, ',');
+        if (metric_vec.size() == 0) {
             goto error_exit;
+        }
+        stage->metric_type.clear();
+        for (int i = 0; i < metric_vec.size(); i++) {
+            if (metric_vec[i] == "gm") {
+                stage->metric_type.push_back (METRIC_GRADIENT_MAGNITUDE);
+            }
+            else if (metric_vec[i] == "mattes") {
+                stage->metric_type.push_back (METRIC_MI_MATTES);
+            }
+            else if (metric_vec[i] == "mse" || metric_vec[i] == "MSE") {
+                stage->metric_type.push_back (METRIC_MSE);
+            }
+            else if (metric_vec[i] == "mi" || metric_vec[i] == "MI") {
+                stage->metric_type.push_back (METRIC_MI);
+            }
+            else if (metric_vec[i] == "nmi" || metric_vec[i] == "NMI") {
+                stage->metric_type.push_back (METRIC_NMI);
+            }
+            else {
+                goto error_exit;
+            }
         }
     }
     else if (key == "histogram_type") {

@@ -148,7 +148,7 @@ Bspline_stage::initialize ()
         moving, stage, stage->resample_rate_moving);
 
     /* Gradient magnitude uses different fixed and moving images */
-    if (stage->metric_type == METRIC_GRADIENT_MAGNITUDE) {
+    if (stage->metric_type[0] == METRIC_GRADIENT_MAGNITUDE) {
         d_ptr->fixed_ss = volume_gradient_magnitude (d_ptr->fixed_ss);
         d_ptr->moving_ss = volume_gradient_magnitude (d_ptr->moving_ss);
     }
@@ -248,7 +248,7 @@ Bspline_stage::initialize ()
     bsp_parms->lbfgsb_pgtol = stage->pgtol;
 
     /* Metric */
-    switch (stage->metric_type) {
+    switch (stage->metric_type[0]) {
     case METRIC_GRADIENT_MAGNITUDE:
         bsp_parms->metric = BMET_GM;
         break;

@@ -182,7 +182,7 @@ Itk_registration_private::set_best_xform ()
 void
 Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 {
-    switch (stage->metric_type) {
+    switch (stage->metric_type[0]) {
     case METRIC_MSE:
     {
         MSEMetricType::Pointer metric = MSEMetricType::New();
