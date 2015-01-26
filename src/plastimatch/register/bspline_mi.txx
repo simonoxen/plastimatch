@@ -7,73 +7,6 @@
 #include "compiler_warnings.h"
 
 static inline void
-bspline_mi_hist_add_pvi_8 (
-    Bspline_mi_hist_set* mi_hist, 
-    const Volume *fixed, 
-    const Volume *moving, 
-    int fidx, 
-    int mvf, 
-    float li_1[3],           /* Fraction of interpolant in lower index */
-    float li_2[3])           /* Fraction of interpolant in upper index */
-{
-    float w[8];
-    int n[8];
-    int idx_fbin, idx_mbin, idx_jbin, idx_pv;
-    int offset_fbin;
-    float* f_img = (float*) fixed->img;
-    float* m_img = (float*) moving->img;
-    double *f_hist = mi_hist->f_hist;
-    double *m_hist = mi_hist->m_hist;
-    double *j_hist = mi_hist->j_hist;
-
-
-    /* Compute partial volumes from trilinear interpolation weights */
-    w[0] = li_1[0] * li_1[1] * li_1[2]; // Partial Volume w0
-    w[1] = li_2[0] * li_1[1] * li_1[2]; // Partial Volume w1
-    w[2] = li_1[0] * li_2[1] * li_1[2]; // Partial Volume w2
-    w[3] = li_2[0] * li_2[1] * li_1[2]; // Partial Volume w3
-    w[4] = li_1[0] * li_1[1] * li_2[2]; // Partial Volume w4
-    w[5] = li_2[0] * li_1[1] * li_2[2]; // Partial Volume w5
-    w[6] = li_1[0] * li_2[1] * li_2[2]; // Partial Volume w6
-    w[7] = li_2[0] * li_2[1] * li_2[2]; // Partial Volume w7
-
-    /* Note that Sum(wN) for N within [0,7] should = 1 */
-
-    // Calculate Point Indices for 8 neighborhood
-    n[0] = mvf;
-    n[1] = n[0] + 1;
-    n[2] = n[0] + moving->dim[0];
-    n[3] = n[2] + 1;
-    n[4] = n[0] + moving->dim[0]*moving->dim[1];
-    n[5] = n[4] + 1;
-    n[6] = n[4] + moving->dim[0];
-    n[7] = n[6] + 1;
-
-    // Calculate fixed histogram bin and increment it
-    idx_fbin = floor ((f_img[fidx] - mi_hist->fixed.offset) 
-        / mi_hist->fixed.delta);
-    if (mi_hist->fixed.type == HIST_VOPT) {
-        idx_fbin = mi_hist->fixed.key_lut[idx_fbin];
-    }
-    f_hist[idx_fbin]++;
-
-    offset_fbin = idx_fbin * mi_hist->moving.bins;
-
-    // Add PV weights to moving & joint histograms   
-    for (idx_pv=0; idx_pv<8; idx_pv++) {
-        idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) 
-            / mi_hist->moving.delta);
-        if (mi_hist->moving.type == HIST_VOPT) {
-            idx_mbin = mi_hist->moving.key_lut[idx_mbin];
-        }
-        idx_jbin = offset_fbin + idx_mbin;
-        m_hist[idx_mbin] += w[idx_pv];
-        j_hist[idx_jbin] += w[idx_pv];
-    }
-
-}
-
-static inline void
 bspline_mi_pvi_8_dc_dv_dcos (
     float dc_dv[3],                /* Output */
     Bspline_mi_hist_set* mi_hist,  /* Input */
@@ -229,8 +162,8 @@ public:
         UNUSED_VARIABLE (m_val);
 
         /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-        bspline_mi_hist_add_pvi_8 (
-            mi_hist, fixed, moving, 
+        mi_hist->add_pvi_8 (
+            fixed, moving, 
             fidx, midx_f, li_1, li_2
         );
 

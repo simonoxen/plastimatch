@@ -68,6 +68,16 @@ Bspline_mi_hist_set::allocate ()
     this->j_hist = new double [this->joint.bins]();
 }
 
+
+void 
+Bspline_mi_hist_set::reset_histograms ()
+{
+    memset (this->f_hist, 0, this->fixed.bins * sizeof(double));
+    memset (this->m_hist, 0, this->moving.bins * sizeof(double));
+    memset (this->j_hist, 0,
+        this->fixed.bins * this->moving.bins * sizeof(double));
+}
+
 /* -----------------------------------------------------------------------
    Initialization and teardown
    ----------------------------------------------------------------------- */
@@ -432,4 +442,70 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
         }
     }
     fclose (fp);
+}
+
+void
+Bspline_mi_hist_set::add_pvi_8
+(
+    const Volume *fixed, 
+    const Volume *moving, 
+    int fidx, 
+    int mvf, 
+    float li_1[3],           /* Fraction of interpolant in lower index */
+    float li_2[3])           /* Fraction of interpolant in upper index */
+{
+    float w[8];
+    int n[8];
+    int idx_fbin, idx_mbin, idx_jbin, idx_pv;
+    int offset_fbin;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    double *f_hist = this->f_hist;
+    double *m_hist = this->m_hist;
+    double *j_hist = this->j_hist;
+
+
+    /* Compute partial volumes from trilinear interpolation weights */
+    w[0] = li_1[0] * li_1[1] * li_1[2]; // Partial Volume w0
+    w[1] = li_2[0] * li_1[1] * li_1[2]; // Partial Volume w1
+    w[2] = li_1[0] * li_2[1] * li_1[2]; // Partial Volume w2
+    w[3] = li_2[0] * li_2[1] * li_1[2]; // Partial Volume w3
+    w[4] = li_1[0] * li_1[1] * li_2[2]; // Partial Volume w4
+    w[5] = li_2[0] * li_1[1] * li_2[2]; // Partial Volume w5
+    w[6] = li_1[0] * li_2[1] * li_2[2]; // Partial Volume w6
+    w[7] = li_2[0] * li_2[1] * li_2[2]; // Partial Volume w7
+
+    /* Note that Sum(wN) for N within [0,7] should = 1 */
+
+    // Calculate Point Indices for 8 neighborhood
+    n[0] = mvf;
+    n[1] = n[0] + 1;
+    n[2] = n[0] + moving->dim[0];
+    n[3] = n[2] + 1;
+    n[4] = n[0] + moving->dim[0]*moving->dim[1];
+    n[5] = n[4] + 1;
+    n[6] = n[4] + moving->dim[0];
+    n[7] = n[6] + 1;
+
+    // Calculate fixed histogram bin and increment it
+    idx_fbin = floor ((f_img[fidx] - this->fixed.offset) 
+        / this->fixed.delta);
+    if (this->fixed.type == HIST_VOPT) {
+        idx_fbin = this->fixed.key_lut[idx_fbin];
+    }
+    f_hist[idx_fbin]++;
+
+    offset_fbin = idx_fbin * this->moving.bins;
+
+    // Add PV weights to moving & joint histograms   
+    for (idx_pv=0; idx_pv<8; idx_pv++) {
+        idx_mbin = floor ((m_img[n[idx_pv]] - this->moving.offset) 
+            / this->moving.delta);
+        if (this->moving.type == HIST_VOPT) {
+            idx_mbin = this->moving.key_lut[idx_mbin];
+        }
+        idx_jbin = offset_fbin + idx_mbin;
+        m_hist[idx_mbin] += w[idx_pv];
+        j_hist[idx_jbin] += w[idx_pv];
+    }
 }

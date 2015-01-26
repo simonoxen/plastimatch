@@ -1595,10 +1595,8 @@ bspline_score_h_mi (
                 );
 
                 /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                bspline_mi_hist_add_pvi_8 (
-                    mi_hist, fixed, moving, 
-                    fidx, midx_f, li_1, li_2
-                );
+                mi_hist->add_pvi_8 (
+                    fixed, moving, fidx, midx_f, li_1, li_2);
 
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
@@ -1854,10 +1852,8 @@ bspline_score_g_mi (
                 );
 
                 /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                bspline_mi_hist_add_pvi_8 (
-                    mi_hist, fixed, moving, 
-                    fidx, midx_f, li_1, li_2
-                );
+                mi_hist->add_pvi_8 (
+                    fixed, moving, fidx, midx_f, li_1, li_2);
 
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
@@ -2764,10 +2760,8 @@ bspline_score_d_mi (
 #endif
 
                 /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                bspline_mi_hist_add_pvi_8 (
-                    mi_hist, fixed, moving, 
-                    fidx, midx_f, li_1, li_2
-                );
+                mi_hist->add_pvi_8 (
+                    fixed, moving, fidx, midx_f, li_1, li_2);
 
 #if defined (commentout)
                 /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
@@ -3043,10 +3037,8 @@ bspline_score_c_mi (
 #endif
 
                 /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                bspline_mi_hist_add_pvi_8 (
-                    mi_hist, fixed, moving, 
-                    fidx, midx_f, li_1, li_2
-                );
+                mi_hist->add_pvi_8 (
+                    fixed, moving, fidx, midx_f, li_1, li_2);
 
 #if defined (commentout)
                 /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */

@@ -50,7 +50,17 @@ public:
     ~Bspline_mi_hist_set ();
 public:
     void initialize (Volume *fixed, Volume *moving);
+    void reset_histograms ();
     void dump_hist (int it, const std::string& prefix);
+
+    void add_pvi_8 (
+        const Volume *fixed, 
+        const Volume *moving, 
+        int fidx, 
+        int mvf, 
+        float li_1[3],      /* Fraction of interpolant in lower index */
+        float li_2[3]);     /* Fraction of interpolant in upper index */
+
 public:
     Bspline_mi_hist moving;
     Bspline_mi_hist fixed;
