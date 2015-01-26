@@ -71,8 +71,9 @@ set (PLMREGISTER_LIBRARY_SRC
   registration_resample.cxx registration_resample.h 
   shared_parms.cxx
   stage_parms.cxx
-  translation_optimize.cxx
-  translation_score.cxx
+  translation_grid_search.cxx translation_grid_search.h 
+  translation_mi.cxx translation_mi.h 
+  translation_mse.cxx translation_mse.h 
   )
 
 if (OPENCL_FOUND)

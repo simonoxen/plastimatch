@@ -13,14 +13,14 @@
 #include "plm_image_header.h"
 #include "registration_data.h"
 #include "stage_parms.h"
-#include "translation_score.h"
+#include "translation_mse.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "volume_resample.h"
 #include "xform.h"
 
 float
-translation_score (
+translation_mse (
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving,
     const float dxyz[3])

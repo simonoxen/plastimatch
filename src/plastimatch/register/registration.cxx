@@ -26,7 +26,7 @@
 #include "registration_parms.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
-#include "translation_optimize.h"
+#include "translation_grid_search.h"
 #include "volume.h"
 #include "xform.h"
 
@@ -332,10 +332,11 @@ Registration::do_registration_stage (
         if (stage->impl_type == IMPLEMENTATION_ITK) {
             xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
-            xf_out = translation_stage (regd.get(), xf_in, stage);
+            xf_out = translation_grid_search_stage (regd.get(), xf_in, stage);
         } else {
             if (stage->optim_type == OPTIMIZATION_GRID_SEARCH) {
-                xf_out = translation_stage (regd.get(), xf_in, stage);
+                xf_out = translation_grid_search_stage (
+                    regd.get(), xf_in, stage);
             } else {
                 xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
             }

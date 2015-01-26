@@ -12,21 +12,25 @@
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_resample.h"
 #include "stage_parms.h"
-#include "translation_optimize.h"
-#include "translation_score.h"
+#include "translation_grid_search.h"
+#include "translation_mi.h"
+#include "translation_mse.h"
 #include "volume.h"
 #include "volume_macros.h"
 #include "volume_resample.h"
 #include "xform.h"
 
 static void
-gridsearch_translation (
+translation_grid_search (
     Xform::Pointer& xf_out, 
     const Stage_parms* stage,
     Stage_parms* auto_parms,
+    float (*translation_score) (const Volume::Pointer& fixed,
+        const Volume::Pointer& moving, const float dxyz[3]),
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving)
 {
@@ -165,7 +169,7 @@ gridsearch_translation (
 }
 
 Xform::Pointer
-translation_stage (
+translation_grid_search_stage (
     Registration_data* regd, 
     const Xform::Pointer& xf_in,
     const Stage_parms* stage)
@@ -206,9 +210,26 @@ translation_stage (
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);
 
+    /* Choose the correct score function */
+    float (*translation_score) (const Volume::Pointer& fixed,
+        const Volume::Pointer& moving, const float dxyz[3]);
+    switch (stage->metric_type[0]) {
+    case METRIC_MSE:
+        translation_score = &translation_mse;
+        break;
+    case METRIC_MI:
+    case METRIC_MI_MATTES:
+        translation_score = &translation_mi;
+        break;
+    default:
+        print_and_exit ("Metric %d not implemented with grid search\n");
+        break;
+    }
+        
     /* Run the translation optimizer */
-    gridsearch_translation (xf_out, stage, 
-        regd->get_auto_parms (),
+    translation_grid_search (xf_out, stage, 
+        regd->get_auto_parms (), 
+        translation_score, 
         fixed_ss, moving_ss);
 
     return xf_out;
