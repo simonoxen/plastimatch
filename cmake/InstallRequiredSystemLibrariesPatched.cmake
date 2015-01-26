@@ -143,6 +143,7 @@ if(MSVC)
 
   macro(MSVCRT_FILES_FOR_VERSION version)
     set(v "${version}")
+    set(ProgramFilesX86 "ProgramFiles(x86)")
 
     # Find the runtime library redistribution directory.
     get_filename_component(msvc_install_dir
@@ -152,7 +153,7 @@ if(MSVC)
         "${msvc_install_dir}/../../VC/redist"
         "${base_dir}/VC/redist"
         "$ENV{ProgramFiles}/Microsoft Visual Studio ${v}.0/VC/redist"
-        "$ENV{ProgramFiles(x86)}/Microsoft Visual Studio ${v}.0/VC/redist"
+        "$ENV{${ProgramFilesX86}}/Microsoft Visual Studio ${v}.0/VC/redist"
       )
     mark_as_advanced(MSVC${v}_REDIST_DIR)
     set(MSVC${v}_CRT_DIR "${MSVC${v}_REDIST_DIR}/${CMAKE_MSVC_ARCH}/Microsoft.VC${v}0.CRT")
