@@ -83,19 +83,26 @@ Itk_registration_private::~Itk_registration_private ()
     delete this->xf_best;
 }
 
-/* ITK throws exceptions when e.g. evaluating metrics with overlap 
-   of less that 25%.  Identify these so we can continue processing. */
 static bool
-itk_sample_failure (const itk::ExceptionObject& err)
+itk_unnecessary_exception (const itk::ExceptionObject& err)
 {
     std::string err_string = err.GetDescription();
-    const char *t = "Too many samples map outside moving image buffer";
 
-    if (err_string.find (t) != std::string::npos) {
+    /* ITK throws exceptions when evaluating metrics with overlap 
+       of less that 25%.  Identify these so we can continue processing. */
+    const char *t1 = "Too many samples map outside moving image buffer";
+    if (err_string.find (t1) != std::string::npos) {
         return true;
-    } else {
-        return false;
     }
+
+    /* ITK throws exceptions when MI joint PDF is zero.
+       Identify these so we can continue processing. */
+    const char *t2 = "Joint PDF summed to zero";
+    if (err_string.find (t2) != std::string::npos) {
+        return true;
+    }
+
+    return false;
 }
 
 double
@@ -108,7 +115,7 @@ Itk_registration_private::evaluate_initial_transform ()
             registration->GetInitialTransformParameters());
     }
     catch (itk::ExceptionObject & err) {
-        if (itk_sample_failure (err)) {
+        if (itk_unnecessary_exception (err)) {
             lprintf ("ITK failed with too few samples.\n");
             return value;
         }
@@ -668,7 +675,7 @@ itk_registration_stage (
         }
     }
     catch (itk::ExceptionObject & err) {
-        if (itk_sample_failure (err)) {
+        if (itk_unnecessary_exception (err)) {
             lprintf ("ITK failed with too few samples.\n");
         } else {
             lprintf ("Exception caught in itk registration.\n");
