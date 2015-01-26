@@ -509,3 +509,31 @@ Bspline_mi_hist_set::add_pvi_8
         j_hist[idx_jbin] += w[idx_pv];
     }
 }
+
+/* This algorithm uses a un-normalized score. */
+float
+Bspline_mi_hist_set::compute_score (int num_vox)
+{
+    double* f_hist = this->f_hist;
+    double* m_hist = this->m_hist;
+    double* j_hist = this->j_hist;
+
+    plm_long i, j;
+    plm_long v;
+    double fnv = (double) num_vox;
+    double score = 0;
+    double hist_thresh = 0.001 / (this->moving.bins * this->fixed.bins);
+
+    /* Compute cost */
+    for (i = 0, v = 0; i < this->fixed.bins; i++) {
+        for (j = 0; j < this->moving.bins; j++, v++) {
+            if (j_hist[v] > hist_thresh) {
+                score -= j_hist[v] 
+                    * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
+            }
+        }
+    }
+
+    score = score / fnv;
+    return (float) score;
+}

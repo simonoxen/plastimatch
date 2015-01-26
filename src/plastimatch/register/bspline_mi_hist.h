@@ -61,6 +61,8 @@ public:
         float li_1[3],      /* Fraction of interpolant in lower index */
         float li_2[3]);     /* Fraction of interpolant in upper index */
 
+    float compute_score (int num_vox);
+
 public:
     Bspline_mi_hist moving;
     Bspline_mi_hist fixed;

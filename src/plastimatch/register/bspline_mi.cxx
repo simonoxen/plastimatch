@@ -282,35 +282,6 @@ bspline_mi_hist_add (
 
 /* This algorithm uses a un-normalized score. */
 static float
-mi_hist_score (Bspline_mi_hist_set* mi_hist, int num_vox)
-{
-    double* f_hist = mi_hist->f_hist;
-    double* m_hist = mi_hist->m_hist;
-    double* j_hist = mi_hist->j_hist;
-
-    plm_long i, j;
-    plm_long v;
-    double fnv = (double) num_vox;
-    double score = 0;
-    double hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
-
-    /* Compute cost */
-    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-        for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-            if (j_hist[v] > hist_thresh) {
-                score -= j_hist[v] 
-                    * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
-            }
-        }
-    }
-
-    score = score / fnv;
-    return (float) score;
-}
-
-
-/* This algorithm uses a un-normalized score. */
-static float
 mi_hist_score_omp (Bspline_mi_hist_set* mi_hist, int num_vox)
 {
     double* f_hist = mi_hist->f_hist;
@@ -3076,14 +3047,16 @@ bspline_score_c_mi (
         }
         printf ("m_hist total: %f\n", tmp);
 
-        for (zz=0,tmp=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) {
+        for (zz=0,tmp=0;
+             zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++)
+        {
             tmp += j_hist[zz];
         }
         printf ("j_hist total: %f\n", tmp);
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score (mi_hist, ssd->num_vox);
+    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute gradient */
@@ -3220,7 +3193,7 @@ bspline_score_k_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score (mi_hist, ssd->num_vox);
+    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
@@ -3288,7 +3261,7 @@ bspline_score_l_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score (mi_hist, ssd->num_vox);
+    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
