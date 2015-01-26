@@ -29,7 +29,8 @@ translation_grid_search (
     Xform::Pointer& xf_out, 
     const Stage_parms* stage,
     Stage_parms* auto_parms,
-    float (*translation_score) (const Volume::Pointer& fixed,
+    float (*translation_score) (
+        const Stage_parms *stage, const Volume::Pointer& fixed,
         const Volume::Pointer& moving, const float dxyz[3]),
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving)
@@ -79,7 +80,8 @@ translation_grid_search (
     best_translation[0] = old_trn->GetParameters()[0];
     best_translation[1] = old_trn->GetParameters()[1];
     best_translation[2] = old_trn->GetParameters()[2];
-    float best_score = translation_score (fixed, moving, best_translation);
+    float best_score = translation_score (
+        stage, fixed, moving, best_translation);
     lprintf ("[%g %g %g] %g *\n", 
         best_translation[0], best_translation[1], best_translation[2], 
         best_score);
@@ -141,7 +143,8 @@ translation_grid_search (
                     search_min[0] + i * search_step[0],
                     search_min[1] + j * search_step[1],
                     search_min[2] + k * search_step[2] };
-                float score = translation_score (fixed, moving, translation);
+                float score = translation_score (stage,
+                    fixed, moving, translation);
                 lprintf ("[%g %g %g] %g", 
                     translation[0], translation[1], translation[2], score);
                 if (score < best_score) {
@@ -211,7 +214,8 @@ translation_grid_search_stage (
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);
 
     /* Choose the correct score function */
-    float (*translation_score) (const Volume::Pointer& fixed,
+    float (*translation_score) (
+        const Stage_parms *stage, const Volume::Pointer& fixed,
         const Volume::Pointer& moving, const float dxyz[3]);
     switch (stage->metric_type[0]) {
     case METRIC_MSE:

@@ -536,10 +536,10 @@ Registration_parms::set_key_value (
     else if (key == "histogram_type") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "eqsp" || val == "EQSP") {
-            stage->mi_histogram_type = HIST_EQSP;
+            stage->mi_hist_type = HIST_EQSP;
         }
         else if (val == "vopt" || val == "VOPT") {
-            stage->mi_histogram_type = HIST_VOPT;
+            stage->mi_hist_type = HIST_VOPT;
         }
         else {
             goto error_exit;
@@ -674,10 +674,10 @@ Registration_parms::set_key_value (
     else if (key == "mattes_histogram_bins" 
         || key == "mi_histogram_bins") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        rc = sscanf (val.c_str(), "%d %d", &stage->mi_histogram_bins_fixed,
-            &stage->mi_histogram_bins_moving);
+        rc = sscanf (val.c_str(), "%d %d", &stage->mi_hist_fixed_bins,
+            &stage->mi_hist_moving_bins);
         if (rc == 1) {
-            stage->mi_histogram_bins_moving = stage->mi_histogram_bins_fixed;
+            stage->mi_hist_moving_bins = stage->mi_hist_fixed_bins;
         } else if (rc != 2) {
             goto error_exit;
         }

@@ -21,10 +21,12 @@
 
 float
 translation_mi (
+    const Stage_parms *stage,
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving,
     const float dxyz[3])
 {
+#if defined (commentout)
     plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
     float fxyz[3];                /* Position within fixed image (mm) */
     float mijk[3];                /* Indices within moving image (vox) */
@@ -95,8 +97,15 @@ translation_mi (
     }
 
     return final_metric;
+#endif
 
+    Bspline_mi_hist_set mi_hist (
+        stage->mi_hist_type,
+        stage->mi_hist_fixed_bins,
+        stage->mi_hist_moving_bins);
 
+    return 0.f;
+        
 #if defined (commentout)
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();

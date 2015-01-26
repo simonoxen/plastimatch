@@ -232,7 +232,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
             much higher proportion, such as $20$ percent. */
         MattesMIMetricType::Pointer metric = MattesMIMetricType::New();
         metric->SetNumberOfHistogramBins(
-            stage->mi_histogram_bins_fixed);
+            stage->mi_hist_fixed_bins);
         metric->SetNumberOfSpatialSamples (
             this->compute_num_samples (fixed_ss));
 
@@ -258,8 +258,8 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 #if defined (ITK_USE_REVIEW_STATISTICS) || (ITK_VERSION_MAJOR >= 4)
         hist.SetSize(2);
 #endif
-        hist[0] = stage->mi_histogram_bins_fixed;
-        hist[1] = stage->mi_histogram_bins_moving;
+        hist[0] = stage->mi_hist_fixed_bins;
+        hist[1] = stage->mi_hist_moving_bins;
         metric->SetHistogramSize (hist);
 
         /* Apparently sampling is not implemented in ITK 3 

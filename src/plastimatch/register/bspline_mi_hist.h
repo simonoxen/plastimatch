@@ -16,7 +16,7 @@ class Volume;
 /* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
-enum Bspline_mi_hist_type {
+enum Mi_hist_type {
     HIST_EQSP,
     HIST_VOPT
 };
@@ -24,12 +24,12 @@ enum Bspline_mi_hist_type {
 class PLMREGISTER_API Bspline_mi_hist {
 public:
     Bspline_mi_hist (
-        Bspline_mi_hist_type type = HIST_EQSP, 
+        Mi_hist_type type = HIST_EQSP, 
         plm_long bins = 32);
     ~Bspline_mi_hist ();
 public:
     /* Used by all histogram types */
-    enum Bspline_mi_hist_type type;   /* Type of histograms */
+    enum Mi_hist_type type;   /* Type of histograms */
     plm_long bins;                    /* # of bins in histogram  */
     float offset;                     /* minimum voxel intensity */
     plm_long big_bin;                 /* fullest bin index       */
@@ -44,7 +44,7 @@ class PLMREGISTER_API Bspline_mi_hist_set {
 public:
     Bspline_mi_hist_set ();
     Bspline_mi_hist_set (
-        Bspline_mi_hist_type type,
+        Mi_hist_type type,
         plm_long fixed_bins,
         plm_long moving_bins);
     ~Bspline_mi_hist_set ();

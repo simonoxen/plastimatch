@@ -7,8 +7,11 @@
 #include "plmregister_config.h"
 #include "volume.h"
 
+class Stage_parms;
+
 float
 translation_mi (
+    const Stage_parms *stage,
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving,
     const float dxyz[3]);

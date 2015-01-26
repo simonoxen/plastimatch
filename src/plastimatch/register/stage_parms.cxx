@@ -87,11 +87,11 @@ Stage_parms::Stage_parms ()
     /* Quaternion optimizer */
     learn_rate = 0.01 ;
     /* Mattes mutual information */
-    mi_histogram_bins_fixed = 20;
-    mi_histogram_bins_moving = 20;
+    mi_hist_fixed_bins = 20;
+    mi_hist_moving_bins = 20;
     mi_num_spatial_samples = -1;
     mi_num_spatial_samples_pct = 0.3;
-    mi_histogram_type = HIST_EQSP;
+    mi_hist_type = HIST_EQSP;
     /* MI threshold values */
     /*Setting values to zero by default. In this case minVal and 
       maxVal will be calculated from image*/
@@ -203,11 +203,11 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     /* Quaternion optimizer */
     learn_rate = s.learn_rate;
     /* Mattes mutual information */
-    mi_histogram_bins_fixed = s.mi_histogram_bins_fixed;
-    mi_histogram_bins_moving = s.mi_histogram_bins_moving;
+    mi_hist_fixed_bins = s.mi_hist_fixed_bins;
+    mi_hist_moving_bins = s.mi_hist_moving_bins;
     mi_num_spatial_samples = s.mi_num_spatial_samples;
     mi_num_spatial_samples_pct = s.mi_num_spatial_samples_pct;
-    mi_histogram_type = s.mi_histogram_type;
+    mi_hist_type = s.mi_hist_type;
     /* MI threshold values */
     mi_fixed_image_minVal = s.mi_fixed_image_minVal;
     mi_fixed_image_maxVal = s.mi_fixed_image_maxVal;

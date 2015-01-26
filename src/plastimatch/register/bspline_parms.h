@@ -55,7 +55,7 @@ public:
     double_align8 convergence_tol; /* When to stop iterations based on score */
 
     /* MI parms */
-    Bspline_mi_hist_type mi_hist_type;
+    enum Mi_hist_type mi_hist_type;
     plm_long mi_hist_fixed_bins;
     plm_long mi_hist_moving_bins;
 

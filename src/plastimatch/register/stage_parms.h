@@ -169,11 +169,11 @@ public:
     /* Quaternion optimizer */
     float learn_rate;
     /* Mutual information */
-    int mi_histogram_bins_fixed;
-    int mi_histogram_bins_moving;
+    int mi_hist_fixed_bins;
+    int mi_hist_moving_bins;
     int mi_num_spatial_samples;
     float mi_num_spatial_samples_pct;
-    enum Bspline_mi_hist_type mi_histogram_type;
+    enum Mi_hist_type mi_hist_type;
     float mi_fixed_image_minVal;
     float mi_fixed_image_maxVal;
     float mi_moving_image_minVal;

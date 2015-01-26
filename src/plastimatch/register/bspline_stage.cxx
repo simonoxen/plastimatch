@@ -324,9 +324,9 @@ Bspline_stage::initialize ()
         bsp_parms->reg_parms->lambda);
 
     /* Mutual information histograms */
-    bsp_parms->mi_hist_type = stage->mi_histogram_type;
-    bsp_parms->mi_hist_fixed_bins  = stage->mi_histogram_bins_fixed;
-    bsp_parms->mi_hist_moving_bins = stage->mi_histogram_bins_moving;
+    bsp_parms->mi_hist_type = stage->mi_hist_type;
+    bsp_parms->mi_hist_fixed_bins = stage->mi_hist_fixed_bins;
+    bsp_parms->mi_hist_moving_bins = stage->mi_hist_moving_bins;
 
     /* Other stuff */
     bsp_parms->min_its = stage->min_its;

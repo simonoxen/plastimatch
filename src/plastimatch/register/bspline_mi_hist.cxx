@@ -13,7 +13,7 @@
 #include "volume.h"
 
 Bspline_mi_hist::Bspline_mi_hist (
-    Bspline_mi_hist_type type,
+    Mi_hist_type type,
     plm_long bins)
 {
     //this->type = HIST_EQSP;
@@ -42,7 +42,7 @@ Bspline_mi_hist_set::Bspline_mi_hist_set ()
     this->j_hist = 0;
 }
 
-Bspline_mi_hist_set::Bspline_mi_hist_set (Bspline_mi_hist_type type,
+Bspline_mi_hist_set::Bspline_mi_hist_set (Mi_hist_type type,
     plm_long fixed_bins, plm_long moving_bins)
     : moving (type, moving_bins), 
       fixed (type, fixed_bins), 
@@ -433,4 +433,3 @@ Bspline_mi_hist_set::dump_hist (int it, const std::string& prefix)
     }
     fclose (fp);
 }
-

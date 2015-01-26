@@ -21,6 +21,7 @@
 
 float
 translation_mse (
+    const Stage_parms *stage,
     const Volume::Pointer& fixed,
     const Volume::Pointer& moving,
     const float dxyz[3])
