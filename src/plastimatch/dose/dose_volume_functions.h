@@ -10,12 +10,12 @@
 void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range);
 
 void calculate_rpl_coordinates_xyz(std::vector<std::vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume);
-void copy_rpl_density(std::vector<double>* CT_density_vol, Rpl_volume* rpl_dose_volume);
 void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_vol);
 
 void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample);
 
 void find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume);
+void find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume::Pointer dose_volume);
 void find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offset);
 void find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k, float z_spacing);
 void find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk);

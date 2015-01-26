@@ -65,7 +65,7 @@ void compute_dose_ray_sharp (
     const Volume::Pointer ct_vol, 
     const Rpl_volume* rpl_vol, 
     const Rpl_volume* sigma_vol, 
-    const Rpl_volume* ct_vol_density, 
+    Rpl_volume* ct_vol_density, 
     const Rt_beam* beam, Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
     const Rt_depth_dose* ppp, 

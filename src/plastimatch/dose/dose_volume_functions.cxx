@@ -69,7 +69,7 @@ calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinate
     double vec_antibug_prt[3] = {0.0,0.0,0.0};
 
     int dim[3] = {rpl_volume->get_vol()->dim[0],rpl_volume->get_vol()->dim[1],rpl_volume->get_vol()->dim[2]};
-    int idx2d = 0;   
+	int idx2d = 0;   
     int idx3d = 0;
 
     for (int i = 0; i < rpl_volume->get_vol()->dim[0];i++){
@@ -95,16 +95,6 @@ calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinate
                 }
             }
         }
-    }
-}
-
-void copy_rpl_density(std::vector<double>* CT_density_vol, Rpl_volume* rpl_dose_volume)
-{
-    float* img = (float*) rpl_dose_volume->get_vol()->img;
-
-    for (int i = 0; i < rpl_dose_volume->get_vol()->dim[0] * rpl_dose_volume->get_vol()->dim[1] * rpl_dose_volume->get_vol()->dim[2]; i++)
-    {
-        (*CT_density_vol)[i] = img[i];
     }
 }
 
@@ -165,6 +155,14 @@ void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, in
 
 void 
 find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume)
+{
+    ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->offset[0]) / dose_volume->spacing[0] + 0.5);
+    ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->offset[1]) / dose_volume->spacing[1] + 0.5);
+    ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->offset[2]) / dose_volume->spacing[2] + 0.5);
+}
+
+void 
+find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume::Pointer dose_volume)
 {
     ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->offset[0]) / dose_volume->spacing[0] + 0.5);
     ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->offset[1]) / dose_volume->spacing[1] + 0.5);
@@ -235,7 +233,6 @@ double double_gaussian_interpolation(double* gaussian_center, double* pixel_cent
     double x2 = x1 + spacing[0];
     double y1 = pixel_center[1] - 0.5 * spacing[1];
     double y2 = y1 + spacing[1];
-    //printf("\n %lg %lg %lg %lg %lg %lg %lg\n", spacing[0], spacing[1], spacing[2] , x1, x2, y1, y2);
 
     double z = .25 
         * (erf_gauss((x2-gaussian_center[0])/(sigma*1.4142135)) - erf_gauss((x1-gaussian_center[0])/(sigma*1.4142135)))

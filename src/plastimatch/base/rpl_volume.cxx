@@ -327,7 +327,6 @@ Rpl_volume::get_rgdepth2 (
 
     /* Make sure value is not inf or NaN */
     if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
-    	printf("no");
 		return -1;
     }
 
@@ -1056,7 +1055,6 @@ Rpl_volume::compute_wed_volume (
 
     plm_long wijk[3];  /* Index within wed_volume */
    
-    //   printf("ires is %d %d %d %d \n",ires[0],ires[1],ires[2],ires[3]);
     for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
 
         for (wijk[0] = 0; wijk[0] < ires[0]; wijk[0]++) {
