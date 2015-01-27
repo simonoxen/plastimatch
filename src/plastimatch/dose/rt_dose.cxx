@@ -885,12 +885,19 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
     float* img = (float*) dose_volume->img;
     float* ct_img = (float*) ct_vol->img;
     float* rpl_image = (float*) rpl_volume->get_vol()->img;
+
 	float* rc_img = 0;
+	unsigned char *ap_img = 0;
 
 	if (beam->get_aperture()->have_range_compensator_image())
 	{
 		rc_img = (float*) beam->get_aperture()->get_range_compensator_volume ()->img;
 	}
+	
+	if (beam->get_aperture()->have_aperture_image()) {
+		Volume::Pointer ap_vol = beam->get_aperture()->get_aperture_volume();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
 
     double dist = 0;
     int offset_step = 0;
@@ -899,6 +906,11 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
     for (int i = 0; i < dim[0]*dim[1]; i++)
     {
+		if (ap_img[i] == 0)
+		{ 
+			continue;
+		}
+
 		Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
 
         ap_ij[1] = i / dim[0];

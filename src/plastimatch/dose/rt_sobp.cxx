@@ -182,6 +182,7 @@ Rt_sobp::lookup_energy (
 bool
 Rt_sobp::generate ()
 {
+	printf("samples: %d\n", d_ptr->depth_dose.size());
     std::vector<const Rt_depth_dose*>::const_iterator it 
         = d_ptr->depth_dose.begin();
     while (it != d_ptr->depth_dose.end ()) {

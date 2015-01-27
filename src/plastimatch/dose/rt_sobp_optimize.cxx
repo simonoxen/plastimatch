@@ -178,7 +178,7 @@ void Rt_sobp::Optimizer (int num_peaks)
     this->generate();
 }
 
-// Maxime Desplanque's better optimizer to get the optimized weights 
+// Maxime Desplanques's better optimizer to get the optimized weights 
 // for pristine peaks
 void Rt_sobp::Optimizer2 (int num_peaks)
 {
@@ -198,8 +198,9 @@ void Rt_sobp::Optimizer2 (int num_peaks)
         energies[i]= d_ptr->E_min + i * d_ptr->eres;
         printf("%d ", energies[i]);
     }
+	printf("\n");
 
-    for (int i = 0; i < d_ptr->num_peaks; i++)
+    for (int i = 0; i < num_peaks; i++)
     {
         dose_max = 0;
 
@@ -241,22 +242,22 @@ void Rt_sobp::Optimizer2 (int num_peaks)
         }
     }
 
-    for (int i = 0; i < 100; i++)
+    for (int n = 0; n < 2; n++)
     {
         for (int i = 0; i < num_peaks; i++)
-	{
+		{
             depth_max = max_depth_proton[ energies[i] ];
             weight[i] = weight[i] / d_ptr->e_lut[depth_max];
-	}
+		}
 
-	for (int j = 0 ; j < num_samples; j++)
-	{
+		for (int j = 0 ; j < num_samples; j++)
+		{
             d_ptr->e_lut[j] = 0;
             for (int i = 0; i < num_peaks; i++)
             {
                 d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
             }
-	}
+		}
     }
 
     while (!d_ptr->depth_dose.empty())
@@ -264,16 +265,13 @@ void Rt_sobp::Optimizer2 (int num_peaks)
         d_ptr->depth_dose.pop_back();
     }
 
+	d_ptr->num_peaks = num_peaks;
     for(int i = 0; i < d_ptr->num_peaks; i++)
     {
         this->add_peak ((double)energies[i],1, d_ptr->dres, 
             (double)d_ptr->dend, weight[i]);
         d_ptr->sobp_weight.push_back(weight[i]);
     }
-
-    d_ptr->num_samples = d_ptr->depth_dose[0]->num_samples;
-
-    //this->generate();
 }
 
 // cost function to be optimized in order to find the 
