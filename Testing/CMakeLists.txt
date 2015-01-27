@@ -60,6 +60,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-process-a.txt"
   "plm-reg-trans-a.txt"
   "plm-reg-trans-b.txt"
+  "plm-reg-trans-mi-a.txt"
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
   "proton-dose-a-1.txt"
@@ -3124,8 +3125,9 @@ set_tests_properties (plm-reg-process-a-check PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 10)
-##   plm-reg-trans-a   Native translation with grid search (legacy form)
-##   plm-reg-trans-b   Native translation with grid search (new form)
+##   plm-reg-trans-a     Translation with grid search (mse, legacy form)
+##   plm-reg-trans-b     Translation with grid search (mse, new form)
+##   plm-reg-trans-mi-a  Translation with grid search (mutual information)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-trans-a"
@@ -3170,6 +3172,28 @@ set_tests_properties (plm-reg-trans-b-stats PROPERTIES
   DEPENDS plm-reg-trans-b)
 set_tests_properties (plm-reg-trans-b-check PROPERTIES 
   DEPENDS plm-reg-trans-b-stats)
+
+plm_add_test (
+  "plm-reg-trans-mi-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-mi-a.txt"
+  )
+plm_add_test (
+  "plm-reg-trans-mi-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-trans-mi-a.mha"
+  )
+plmtest_check_interval ("plm-reg-trans-mi-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-trans-mi-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-612.75"
+  "-612.60"
+  )
+set_tests_properties (plm-reg-trans-mi-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-reg-trans-mi-a-stats PROPERTIES 
+  DEPENDS plm-reg-trans-mi-a)
+set_tests_properties (plm-reg-trans-mi-a-check PROPERTIES 
+  DEPENDS plm-reg-trans-mi-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 11)

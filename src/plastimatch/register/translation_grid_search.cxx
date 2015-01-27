@@ -229,7 +229,7 @@ translation_grid_search_stage (
         print_and_exit ("Metric %d not implemented with grid search\n");
         break;
     }
-        
+
     /* Run the translation optimizer */
     translation_grid_search (xf_out, stage, 
         regd->get_auto_parms (), 

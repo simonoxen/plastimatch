@@ -30,6 +30,7 @@ translation_mi (
         stage->mi_hist_type,
         stage->mi_hist_fixed_bins,
         stage->mi_hist_moving_bins);
+    mi_hist->initialize (fixed.get(), moving.get());
     mi_hist->reset_histograms ();
         
     long pidx;

@@ -48,8 +48,6 @@ Bspline_mi_hist_set::Bspline_mi_hist_set (Mi_hist_type type,
       fixed (type, fixed_bins), 
       joint (type, moving_bins * fixed_bins)
 {
-    printf ("Setting with type = %d\n", type);
-    printf ("Found type = %d\n", moving.type);
     this->allocate ();
 }
 
