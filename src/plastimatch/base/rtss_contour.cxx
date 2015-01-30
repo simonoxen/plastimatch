@@ -8,6 +8,8 @@
 #include "rtss_contour.h"
 #include <algorithm>
 
+#include <algorithm>
+
 Rtss_contour::Rtss_contour ()
 {
     this->slice_no = -1;
