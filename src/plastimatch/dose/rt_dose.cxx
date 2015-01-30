@@ -906,9 +906,11 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
     for (int i = 0; i < dim[0]*dim[1]; i++)
     {
-		if (ap_img[i] == 0)
-		{ 
-			continue;
+		if (beam->get_aperture()->have_aperture_image()) {
+			if (ap_img[i] == 0)
+			{ 
+				continue;
+			}
 		}
 
 		Ray_data* ray_data = &rpl_volume->get_Ray_data()[i];
@@ -1163,16 +1165,21 @@ compute_dose_ray_sharp (
     float* ct_rpl_img = (float*) ct_rpl_volume->get_vol()->img;
 	float* ct_img = (float*) ct_vol->img;
 	float* rc_img = 0;
+	unsigned char *ap_img = 0;
 	float range_comp = 0;
 
 	Ray_data* ray_data;
 	Ray_data* ray_data_tmp;
 	
+	if (beam->get_aperture()->have_aperture_image()) {
+		Volume::Pointer ap_vol = beam->get_aperture()->get_aperture_volume();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+
 	if (beam->get_aperture()->have_range_compensator_image())
 	{
 		rc_img = (float*) beam->get_aperture()->get_range_compensator_volume ()->img;
 	}
-
     double dist = 0;
     double radius = 0;
 
@@ -1202,6 +1209,7 @@ compute_dose_ray_sharp (
         lateral_step_x[k] = (rpl_volume->get_front_clipping_plane() + (double) k) * ap->get_spacing(0) / rpl_volume->get_aperture()->get_distance();
         lateral_step_y[k] = (rpl_volume->get_front_clipping_plane() + (double) k) * ap->get_spacing(1) / rpl_volume->get_aperture()->get_distance();
     }
+
     /* calculation of the dose in the rpl_volume */
     for (ap_ij_lg[0] = margins[0]; ap_ij_lg[0] < rpl_dose_volume->get_vol()->dim[0]-margins[0]; ap_ij_lg[0]++){
         for (ap_ij_lg[1] = margins[1]; ap_ij_lg[1] < rpl_dose_volume->get_vol()->dim[1]-margins[1]; ap_ij_lg[1]++){
@@ -1211,6 +1219,14 @@ compute_dose_ray_sharp (
 
             idx2d_lg = ap_ij_lg[1] * dim_lg[0] + ap_ij_lg[0];
             idx2d_sm = ap_ij_sm[1] * dim_sm[0] + ap_ij_sm[0];
+
+			if (beam->get_aperture()->have_aperture_image())
+			{
+				if((float) ap_img[idx2d_sm] == 0)
+				{
+					continue;
+				}
+			}
 
 			if (beam->get_aperture()->have_range_compensator_image())
 			{

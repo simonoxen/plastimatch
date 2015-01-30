@@ -1688,7 +1688,7 @@ Rpl_volume::compute_volume_aperture(Aperture::Pointer ap)
 		for(int j = 0; j < dim[2]; j++)
 		{
 			idx = j * dim[0] * dim[1] + i;
-			if (ap_img[i] == 1)
+			if ((float) ap_img[i] == 1)
 			{
 				ap_vol_img[idx] = 1;
 			}
@@ -1701,12 +1701,10 @@ Rpl_volume::compute_volume_aperture(Aperture::Pointer ap)
 }
 
 void 
-Rpl_volume::apply_beam_modifiers ()
+Rpl_volume::apply_beam_modifiers () // In this new version the range compensator is added later in the code depending on the algorithm
 {
     Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
-    Volume::Pointer rc_vol = d_ptr->aperture->get_range_compensator_volume();
-    float *rc_img = (float*) rc_vol->img;
     Volume *proj_vol = d_ptr->proj_vol->get_vol();
     float *proj_img = (float*) proj_vol->img;
 
@@ -1724,14 +1722,13 @@ Rpl_volume::apply_beam_modifiers ()
             /* Get aperture and rc values */
             plm_long ap_idx = r * ires[0] + c;
             float ap_val = (float) ap_img[ap_idx];
-            float rc_val = rc_img[ap_idx];
 
             /* For each voxel in ray */
             for (int z = 0; z < proj_vol->dim[2]; z++) {
 
                 /* Adjust value of voxel */
                 plm_long vol_idx = z * ap_nvox + ap_idx;
-                proj_img[vol_idx] = ap_val * (proj_img[vol_idx] + rc_val);
+                proj_img[vol_idx] = ap_val * (proj_img[vol_idx]);
             }
         }
     }

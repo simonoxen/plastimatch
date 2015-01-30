@@ -416,6 +416,7 @@ Rt_plan::compute_dose ()
             else if (this->beam->get_flavor() == 'g') // Sharp's algorithm
             {
                 timer.start ();
+
                 if (*sigma_max > biggest_sigma_ever)
                 {
                     biggest_sigma_ever = *sigma_max;
@@ -451,7 +452,6 @@ Rt_plan::compute_dose ()
                     this->beam->rpl_dose_vol->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
                     this->beam->rpl_dose_vol->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
                 }
-				
 
                 /* update the dose_vol with the CT values before to calculate the dose */
                 this->beam->rpl_dose_vol->compute_rpl_void();
