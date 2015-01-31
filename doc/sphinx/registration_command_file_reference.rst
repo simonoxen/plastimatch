@@ -276,7 +276,7 @@ specific parameters are available.
      - mse
      - string
      - Cost function metric to be optimized.  
-       The choices are {mse, mi, nmi, mattes} when impl=itk, and {mse, mi} 
+       The choices are {mse, mi, nmi, mattes} when impl=itk, and {gm, mse, mi} 
        when impl=plastimatch.
    * - mi_histogram_bins
      - any+any+any
@@ -355,17 +355,50 @@ specific parameters are available.
      -
      -
      -
-     - Alias for "ss"
+     - Alias for "res_vox"
+   * - res_mm
+     - any+any+any
+     - automatic
+     - mm
+     - Subsampling rate (in mm) for fixed and moving images.  
+       This can be either "automatic", 
+       a single integer (for isotropic subsampling), 
+       or three integers (for anisotropic subsampling).
+       For example, "3 3 3" would have voxels sampled once every 3 mm.
+       In automatic mode, image is subsampled to the maximum rate 
+       which yields less than 100 voxels in each dimension. 
+   * - res_mm_fixed
+     - any+any+any
+     - automatic
+     - mm
+     - Equivalent to res_mm, but only applied to the fixed image.
+   * - res_mm_moving
+     - any+any+any
+     - automatic
+     - mm
+     - Equivalent to res_mm, but only applied to the moving image.
    * - res_vox
      - any+any+any
      - automatic
      - voxels
-     - Subsampling rate for fixed and moving images.  
+     - Subsampling rate (in voxels) for fixed and moving images.  
        This can be either "automatic", 
        a single integer (for isotropic subsampling), 
        or three integers (for anisotropic subsampling).
+       For example, "3 3 3" would have one voxel for
+       every 3 voxels in the input image.
        In automatic mode, image is subsampled to the maximum rate 
        which yields less than 100 voxels in each dimension. 
+   * - res_vox_fixed
+     - any+any+any
+     - automatic
+     - voxels
+     - Equivalent to res_vox, but only applied to the fixed image.
+   * - res_vox_moving
+     - any+any+any
+     - automatic
+     - voxels
+     - Equivalent to res_vox, but only applied to the moving image.
    * - rsg_grad_tol
      - any+{rsg, versor}+itk
      - 0.001
@@ -383,12 +416,12 @@ specific parameters are available.
      - any+any+any
      - automatic
      - voxels
-     - Subsampling rate for the fixed image.
+     - Alias for "res_vox_fixed"
    * - ss_moving
      - any+any+any
      - automatic
      - voxels
-     - Subsampling rate for the moving image.
+     - Alias for "res_vox_moving"
    * - threading
      - any+any+plastimatch
      - openmp
