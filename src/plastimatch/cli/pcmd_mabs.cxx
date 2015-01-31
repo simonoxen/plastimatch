@@ -16,6 +16,7 @@ public:
     bool prealign;
     bool train_registration;
     bool train;
+    bool segment;
 
     std::string cmd_file_fn;
     std::string input_fn;
@@ -30,6 +31,7 @@ public:
         prealign = false;
         train = false;
         train_registration = false;
+        segment = false;
     }
 };
 
@@ -67,8 +69,8 @@ parse_fn (
     parser->add_long_option ("", "train-registration", 
         "perform limited training to find the best registration "
         "parameters only", 0);
-    parser->add_long_option ("", "input", 
-        "input image or directory for doing a segmentation", 1, "");
+    parser->add_long_option ("", "segment", 
+        "use mabs to segment the specified image or directory", 1, "");
     parser->add_long_option ("", "output", 
         "output (non-dicom) directory when doing a segmentation", 1, "");
     parser->add_long_option ("", "output-dicom", 
@@ -108,8 +110,9 @@ parse_fn (
     if (parser->have_option ("train-registration")) {
         parms->train_registration = true;
     }
-    if (parser->have_option ("input")) {
-        parms->input_fn = parser->get_string ("input");
+    if (parser->have_option ("segment")) {
+        parms->segment = true;
+        parms->input_fn = parser->get_string ("segment");
     }
     if (parser->have_option ("output")) {
         parms->output_dir = parser->get_string ("output");

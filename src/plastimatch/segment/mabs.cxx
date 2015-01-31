@@ -2061,7 +2061,8 @@ Mabs::segment ()
         d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
     }
     else {
-        d_ptr->registration_id = d_ptr->parms->registration_config.c_str(); 
+        d_ptr->registration_id = basename (
+            d_ptr->parms->registration_config);
     }
     d_ptr->rho = d_ptr->parms->optimization_result_seg_rho;
     d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
