@@ -16,6 +16,7 @@
 #include "registration_data.h"
 #include "registration_resample.h"
 #include "stage_parms.h"
+#include "string_util.h"
 #include "translation_grid_search.h"
 #include "translation_mi.h"
 #include "translation_mse.h"
@@ -203,13 +204,18 @@ translation_grid_search_stage (
         moving, stage, stage->resample_rate_moving);
     fixed_ss = registration_resample_volume (
         fixed, stage, stage->resample_rate_fixed);
-#if defined (commentout)
-    moving->debug();
-    moving_ss->debug();
-    write_mha ("moving.mha", moving.get());
-    write_mha ("moving_ss.mha", moving_ss.get());
-#endif
 
+    
+    if (stage->debug_dir != "") {
+        std::string fn;
+        fn = string_format ("%s/%02d_fixed_ss.mha",
+            stage->debug_dir.c_str(), stage->stage_no);
+        write_mha (fn.c_str(), fixed_ss.get());
+        fn = string_format ("%s/%02d_moving_ss.mha",
+            stage->debug_dir.c_str(), stage->stage_no);
+        write_mha (fn.c_str(), moving_ss.get());
+    }
+        
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);
 
