@@ -64,8 +64,6 @@ public:
     /* Set the state of the debug flag, which generates debug 
        information on the console */
     void set_debug (bool debug);
-    /* Dump state information to the console */
-    void debug ();
 
     /* Set/Get threading */ 
     void set_threading (Threading threading);

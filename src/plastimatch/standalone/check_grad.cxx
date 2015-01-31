@@ -145,7 +145,7 @@ check_gradient (
         x[i] = bxf->coeff[i];
     }
 
-    if (parms->metric == BMET_MI) {
+    if (parms->metric[0] == BMET_MI) {
         bst->mi_hist->initialize (parms->fixed, parms->moving);
     }
 

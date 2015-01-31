@@ -71,9 +71,9 @@ check_grad_opts_parse_args (Check_grad_opts* options,
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "mse")) {
-		parms->metric = BMET_MSE;
+		parms->metric[0] = BMET_MSE;
 	    } else if (!strcmp(argv[i], "mi")) {
-		parms->metric = BMET_MI;
+		parms->metric[0] = BMET_MI;
 	    } else {
 		print_usage ();
 	    }

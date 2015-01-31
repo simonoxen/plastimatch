@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 #include <string>
+#include <vector>
 #include "bspline_mi_hist.h"
 #include "double_align8.h"
 #include "smart_pointer.h"
@@ -43,7 +44,8 @@ public:
 public:
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
-    enum BsplineMetric metric;
+    std::vector<enum BsplineMetric> metric;
+    std::vector<float> metric_lambda;
     char implementation;         /* Implementation ('a', 'b', etc.) */
     int min_its;                 /* Miniumum iterations (line searches) */
     int max_its;                 /* Max iterations (line searches) */

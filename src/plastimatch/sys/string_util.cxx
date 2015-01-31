@@ -204,6 +204,37 @@ parse_float3_string (const char* s)
     return float_list;
 }
 
+/* Parse a string of the form "3 0.2 1e-3" or "3,0.2,1e-3"*/
+std::vector<float>
+parse_float_string (const char* s)
+{
+    std::vector<float> float_list;
+    const char* p = s;
+    int rc = 0;
+    int n;
+
+    do {
+        float v;
+        n = 0;
+        rc = sscanf (p, " %f%n", &v, &n);
+        if (rc == 0) {
+            rc = sscanf (p, " , %f%n", &v, &n);
+        }
+        if (rc == 0) {
+            break;
+        }
+        p += n;
+        float_list.push_back (v);
+    } while (1);
+    return float_list;
+}
+
+std::vector<float>
+parse_float_string (const std::string& s)
+{
+    return parse_float_string (s.c_str());
+}
+
 /* String trimming by GMan.
    http://stackoverflow.com/questions/1798112/removing-leading-and-trailing-spaces-from-a-string/1798170#1798170
    Distributed under Attribution-ShareAlike 3.0 Unported license (CC BY-SA 3.0) 

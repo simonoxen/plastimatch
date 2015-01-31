@@ -55,7 +55,7 @@ bspline_optimize_steepest_trace (
 
     // JAS 04.19.2010
     // For Testing...
-    if (parms->metric == BMET_MI) {
+    if (parms->metric[0] == BMET_MI) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }
@@ -236,7 +236,7 @@ bspline_optimize_steepest_trust (
 
     // JAS 04.19.2010
     // For testing...
-    if (parms->metric == BMET_MI) {
+    if (parms->metric[0] == BMET_MI) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }

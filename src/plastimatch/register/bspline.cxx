@@ -189,7 +189,7 @@ bspline_save_debug_state (
         std::string fn;
         char buf[1024];
 
-        if (parms->metric == BMET_MI) {
+        if (parms->metric[0] == BMET_MI) {
             sprintf (buf, "%02d_grad_mi_%03d_%03d.txt", 
                 parms->debug_stage, bst->it, bst->feval);
         } else {
@@ -204,7 +204,7 @@ bspline_save_debug_state (
         fn = parms->debug_dir + "/" + buf;
         bspline_xform_save (bxf, fn.c_str());
 
-        if (parms->metric == BMET_MI) {
+        if (parms->metric[0] == BMET_MI) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
             bst->mi_hist->dump_hist (bst->it, fn);
@@ -395,12 +395,12 @@ report_score (
        if the optimizer is performing adequately. */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
         logfile_printf ("SCORE ");
-    } else if (parms->metric == BMET_MI) {
+    } else if (parms->metric[0] == BMET_MI) {
         logfile_printf ("MI  ");
     } else {
         logfile_printf ("MSE ");
     }
-    if (parms->metric == BMET_MI) {
+    if (parms->metric[0] == BMET_MI) {
         logfile_printf ("%1.8f ", ssd->score);
     } else {
         logfile_printf ("%9.3f ", ssd->score);
@@ -416,7 +416,7 @@ report_score (
         /* Part 1 - similarity metric */
         logfile_printf (
             "         %s %9.3f ", 
-            (parms->metric == BMET_MI) ? "MI   " : "MSE  ", ssd->smetric);
+            (parms->metric[0] == BMET_MI) ? "MI   " : "MSE  ", ssd->smetric);
         /* Part 2 - regularization metric */
         if (reg_parms->lambda > 0) {
             logfile_printf ("RM %9.3f ", 
@@ -451,13 +451,13 @@ bspline_score (Bspline_optimize *bod)
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
-    if (parms->metric == BMET_MSE) {
+    if (parms->metric[0] == BMET_MSE) {
         bspline_score_mse (bod);
     }
-    else if (parms->metric == BMET_MI) {
+    else if (parms->metric[0] == BMET_MI) {
         bspline_score_mi (bod);
     }
-    else if (parms->metric == BMET_GM) {
+    else if (parms->metric[0] == BMET_GM) {
         bspline_score_gm (bod);
     }
     else {

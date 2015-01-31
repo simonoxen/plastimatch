@@ -175,9 +175,9 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "mse")) {
-		parms->metric = BMET_MSE;
+		parms->metric[0] = BMET_MSE;
 	    } else if (!strcmp(argv[i], "mi")) {
-		parms->metric = BMET_MI;
+		parms->metric[0] = BMET_MI;
 	    } else {
 		print_usage ();
 	    }

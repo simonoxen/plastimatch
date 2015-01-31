@@ -141,7 +141,7 @@ bspline_optimize (
 
     /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
-    if (parms->metric == BMET_MI) {
+    if (parms->metric[0] == BMET_MI) {
         bod.get_bspline_state()->mi_hist->initialize (
             parms->fixed, parms->moving);
     }

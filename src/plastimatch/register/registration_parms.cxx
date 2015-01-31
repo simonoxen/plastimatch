@@ -533,6 +533,13 @@ Registration_parms::set_key_value (
             }
         }
     }
+    else if (key == "metric_lambda" || key == "smetric_lambda") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        stage->metric_lambda = parse_float_string (val);
+        if (stage->metric_lambda.size() == 0) {
+            goto error_exit;
+        }
+    }
     else if (key == "histogram_type") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "eqsp" || val == "EQSP") {

@@ -250,14 +250,14 @@ Bspline_stage::initialize ()
     /* Metric */
     switch (stage->metric_type[0]) {
     case METRIC_GRADIENT_MAGNITUDE:
-        bsp_parms->metric = BMET_GM;
+        bsp_parms->metric[0] = BMET_GM;
         break;
     case METRIC_MSE:
-        bsp_parms->metric = BMET_MSE;
+        bsp_parms->metric[0] = BMET_MSE;
         break;
     case METRIC_MI:
     case METRIC_MI_MATTES:
-        bsp_parms->metric = BMET_MI;
+        bsp_parms->metric[0] = BMET_MI;
         break;
     default:
         print_and_exit ("Undefined metric type in gpuit_bspline\n");
