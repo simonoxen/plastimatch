@@ -50,6 +50,11 @@ public:
         analysis_thresh = 0.f;
         analysis_num_vox = 0;
         analysis_num_pass = 0;
+		
+		str_gamma_report ="";
+		b_local_gamma = false;
+		b_skip_low_dose_gamma = true;
+		f_inherent_resample_mm = -1.0;
     }
 public:
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
@@ -86,6 +91,14 @@ public:
     float analysis_thresh;
     plm_long analysis_num_vox;
     plm_long analysis_num_pass;
+
+	/*extended features by YK*/
+	std::string str_gamma_report;
+	bool b_local_gamma;
+	bool b_skip_low_dose_gamma;
+	bool f_inherent_resample_mm;
+
+
 public:
     void do_mask_threshold ();
     void find_reference_max_dose ();
@@ -216,6 +229,10 @@ Gamma_dose_comparison::run ()
         d_ptr->do_mask_threshold ();
         resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);
     }
+
+	//YK added
+	//if resample value_mm > 0, 
+	//first resample the reference image using that value then go ahead	
 
     resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);
     d_ptr->do_gamma_analysis ();
@@ -568,4 +585,54 @@ Gamma_dose_comparison_private::do_mask_threshold ()
         unsigned char mask_val = mask_it.Get();
         mask_it.Set( mask_val<1 ? 0 : 1 );
     }
+}
+
+std::string
+Gamma_dose_comparison::get_report_string()
+{
+	return d_ptr->str_gamma_report;
+}
+
+void
+Gamma_dose_comparison::set_report_string(std::string& report_str)
+{
+	d_ptr->str_gamma_report = report_str;
+}
+
+
+bool
+Gamma_dose_comparison::is_local_gamma()
+{
+	return d_ptr->b_local_gamma;
+}
+
+void
+Gamma_dose_comparison::set_local_gamma(bool bLocalGamma)
+{
+	d_ptr->b_local_gamma = bLocalGamma;
+}
+
+
+bool
+Gamma_dose_comparison::is_skip_low_dose_gamma()
+{
+	return d_ptr->b_skip_low_dose_gamma;
+}
+
+void
+Gamma_dose_comparison::set_skip_low_dose_gamma(bool bSkipLowDoseGamma)
+{
+	d_ptr->b_skip_low_dose_gamma = bSkipLowDoseGamma;
+}
+
+float
+Gamma_dose_comparison::get_inherent_resample_mm()
+{
+	return d_ptr->f_inherent_resample_mm;
+}
+
+void
+Gamma_dose_comparison::set_inherent_resample_mm(float inherent_spacing_mm)
+{
+	d_ptr->f_inherent_resample_mm = inherent_spacing_mm;
 }

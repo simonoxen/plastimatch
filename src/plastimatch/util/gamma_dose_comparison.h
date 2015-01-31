@@ -94,9 +94,10 @@ public:
       set_analysis_threshold_pct_max (0.1).
       The threshold is applied to dose voxels in the reference dose volume.
     */
-    void set_analysis_threshold (float thresh);
+    void set_analysis_threshold (float thresh);//thresh value using %. typical value is 10.0 % of reference dose
     /*! \brief Set the maximum gamma computed by the class.  This is 
       used to speed up computation.  A typical value is 2 or 3.  */
+	/* */
     void set_gamma_max (float gamma_max);
     ///@}
 
@@ -126,6 +127,18 @@ public:
     ///@}
     /*! \brief Resample image_moving to image_reference */
     void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);
+
+
+
+	std::string get_report_string();	
+	void set_report_string(std::string& report_str);
+	bool is_local_gamma();
+	void set_local_gamma(bool bLocalGamma);
+	bool is_skip_low_dose_gamma();
+	void set_skip_low_dose_gamma(bool bSkipLowDoseGamma);
+	float get_inherent_resample_mm();	
+	void set_inherent_resample_mm(float inherent_spacing_mm);
+
 };
 
 #endif

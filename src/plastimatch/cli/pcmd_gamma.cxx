@@ -17,7 +17,7 @@ gamma_main (Gamma_parms* parms)
     Gamma_dose_comparison gdc;
 
     gdc.set_reference_image (parms->ref_image_fn.c_str());
-    gdc.set_compare_image (parms->cmp_image_fn.c_str());
+    gdc.set_compare_image (parms->cmp_image_fn.c_str());	
 
     gdc.set_spatial_tolerance (parms->dta_tolerance);
     gdc.set_dose_difference_tolerance (parms->dose_tolerance);
@@ -25,13 +25,31 @@ gamma_main (Gamma_parms* parms)
         gdc.set_reference_dose (parms->reference_dose);
     }
     gdc.set_gamma_max (parms->gamma_max);
-    gdc.set_analysis_threshold (0.10);
+
+	/*Extended by YK*/
+	gdc.set_local_gamma(parms->b_local_gamma);
+	gdc.set_skip_low_dose_gamma(parms->b_skip_low_dose_gamma);
+
+	if (parms->f_inherent_resample_mm > 0.0){
+		gdc.set_inherent_resample_mm(parms->f_inherent_resample_mm);
+	}
+
+	if (parms->f_analysis_threshold_perc > 0){
+		gdc.set_analysis_threshold(parms->f_analysis_threshold_perc);
+	}
+
     gdc.run ();
 
     if (parms->out_image_fn != "") {
         Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
         gamma_image->save_image (parms->out_image_fn);
     }
+
+	if (parms->out_report_fn != "") {
+		//Export output text using
+		//gdc.get_report_string();
+	}
+
 
     lprintf ("Pass rate = %2.6f %%\n", gdc.get_pass_fraction() * 100.0);
 }
@@ -73,6 +91,28 @@ parse_fn (
         "the maximum value of gamma to compute; smaller values run faster "
         "(default is 2.0)", 1, "2.0");
 
+
+	/* extended by YK*/
+	parser->add_long_option("", "local-gamma",
+		"on / off. if this option is on, dose difference (e.g. 3%) is calculated based on local dose difference. Otherwise, reference dose will be used. "
+		"(default is off)", 1, "off");	
+
+	parser->add_long_option("", "skip-low-dose-gamma",
+		"on / off. if this is on, gamma value will not be calculated for dose points below threshold value. "
+		"(default is off)", 1, "off");
+
+	parser->add_long_option("", "inherent-resample",
+		"Spacing value in [mm]. Alternative to make the mask. based on the specified value here, both ref and comp image will be resampled. if < 0, this option is disabled.  "
+		"(default is -1.0)", 1, "-1.0");
+
+	parser->add_long_option("", "analysis_threshold",
+		"Analysis threshold for dose in [percent]. This will be used in conjunction with reference dose value, for example prescription dose "
+		"(default is 10.0)", 1, "10.0");	
+
+	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result", 1, "");
+
+	
+
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -97,6 +137,7 @@ parse_fn (
         parms->out_image_fn = parser->get_string("output").c_str();
     }
 
+
     /* Gamma options */
     parms->dose_tolerance = parser->get_float("dose-tolerance");
     parms->dta_tolerance = parser->get_float("dta-tolerance");
@@ -105,6 +146,37 @@ parse_fn (
         parms->have_reference_dose = true;
         parms->reference_dose = parser->get_float("reference-dose");
     }
+	
+	if (parser->option("local-gamma")) {
+		std::string strLocalGamma = parser->get_string("local-gamma").c_str();
+
+		if (strLocalGamma == "on")
+			parms->b_local_gamma = true;
+		else
+			parms->b_local_gamma = false;
+	}
+
+	if (parser->option("skip-low-dose-gamma")) {
+		std::string strSkipLowDoseGamma = parser->get_string("skip-low-dose-gamma").c_str();
+
+		if (strSkipLowDoseGamma == "on")
+			parms->b_skip_low_dose_gamma = true;
+		else
+			parms->b_skip_low_dose_gamma = false;
+	}
+
+	if (parser->option("inherent-resample")) {
+		parms->f_inherent_resample_mm = parser->get_float("inherent-resample");
+	}
+
+	if (parser->option("analysis_threshold")) {
+		parms->f_analysis_threshold_perc = parser->get_float("analysis_threshold");
+	}
+
+	/* Output file for text report */
+	if (parser->option("output-text")) {
+		parms->out_report_fn = parser->get_string("output-text").c_str();
+	}
 }
 
 void
