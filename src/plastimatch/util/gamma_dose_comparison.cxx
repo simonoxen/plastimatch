@@ -206,7 +206,7 @@ void
 Gamma_dose_comparison::set_analysis_threshold (float thresh)
 {
     d_ptr->have_analysis_thresh = true;
-    d_ptr->analysis_thresh = thresh;
+    d_ptr->analysis_thresh = thresh; //0.1 = 10%
 }
 
 void 
@@ -228,7 +228,8 @@ Gamma_dose_comparison::run ()
     if (d_ptr->img_mask) {
         d_ptr->do_mask_threshold ();
         resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);
-    }
+		//??resample_image_to_reference(d_ptr->img_mask, d_ptr->img_in1);
+    }	
 
 	//YK added
 	//if resample value_mm > 0, 
@@ -420,7 +421,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     f0 = spacing_in[0]/this->dta_tolerance; f0=f0*f0;
     f1 = spacing_in[1]/this->dta_tolerance; f1=f1*f1;
     f2 = spacing_in[2]/this->dta_tolerance; f2=f2*f2;
+	//dose_difference_tolerance: e.g.: 0.03
+	//hence, dose_tol [Gy]
     float dose_tol = this->reference_dose * this->dose_difference_tolerance;
+
     f3 = 1./dose_tol; f3 = f3*f3;
     
     // compute search region size
@@ -429,12 +433,22 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     offset[1] = (int) ceil (gmax_dist /fabs(spacing_in[1]));
     offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));
 
+	
+
+	/*have_reference_dose = false;
+	reference_dose = 0.f;
+	have_analysis_thresh = false;
+	analysis_thresh = 0.f;*/
+
+	//analysis_threshold in Gy
     float analysis_threshold = this->analysis_thresh * this->reference_dose;
+	//default: if no option of analysis threshold is used: analysis_threshold = 0
 
     gamma_img_iterator.GoToBegin();
     if (mask_img) {
         mask_img_iterator.GoToBegin();
     }
+
 
     for (itk_1_iterator.GoToBegin(); 
          !itk_1_iterator.IsAtEnd(); 
@@ -445,8 +459,9 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         if (mask_img) {
             unsigned char mask_value = mask_img_iterator.Get();
             ++mask_img_iterator;
+			//if mask value is less than 0.5, gamma value is 0.0 (passed)
             if (mask_value < 0.5) {
-                gamma_img_iterator.Set (0.0);
+                gamma_img_iterator.Set (0.0);//YK: is 0.0 Safe? how about -1.0?
                 ++gamma_img_iterator;
                 continue;
             }
@@ -482,14 +497,31 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         {
             k3 = itk_2_iterator.GetIndex();
             level2 = itk_2_iterator.Get();
+			//(k3-k1)^2: px^2, f = [1/px^2] --> dr2 = dimensionless
             dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
                 (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
                 (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
-            dd2 = (level1 - level2) * (level1 - level2) * f3;
+			//dd2: (dose diff./D)^2
+
+			//if local gamma option is on, redefine f3
+			if (b_local_gamma){
+				if (level1 > 0){
+				f3 = 1.0 / (level1 * this->dose_difference_tolerance); //dose_difference_tolerance = 0.03 in default setup
+				f3 = f3*f3;
+				}
+			}
+
+			///YK: what if level1 <= 0? this case will be included in the gamma pass rate calculation			
+			dd2 = (level1 - level2) * (level1 - level2) * f3;
+            
+
             gg = dr2 + dd2;
+			// in this subregion, only minimum value is take.
             if (gg < gamma) gamma=gg;
         }
         gamma = sqrt(gamma);
+
+		//gamma_max: e.g. 2.0
         if (gamma > this->gamma_max) {
             gamma = this->gamma_max;
         }
@@ -505,7 +537,14 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
                 }
             }
         }
-    }
+		//if no analysis threshold was used: every dose point will be counted as analysis point
+		else{
+			this->analysis_num_vox++;
+			if (gamma <= 1) {
+				this->analysis_num_pass++;
+			}
+		}
+    }//end of each voxel iterator of img1 (ref image)
 
     this->gamma_image->set_itk (gamma_img);
 }
