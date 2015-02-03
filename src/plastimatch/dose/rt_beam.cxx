@@ -64,7 +64,7 @@ public:
        an implicitly defined sobp (by adding a peak) will 
        delete any existing peaks. */
     bool have_copied_peaks;
-
+	bool have_manual_peaks;
     bool have_prescription;
 
 public:
@@ -118,6 +118,7 @@ public:
         this->wed_out = "";
 
         this->have_copied_peaks = false;
+		this->have_manual_peaks = false;
         this->have_prescription = false;
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
@@ -771,6 +772,18 @@ bool
 Rt_beam::get_have_copied_peaks()
 {
     return d_ptr->have_copied_peaks;
+}
+
+void 
+Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
+{
+    d_ptr->have_manual_peaks = have_manual_peaks;
+}
+
+bool 
+Rt_beam::get_have_manual_peaks()
+{
+    return d_ptr->have_manual_peaks;
 }
 
 void 

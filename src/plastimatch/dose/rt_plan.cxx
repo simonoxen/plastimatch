@@ -734,7 +734,7 @@ Rt_plan::compute_plan ()
         /* MDFIX: is it twice the same operation?? */
         this->beam->set_distal_margin (this->beam->get_distal_margin());
 
-        if (this->beam->get_have_copied_peaks() == false && this->beam->get_have_prescription() == false && d_ptr->target_fn == "") {
+		if ((this->beam->get_have_copied_peaks() == false && this->beam->get_have_prescription() == false && d_ptr->target_fn == "")||(this->beam->get_have_manual_peaks() == true)) {
             /* Manually specified, so do not optimize */
             if (!this->beam->generate ()) {
                 return PLM_ERROR;

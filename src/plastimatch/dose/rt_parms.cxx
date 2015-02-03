@@ -160,6 +160,7 @@ Rt_parms::append_peak ()
     if (!rt_beam) {
         return;
     }
+	rt_beam->set_have_manual_peaks(true);
     rt_beam->add_peak (
         d_ptr->E0, d_ptr->spread, d_ptr->depth_res, 
         d_ptr->max_depth, d_ptr->weight);
