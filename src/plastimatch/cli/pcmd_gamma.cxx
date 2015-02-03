@@ -20,8 +20,8 @@ gamma_main (Gamma_parms* parms)
     gdc.set_compare_image (parms->cmp_image_fn.c_str());	
 
     gdc.set_spatial_tolerance (parms->dta_tolerance);
-    gdc.set_dose_difference_tolerance (parms->dose_tolerance);
-    if (parms->have_reference_dose) {
+	gdc.set_dose_difference_tolerance (parms->dose_tolerance);
+	if (parms->have_reference_dose) {
         gdc.set_reference_dose (parms->reference_dose);
     }
     gdc.set_gamma_max (parms->gamma_max);
@@ -46,10 +46,17 @@ gamma_main (Gamma_parms* parms)
     }
 
 	if (parms->out_report_fn != "") {
-		//Export output text using
-		//gdc.get_report_string();
-	}
+		//Export output text using //gdc.get_report_string();
+		std::ofstream fout;
+		fout.open(parms->out_report_fn.c_str());
+		if (!fout.fail()){
+			fout << "Reference_file_name\t" << parms->ref_image_fn.c_str() << std::endl;
+			fout << "Compare_file_name\t" << parms->cmp_image_fn.c_str() << std::endl;
 
+			fout << gdc.get_report_string();
+			fout.close();
+		}		
+	}
 
     lprintf ("Pass rate = %2.6f %%\n", gdc.get_pass_fraction() * 100.0);
 }
@@ -101,7 +108,7 @@ parse_fn (
 		"Spacing value in [mm]. Alternative to make the mask. based on the specified value here, both ref and comp image will be resampled. if < 0, this option is disabled.  "
 		"(default is -1.0)", 1, "-1.0");
 
-	parser->add_long_option("", "analysis_threshold",
+	parser->add_long_option("", "analysis-threshold",
 		"Analysis threshold for dose in float (e.g. 0.1 = 10%). This will be used in conjunction with reference dose value, e.g. prescription dose in Gy"
 		"(default is 0.1)", 1, "0.1");	
 
@@ -153,8 +160,8 @@ parse_fn (
 		parms->f_inherent_resample_mm = parser->get_float("inherent-resample");
 	}
 
-	if (parser->option("analysis_threshold")) {
-		parms->f_analysis_threshold = parser->get_float("analysis_threshold");
+	if (parser->option("analysis-threshold")) {
+		parms->f_analysis_threshold = parser->get_float("analysis-threshold");
 	}
 
 	/* Output file for text report */

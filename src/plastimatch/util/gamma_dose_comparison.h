@@ -128,10 +128,12 @@ public:
     /*! \brief Resample image_moving to image_reference */
     void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);
 
-
+	 /*! \brief Resample ref image with fixed spacing */
+	void resample_image_with_fixed_spacing (Plm_image *input_img, float spacing[3]);
 
 	std::string get_report_string();	
 	void set_report_string(std::string& report_str);
+
 	bool is_local_gamma();
 	void set_local_gamma(bool bLocalGamma);
 	bool is_skip_low_dose_gamma();
