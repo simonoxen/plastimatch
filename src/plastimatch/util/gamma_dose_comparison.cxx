@@ -15,6 +15,8 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
+//#include "geometry_chooser.h"
+
 
 /*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
 */
@@ -55,6 +57,7 @@ public:
 		b_local_gamma = false;
 		b_skip_low_dose_gamma = true;
 		f_inherent_resample_mm = -1.0;
+		i_total_vox_num = 0;
     }
 public:
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
@@ -96,7 +99,8 @@ public:
 	std::string str_gamma_report;
 	bool b_local_gamma;
 	bool b_skip_low_dose_gamma;
-	bool f_inherent_resample_mm;
+	float f_inherent_resample_mm;
+	int i_total_vox_num; //dim[0]*dim[1]*dim[2] //this is just for report
 
 
 public:
@@ -104,6 +108,7 @@ public:
     void find_reference_max_dose ();
     void do_gamma_analysis ();
     void do_gamma_threshold ();
+	void compose_report();//fill str_gamma_report;
 };
 
 Gamma_dose_comparison::Gamma_dose_comparison () {
@@ -224,19 +229,33 @@ Gamma_dose_comparison::run ()
     }
     d_ptr->have_gamma_image = true;
 
+	//Edited by YK
+	//if the reference image is too sparse, resample it with smaller spacing. (e.g. 1 mm)
+	if (d_ptr->f_inherent_resample_mm > 0.0){		
+		float spacing[3];
+		spacing[0] = d_ptr->f_inherent_resample_mm;
+		spacing[1] = d_ptr->f_inherent_resample_mm;
+		spacing[2] = d_ptr->f_inherent_resample_mm;
+		resample_image_with_fixed_spacing(d_ptr->img_in1, spacing);		
+
+		//std::cout << "Self-resampling is done" <<std::endl;
+	}	
+
     // Threshold mask image to have values 1 and 0 and resample it to reference
     if (d_ptr->img_mask) {
         d_ptr->do_mask_threshold ();
-        resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);
-		//??resample_image_to_reference(d_ptr->img_mask, d_ptr->img_in1);
+        resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);		
     }	
 
 	//YK added
 	//if resample value_mm > 0, 
 	//first resample the reference image using that value then go ahead	
-
     resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);
+	std::cout << "Gamma calculation is on-going..." <<std::endl;
     d_ptr->do_gamma_analysis ();
+
+	//compose a report string
+	d_ptr->compose_report();
 }
 
 Plm_image::Pointer
@@ -301,16 +320,46 @@ void
 Gamma_dose_comparison::resample_image_to_reference (
     Plm_image *image_reference, Plm_image *image_moving)
 {
-    Plm_image_header pih;
-    pih.set_from_plm_image (image_reference);
-    itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
-        image_moving->itk_float(),
-        &pih,
-        0.f,
-        false
-    );
+	Plm_image_header pih;
+	pih.set_from_plm_image (image_reference);
+	itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
+		image_moving->itk_float(),
+		&pih,
+		0.f,
+		false
+		);
 
-    image_moving->set_itk(resampledMovingImage);
+	image_moving->set_itk(resampledMovingImage);
+}
+
+void 
+Gamma_dose_comparison::resample_image_with_fixed_spacing (
+	Plm_image *input_img, float spacing[3])
+{	
+	Plm_image_header pih;
+	pih.set_from_plm_image (input_img);	
+
+	long dim[3];	
+	///* Auto-adjust, keep same image extent */
+	float extent[3];
+	pih.get_image_extent (extent);
+	//std::cout << "Extent " << extent << std::endl;
+
+	//std::cout << "extent " << extent[0] << " " << extent[1] << " " << extent[2] << std::endl;
+	plm_long new_dim[3];
+	for (int d = 0; d < 3; d++) {
+	new_dim[d] = 1 + FLOOR_PLM_LONG (extent[d] / spacing[d]);
+	}
+	pih.set_spacing(spacing);
+	pih.set_dim (new_dim);	
+
+	itk::Image<float, 3>::Pointer resampledImage = resample_image (
+		input_img->itk_float(),
+		&pih,
+		0.f,
+		false
+		);
+	input_img->set_itk(resampledImage);
 }
 
 /* -------------------------------------------------------------------------
@@ -431,9 +480,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float gmax_dist = this->dta_tolerance * this->gamma_max;
     offset[0] = (int) ceil (gmax_dist /fabs(spacing_in[0]));
     offset[1] = (int) ceil (gmax_dist /fabs(spacing_in[1]));
-    offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));
-
-	
+    offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));		
 
 	/*have_reference_dose = false;
 	reference_dose = 0.f;
@@ -448,12 +495,16 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     if (mask_img) {
         mask_img_iterator.GoToBegin();
     }
-
-
+	
+	//This value is -1.0 in OmniproIMRT
+	float NoProcessGammaValue = 0.0f;
+	
+	i_total_vox_num =0;
     for (itk_1_iterator.GoToBegin(); 
          !itk_1_iterator.IsAtEnd(); 
          ++itk_1_iterator)
     {
+		i_total_vox_num++;
         // skip masked out voxels
         // (mask may be interpolated so we use a value of 0.5 for threshold)
         if (mask_img) {
@@ -461,17 +512,29 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             ++mask_img_iterator;
 			//if mask value is less than 0.5, gamma value is 0.0 (passed)
             if (mask_value < 0.5) {
-                gamma_img_iterator.Set (0.0);//YK: is 0.0 Safe? how about -1.0?
+                gamma_img_iterator.Set (NoProcessGammaValue);//YK: is 0.0 Safe? how about -1.0?
                 ++gamma_img_iterator;
                 continue;
             }
-        }
+        }	
 
         //calculate gamma for this voxel of input image
         level1 = itk_1_iterator.Get();
+
+		//if this option is on, computation will be much faster because dose comparison will not be perforemd.
+		if (this->b_skip_low_dose_gamma){
+			if (this->have_analysis_thresh){
+				if (level1 < analysis_threshold){
+					gamma_img_iterator.Set (NoProcessGammaValue);//YK: is 0.0 Safe? how about -1.0?
+					++gamma_img_iterator;
+					continue;//skip the rest of the loop. This point will not be counted in analysis
+				}			
+			}
+		}
+
         k1=itk_1_iterator.GetIndex();
         itk_1->TransformIndexToPhysicalPoint( k1, phys );
-        itk_2->TransformPhysicalPointToIndex( phys, k2 );
+        itk_2->TransformPhysicalPointToIndex( phys, k2 );				
 
         //k2 is the voxel index of the k1's physical (mm) position in img2
     
@@ -510,10 +573,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 				f3 = f3*f3;
 				}
 			}
-
 			///YK: what if level1 <= 0? this case will be included in the gamma pass rate calculation			
-			dd2 = (level1 - level2) * (level1 - level2) * f3;
-            
+			dd2 = (level1 - level2) * (level1 - level2) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            
 
             gg = dr2 + dd2;
 			// in this subregion, only minimum value is take.
@@ -545,8 +606,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 			}
 		}
     }//end of each voxel iterator of img1 (ref image)
-
-    this->gamma_image->set_itk (gamma_img);
+    this->gamma_image->set_itk (gamma_img);	
+	
 }
 
 void 
@@ -624,6 +685,67 @@ Gamma_dose_comparison_private::do_mask_threshold ()
         unsigned char mask_val = mask_it.Get();
         mask_it.Set( mask_val<1 ? 0 : 1 );
     }
+}
+
+void Gamma_dose_comparison_private::compose_report()
+{
+	str_gamma_report ="";
+
+	int iStrSize = 128;
+	char itemStr[128];
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%d\n","local_gamma_on", this->b_local_gamma);
+	str_gamma_report= std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","analysis_threshold", this->analysis_thresh);	
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+	
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%d\n","skip_low_dose_gamma", this->b_skip_low_dose_gamma);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","gamma_max", this->gamma_max);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+	
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","inherent_resample(mm)", this->f_inherent_resample_mm);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","reference_dose_Gy", this->reference_dose);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","dose_difference_tolerance", this->dose_difference_tolerance);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","dta_tolerance", this->dta_tolerance);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf( itemStr, "%s\t%3.2f\n","dose_max", this->dose_max);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+
+	memset(itemStr, 0, iStrSize);	
+	sprintf( itemStr, "%s\t%d\n","number_of_total_voxels", this->i_total_vox_num);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);	
+	sprintf( itemStr, "%s\t%d\n","number_of_analysis_voxels", this->analysis_num_vox);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);	
+	sprintf( itemStr, "%s\t%d\n","number_of_pass_voxels", this->analysis_num_pass);
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);	
+	sprintf( itemStr, "%s\t%3.2f\n","pass_rate(%)", analysis_num_pass/(float)analysis_num_vox*100.0);
+	str_gamma_report= str_gamma_report+std::string(itemStr);	
 }
 
 std::string
