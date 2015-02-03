@@ -136,7 +136,9 @@ public:
     bool write_distance_map_files;
     bool write_registration_files;
     bool write_warped_images;
-
+    /* This is used when creating a final segmentation */
+    bool write_dicom_rt_struct;
+    
     /* While looping through atlases, the gaussin voting/staple information is stored here */
     std::map<std::string, Mabs_vote*> vote_map;
     std::map<std::string, Mabs_staple*> staple_map;
@@ -156,14 +158,7 @@ public:
     Mabs_private () {
         parms = 0;
         train_segmentation = true;
-        compute_distance_map = true;
-        write_weight_files = false;
-        write_thresholded_files = true;
-        write_distance_map_files = true;
-        write_registration_files = true;
-        write_warped_images = true;
         have_ref_structure = false;
-        this->reset_timers ();
 
         convert_resample = false;
 
@@ -176,6 +171,16 @@ public:
         threshold_values = "";
 
         ref_rtds = Rt_study::New ();
+
+        compute_distance_map = true;
+        write_weight_files = false;
+        write_thresholded_files = true;
+        write_distance_map_files = true;
+        write_registration_files = true;
+        write_warped_images = true;
+        write_dicom_rt_struct = false;
+
+        this->reset_timers ();
     }
     void reset_timers () {
         time_atlas_selection = 0;
@@ -297,6 +302,8 @@ Mabs_private::segmentation_threshold_weight (
 {
     Plm_timer timer;
 
+    printf ("Inside segmentation_threshold_weight\n");
+
     /* Threshold the weight image */
     timer.start();
     UCharImageType::Pointer thresh_img = itk_threshold_above (
@@ -323,6 +330,7 @@ Mabs_private::segmentation_threshold_weight (
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
+        printf ("I have a ref structure!\n");
 
         std::string stats_string = this->stats.compute_statistics (
             "segmentation", /* Not used yet */
@@ -350,6 +358,19 @@ Mabs_private::segmentation_threshold_weight (
         fprintf (fp, "%s", seg_log_string.c_str());
         fclose (fp);
     }
+
+    /* Or, if we don't have the reference image, then we might 
+       want to add it to the referenced rt_study, so it can 
+       be saved as a final segmentation. */
+    else if (this->write_dicom_rt_struct) {
+        printf ("Adding structure!\n");
+        this->ref_rtds->add_structure (
+            thresh_img,
+            mapped_name.c_str(),
+            0);
+    }
+
+    printf ("What is going on??\n");
 }
 
 Mabs::Mabs () {
@@ -1637,9 +1658,11 @@ Mabs::gaussian_segmentation_label ()
 
         const std::list<float>& thresh_list = thresh_range.get_range();
         std::list<float>::const_iterator thresh_it;
+        printf ("Gonna loop ???\n");
         for (thresh_it = thresh_list.begin(); 
              thresh_it != thresh_list.end(); thresh_it++) 
         {
+            printf ("Inside loop ???\n");
             d_ptr->segmentation_threshold_weight (
                 weight_image, mapped_name, 
                 vote_it->first.c_str(), *thresh_it);
@@ -1984,7 +2007,10 @@ Mabs::segment ()
 {
     /* Do a few sanity checks */
     this->sanity_checks ();
-
+    
+    /* Yeah, I guess this is fine. */
+    d_ptr->write_dicom_rt_struct = true;
+    
     /* Prepare registration parameters */
     if (d_ptr->parms->optimization_result_reg != "") {
         /* We know the best registration result from an optimization file */
@@ -2070,7 +2096,17 @@ Mabs::segment ()
     d_ptr->threshold_values = d_ptr->parms->optimization_result_seg_thresh;
     d_ptr->confidence_weight = d_ptr->parms->optimization_result_confidence_weight;
     
+    printf ("About to mabs::run_segmentation\n");
+    
     run_segmentation ();
+
+    printf ("Done with mabs::run_segmentation\n");
+
+    /* Save the output */
+    std::string dicomrt_output_dir = string_format (
+        "%s/dicom_rt",
+        d_ptr->output_dir.c_str());
+    d_ptr->ref_rtds->save_dicom (dicomrt_output_dir);
 }
 
 void
