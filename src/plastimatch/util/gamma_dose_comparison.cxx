@@ -55,9 +55,12 @@ public:
 		
 		str_gamma_report ="";
 		b_local_gamma = false;
-		b_skip_low_dose_gamma = true;
+		b_compute_full_region = false;
 		f_inherent_resample_mm = -1.0;
 		i_total_vox_num = 0;
+
+		b_resample_nn = false;
+		
     }
 public:
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
@@ -98,9 +101,11 @@ public:
 	/*extended features by YK*/
 	std::string str_gamma_report;
 	bool b_local_gamma;
-	bool b_skip_low_dose_gamma;
+	bool b_compute_full_region;
 	float f_inherent_resample_mm;
 	int i_total_vox_num; //dim[0]*dim[1]*dim[2] //this is just for report
+
+	bool b_resample_nn;
 
 
 public:
@@ -236,9 +241,7 @@ Gamma_dose_comparison::run ()
 		spacing[0] = d_ptr->f_inherent_resample_mm;
 		spacing[1] = d_ptr->f_inherent_resample_mm;
 		spacing[2] = d_ptr->f_inherent_resample_mm;
-		resample_image_with_fixed_spacing(d_ptr->img_in1, spacing);		
-
-		//std::cout << "Self-resampling is done" <<std::endl;
+		resample_image_with_fixed_spacing(d_ptr->img_in1, spacing);				
 	}	
 
     // Threshold mask image to have values 1 and 0 and resample it to reference
@@ -246,12 +249,10 @@ Gamma_dose_comparison::run ()
         d_ptr->do_mask_threshold ();
         resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);		
     }	
+	
+    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);	
+	lprintf("Gamma calculation is under progress...\n");
 
-	//YK added
-	//if resample value_mm > 0, 
-	//first resample the reference image using that value then go ahead	
-    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);
-	std::cout << "Gamma calculation is on-going..." <<std::endl;
     d_ptr->do_gamma_analysis ();
 
 	//compose a report string
@@ -322,11 +323,12 @@ Gamma_dose_comparison::resample_image_to_reference (
 {
 	Plm_image_header pih;
 	pih.set_from_plm_image (image_reference);
-	itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
+
+	itk::Image<float, 3>::Pointer resampledMovingImage = resample_image(
 		image_moving->itk_float(),
 		&pih,
 		0.f,
-		false
+		!this->is_resample_nn()
 		);
 
 	image_moving->set_itk(resampledMovingImage);
@@ -339,13 +341,10 @@ Gamma_dose_comparison::resample_image_with_fixed_spacing (
 	Plm_image_header pih;
 	pih.set_from_plm_image (input_img);	
 
-	long dim[3];	
 	///* Auto-adjust, keep same image extent */
 	float extent[3];
 	pih.get_image_extent (extent);
-	//std::cout << "Extent " << extent << std::endl;
-
-	//std::cout << "extent " << extent[0] << " " << extent[1] << " " << extent[2] << std::endl;
+	
 	plm_long new_dim[3];
 	for (int d = 0; d < 3; d++) {
 	new_dim[d] = 1 + FLOOR_PLM_LONG (extent[d] / spacing[d]);
@@ -357,7 +356,7 @@ Gamma_dose_comparison::resample_image_with_fixed_spacing (
 		input_img->itk_float(),
 		&pih,
 		0.f,
-		false
+		!this->is_resample_nn()
 		);
 	input_img->set_itk(resampledImage);
 }
@@ -481,15 +480,12 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     offset[0] = (int) ceil (gmax_dist /fabs(spacing_in[0]));
     offset[1] = (int) ceil (gmax_dist /fabs(spacing_in[1]));
     offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));		
-
-	/*have_reference_dose = false;
-	reference_dose = 0.f;
-	have_analysis_thresh = false;
-	analysis_thresh = 0.f;*/
+	
 
 	//analysis_threshold in Gy
-    float analysis_threshold = this->analysis_thresh * this->reference_dose;
-	//default: if no option of analysis threshold is used: analysis_threshold = 0
+    float analysis_threshold_in_Gy = this->analysis_thresh * this->reference_dose;
+	//default: if no option of analysis threshold is used: analysis_threshold = 0.0
+	lprintf("analysis threshold = %3.2f Gy \n", analysis_threshold_in_Gy);
 
     gamma_img_iterator.GoToBegin();
     if (mask_img) {
@@ -522,9 +518,9 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         level1 = itk_1_iterator.Get();
 
 		//if this option is on, computation will be much faster because dose comparison will not be perforemd.
-		if (this->b_skip_low_dose_gamma){
+		if (!this->b_compute_full_region){
 			if (this->have_analysis_thresh){
-				if (level1 < analysis_threshold){
+				if (level1 < analysis_threshold_in_Gy){
 					gamma_img_iterator.Set (NoProcessGammaValue);//YK: is 0.0 Safe? how about -1.0?
 					++gamma_img_iterator;
 					continue;//skip the rest of the loop. This point will not be counted in analysis
@@ -591,7 +587,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
         /* Get statistics */
         if (this->have_analysis_thresh) {
-            if (level1 > analysis_threshold) {
+			if (level1 > analysis_threshold_in_Gy) {
                 this->analysis_num_vox ++;
                 if (gamma <= 1) {
                     this->analysis_num_pass ++;
@@ -703,8 +699,12 @@ void Gamma_dose_comparison_private::compose_report()
 	str_gamma_report= str_gamma_report+std::string(itemStr);
 	
 	memset(itemStr, 0, iStrSize);
-	sprintf( itemStr, "%s\t%d\n","skip_low_dose_gamma", this->b_skip_low_dose_gamma);
+	sprintf( itemStr, "%s\t%d\n","compute_full_region", this->b_compute_full_region);
 	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf(itemStr, "%s\t%d\n", "resample-nn", this->b_resample_nn);
+	str_gamma_report = str_gamma_report + std::string(itemStr);
 
 	memset(itemStr, 0, iStrSize);
 	sprintf( itemStr, "%s\t%3.2f\n","gamma_max", this->gamma_max);
@@ -729,8 +729,7 @@ void Gamma_dose_comparison_private::compose_report()
 	memset(itemStr, 0, iStrSize);
 	sprintf( itemStr, "%s\t%3.2f\n","dose_max", this->dose_max);
 	str_gamma_report= str_gamma_report+std::string(itemStr);
-
-
+	
 	memset(itemStr, 0, iStrSize);	
 	sprintf( itemStr, "%s\t%d\n","number_of_total_voxels", this->i_total_vox_num);
 	str_gamma_report= str_gamma_report+std::string(itemStr);
@@ -775,15 +774,15 @@ Gamma_dose_comparison::set_local_gamma(bool bLocalGamma)
 
 
 bool
-Gamma_dose_comparison::is_skip_low_dose_gamma()
+Gamma_dose_comparison::is_compute_full_region()
 {
-	return d_ptr->b_skip_low_dose_gamma;
+	return d_ptr->b_compute_full_region;
 }
 
 void
-Gamma_dose_comparison::set_skip_low_dose_gamma(bool bSkipLowDoseGamma)
+Gamma_dose_comparison::set_compute_full_region(bool b_compute_full_region)
 {
-	d_ptr->b_skip_low_dose_gamma = bSkipLowDoseGamma;
+	d_ptr->b_compute_full_region = b_compute_full_region;
 }
 
 float
@@ -796,4 +795,15 @@ void
 Gamma_dose_comparison::set_inherent_resample_mm(float inherent_spacing_mm)
 {
 	d_ptr->f_inherent_resample_mm = inherent_spacing_mm;
+}
+
+bool Gamma_dose_comparison::is_resample_nn()
+{
+	return d_ptr->b_resample_nn;
+
+}
+
+void Gamma_dose_comparison::set_resample_nn(bool b_resample_nn)
+{
+	d_ptr->b_resample_nn = b_resample_nn;
 }

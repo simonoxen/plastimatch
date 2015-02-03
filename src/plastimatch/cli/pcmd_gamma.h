@@ -26,9 +26,10 @@ public:
 	/* Extended Gamma options by YK*/	
 	std::string out_report_fn; //YK: text file name
 	bool b_local_gamma; // if true, local dose difference will be used for perc. dose difference
-	bool b_skip_low_dose_gamma; // if true, gamma will not be calculated for points below cut-off dose e.g. <10%
+	bool b_compute_full_region; // if true, gamma will not be calculated for points below cut-off dose e.g. <10%
 	float f_inherent_resample_mm; //if -1.0, no resample will be carried out
 	float f_analysis_threshold; //if -1.0, no threshold will be applied. typical value = 0.1 (10%)
+	bool b_resample_nn; //with this on, nearest resample will be used for comp-to-ref image resampling (as well as inherent resampling for ref image)
 
 public:
     Gamma_parms () {
@@ -40,9 +41,10 @@ public:
 
 		//out_report_fn = "";
 		b_local_gamma = false; // if true, local dose difference will be used for perc. dose difference
-		b_skip_low_dose_gamma = true; // if true, gamma will not be calculated for points below cut-off dose e.g. <10%
+		b_compute_full_region = false; // if true, gamma will not be calculated for points below cut-off dose e.g. <10%
 		f_inherent_resample_mm = -1.0; //if -1.0, no resample will be carried out
-		f_analysis_threshold = -1.0; //if -1.0, no threshold will be applied
+		f_analysis_threshold = 0.1; //default: 10%
+		b_resample_nn = false; //default: use linear interpolation
     }
 };
 

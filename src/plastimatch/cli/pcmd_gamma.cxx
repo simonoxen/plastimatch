@@ -27,8 +27,9 @@ gamma_main (Gamma_parms* parms)
     gdc.set_gamma_max (parms->gamma_max);
 
 	/*Extended by YK*/
-	gdc.set_local_gamma(parms->b_local_gamma);
-	gdc.set_skip_low_dose_gamma(parms->b_skip_low_dose_gamma);
+	gdc.set_local_gamma(parms->b_local_gamma);//default: false
+	gdc.set_compute_full_region(parms->b_compute_full_region);//default: false
+	gdc.set_resample_nn(parms->b_resample_nn); //default: false
 
 	if (parms->f_inherent_resample_mm > 0.0){
 		gdc.set_inherent_resample_mm(parms->f_inherent_resample_mm);
@@ -102,14 +103,16 @@ parse_fn (
 	/* extended by YK*/
 	parser->add_long_option("", "local-gamma", "with this option, dose difference (e.g. 3%) is calculated based on local dose difference. Otherwise, reference dose will be used. ",0);
 
-	parser->add_long_option("", "skip-low-dose", "with this is option, gamma value will not be calculated for dose points below threshold value. ", 0);
+	parser->add_long_option("", "compute-full-region", "with this option, gamma values will be calculated over the entire image. Otherwise, gamma = 0.0 will be assigned for below-threshold regions with speeding up the calculation", 0);
+
+	parser->add_long_option("", "resample-nn", "with this option, nearest neighbor will be used instead of linear interpolation in resampling comp. image wrt ref. image as well as in inherent-resampling", 0);
 
 	parser->add_long_option("", "inherent-resample",
 		"Spacing value in [mm]. Alternative to make the mask. based on the specified value here, both ref and comp image will be resampled. if < 0, this option is disabled.  "
 		"(default is -1.0)", 1, "-1.0");
 
 	parser->add_long_option("", "analysis-threshold",
-		"Analysis threshold for dose in float (e.g. 0.1 = 10%). This will be used in conjunction with reference dose value, e.g. prescription dose in Gy"
+		"Analysis threshold for dose in float (default: 0.1 = 10%). This will be used in conjunction with the reference dose value or maximum dose if not specified"
 		"(default is 0.1)", 1, "0.1");	
 
 	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result", 1, "");	
@@ -152,9 +155,14 @@ parse_fn (
 		parms->b_local_gamma = true;
 	}
 
-	if (parser->option("skip-low-dose")) {		
-			parms->b_skip_low_dose_gamma = true;
+	if (parser->option("compute-full-region")) {		
+			parms->b_compute_full_region = true;
 	}
+
+	if (parser->option("resample-nn")) {
+		parms->b_resample_nn = true;
+	}	
+	
 
 	if (parser->option("inherent-resample")) {
 		parms->f_inherent_resample_mm = parser->get_float("inherent-resample");

@@ -136,10 +136,14 @@ public:
 
 	bool is_local_gamma();
 	void set_local_gamma(bool bLocalGamma);
-	bool is_skip_low_dose_gamma();
-	void set_skip_low_dose_gamma(bool bSkipLowDoseGamma);
+	bool is_compute_full_region();
+	void set_compute_full_region(bool b_compute_full_region);
 	float get_inherent_resample_mm();	
 	void set_inherent_resample_mm(float inherent_spacing_mm);
+
+	bool is_resample_nn();
+	void set_resample_nn(bool b_resample_nn);
+
 
 };
 
