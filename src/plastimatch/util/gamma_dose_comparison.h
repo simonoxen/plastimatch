@@ -140,9 +140,12 @@ public:
 	void set_compute_full_region(bool b_compute_full_region);
 	float get_inherent_resample_mm();	
 	void set_inherent_resample_mm(float inherent_spacing_mm);
-
 	bool is_resample_nn();
 	void set_resample_nn(bool b_resample_nn);
+
+
+	bool is_interp_search();
+	void set_interp_search(bool b_interp_search);
 
 
 };

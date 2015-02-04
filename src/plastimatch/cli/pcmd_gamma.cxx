@@ -27,6 +27,7 @@ gamma_main (Gamma_parms* parms)
     gdc.set_gamma_max (parms->gamma_max);
 
 	/*Extended by YK*/
+	gdc.set_interp_search(parms->b_interp_search);//default: false
 	gdc.set_local_gamma(parms->b_local_gamma);//default: false
 	gdc.set_compute_full_region(parms->b_compute_full_region);//default: false
 	gdc.set_resample_nn(parms->b_resample_nn); //default: false
@@ -44,6 +45,10 @@ gamma_main (Gamma_parms* parms)
     if (parms->out_image_fn != "") {
         Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
         gamma_image->save_image (parms->out_image_fn);
+
+		//YKdebug
+		//gdc.get_fail_image()->save_image("<fail_image_map_path>");
+		//YKdebug
     }
 
 	if (parms->out_report_fn != "") {
@@ -86,26 +91,28 @@ parse_fn (
 
     /* Gamma options */
     parser->add_long_option ("", "dose-tolerance", 
-        "the scaling coefficient for dose difference in percent "
+        "The scaling coefficient for dose difference in percent "
         "(default is .03)", 1, ".03");
     parser->add_long_option ("", "dta-tolerance", 
-        "the distance-to-agreement (DTA) scaling coefficient in mm "
+        "The distance-to-agreement (DTA) scaling coefficient in mm "
         "(default is 3)", 1, "3");
     parser->add_long_option ("", "reference-dose", 
-        "the prescription dose used to compute dose tolerance; if not "
+        "The prescription dose used to compute dose tolerance; if not "
         "specified, then maximum dose in reference volume is used",
         1, "");
     parser->add_long_option ("", "gamma-max", 
-        "the maximum value of gamma to compute; smaller values run faster "
+        "The maximum value of gamma to compute; smaller values run faster "
         "(default is 2.0)", 1, "2.0");
 
 
 	/* extended by YK*/
-	parser->add_long_option("", "local-gamma", "with this option, dose difference (e.g. 3%) is calculated based on local dose difference. Otherwise, reference dose will be used. ",0);
+	parser->add_long_option("", "interp-search", "With this option, smart interpolation search will be applied in points near the reference point. This will eliminate the need of fine resampling using inherent-resampling option. However, it will take longer time. ", 0);
 
-	parser->add_long_option("", "compute-full-region", "with this option, gamma values will be calculated over the entire image. Otherwise, gamma = 0.0 will be assigned for below-threshold regions with speeding up the calculation", 0);
+	parser->add_long_option("", "local-gamma", "With this option, dose difference (e.g. 3%) is calculated based on local dose difference. Otherwise, reference dose will be used. ",0);
 
-	parser->add_long_option("", "resample-nn", "with this option, nearest neighbor will be used instead of linear interpolation in resampling comp. image wrt ref. image as well as in inherent-resampling", 0);
+	parser->add_long_option("", "compute-full-region", "With this option, gamma values will be calculated over the entire image. Otherwise, gamma = 0.0 will be assigned for below-threshold regions with speeding up the calculation", 0);
+
+	parser->add_long_option("", "resample-nn", "With this option, nearest neighbor will be used instead of linear interpolation in resampling comp. image wrt ref. image as well as in inherent-resampling", 0);
 
 	parser->add_long_option("", "inherent-resample",
 		"Spacing value in [mm]. Alternative to make the mask. based on the specified value here, both ref and comp image will be resampled. if < 0, this option is disabled.  "
@@ -150,6 +157,10 @@ parse_fn (
         parms->have_reference_dose = true;
         parms->reference_dose = parser->get_float("reference-dose");
     }
+
+	if (parser->option("interp-search")) {
+		parms->b_interp_search = true;
+	}
 	
 	if (parser->option("local-gamma")) {
 		parms->b_local_gamma = true;
@@ -161,8 +172,7 @@ parse_fn (
 
 	if (parser->option("resample-nn")) {
 		parms->b_resample_nn = true;
-	}	
-	
+	}		
 
 	if (parser->option("inherent-resample")) {
 		parms->f_inherent_resample_mm = parser->get_float("inherent-resample");

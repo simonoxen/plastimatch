@@ -15,8 +15,9 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
-//#include "geometry_chooser.h"
 
+//21 = 20 +1, to make a room for >2.0 histogram
+#define MAX_NUM_HISTOGRAM_BIN 21
 
 /*! \enum Gamma_output_mode Selector for output image type (gamma, or binary pass/fail)
 */
@@ -59,8 +60,13 @@ public:
 		f_inherent_resample_mm = -1.0;
 		i_total_vox_num = 0;
 
-		b_resample_nn = false;
-		
+		b_resample_nn = false;				
+		b_interp_search = false;
+
+		for (int i = 0; i < MAX_NUM_HISTOGRAM_BIN; i++)	{
+			arr_gamma_histo[i] = 0;
+		}
+
     }
 public:
     Plm_image *img_in1; /*!< input dose image 1 for gamma analysis*/
@@ -99,7 +105,7 @@ public:
     plm_long analysis_num_pass;
 
 	/*extended features by YK*/
-	std::string str_gamma_report;
+	std::string str_gamma_report; //used option information, gamma histogram
 	bool b_local_gamma;
 	bool b_compute_full_region;
 	float f_inherent_resample_mm;
@@ -107,6 +113,8 @@ public:
 
 	bool b_resample_nn;
 
+	bool b_interp_search;
+	int arr_gamma_histo[MAX_NUM_HISTOGRAM_BIN]; //0~ max (default: 2.0), bin size: 0.1
 
 public:
     void do_mask_threshold ();
@@ -248,11 +256,16 @@ Gamma_dose_comparison::run ()
     if (d_ptr->img_mask) {
         d_ptr->do_mask_threshold ();
         resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);		
-    }	
-	
-    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);	
-	lprintf("Gamma calculation is under progress...\n");
+    }
 
+    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);	
+	lprintf("Gamma calculation is under progress...\n");	
+
+	//YKdebug
+	//d_ptr->img_in1->save_image("<image1_path>");
+	//d_ptr->img_in2->save_image("<image2_path>");
+	//YKdebug
+	
     d_ptr->do_gamma_analysis ();
 
 	//compose a report string
@@ -395,7 +408,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     Plm_image_header pih;
     float gamma;
 
-    FloatImageType::Pointer itk_1 = img_in1->itk_float();
+	FloatImageType::Pointer itk_1 = img_in1->itk_float();
     FloatImageType::Pointer itk_2 = img_in2->itk_float();
     UCharImageType::Pointer mask_img;
     if (img_mask) {
@@ -445,7 +458,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     
     FloatRegionType all_of_img1 = itk_1->GetLargestPossibleRegion();
     FloatRegionType all_of_img2 = itk_2->GetLargestPossibleRegion();
-    FloatRegionType subset_of_img2;
+    FloatRegionType subset_of_img2, sub2set_of_img2;
 
 
     FloatIteratorType itk_1_iterator (itk_1, all_of_img1);
@@ -455,32 +468,61 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         mask_img_iterator = UCharIteratorType (mask_img, mask_img->GetLargestPossibleRegion());
     }
 
-    FloatImageType::IndexType k1, k2, k3;
-    FloatImageType::OffsetType offset;
-    FloatImageType::SizeType region_size;
+    FloatImageType::IndexType k1, k2, k3; //k1: img1_pos (index), k2: img2_pos(moving, index), k3: img2_pos (moving, subregion2 for interp-search)
+	FloatImageType::IndexType sub1_start, sub2_start;
+    FloatImageType::OffsetType offset, sub2_offset;
+    FloatImageType::SizeType region_size, sub2_region_size;
     FloatPoint3DType phys;
 
     //int reg_pixsize; 
-    float level1, level2, dr2, dd2, gg;
+    float level1, level2, level3, dr2, dd2, gg;
     float f0,f1,f2,f3;
+	
 
+	////interpolated voxel position (float) for interp-search
+	//float sub2_interp_index[3];	
+	//float dose_diff1, dose_diff2, dose_diff3;
+	//float p_factor;//interpolation factor for interp-search
+	
     // vox-to-mm-to-gamma conversion factors
     // strictly, these should come from IMAGE2, not 1
     f0 = spacing_in[0]/this->dta_tolerance; f0=f0*f0;
     f1 = spacing_in[1]/this->dta_tolerance; f1=f1*f1;
     f2 = spacing_in[2]/this->dta_tolerance; f2=f2*f2;
+
+	//if this is 2D, f(dim) is forced to be 0 not to contribute to gamma value below:	
+	if (dim_in[0] == 1)
+		f0 = 0.0;
+	if (dim_in[1] == 1)
+		f1 = 0.0;
+	if (dim_in[2] == 1)
+		f2 = 0.0;
+
 	//dose_difference_tolerance: e.g.: 0.03
 	//hence, dose_tol [Gy]
-    float dose_tol = this->reference_dose * this->dose_difference_tolerance;
-
-    f3 = 1./dose_tol; f3 = f3*f3;
+	//To add local-gamma feature, this should be modified
+    //float dose_tol = this->reference_dose * this->dose_difference_tolerance;
+	f3 = 1. / this->dose_difference_tolerance;
+	f3 = f3*f3;
     
     // compute search region size
     float gmax_dist = this->dta_tolerance * this->gamma_max;
     offset[0] = (int) ceil (gmax_dist /fabs(spacing_in[0]));
     offset[1] = (int) ceil (gmax_dist /fabs(spacing_in[1]));
-    offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));		
-	
+    offset[2] = (int) ceil (gmax_dist /fabs(spacing_in[2]));	
+
+	//for interp-search
+	sub2_offset[0] = 1.0;
+	sub2_offset[1] = 1.0;
+	sub2_offset[2] = 1.0;
+
+	//for 2D image //this might not be necessary if itk image can deal with boundary condition
+	for (int i = 0; i < 3; i++)	{
+		if (dim_in[i] == 1)	{
+			offset[i] = 0.0;
+			sub2_offset[i] = 0.0;
+		}
+	}
 
 	//analysis_threshold in Gy
     float analysis_threshold_in_Gy = this->analysis_thresh * this->reference_dose;
@@ -494,8 +536,29 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 	
 	//This value is -1.0 in OmniproIMRT
 	float NoProcessGammaValue = 0.0f;
-	
+
+	int idx_histo = 0;
+	int num_histo_bin = MAX_NUM_HISTOGRAM_BIN-1; //last slot is reserved for > max_gamma cases	
 	i_total_vox_num =0;
+	
+	//For interp-search option
+	//Convert all the components to scaled ones
+	//From now on, scaled gamma coordinate is used.
+	float gamma_comp_r1[3]; // 0,1,2,3 --> X, Y, Z, dose with scaling, r1 = ref point
+	float gamma_comp_r2[3]; // 0,1,2,3 --> X, Y, Z, dose with scaling r2 = current searching point
+	float gamma_comp_r3[3]; //r3: sub2-region moving point		
+	float gamma_comp_rn[3]; //rn: normal_vector point (will give the smallest gamma value in gamma space)
+
+	float ref_dose_general;
+
+	float gamma_comp_diff1[4];
+	float gamma_comp_diff2[4];
+
+	float sum_up = 0.0;
+	float sum_down = 0.0;
+
+	int i = 0;
+
     for (itk_1_iterator.GoToBegin(); 
          !itk_1_iterator.IsAtEnd(); 
          ++itk_1_iterator)
@@ -517,6 +580,12 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         //calculate gamma for this voxel of input image
         level1 = itk_1_iterator.Get();
 
+		if (b_local_gamma)
+			ref_dose_general = level1;
+		else //global, default
+			ref_dose_general = this->reference_dose;	//by default, this is coming from ref dose (max dose if not defined)
+
+
 		//if this option is on, computation will be much faster because dose comparison will not be perforemd.
 		if (!this->b_compute_full_region){
 			if (this->have_analysis_thresh){
@@ -527,22 +596,24 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 				}			
 			}
 		}
-
+		
         k1=itk_1_iterator.GetIndex();
         itk_1->TransformIndexToPhysicalPoint( k1, phys );
-        itk_2->TransformPhysicalPointToIndex( phys, k2 );				
+        itk_2->TransformPhysicalPointToIndex( phys, k2 );		
 
         //k2 is the voxel index of the k1's physical (mm) position in img2
     
         // set subset_of_img2 to the following region:  
         // k1[0]-region_size < k2[0] < k1[0]+region_size, same for y,z
         // assume (approx) same pix spacing in img1 and img2
-        // crop the region by the entire image to be safe
-        k2 -= offset;  
-        subset_of_img2.SetIndex (k2);
+        // crop the region by the entire image to be safe		
+        
+		sub1_start = k2 - offset;
+		subset_of_img2.SetIndex(sub1_start);
         region_size[0] = 2 * offset[0] + 1;
         region_size[1] = 2 * offset[1] + 1;
-        region_size[2] = 2 * offset[2] + 1;
+        region_size[2] = 2 * offset[2] + 1; //seems to be fine even in 2D case
+
         subset_of_img2.SetSize (region_size);
         subset_of_img2.Crop (all_of_img2);
 
@@ -550,31 +621,113 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
         // calculate gamma, take a minimum of ... over the subset_of_img2
         gamma = 1e20;
+
+
+
         for (itk_2_iterator.GoToBegin(); 
              !itk_2_iterator.IsAtEnd(); 
              ++itk_2_iterator)
         {
-            k3 = itk_2_iterator.GetIndex();
-            level2 = itk_2_iterator.Get();
-			//(k3-k1)^2: px^2, f = [1/px^2] --> dr2 = dimensionless
-            dr2 = (k3[0]-k1[0])*(k3[0]-k1[0])*f0 +
-                (k3[1]-k1[1])*(k3[1]-k1[1])*f1 +
-                (k3[2]-k1[2])*(k3[2]-k1[2])*f2 ;
-			//dd2: (dose diff./D)^2
+			//original method: w/o interp-search option
 
-			//if local gamma option is on, redefine f3
-			if (b_local_gamma){
-				if (level1 > 0){
-				f3 = 1.0 / (level1 * this->dose_difference_tolerance); //dose_difference_tolerance = 0.03 in default setup
-				f3 = f3*f3;
-				}
-			}
-			///YK: what if level1 <= 0? this case will be included in the gamma pass rate calculation			
-			dd2 = (level1 - level2) * (level1 - level2) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            
+			//k2: moving index from sub1_start
+            k2 = itk_2_iterator.GetIndex();
+            level2 = itk_2_iterator.Get();
+			
+            dr2 = (k2[0]-k1[0])*(k2[0]-k1[0])*f0 +
+                (k2[1]-k1[1])*(k2[1]-k1[1])*f1 +
+                (k2[2]-k1[2])*(k2[2]-k1[2])*f2 ;
+			//dd2: (dose diff./D)^2						
+			dd2 = ((level1 - level2) / reference_dose) * ((level1 - level2) / reference_dose) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            								
 
             gg = dr2 + dd2;
 			// in this subregion, only minimum value is take.
-            if (gg < gamma) gamma=gg;
+            if (gg < gamma) gamma=gg;			
+
+			if (!this->b_interp_search)
+				continue;
+
+			///////////////////interp-search begin////////////////
+			//if some option is on (e.g. interp-search)
+			sub2_start = k2 - sub2_offset;
+
+			//for 3x3x3 region of interp-search (in 3D)
+			sub2_region_size[0] = 2 * sub2_offset[0] + 1;
+			sub2_region_size[1] = 2 * sub2_offset[1] + 1;
+			sub2_region_size[2] = 2 * sub2_offset[2] + 1;
+
+			sub2set_of_img2.SetIndex(sub2_start);
+			sub2set_of_img2.SetSize(sub2_region_size);
+			sub2set_of_img2.Crop(all_of_img2);
+
+			FloatIteratorType sub2_iterator(itk_2, sub2set_of_img2);
+
+
+			//scaling to go to the gamma calculation space. all components (x,y,z,d) are now in sampe weighting / space
+			gamma_comp_r1[0] = k1[0] * sqrt(f0);
+			gamma_comp_r1[1] = k1[1] * sqrt(f1);
+			gamma_comp_r1[2] = k1[2] * sqrt(f2);
+			gamma_comp_r1[3] = level1 / ref_dose_general * sqrt(f3);
+
+			gamma_comp_r2[0] = k2[0] * sqrt(f0);
+			gamma_comp_r2[1] = k2[1] * sqrt(f1);
+			gamma_comp_r2[2] = k2[2] * sqrt(f2);
+			gamma_comp_r2[3] = level2 / ref_dose_general * sqrt(f3);
+
+			//maximum 3x3x3 iterations
+			for (sub2_iterator.GoToBegin();
+				!sub2_iterator.IsAtEnd();
+				++sub2_iterator)
+			{
+				k3 = sub2_iterator.GetIndex(); //voxel position (pix)
+				level3 = sub2_iterator.Get(); //Dose in Gy
+
+				gamma_comp_r3[0] = k3[0] * sqrt(f0);
+				gamma_comp_r3[1] = k3[1] * sqrt(f1);
+				gamma_comp_r3[2] = k3[2] * sqrt(f2);
+				gamma_comp_r3[3] = level3 / ref_dose_general * sqrt(f3);
+								
+				for (i = 0; i < 4; i++){
+					gamma_comp_diff1[i] = gamma_comp_r1[i] - gamma_comp_r2[i];
+					gamma_comp_diff2[i] = gamma_comp_r1[i] - gamma_comp_r3[i];					
+				}				
+
+				/*dose_diff1 = level1 - level2;
+				dose_diff2 = level1 - level3;
+				dose_diff3 = level3 - level2;*/
+
+				if ((gamma_comp_diff1[0] * gamma_comp_diff2[0]) < 0 ||
+					(gamma_comp_diff1[1] * gamma_comp_diff2[1]) < 0 || 
+					(gamma_comp_diff1[2] * gamma_comp_diff2[2]) < 0 || 
+					(gamma_comp_diff1[3] * gamma_comp_diff2[3]) < 0) {// level 1 is btw. level2 and level3				
+
+					//in 4D space, find the normal vector and its crossection point on the line (r2-r3)
+					// vector equation for the line: rx = r2 + t(r3-r2)
+					//VECTOR PRODUCT[(rx - r1),(r2-r3)] = 0 
+
+					//if t is determined, then we can get the point for gamma calculation.
+					sum_up = 0.0;
+					sum_down = 0.0;
+
+					for (i = 0; i < 4; i++)	{
+						sum_up += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r1[i]);
+						sum_down += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r3[i]);
+					}					
+
+					float scalar_t = sum_up / sum_down;
+
+					for (i = 0; i < 4; i++)	{
+						gamma_comp_rn[i] = gamma_comp_r2[i] + scalar_t * (gamma_comp_r3[i] - gamma_comp_r2[i]);
+					}
+
+					gg = (gamma_comp_r1[0] - gamma_comp_rn[0])*(gamma_comp_r1[0] - gamma_comp_rn[0]) +
+						(gamma_comp_r1[1] - gamma_comp_rn[1])*(gamma_comp_r1[1] - gamma_comp_rn[1]) +
+						(gamma_comp_r1[2] - gamma_comp_rn[2])*(gamma_comp_r1[2] - gamma_comp_rn[2]) +
+						(gamma_comp_r1[3] - gamma_comp_rn[3])*(gamma_comp_r1[3] - gamma_comp_rn[3]);
+					// in this subregion, only minimum value is take.
+					if (gg < gamma) gamma = gg;
+				}
+			}// end of sub2_iteration for interp-search
         }
         gamma = sqrt(gamma);
 
@@ -585,6 +738,9 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         gamma_img_iterator.Set (gamma);
         ++gamma_img_iterator;
 
+		/*determine gamma histogram bin */		
+		idx_histo = floor(gamma / gamma_max * (double)num_histo_bin);
+	
         /* Get statistics */
         if (this->have_analysis_thresh) {
 			if (level1 > analysis_threshold_in_Gy) {
@@ -592,7 +748,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
                 if (gamma <= 1) {
                     this->analysis_num_pass ++;
                 }
-            }
+				arr_gamma_histo[idx_histo]++;
+			}
         }
 		//if no analysis threshold was used: every dose point will be counted as analysis point
 		else{
@@ -600,6 +757,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 			if (gamma <= 1) {
 				this->analysis_num_pass++;
 			}
+			arr_gamma_histo[idx_histo]++;
 		}
     }//end of each voxel iterator of img1 (ref image)
     this->gamma_image->set_itk (gamma_img);	
@@ -691,8 +849,12 @@ void Gamma_dose_comparison_private::compose_report()
 	char itemStr[128];
 
 	memset(itemStr, 0, iStrSize);
-	sprintf( itemStr, "%s\t%d\n","local_gamma_on", this->b_local_gamma);
-	str_gamma_report= std::string(itemStr);
+	sprintf(itemStr, "%s\t%d\n", "interp_search", this->b_interp_search);
+	str_gamma_report = str_gamma_report + std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf(itemStr, "%s\t%d\n", "local_gamma_on", this->b_local_gamma);
+	str_gamma_report = str_gamma_report + std::string(itemStr);
 
 	memset(itemStr, 0, iStrSize);
 	sprintf( itemStr, "%s\t%3.2f\n","analysis_threshold", this->analysis_thresh);	
@@ -744,7 +906,28 @@ void Gamma_dose_comparison_private::compose_report()
 
 	memset(itemStr, 0, iStrSize);	
 	sprintf( itemStr, "%s\t%3.2f\n","pass_rate(%)", analysis_num_pass/(float)analysis_num_vox*100.0);
-	str_gamma_report= str_gamma_report+std::string(itemStr);	
+	str_gamma_report= str_gamma_report+std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf(itemStr, "###################___BEGIN GAMMA HISTOGRAM___###################\n");
+	str_gamma_report = str_gamma_report + std::string(itemStr);
+
+	//print out histogram
+	int iMaxNumBin = MAX_NUM_HISTOGRAM_BIN-1;
+	double bin_interval = gamma_max / (double)iMaxNumBin;
+	for (int i = 0; i < iMaxNumBin; i++){
+		memset(itemStr, 0, iStrSize);
+		sprintf(itemStr, "%3.2f-%3.2f\t%d\n", (double)i*bin_interval, (double)(i + 1)*bin_interval, arr_gamma_histo[i]);
+		str_gamma_report = str_gamma_report + std::string(itemStr);
+	}
+
+	memset(itemStr, 0, iStrSize);
+	sprintf(itemStr, "gamma>=%3.2f\t%d\n", (double)gamma_max, arr_gamma_histo[iMaxNumBin]);
+	str_gamma_report = str_gamma_report + std::string(itemStr);
+
+	memset(itemStr, 0, iStrSize);
+	sprintf(itemStr, "###################___END GAMMA HISTOGRAM___###################\n");
+	str_gamma_report = str_gamma_report + std::string(itemStr);
 }
 
 std::string
@@ -806,4 +989,14 @@ bool Gamma_dose_comparison::is_resample_nn()
 void Gamma_dose_comparison::set_resample_nn(bool b_resample_nn)
 {
 	d_ptr->b_resample_nn = b_resample_nn;
+}
+
+bool Gamma_dose_comparison::is_interp_search()
+{
+	return d_ptr->b_interp_search;
+}
+
+void Gamma_dose_comparison::set_interp_search(bool b_interp_search)
+{
+	d_ptr->b_interp_search = b_interp_search;
 }

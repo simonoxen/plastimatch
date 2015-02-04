@@ -31,6 +31,8 @@ public:
 	float f_analysis_threshold; //if -1.0, no threshold will be applied. typical value = 0.1 (10%)
 	bool b_resample_nn; //with this on, nearest resample will be used for comp-to-ref image resampling (as well as inherent resampling for ref image)
 
+	bool b_interp_search;
+
 public:
     Gamma_parms () {
         dose_tolerance = .03f;
@@ -38,13 +40,15 @@ public:
         have_reference_dose = false;
         reference_dose = 0.f;
         gamma_max = 2.0f;
-
-		//out_report_fn = "";
+		
 		b_local_gamma = false; // if true, local dose difference will be used for perc. dose difference
 		b_compute_full_region = false; // if true, gamma will not be calculated for points below cut-off dose e.g. <10%
 		f_inherent_resample_mm = -1.0; //if -1.0, no resample will be carried out
 		f_analysis_threshold = 0.1; //default: 10%
 		b_resample_nn = false; //default: use linear interpolation
+
+		b_interp_search = false; //will be a default (true) in the future.
+
     }
 };
 
