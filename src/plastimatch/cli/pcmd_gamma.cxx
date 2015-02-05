@@ -11,13 +11,52 @@
 #include "pcmd_gamma.h"
 #include "print_and_exit.h"
 
+#include "plm_file_format.h"
+#include "rt_study.h"
+
+
 static void
 gamma_main (Gamma_parms* parms)
 {
     Gamma_dose_comparison gdc;
 
-    gdc.set_reference_image (parms->ref_image_fn.c_str());
-    gdc.set_compare_image (parms->cmp_image_fn.c_str());	
+	//DICOM_RD compatible (added by YK, Feb 2015)
+	//In the prev version, RD couldn't be read directly due to the scale factor inside of the DICOM file.
+	//work-around was to use (plastimatch convert ...)
+	//here, that feature has been integrated into plastimatch gamma
+	Plm_file_format file_type_ref, file_type_comp;
+	Rt_study rt_study_ref, rt_study_comp;
+
+	file_type_ref = plm_file_format_deduce(parms->ref_image_fn.c_str());
+	file_type_comp = plm_file_format_deduce(parms->cmp_image_fn.c_str());
+
+	if (file_type_ref == PLM_FILE_FMT_DICOM_DOSE){
+		rt_study_ref.load(parms->ref_image_fn.c_str(), file_type_ref);
+		if (rt_study_ref.has_dose()){
+			gdc.set_reference_image(rt_study_ref.get_dose()->clone());
+		}
+		else{
+			gdc.set_reference_image(parms->ref_image_fn.c_str());
+		}
+	}
+	else{
+		gdc.set_reference_image(parms->ref_image_fn.c_str());
+	}
+
+	if (file_type_comp == PLM_FILE_FMT_DICOM_DOSE){
+		rt_study_comp.load(parms->cmp_image_fn.c_str(), file_type_comp);
+		if (rt_study_comp.has_dose()){
+			gdc.set_compare_image(rt_study_comp.get_dose()->clone());
+		}
+		else{
+			gdc.set_compare_image(parms->cmp_image_fn.c_str());
+		}
+
+	}
+	else{
+		gdc.set_compare_image(parms->cmp_image_fn.c_str());
+	}
+	//End DICOM-RD    
 
     gdc.set_spatial_tolerance (parms->dta_tolerance);
 	gdc.set_dose_difference_tolerance (parms->dose_tolerance);
@@ -52,7 +91,7 @@ gamma_main (Gamma_parms* parms)
     }
 
 	if (parms->out_report_fn != "") {
-		//Export output text using //gdc.get_report_string();
+		//Export output text using gdc.get_report_string();
 		std::ofstream fout;
 		fout.open(parms->out_report_fn.c_str());
 		if (!fout.fail()){
