@@ -16,6 +16,8 @@ public:
     std::string cmp_image_fn; //should be compatible with mha, dcm, OPG(IBA text)
     std::string out_image_fn; //gamma map: mha will be enough	
 
+	std::string out_failmap_fn; //gamma map: mha will be enough	
+
     /* Gamma options */
     float dose_tolerance;
     float dta_tolerance;

@@ -84,11 +84,11 @@ gamma_main (Gamma_parms* parms)
     if (parms->out_image_fn != "") {
         Plm_image::Pointer gamma_image = gdc.get_gamma_image ();
         gamma_image->save_image (parms->out_image_fn);
-
-		//YKdebug
-		//gdc.get_fail_image()->save_image("<fail_image_map_path>");
-		//YKdebug
     }
+
+	if (parms->out_failmap_fn != "") {		
+		gdc.get_fail_image()->save_image(parms->out_failmap_fn);
+	}
 
 	if (parms->out_report_fn != "") {
 		//Export output text using gdc.get_report_string();
@@ -161,7 +161,9 @@ parse_fn (
 		"Analysis threshold for dose in float (default: 0.1 = 10%). This will be used in conjunction with the reference dose value or maximum dose if not specified"
 		"(default is 0.1)", 1, "0.1");	
 
-	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result", 1, "");	
+	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result", 1, "");		
+
+	parser->add_long_option("", "output-failmap", "File path for binary gamma evaluation result", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -186,7 +188,9 @@ parse_fn (
     if (parser->option ("output")) {
         parms->out_image_fn = parser->get_string("output").c_str();
     }
-
+	if (parser->option("output-failmap")) {
+		parms->out_failmap_fn = parser->get_string("output-failmap").c_str();
+	}
 
     /* Gamma options */
     parms->dose_tolerance = parser->get_float("dose-tolerance");

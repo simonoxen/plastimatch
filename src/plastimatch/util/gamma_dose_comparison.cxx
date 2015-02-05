@@ -544,15 +544,12 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 	//For interp-search option
 	//Convert all the components to scaled ones
 	//From now on, scaled gamma coordinate is used.
-	float gamma_comp_r1[3]; // 0,1,2,3 --> X, Y, Z, dose with scaling, r1 = ref point
-	float gamma_comp_r2[3]; // 0,1,2,3 --> X, Y, Z, dose with scaling r2 = current searching point
-	float gamma_comp_r3[3]; //r3: sub2-region moving point		
-	float gamma_comp_rn[3]; //rn: normal_vector point (will give the smallest gamma value in gamma space)
+	float gamma_comp_r1[4]; // 0,1,2,3 --> X, Y, Z, dose with scaling, r1 = ref point
+	float gamma_comp_r2[4]; // 0,1,2,3 --> X, Y, Z, dose with scaling r2 = current searching point
+	float gamma_comp_r3[4]; //r3: sub2-region moving point		
+	float gamma_comp_rn[4]; //rn: normal_vector point (will give the smallest gamma value in gamma space)
 
 	float ref_dose_general;
-
-	float gamma_comp_diff1[4];
-	float gamma_comp_diff2[4];
 
 	float sum_up = 0.0;
 	float sum_down = 0.0;
@@ -672,7 +669,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 			gamma_comp_r2[0] = k2[0] * sqrt(f0);
 			gamma_comp_r2[1] = k2[1] * sqrt(f1);
 			gamma_comp_r2[2] = k2[2] * sqrt(f2);
-			gamma_comp_r2[3] = level2 / ref_dose_general * sqrt(f3);
+			gamma_comp_r2[3] = level2 / ref_dose_general * sqrt(f3);			
 
 			//maximum 3x3x3 iterations
 			for (sub2_iterator.GoToBegin();
@@ -686,36 +683,24 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 				gamma_comp_r3[1] = k3[1] * sqrt(f1);
 				gamma_comp_r3[2] = k3[2] * sqrt(f2);
 				gamma_comp_r3[3] = level3 / ref_dose_general * sqrt(f3);
-								
-				for (i = 0; i < 4; i++){
-					gamma_comp_diff1[i] = gamma_comp_r1[i] - gamma_comp_r2[i];
-					gamma_comp_diff2[i] = gamma_comp_r1[i] - gamma_comp_r3[i];					
-				}				
 
-				/*dose_diff1 = level1 - level2;
-				dose_diff2 = level1 - level3;
-				dose_diff3 = level3 - level2;*/
+				//in 4D space, find the normal vector and its crossection point on the line (r2-r3)
+				// vector equation for the line: rx = r2 + t(r3-r2)
+				//VECTOR PRODUCT[(rx - r1),(r2-r3)] = 0 
 
-				if ((gamma_comp_diff1[0] * gamma_comp_diff2[0]) < 0 ||
-					(gamma_comp_diff1[1] * gamma_comp_diff2[1]) < 0 || 
-					(gamma_comp_diff1[2] * gamma_comp_diff2[2]) < 0 || 
-					(gamma_comp_diff1[3] * gamma_comp_diff2[3]) < 0) {// level 1 is btw. level2 and level3				
+				//if t is determined, then we can get the point for gamma calculation.
+				sum_up = 0.0;
+				sum_down = 0.0;
 
-					//in 4D space, find the normal vector and its crossection point on the line (r2-r3)
-					// vector equation for the line: rx = r2 + t(r3-r2)
-					//VECTOR PRODUCT[(rx - r1),(r2-r3)] = 0 
+				for (i = 0; i < 4; i++)	{
+					sum_up += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r1[i]);
+					sum_down += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r3[i]);
+				}
 
-					//if t is determined, then we can get the point for gamma calculation.
-					sum_up = 0.0;
-					sum_down = 0.0;
+				float scalar_t = sum_up / sum_down;
 
-					for (i = 0; i < 4; i++)	{
-						sum_up += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r1[i]);
-						sum_down += (gamma_comp_r2[i] - gamma_comp_r3[i])*(gamma_comp_r2[i] - gamma_comp_r3[i]);
-					}					
-
-					float scalar_t = sum_up / sum_down;
-
+				//Only interpolation is allowed. exterapolation should not be used.
+				if (scalar_t > 0.0 && scalar_t < 1.0){
 					for (i = 0; i < 4; i++)	{
 						gamma_comp_rn[i] = gamma_comp_r2[i] + scalar_t * (gamma_comp_r3[i] - gamma_comp_r2[i]);
 					}
@@ -726,7 +711,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 						(gamma_comp_r1[3] - gamma_comp_rn[3])*(gamma_comp_r1[3] - gamma_comp_rn[3]);
 					// in this subregion, only minimum value is take.
 					if (gg < gamma) gamma = gg;
-				}
+				}//only scalar_t is in btw. 0 and 1 (interpolation)									
 			}// end of sub2_iteration for interp-search
         }
         gamma = sqrt(gamma);
