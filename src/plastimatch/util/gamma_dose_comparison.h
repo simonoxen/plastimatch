@@ -24,7 +24,7 @@ class Plm_image;
  * The comparison is based on searching a local neighborhood for the 
  * most similar dose.  The similarity is computed as the geometric mean 
  * of the dose difference and spatial distance.  The gamma value at 
- * a point is then the minumum of this similarity value over the 
+ * a point is then the minimum of this similarity value over the 
  * the neighborhood.
  * Generally, the gamma value is normalized based on a spatial tolerance
  * and a dose difference tolerance such that gamma values of less than 
@@ -67,13 +67,14 @@ public:
     float get_spatial_tolerance ();
     /*! \brief Set the distance to agreement (DTA) tolerance, in mm. */
     void set_spatial_tolerance (float spatial_tol);
-    /*! \brief Get the dose difference tolerance, in percent. */
+    /*! \brief Get the dose difference tolerance, in float (fraction of reference dose). */
     float get_dose_difference_tolerance ();
-    /*! \brief Set the dose difference tolerance, in percent. 
+    /*! \brief Set the dose difference tolerance, in float type. 
       If a reference dose (prescription dose) is specified, 
       the dose difference tolerance is treated as a 
-      percent of the reference dose.  Otherwise it is treated as a
-      percent of the maximum dose in the reference volume.  
+      fraction of the reference dose.  Otherwise it is treated as a
+      fraction of the maximum dose in the reference volume.
+	  With local-gamma option, it is treated as a fraction of the local dose in the reference image
       To use a 3% dose tolerance, you would set this value to 0.03.  */
     void set_dose_difference_tolerance (float dose_tol);
     /*! \brief Set the reference dose (prescription dose).  
@@ -86,15 +87,16 @@ public:
       threshold.  If the reference dose is not set, the maximum dose in the 
       reference dose volume is used as the reference dose. */
     void unset_reference_dose ();
+
     /*! \brief Set a dose threshold for gamma analysis, as a 
-      percent of the reference dose.  This is used to ignore 
+      fraction of the reference dose.  This is used to ignore 
       voxels which have dose below a certain value.  
       For example, to consider only voxels which have dose greater 
       than 10% of the maximum dose, you would call
-      set_analysis_threshold_pct_max (0.1).
+      set_analysis_threshold (0.1). 
       The threshold is applied to dose voxels in the reference dose volume.
     */
-    void set_analysis_threshold (float thresh);//thresh value using %. typical value is 10.0 % of reference dose
+    void set_analysis_threshold (float thresh);
     /*! \brief Set the maximum gamma computed by the class.  This is 
       used to speed up computation.  A typical value is 2 or 3.  */
 	/* */

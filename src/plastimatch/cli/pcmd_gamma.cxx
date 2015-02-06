@@ -126,17 +126,17 @@ parse_fn (
     parser->add_default_options ();
 
     /* Output files */
-    parser->add_long_option ("", "output", "output image", 1, "");
+    parser->add_long_option ("", "output", "Output image", 1, "");
 
     /* Gamma options */
     parser->add_long_option ("", "dose-tolerance", 
-        "The scaling coefficient for dose difference in percent "
-        "(default is .03)", 1, ".03");
+		"The scaling coefficient for dose difference. (e.g. put 0.02 if you want to apply 2% dose difference criterion) "
+        "(default is 0.03)", 1, "0.03");
     parser->add_long_option ("", "dta-tolerance", 
         "The distance-to-agreement (DTA) scaling coefficient in mm "
         "(default is 3)", 1, "3");
     parser->add_long_option ("", "reference-dose", 
-        "The prescription dose used to compute dose tolerance; if not "
+		"The prescription dose (Gy) used to compute dose tolerance; if not "
         "specified, then maximum dose in reference volume is used",
         1, "");
     parser->add_long_option ("", "gamma-max", 
@@ -145,25 +145,19 @@ parse_fn (
 
 
 	/* extended by YK*/
-	parser->add_long_option("", "interp-search", "With this option, smart interpolation search will be applied in points near the reference point. This will eliminate the need of fine resampling using inherent-resampling option. However, it will take longer time. ", 0);
-
-	parser->add_long_option("", "local-gamma", "With this option, dose difference (e.g. 3%) is calculated based on local dose difference. Otherwise, reference dose will be used. ",0);
-
-	parser->add_long_option("", "compute-full-region", "With this option, gamma values will be calculated over the entire image. Otherwise, gamma = 0.0 will be assigned for below-threshold regions with speeding up the calculation", 0);
-
-	parser->add_long_option("", "resample-nn", "With this option, nearest neighbor will be used instead of linear interpolation in resampling comp. image wrt ref. image as well as in inherent-resampling", 0);
-
-	parser->add_long_option("", "inherent-resample",
-		"Spacing value in [mm]. Alternative to make the mask. based on the specified value here, both ref and comp image will be resampled. if < 0, this option is disabled.  "
+	parser->add_long_option("", "interp-search", "With this option, smart interpolation search will be used in points near the reference point. This will eliminate the needs of fine resampling. However, it will take longer time to compute. ", 0);
+	parser->add_long_option("", "local-gamma", "With this option, dose difference is calculated based on local dose difference. Otherwise, a given reference dose will be used, which is called global-gamma. ",0);
+	parser->add_long_option("", "compute-full-region", "With this option, full gamma map will be generated over the entire image region (even for low-dose region). It is recommended not to use this option to speed up the computation. It has no effect on gamma pass-rate. ", 0);
+	parser->add_long_option("", "resample-nn", "With this option, Nearest Neighbor will be used instead of linear interpolation in resampling the compare-image to the reference image. Not recommended for better results. ", 0);
+	parser->add_long_option("", "inherent-resample", "Spacing value in [mm]. The reference image itself will be resampled by this value (Note: resampling compare-image to ref-image is inherent already). If arg < 0, this option is disabled.  "
 		"(default is -1.0)", 1, "-1.0");
 
 	parser->add_long_option("", "analysis-threshold",
-		"Analysis threshold for dose in float (default: 0.1 = 10%). This will be used in conjunction with the reference dose value or maximum dose if not specified"
+		"Analysis threshold for dose in float (for example, input 0.1 to apply 10% of the reference dose). The final threshold dose (Gy) is calculated by multiplying this value and a given reference dose (or maximum dose if not given). "
 		"(default is 0.1)", 1, "0.1");	
 
-	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result", 1, "");		
-
-	parser->add_long_option("", "output-failmap", "File path for binary gamma evaluation result", 1, "");
+	parser->add_long_option("", "output-text", "Text file path for gamma evaluation result. ", 1, "");
+	parser->add_long_option("", "output-failmap", "File path for binary gamma evaluation result. ", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
