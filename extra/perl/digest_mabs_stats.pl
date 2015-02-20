@@ -1,5 +1,6 @@
 #! /usr/bin/perl
 use Getopt::Long;
+use File::Basename;
 
 my $display_failures = 0;
 
@@ -7,7 +8,9 @@ sub digest_file {
     my ($fn, $reghash, $seghash) = @_;
     open (FP, "<$fn") or die "Couldn't open file $fn for read";
     while (<FP>) {
-	($target,$atlas,$_) = split (',',$_,3);
+	$line = $_;
+	$target = "";
+	$atlas = "";
 	$reg = "";
 	$structure = "";
 	$rho = -1;
@@ -22,6 +25,14 @@ sub digest_file {
 	$ahd = -1;
 	$abhd = -1;
 	while (($val,$_) = split (',',$_,2)) {
+	    if ($val =~ /target=(.*)/) {
+		$target = $1;
+		next;
+	    }
+	    if ($val =~ /atlas=(.*)/) {
+		$atlas = $1;
+		next;
+	    }
 	    if ($val =~ /reg=(.*)/) {
 		$reg = $1;
 		next;
@@ -78,7 +89,7 @@ sub digest_file {
 		next;
 	    }
 	}
-
+	
 	# For registration evaluation
 	$reg_key = "$reg";
 	if (exists $reghash->{$reg_key}) {
@@ -176,24 +187,30 @@ if ($display_failures) {
     exit;
 }
 
+($junk, $dice_source_dir, $junk) = fileparse ($dice_source);
+
 $best_reg = "";
 $best_reg_score = 0;
 foreach $reg (sort keys %reghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $reghash{$reg});
     $avg_dice = $dice_sum / $num;
     $avg_hd95 = $hd95_sum / $num;
-    print "$reg,$avg_dice,$avg_hd95\n";
+    print "reg: $reg,$avg_dice,$avg_hd95\n";
     if ($avg_dice > $best_reg_score) {
 	$best_reg_score = $avg_dice;
 	$best_reg = $reg;
     }
 }
-if (-d $dice_source && $best_reg ne "") {
+if ($best_reg ne "") {
     ## Update training file
-##    $fn = "$dice_source/optimization_result_reg.txt";
+##    $fn = "$dice_source_dir/optimization_result_reg.txt";
 ##    open FP, ">$fn";
 ##    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_reg\n";
 ##    close FP;
+}
+
+if (keys(%seghash) == 0) {
+    exit (0);
 }
 
 ## This is a hack for version 1.0.   Use the same parameters 
@@ -221,7 +238,7 @@ foreach $parms (sort keys %seg_dice_hash) {
 	$best_seg_score = $avg_dice;
     }
 }
-if (-d $dice_source && $best_seg ne "") {
+if ($best_seg ne "") {
     print "seg: $best_seg,$best_seg_score\n";
     ## Update training file
     ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
@@ -235,32 +252,8 @@ gaussian_weighting_voting_minsim=$minsim
 gaussian_weighting_voting_thresh=$thresh
 EOSTRING
     ;
-    $fn = "$dice_source/optimization_result_seg.txt";
+    $fn = "$dice_source_dir/optimization_result_seg.txt";
     open FP, ">$fn";
     print FP $output_string;
     close FP;
 }
-
-exit (0);
-
-$best_seg = "";
-$best_seg_score = 0;
-foreach $seg (sort keys %seghash) {
-    ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
-    $avg_dice = $dice_sum / $num;
-    $avg_hd95 = $hd95_sum / $num;
-    print "$seg,$num,$avg_dice,$avg_hd95\n";
-}
-if (-d $dice_source && $best_seg ne "") {
-    ## Update training file
-    $fn = "$dice_source/optimization_result_seg.txt";
-    open FP, ">$fn";
-    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_seg\n";
-    close FP;
-}
-
-# exit (0);
-# foreach $keystring (sort keys %brainstem_hash) {
-# #    print "$brainstem_hash{$keystring},$left_eye_hash{$keystring}\n";
-#     print "$brainstem_hash{$keystring},$left_parotid{$keystring}\n";
-# }

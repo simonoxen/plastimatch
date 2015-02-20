@@ -302,8 +302,6 @@ Mabs_private::segmentation_threshold_weight (
 {
     Plm_timer timer;
 
-    printf ("Inside segmentation_threshold_weight\n");
-
     /* Threshold the weight image */
     timer.start();
     UCharImageType::Pointer thresh_img = itk_threshold_above (
@@ -330,14 +328,12 @@ Mabs_private::segmentation_threshold_weight (
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
-        printf ("I have a ref structure!\n");
-
         std::string stats_string = this->stats.compute_statistics (
             "segmentation", /* Not used yet */
             this->ref_structure_image,
             thresh_img);
         std::string seg_log_string = string_format (
-            "%s,reg=%s,struct=%s,"
+            "target=%s,reg=%s,struct=%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
             "%s\n",
             this->ref_id.c_str(),
@@ -363,14 +359,11 @@ Mabs_private::segmentation_threshold_weight (
        want to add it to the referenced rt_study, so it can 
        be saved as a final segmentation. */
     else if (this->write_dicom_rt_struct) {
-        printf ("Adding structure!\n");
         this->ref_rtds->add_structure (
             thresh_img,
             mapped_name.c_str(),
             0);
     }
-
-    printf ("What is going on??\n");
 }
 
 Mabs::Mabs () {
@@ -644,7 +637,7 @@ Mabs::run_registration_loop ()
                             d_ptr->ref_structure_image,
                             structure_image);
                     std::string reg_log_string = string_format (
-                        "%s,%s,reg=%s,struct=%s,%s\n",
+                        "target=%s,atlas=%s,reg=%s,struct=%s,%s\n",
                         d_ptr->ref_id.c_str(), 
                         atlas_id.c_str(),
                         registration_id.c_str(),
@@ -1587,7 +1580,7 @@ Mabs::staple_segmentation_label ()
             ref_stru->itk_uchar(),
             staple_it->second->output_img->itk_uchar());
         std::string seg_log_string = string_format (
-            "%s,reg=%s,struct=%s,"
+            "target=%s,reg=%s,struct=%s,"
             "confidence_weight=%.9f,"
             "%s\n",
             d_ptr->ref_id.c_str(),
@@ -1658,11 +1651,9 @@ Mabs::gaussian_segmentation_label ()
 
         const std::list<float>& thresh_list = thresh_range.get_range();
         std::list<float>::const_iterator thresh_it;
-        printf ("Gonna loop ???\n");
         for (thresh_it = thresh_list.begin(); 
              thresh_it != thresh_list.end(); thresh_it++) 
         {
-            printf ("Inside loop ???\n");
             d_ptr->segmentation_threshold_weight (
                 weight_image, mapped_name, 
                 vote_it->first.c_str(), *thresh_it);
@@ -2096,11 +2087,7 @@ Mabs::segment ()
     d_ptr->threshold_values = d_ptr->parms->optimization_result_seg_thresh;
     d_ptr->confidence_weight = d_ptr->parms->optimization_result_confidence_weight;
     
-    printf ("About to mabs::run_segmentation\n");
-    
     run_segmentation ();
-
-    printf ("Done with mabs::run_segmentation\n");
 
     /* Save the output */
     std::string dicomrt_output_dir = string_format (
