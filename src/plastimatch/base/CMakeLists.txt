@@ -28,6 +28,7 @@ set (PLMBASE_LIBRARY_SRC
   direction_cosines.cxx 
   direction_matrices.cxx 
   exchkeys.cxx
+  gaussian.cxx gaussian.h 
   hnd_io.cxx
   interpolate.cxx
   itkClampCastImageFilter.txx
@@ -104,6 +105,7 @@ set (PLMBASE_LIBRARY_SRC
   vf_stats.cxx
   vf.cxx
   volume_conv.cxx
+  volume_gaussian.cxx volume_gaussian.h 
   volume_grad.cxx volume_grad.h 
   volume_header.cxx
   volume_limit.cxx

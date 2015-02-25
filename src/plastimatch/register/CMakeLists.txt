@@ -53,7 +53,6 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_log_demons.cxx
   itk_sym_log_demons.cxx
   demons_cpu.cxx
-  demons_misc.cxx
   demons_state.cxx
   gpuit_demons.cxx
   itk_optimizer.cxx

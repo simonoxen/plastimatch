@@ -8,7 +8,7 @@
 #include <math.h>
 
 #include "demons.h"
-#include "demons_misc.h"
+#include "gaussian.h"
 #include "plm_int.h"
 #include "plm_math.h"
 #include "plm_timer.h"

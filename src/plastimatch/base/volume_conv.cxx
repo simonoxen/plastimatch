@@ -80,3 +80,100 @@ volume_conv (
 
     return vol_out;
 }
+
+void
+volume_convolve_x (
+    Volume::Pointer& vol_out,
+    const Volume::Pointer& vol_in,
+    float *ker,
+    int width
+)
+{
+    const float *img_in = vol_in->get_raw<float> ();
+    float *img_out = vol_out->get_raw<float> ();
+    const plm_long* dim_in = vol_in->dim;
+
+    int half_width = width / 2;
+
+#pragma omp parallel for 
+    LOOP_Z_OMP (k, vol_in) {
+        plm_long ijk[3];
+        ijk[2] = k;
+	for (ijk[1] = 0; ijk[1] < dim_in[1]; ijk[1]++) {
+	    for (ijk[0] = 0; ijk[0] < dim_in[0]; ijk[0]++) {
+		plm_long i, i1;	    /* i is the offset in the vol */
+		plm_long j, j1, j2;   /* j is the index of the kernel */
+
+                plm_long v = volume_index (dim_in, ijk);
+		if (ijk[0] < half_width) {
+		    i1 = 0;
+		    j1 = half_width - ijk[0];
+		} else {
+		    i1 = ijk[0] - half_width;
+		    j1 = 0;
+		}
+		if (ijk[0] + half_width > dim_in[0] - 1) {
+		    j2 = half_width + (dim_in[0] - ijk[0]) - 1;
+		} else {
+		    j2 = 2 * half_width;
+		}
+
+                float ktot = 0.0f;
+                img_out[v] = (float) 0.0;
+                for (i = i1, j = j1; j <= j2; i++, j++) {
+                    plm_long idx = vol_in->index (ijk);
+                    img_out[v] += ker[j] * img_in [idx];
+                    ktot += ker[j];
+                }
+                img_out[v] /= ktot;
+#if defined (commentout)
+		printf ("%u %u %u | %u | %u %u %u\n",
+		    ijk[2], ijk[1], ijk[0], v, i1, j1, j2);
+#endif
+	    }
+	}
+    }
+}
+
+void
+volume_convolve_y (
+    Volume::Pointer& vol_out,
+    const Volume::Pointer& vol_in,
+    float *ker,
+    int width
+)
+{
+}
+
+void
+volume_convolve_z (
+    Volume::Pointer& vol_out,
+    const Volume::Pointer& vol_in,
+    float *ker,
+    int width
+)
+{
+}
+
+Volume::Pointer
+volume_convolve_separable
+(
+    const Volume::Pointer& vol_in,
+    float *ker_i,
+    int width_i,
+    float *ker_j,
+    int width_j,
+    float *ker_k,
+    int width_k
+)
+{
+    Volume::Pointer vol_1 = vol_in->clone_empty();
+    Volume::Pointer vol_2 = vol_in->clone_empty();
+
+    volume_convolve_x (vol_1, vol_in, ker_i, width_i);
+    volume_convolve_y (vol_2, vol_1, ker_j, width_j);
+    volume_convolve_z (vol_1, vol_2, ker_k, width_k);
+
+    return vol_1;
+
+}

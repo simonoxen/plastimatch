@@ -8,7 +8,7 @@
 #include <time.h>
 #include <math.h>
 
-#include "demons_misc.h"
+#include "gaussian.h"
 
 /* This function creates the smoothing kernel */
 float*

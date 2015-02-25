@@ -82,6 +82,9 @@ public:
     plm_long index (plm_long i, plm_long j, plm_long k) {
         return volume_index (this->dim, i, j, k);
     }
+    plm_long index (plm_long ijk[3]) {
+        return volume_index (this->dim, ijk);
+    }
     void create (
         const plm_long new_dim[3], 
         const float offset[3], 
