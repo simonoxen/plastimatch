@@ -90,7 +90,7 @@ parse_int13 (int *arr, const char *string)
 }
 
 Plm_return_code
-parse_int13 (float *arr, const std::string& string)
+parse_int13 (int *arr, const std::string& string)
 {
     return parse_int13 (arr, string.c_str());
 }
