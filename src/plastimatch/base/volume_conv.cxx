@@ -92,7 +92,6 @@ volume_convolve_x (
     const float *img_in = vol_in->get_raw<float> ();
     float *img_out = vol_out->get_raw<float> ();
     const plm_long* dim_in = vol_in->dim;
-
     int half_width = width / 2;
 
 #pragma omp parallel for 
@@ -103,8 +102,8 @@ volume_convolve_x (
 	    for (ijk[0] = 0; ijk[0] < dim_in[0]; ijk[0]++) {
 		plm_long i, i1;	    /* i is the offset in the vol */
 		plm_long j, j1, j2;   /* j is the index of the kernel */
-
                 plm_long v = volume_index (dim_in, ijk);
+
 		if (ijk[0] < half_width) {
 		    i1 = 0;
 		    j1 = half_width - ijk[0];
@@ -121,7 +120,7 @@ volume_convolve_x (
                 float ktot = 0.0f;
                 img_out[v] = (float) 0.0;
                 for (i = i1, j = j1; j <= j2; i++, j++) {
-                    plm_long idx = vol_in->index (ijk);
+                    plm_long idx = vol_in->index (i, ijk[1], ijk[2]);
                     img_out[v] += ker[j] * img_in [idx];
                     ktot += ker[j];
                 }
@@ -143,6 +142,46 @@ volume_convolve_y (
     int width
 )
 {
+    const float *img_in = vol_in->get_raw<float> ();
+    float *img_out = vol_out->get_raw<float> ();
+    const plm_long* dim_in = vol_in->dim;
+    int half_width = width / 2;
+
+#pragma omp parallel for 
+    LOOP_Z_OMP (k, vol_in) {
+        plm_long ijk[3];
+        ijk[2] = k;
+	for (ijk[1] = 0; ijk[1] < vol_in->dim[1]; ijk[1]++) {
+	    for (ijk[0] = 0; ijk[0] < vol_in->dim[0]; ijk[0]++) {
+		plm_long i, i1;	    /* i is the offset in the vf */
+		plm_long j, j1, j2;   /* j is the index of the kernel */
+                plm_long v = volume_index (dim_in, ijk);
+
+		if (ijk[1] < half_width) {
+		    i1 = 0;
+		    j1 = half_width - ijk[1];
+		} else {
+		    i1 = ijk[1] - half_width;
+		    j1 = 0;
+		}
+		if (ijk[1] + half_width > vol_in->dim[1] - 1) {
+		    j2 = half_width + (vol_in->dim[1] - ijk[1]) - 1;
+		} else {
+		    j2 = 2 * half_width;
+		}
+
+                float ktot = 0.0f;
+                img_out[v] = (float) 0.0;
+                for (i = i1, j = j1; j <= j2; i++, j++) {
+                    plm_long idx = vol_in->index (ijk[0], i, ijk[2]);
+                    img_out[v] += ker[j] * img_in [idx];
+                    ktot += ker[j];
+                }
+                img_out[v] /= ktot;
+            }
+	}
+    }
+
 }
 
 void
@@ -153,6 +192,45 @@ volume_convolve_z (
     int width
 )
 {
+    const float *img_in = vol_in->get_raw<float> ();
+    float *img_out = vol_out->get_raw<float> ();
+    const plm_long* dim_in = vol_in->dim;
+    int half_width = width / 2;
+
+#pragma omp parallel for 
+    LOOP_Z_OMP (k, vol_in) {
+        plm_long ijk[3];
+        ijk[2] = k;
+	for (ijk[1] = 0; ijk[1] < vol_in->dim[1]; ijk[1]++) {
+	    for (ijk[0] = 0; ijk[0] < vol_in->dim[0]; ijk[0]++) {
+		plm_long i, i1;	    /* i is the offset in the vf */
+		plm_long j, j1, j2;   /* j is the index of the kernel */
+                plm_long v = volume_index (dim_in, ijk);
+
+		if (ijk[2] < half_width) {
+		    i1 = 0;
+		    j1 = half_width - ijk[2];
+		} else {
+		    i1 = ijk[2] - half_width;
+		    j1 = 0;
+		}
+		if (ijk[2] + half_width > vol_in->dim[2] - 1) {
+		    j2 = half_width + (vol_in->dim[2] - ijk[2]) - 1;
+		} else {
+		    j2 = 2 * half_width;
+		}
+
+                float ktot = 0.0f;
+                img_out[v] = (float) 0.0;
+                for (i = i1, j = j1; j <= j2; i++, j++) {
+                    plm_long idx = vol_in->index (ijk[0], ijk[1], i);
+                    img_out[v] += ker[j] * img_in [idx];
+                    ktot += ker[j];
+                }
+                img_out[v] /= ktot;
+	    }
+	}
+    }
 }
 
 Volume::Pointer
