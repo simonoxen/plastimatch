@@ -40,26 +40,46 @@ if ($run_cmake) {
 }
 if ($make_tarball) {
     chdir ${build_dir};
+    system ("rm *.gz");
     system ("rm *.bz2");
     system ("make package_source");
 }
 
 chdir ${build_dir};
-$source_bz2 = `ls *.bz2`;
-chomp ($source_bz2);
-if ($source_bz2 =~ /plastimatch-(.*)-Source.tar.bz2/) {
+$input_tarball = `ls *.bz2`;
+chomp ($input_tarball);
+if ($input_tarball =~ /plastimatch-(.*)-Source.tar.bz2/) {
     $deb_ver = "plastimatch_$1";
     print "Plastimatch version is $1\n";
 } else {
     die "Couldn't parse plastimatch version\n";
 }
-#$deb_bz2 = "${debmed_dir}/${deb_ver}.orig.tar.bz2";
-$deb_bz2 = "${debmed_dir}/${source_bz2}";
-$source_bz2 = "${build_dir}/${source_bz2}";
+$input_src_dir = $input_tarball;
+$input_src_dir =~ s/\.tar\..*$//;
+$debmed_input_tarball = "${debmed_dir}/${input_tarball}";
+$build_input_tarball = "${build_dir}/${input_tarball}";
 
-print "source_bz2 = $source_bz2\n";
-print "deb_bz2 = $deb_bz2\n";
+print "input_src_dir = $input_src_dir\n";
+print "build_input_tarball = $build_input_tarball\n";
+print "debmed_input_tarball = $debmed_input_tarball\n";
+
+##########################################################
+# There seems to be a bug in mk-origtargz, which causes one of the 
+# tar commands to fail unless the tarball is repackaged.
+# Therefore, instead of just linking the file like this
+##########################################################
+  #chdir ${debmed_dir};
+  #system ("rm ${debmed_input_tarball} 2> /dev/null");
+  #system ("ln -s ${build_input_tarball} ${debmed_input_tarball}");
+##########################################################
+# We untar, then re-tar, like this
+##########################################################
+chdir ${debmed_dir};
+system ("tar xvf ${build_input_tarball}");
+system ("tar czvf ${debmed_input_tarball} ${input_src_dir}");
+
+# Finally, do the actual rebundle
+chdir "${debmed_dir}/trunk";
+system ("mk-origtargz \"${debmed_input_tarball}\"");
 
 chdir ${debmed_dir};
-system ("rm ${deb_bz2} 2> /dev/null");
-system ("ln -s ${source_bz2} ${deb_bz2}");
