@@ -1,5 +1,18 @@
-Version 1.5.17 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.6.0 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* Registration supports grid search
+* Registration supports gradient magnitude
+* Registration landmarks can now appear in stages
+* Registration improved ROI support
+* Gamma calculation supports local gamma, interp-search, other improvements
+* New plastimatch filter command for filtering with gabor, gauss, others
+* Many MABS updates
+* Many dose calculation improvements
+* Fix problem rasterizing tilted structures
+* Several DICOM fixes
+* Several parallelization improvements
+* Run registration in worker thread; allow restartable registrations
+* Many other bug fixes
 
 Version 1.5.16 (build 4659)
 Sun May 18 16:06:34 EDT 2014
