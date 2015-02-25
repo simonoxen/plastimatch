@@ -80,6 +80,6 @@ system ("tar czvf ${debmed_input_tarball} ${input_src_dir}");
 
 # Finally, do the actual rebundle
 chdir "${debmed_dir}/trunk";
-system ("mk-origtargz \"${debmed_input_tarball}\"");
+system ("mk-origtargz --repack --compression bzip2 \"${debmed_input_tarball}\"");
 
 chdir ${debmed_dir};
