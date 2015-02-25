@@ -253,15 +253,6 @@ if (NOT FFTW_FOUND)
     )
 endif ()
 
-## If we're not using dcmtk for dicom, don't run these tests
-if (NOT PLM_DCM_USE_DCMTK)
-  set (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "plm-convert-dicom-irregular-a" 
-    )
-endif ()
-
-
 ## If we didn't compile with cuda, don't run these tests
 if (NOT RUN_CUDA_TESTS)
   set (CTEST_CUSTOM_TESTS_IGNORE
@@ -291,6 +282,23 @@ if (NOT RUN_OPENCL_TESTS)
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
     ) 
+endif ()
+
+## If we are using DCMTK, don't run these tests
+if (PLM_DCM_USE_DCMTK)
+    set (CTEST_CUSTOM_TESTS_IGNORE
+	${CTEST_CUSTOM_TESTS_IGNORE}
+	"plm-convert-dicom-b-stats"
+	"plm-convert-dicom-b-check"
+	)
+endif ()
+
+## If we're not using dcmtk for dicom, don't run these tests
+if (NOT PLM_DCM_USE_DCMTK)
+  set (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-irregular-a" 
+    )
 endif ()
 
 ## If we have neither DCMTK nor GDCM 1.X, don't run these tests
