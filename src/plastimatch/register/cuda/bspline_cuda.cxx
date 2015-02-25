@@ -643,13 +643,11 @@ CPU_MI_Grad (Bspline_mi_hist_set *mi_hist, // OUTPUT: Histograms
 
 void
 CUDA_bspline_mi_a (
-    Bspline_optimize *bod
+    Bspline_parms *parms,
+    Bspline_state *bst,
+    Bspline_xform *bxf
 )
 {
-    Bspline_parms *parms = bod->get_bspline_parms ();
-    Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
-
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
@@ -784,13 +782,11 @@ CUDA_bspline_mi_a (
 
 void
 CUDA_bspline_mse_j (
-    Bspline_optimize *bod
+    Bspline_parms *parms,
+    Bspline_state *bst,
+    Bspline_xform *bxf
 )
 {
-    Bspline_parms *parms = bod->get_bspline_parms ();
-    Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
-
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;

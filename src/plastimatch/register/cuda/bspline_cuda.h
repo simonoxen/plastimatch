@@ -130,13 +130,17 @@ extern "C" {
     PLMREGISTERCUDA_API
     DELAYLOAD_WRAP (
     void CUDA_bspline_mi_a,
-        Bspline_optimize *bod
+        Bspline_parms *parms,
+        Bspline_state *bst,
+        Bspline_xform *bxf
     );
 
     PLMREGISTERCUDA_API
     DELAYLOAD_WRAP (
     void CUDA_bspline_mse_j,
-        Bspline_optimize *bod
+        Bspline_parms *parms,
+        Bspline_state *bst,
+        Bspline_xform *bxf
     );
 
     //

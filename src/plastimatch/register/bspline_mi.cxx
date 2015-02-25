@@ -3385,10 +3385,16 @@ bspline_score_mi (
 
         switch (parms->implementation) {
         case 'a':
-            CUDA_bspline_mi_a (bod);
+            CUDA_bspline_mi_a (
+                bod->get_bspline_parms(),
+                bod->get_bspline_state(),
+                bod->get_bspline_xform());
             break;
         default:
-            CUDA_bspline_mi_a (bod);
+            CUDA_bspline_mi_a (
+                bod->get_bspline_parms(),
+                bod->get_bspline_state(),
+                bod->get_bspline_xform());
             break;
         }
 

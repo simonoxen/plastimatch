@@ -10,26 +10,27 @@
 class Bspline_xform;
 class Volume;
 
-PLMBASE_C_API void bspline_interpolate_vf (Volume* interp, const Bspline_xform* bxf);
-PLMBASE_C_API void bspline_transform_point (
-        float point_out[3], /* Output coordinate of point */
-        Bspline_xform* bxf, /* Bspline transform coefficients */
-        float point_in[3],  /* Input coordinate of point */
-        int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
+PLMBASE_API void bspline_interpolate_vf (
+    Volume* interp, const Bspline_xform* bxf);
+PLMBASE_API void bspline_transform_point (
+    float point_out[3], /* Output coordinate of point */
+    Bspline_xform* bxf, /* Bspline transform coefficients */
+    float point_in[3],  /* Input coordinate of point */
+    int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
 );
-PLMBASE_C_API void bspline_interp_pix (
+PLMBASE_API void bspline_interp_pix (
     float out[3],
     const Bspline_xform* bxf, 
     plm_long p[3],
     plm_long qidx
 );
-PLMBASE_C_API void bspline_interp_pix_b (
+PLMBASE_API void bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
     plm_long pidx, 
     plm_long qidx
 );
-PLMBASE_C_API void bspline_interp_pix_c (
+PLMBASE_API void bspline_interp_pix_c (
     float out[3], 
     Bspline_xform* bxf, 
     plm_long pidx, 

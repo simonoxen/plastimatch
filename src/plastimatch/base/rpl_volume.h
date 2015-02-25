@@ -10,14 +10,14 @@
 #include "plm_image.h"
 #include "ray_trace_callback.h"
 
-float compute_PrSTPR_from_HU(float);
-float compute_PrSTPR_Schneider_weq_from_HU (float CT_HU); // Stopping Power Ratio - Schneider's model
-float compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU); // Stopping power Ratio - XiO values from MGH
-float compute_PrWER_from_HU(float CT_HU); // WER = STRP / density
+PLMBASE_API float compute_PrSTPR_from_HU(float);
+PLMBASE_API float compute_PrSTPR_Schneider_weq_from_HU (float CT_HU); // Stopping Power Ratio - Schneider's model
+PLMBASE_API float compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU); // Stopping power Ratio - XiO values from MGH
+PLMBASE_API float compute_PrWER_from_HU(float CT_HU); // WER = STRP / density
 
 extern const double lookup_PrSTPR_XiO_MGH[][2];
 
-float compute_density_from_HU (float CT_HU); // density VS HU - Schneider's model: broken curve
+PLMBASE_API float compute_density_from_HU (float CT_HU); // density VS HU - Schneider's model: broken curve
 
 class Proj_volume;
 class Ray_data;

@@ -1026,7 +1026,7 @@ bspline_score_mse (
             case 'c':
             case 'k':
                 bspline_score_k_mse (bod);
-                break;
+            break;
             default:
                 bspline_score_i_mse (bod);
                 break;
@@ -1078,10 +1078,16 @@ bspline_score_mse (
 
         switch (parms->implementation) {
         case 'j':
-            CUDA_bspline_mse_j (bod);
+            CUDA_bspline_mse_j (
+                bod->get_bspline_parms(),
+                bod->get_bspline_state(),
+                bod->get_bspline_xform());
             break;
         default:
-            CUDA_bspline_mse_j (bod);
+            CUDA_bspline_mse_j (
+                bod->get_bspline_parms(),
+                bod->get_bspline_state(),
+                bod->get_bspline_xform());
             break;
         }
 
