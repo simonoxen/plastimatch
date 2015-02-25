@@ -53,8 +53,9 @@ if ($source_bz2 =~ /plastimatch-(.*)-Source.tar.bz2/) {
 } else {
     die "Couldn't parse plastimatch version\n";
 }
+#$deb_bz2 = "${debmed_dir}/${deb_ver}.orig.tar.bz2";
+$deb_bz2 = "${debmed_dir}/${source_bz2}";
 $source_bz2 = "${build_dir}/${source_bz2}";
-$deb_bz2 = "${debmed_dir}/${deb_ver}.orig.tar.bz2";
 
 print "source_bz2 = $source_bz2\n";
 print "deb_bz2 = $deb_bz2\n";
@@ -62,6 +63,3 @@ print "deb_bz2 = $deb_bz2\n";
 chdir ${debmed_dir};
 system ("rm ${deb_bz2} 2> /dev/null");
 system ("ln -s ${source_bz2} ${deb_bz2}");
-
-chdir "trunk";
-system ("./debian/get-orig-source ${deb_ver}.orig.tar.bz2");

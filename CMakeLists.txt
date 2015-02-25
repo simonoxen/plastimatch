@@ -1042,7 +1042,10 @@ endif ()
 ##-----------------------------------------------------------------------------
 # Default Generators
 set (CPACK_GENERATOR "ZIP")
-set (CPACK_SOURCE_GENERATOR "TBZ2")
+# The debian tool mk-origtargz has a bug, where it doesn't work
+# if the archive is .tar.bz2
+#set (CPACK_SOURCE_GENERATOR "TBZ2")
+set (CPACK_SOURCE_GENERATOR "TGZ")
 
 # General Stuff
 set (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
