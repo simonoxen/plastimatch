@@ -14,6 +14,7 @@
 #include "rt_study.h"
 #include "synthetic_mha.h"
 #include "volume_conv.h"
+#include "volume_gaussian.h"
 
 static Plm_image::Pointer
 create_gabor_kernel (const Filter_parms *parms, const Plm_image::Pointer& img)
@@ -83,28 +84,38 @@ filter_main (Filter_parms* parms)
     }
 
     Plm_image::Pointer ker;
+    Volume::Pointer volume_out;
 
     if (parms->filter_type == Filter_parms::FILTER_TYPE_GABOR)
     {
         ker = create_gabor_kernel (parms, img);
     }
-    else if (parms->filter_type == Filter_parms::FILTER_TYPE_GAUSSIAN)
+    else if (parms->filter_type == Filter_parms::FILTER_TYPE_GAUSSIAN_COMBINED)
     {
         ker = create_gauss_kernel (parms, img);
+    }
+    else if (parms->filter_type == Filter_parms::FILTER_TYPE_GAUSSIAN_SEPARABLE)
+    {
+        volume_out = volume_gaussian (
+            img->get_volume_float(), 
+            parms->gauss_width, 
+            2.0);
     }
     else if (parms->filter_type == Filter_parms::FILTER_TYPE_KERNEL)
     {
         /* Not yet implemented */
     }
-    lprintf ("kernel size: %d %d %d\n",
-        ker->dim(0), ker->dim(1), ker->dim(2));
 
-    if (parms->out_kernel_fn != "") {
-        ker->save_image (parms->out_kernel_fn);
+    /* For kernel-style filters, do the actual filtering here */
+    if (ker) {
+        lprintf ("kernel size: %d %d %d\n",
+            ker->dim(0), ker->dim(1), ker->dim(2));
+        if (parms->out_kernel_fn != "") {
+            ker->save_image (parms->out_kernel_fn);
+        }
+        volume_out = volume_conv (
+            img->get_volume_float(), ker->get_volume_float());
     }
-
-    Volume::Pointer volume_out = volume_conv (
-        img->get_volume_float(), ker->get_volume_float());
 
     Plm_image::Pointer img_out = Plm_image::New (volume_out);
     
@@ -190,8 +201,11 @@ parse_fn (
     if (arg == "gabor") {
         parms->filter_type = Filter_parms::FILTER_TYPE_GABOR;
     }
+    else if (arg == "gauss-slow") {
+        parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN_COMBINED;
+    }
     else if (arg == "gauss") {
-        parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN;
+        parms->filter_type = Filter_parms::FILTER_TYPE_GAUSSIAN_SEPARABLE;
     }
     else if (arg == "kernel") {
         parms->filter_type = Filter_parms::FILTER_TYPE_KERNEL;

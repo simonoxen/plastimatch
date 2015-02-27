@@ -11,7 +11,8 @@ public:
     enum Filter_type {
         FILTER_TYPE_UNDEFINED,
         FILTER_TYPE_GABOR,
-        FILTER_TYPE_GAUSSIAN,
+        FILTER_TYPE_GAUSSIAN_COMBINED,
+        FILTER_TYPE_GAUSSIAN_SEPARABLE,
         FILTER_TYPE_KERNEL
     };
 
