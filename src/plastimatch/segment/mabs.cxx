@@ -2078,8 +2078,12 @@ Mabs::segment ()
         d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
     }
     else {
+        if (d_ptr->registration_list.empty()) {
+            /* No registration file.  Punt. */
+            print_and_exit ("Error, could not find registration file.\n");
+        }            
         d_ptr->registration_id = basename (
-            d_ptr->parms->registration_config);
+            d_ptr->registration_list.front());
     }
     d_ptr->rho = d_ptr->parms->optimization_result_seg_rho;
     d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
