@@ -217,6 +217,7 @@ if (keys(%seghash) == 0) {
 ## for all structures.
 foreach $seg (sort keys %seghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
+    print "$seg,$seghash{$seg}\n";
     ($struct,$parms) = split (',', $seg, 2);
     if (not exists $seg_dice_hash{$parms}) {
 	$seg_dice_hash{$parms} = $dice_sum;
@@ -238,8 +239,21 @@ foreach $parms (sort keys %seg_dice_hash) {
 	$best_seg_score = $avg_dice;
     }
 }
+
+# Print everything
+foreach $parms (sort keys %seg_dice_hash) {
+    $avg_dice = $seg_dice_hash{$parms} / $seg_num{$parms};
+    $avg_hd95 = $seg_hd95_hash{$parms} / $seg_num{$parms};
+#    print "seg: $parms, $avg_dice, $avg_hd95";
+#    if ($parms eq $best_seg) {
+#	print " *";
+#    }
+#    print "\n";
+}
+
 if ($best_seg ne "") {
-    print "seg: $best_seg,$best_seg_score\n";
+    # Or, just print best
+    #print "seg: $best_seg,$best_seg_score\n";
     ## Update training file
     ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
 
