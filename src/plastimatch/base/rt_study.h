@@ -37,6 +37,8 @@ public:
 
     void load (const char* input_path, 
         Plm_file_format file_type = PLM_FILE_FMT_UNKNOWN);
+    void load (const std::string& input_path,
+        Plm_file_format file_type = PLM_FILE_FMT_UNKNOWN);
     void load_dicom_dir (const char *dicom_dir);
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);

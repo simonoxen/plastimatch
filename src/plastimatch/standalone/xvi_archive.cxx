@@ -68,7 +68,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
             patient_ct_set_dir.c_str(), ct_set_dir.entries[i]);
         if (is_directory (fn)) {
             printf ("Loaded reference study (%s)\n", fn.c_str());
-            reference_study.load_image (fn);
+            reference_study.load (fn);
             reference_uid = ct_set_dir.entries[i];
             break;
         }

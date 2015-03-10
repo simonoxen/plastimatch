@@ -88,10 +88,17 @@ Rt_study::load (const char* input_path,
     }
 }
 
+void 
+Rt_study::load (const std::string& path,
+    Plm_file_format file_type)
+{
+    this->load (path.c_str(), file_type);
+}
+
 void
 Rt_study::load_image (const char *fn)
 {
-    d_ptr->m_img = Plm_image::New (new Plm_image (fn));
+    d_ptr->m_img = Plm_image::New (fn);
 }
 
 void
