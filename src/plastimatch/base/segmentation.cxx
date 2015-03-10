@@ -40,7 +40,6 @@
 
 class Segmentation_private {
 public:
-    Metadata *m_meta;           /* Metadata specific to this ss_image */
     Plm_image::Pointer m_labelmap; /* Structure set lossy bitmap form */
     Plm_image::Pointer m_ss_img;   /* Structure set in lossless bitmap form */
     Rtss::Pointer m_cxt;        /* Structure set in polyline form */
@@ -50,12 +49,10 @@ public:
 
 public:
     Segmentation_private () {
-        m_meta = new Metadata;
         m_rtss_valid = false;
         m_ss_img_valid = false;
     }
     ~Segmentation_private () {
-        delete m_meta;
     }
 };
 
@@ -73,19 +70,14 @@ compose_prefix_fn (
         extension);
 }
 
-Segmentation::Segmentation (Rt_study *rtds)
+Segmentation::Segmentation ()
 {
     this->d_ptr = new Segmentation_private;
-
-    if (rtds) {
-        d_ptr->m_meta->set_parent (rtds->get_metadata());
-    }
 }
 
 Segmentation::~Segmentation ()
 {
     clear ();
-
     delete this->d_ptr;
 }
 
@@ -509,9 +501,6 @@ Segmentation::save_ss_image (const Pstring &ss_img_fn)
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
-    /* Set metadata */
-    // d_ptr->m_ss_img->set_metadata ("I am a", "Structure set");
-
     d_ptr->m_ss_img->save_image ((const char*) ss_img_fn);
 }
 
@@ -592,10 +581,14 @@ Segmentation::save_ss_list (const Pstring &ss_list_fn)
 }
 
 void
-Segmentation::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
-    const Pstring &output_dir)
+Segmentation::save_xio (
+    const Rt_study_metadata::Pointer& rsm,
+    Xio_ct_transform *xio_transform, 
+    Xio_version xio_version, 
+    const Pstring &output_dir
+)
 {
-    xio_structures_save (d_ptr->m_cxt.get(), d_ptr->m_meta, xio_transform,
+    xio_structures_save (rsm, d_ptr->m_cxt.get(), xio_transform,
         xio_version, (const char*) output_dir);
 }
 

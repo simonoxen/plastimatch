@@ -71,6 +71,7 @@ public:
     const Rt_study_metadata::Pointer& get_rt_study_metadata () const;
     Rt_study_metadata::Pointer& get_rt_study_metadata ();
     void set_study_metadata (std::vector<std::string>& metadata);
+    Metadata::Pointer& get_metadata ();
 
     bool have_image ();
     void set_image (ShortImageType::Pointer& itk_image);
@@ -97,8 +98,6 @@ public:
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();
-
-    Metadata::Pointer& get_metadata ();
 
     Volume::Pointer get_image_volume_short ();
     Volume::Pointer get_image_volume_float ();

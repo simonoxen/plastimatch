@@ -222,7 +222,7 @@ Rt_study::load_xio (const char *xio_dir)
     xio_ct_load (d_ptr->m_img.get(), &xst);
 
     /* Load the XiO studyset structure set */
-    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+    d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_xio (xst);
 
     /* Apply XiO CT geometry to structures */
@@ -276,7 +276,7 @@ Rt_study::load_xio (const char *xio_dir)
 void
 Rt_study::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+    d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load (ss_img, ss_list);
 }
 
@@ -365,14 +365,14 @@ Rt_study::load_dose_mc (const char *dose_mc)
 void 
 Rt_study::load_cxt (const char *input_fn)
 {
-    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+    d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_cxt (input_fn, d_ptr->m_drs.get());
 }
 
 void 
 Rt_study::load_prefix (const char *input_fn)
 {
-    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+    d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_prefix (input_fn);
 }
 

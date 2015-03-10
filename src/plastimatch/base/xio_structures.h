@@ -17,12 +17,13 @@ PLMBASE_C_API void xio_structures_load (
         const Xio_studyset& xsl
 );
 
-PLMBASE_C_API void xio_structures_save (
-        Rtss *cxt, 
-        Metadata *meta,
-        Xio_ct_transform *transform, 
-        Xio_version xio_version, 
-        const char *output_dir
+PLMBASE_API void
+xio_structures_save (
+    const Rt_study_metadata::Pointer& rsm,
+    Rtss *cxt, 
+    Xio_ct_transform *transform, 
+    Xio_version xio_version, 
+    const char *output_dir
 );
 
 PLMBASE_C_API void xio_structures_apply_transform (

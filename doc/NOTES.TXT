@@ -1,3 +1,39 @@
+***** Metadata hookup *****
+
+Current status:
+Rt_study_metadata constructor hooks up internally created metadata
+Segmentation allows external hookup of parent in constructor.  
+
+DCMTK loading puts items into Rt_study_metadata.  It puts the info 
+directly into the right section.  Ditto for GDCM1.
+
+Synthetic_mha creates images and inserts images into an Rt_study.
+
+XiO loader (Rt_study::load_xio) inserts items directly into Rt_study_metadata.
+
+Metadata within Plm_image is never actually used.
+You must have an Rt_study to have metadata.
+The Rt_study_metadata is passed into Plm_image::save()
+
+
+***** Metadata ownership *****
+
+Current ownership organization
+
+Rt_study -> Rt_study_metadata
+Rt_study_metadata -> shared metadata
+Rt_study_metadata -> image metadata
+Rt_study_metadata -> dose metadata
+Rt_study_metadata -> rtss metadata
+
+Plm_image -> image metadata
+Plm_image -> dose metadata
+Segmentation -> rtss metadata
+
+image metadata -> shared metadata
+rtss metadata -> shared metadata
+dose metadata -> shared metadata
+
 ***** Bspline methods *****
 
 Method mi-i

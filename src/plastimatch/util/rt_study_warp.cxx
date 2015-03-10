@@ -134,7 +134,8 @@ save_ss_img (
         lprintf ("save_ss_img: save_xio (dirname = %s)\n", 
             (const char*) parms->output_xio_dirname);
         seg->save_xio (
-            rt_study->get_xio_ct_transform(),
+            rt_study->get_rt_study_metadata (),
+            rt_study->get_xio_ct_transform (),
             parms->output_xio_version,
             parms->output_xio_dirname);
     }

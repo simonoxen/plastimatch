@@ -593,8 +593,6 @@ Plm_image::set (const Plm_image::Pointer& pli)
 	break;
     }
 
-    /* GCS FIX: This should be deep copy */
-    d_ptr->m_meta = pli->get_metadata ();
     this->m_original_type = pli->m_original_type;
     this->m_type = pli->m_type;
 }
@@ -1635,35 +1633,4 @@ Plm_image::compare_headers (
     pih2.set_from_plm_image (pli2);
 
     return Plm_image_header::compare (&pih1, &pih2);
-}
-
-/* Note: this works for NRRD (and dicom?), but not MHA/MHD */
-/* GCS 2012-02-20: This function is not actually called anywhere, 
-   but might become useful if/when we start saving metadata
-   in mha/nrrd files */
-void 
-Plm_image::set_metadata (char *tag, char *value)
-{
-    itk::MetaDataDictionary *dict;
-
-    switch (this->m_type) {
-    case PLM_IMG_TYPE_ITK_ULONG:
-	dict = &this->m_itk_uint32->GetMetaDataDictionary();
-	itk_metadata_set (dict, tag, value);
-	break;
-    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
-	dict = &this->m_itk_uchar_vec->GetMetaDataDictionary();
-	itk_metadata_set (dict, tag, value);
-	break;
-    default:
-	print_and_exit ("Error, can't set metadata for image type %d\n",
-	    this->m_type);
-	break;
-    }
-}
-
-Metadata::Pointer&
-Plm_image::get_metadata ()
-{
-    return d_ptr->m_meta;
 }

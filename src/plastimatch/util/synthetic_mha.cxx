@@ -549,7 +549,7 @@ synth_gabor (
 
 void
 synthetic_mha (
-    Rt_study *rtds,
+    Rt_study *rt_study,
     Synthetic_mha_parms *parms
 )
 {
@@ -861,15 +861,14 @@ synthetic_mha (
         }
     }
 
-    /* Insert images into rtds */
+    /* Insert images into rt_study */
     Plm_image::Pointer pli = Plm_image::New();
     pli->set_itk (im_out);
-    rtds->set_image (pli);
+    rt_study->set_image (pli);
     if (parms->m_want_ss_img) {
-        /* Create rtss & set into rtds */
-        Segmentation::Pointer rtss = Segmentation::New (
-            new Segmentation (rtds));
-        rtds->set_rtss (rtss);
+        /* Create rtss & set into rt_study */
+        Segmentation::Pointer rtss = Segmentation::New ();
+        rt_study->set_rtss (rtss);
 
         /* Insert ss_image into rtss */
         rtss->set_ss_img (ss_img);
@@ -894,6 +893,6 @@ synthetic_mha (
         }
     }
     if (parms->m_want_dose_img) {
-        rtds->set_dose (dose_img);
+        rt_study->set_dose (dose_img);
     }
 }

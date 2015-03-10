@@ -19,6 +19,7 @@
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "pstring.h"
+#include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"
 #include "rtss_roi.h"
@@ -302,8 +303,8 @@ format_xio_filename (const char *output_dir, float z_loc)
 
 void
 xio_structures_save (
+    const Rt_study_metadata::Pointer& rsm,
     Rtss *cxt,
-    Metadata *meta,
     Xio_ct_transform *transform,
     Xio_version xio_version,
     const char *output_dir
@@ -357,6 +358,7 @@ xio_structures_save (
     for (plm_long z = 0; z < cxt->m_dim[2]; z++) {
 	float z_offset = 0.0f;
 
+        Metadata::Pointer meta = rsm->get_study_metadata ();
 	std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
 	if (patient_pos == "HFS" || patient_pos == "HFP" || patient_pos == "") {

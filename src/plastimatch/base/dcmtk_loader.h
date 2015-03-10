@@ -29,7 +29,6 @@ public:
 public:
     void debug (void) const;
     void set_rt_study_metadata (Rt_study_metadata::Pointer drs);
-    Metadata::Pointer& get_metadata ();
     Volume *get_volume ();
 
     Plm_image::Pointer get_image ();

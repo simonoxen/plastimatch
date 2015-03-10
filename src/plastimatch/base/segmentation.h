@@ -29,7 +29,7 @@ public:
     Segmentation_private *d_ptr;
 
 public:
-    Segmentation (Rt_study *rtds = 0);
+    Segmentation ();
     ~Segmentation ();
 
     void clear ();
@@ -58,7 +58,9 @@ public:
     void save_prefix (const char *output_prefix);
     void save_prefix (const Pstring &output_prefix);
     void save_ss_list (const Pstring &ss_list_fn);
-    void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
+    void save_xio (
+        const Rt_study_metadata::Pointer& rsm,
+        Xio_ct_transform *xio_transform, Xio_version xio_version,
         const Pstring &output_dir);
     UInt32ImageType::Pointer get_ss_img_uint32 (void);
     UCharVecImageType::Pointer get_ss_img_uchar_vec (void);

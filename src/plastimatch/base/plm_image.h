@@ -167,11 +167,6 @@ public:
     float origin (size_t);
     float spacing (size_t);
 
-    /* metadata */
-    Metadata::Pointer& get_metadata ();
-    void set_metadata (Metadata::Pointer& meta);
-    void set_metadata (char *tag, char *value);
-
     /* debug */
     void print ();
 
