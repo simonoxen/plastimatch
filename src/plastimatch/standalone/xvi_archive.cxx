@@ -183,19 +183,25 @@ do_xvi_archive (Xvi_archive_parms *parms)
             printf ("Error parsing transform string.\n");
             exit (1);
         }
-        xfp[0] = xvip[0];
-        xfp[1] = xvip[1];
-        xfp[2] = xvip[2];
-        xfp[3] = xvip[4];
-        xfp[4] = xvip[5];
-        xfp[5] = xvip[6];
-        xfp[6] = xvip[8];
-        xfp[7] = xvip[9];
-        xfp[8] = xvip[10];
-        xfp[9] = xvip[12];
-        xfp[10] = xvip[13];
-        xfp[11] = xvip[14];
+        xfp[0] = 1;
+        xfp[1] = 0;
+        xfp[2] = 0;
+        xfp[3] = 0;
+        xfp[4] = 1;
+        xfp[5] = 0;
+        xfp[6] = 0;
+        xfp[7] = 0;
+        xfp[8] = 1;
+        xfp[9] = - xvip[12] * 10;
+        xfp[10] = - xvip[13] * 10;
+        xfp[11] = - xvip[14] * 10;
         xf->set_aff (xfp);
+
+#if defined (commentout)
+        std::string xf_file = string_format (
+            "%s/xf.tfm", output_dir.c_str());
+        xf->save (xf_file);
+#endif
 
         Dcmtk_sro::save (
             xf,
