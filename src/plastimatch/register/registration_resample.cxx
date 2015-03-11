@@ -27,6 +27,7 @@ registration_resample_volume (
     );
 
     switch (stage->resample_type) {
+    case RESAMPLE_AUTO:
     case RESAMPLE_VOXEL_RATE:
         if (shared->legacy_subsampling) {
             return volume_subsample_vox_legacy (vol, resample_rate);
