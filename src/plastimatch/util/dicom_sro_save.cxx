@@ -121,7 +121,7 @@ Dicom_sro_save::run ()
         d_ptr->moving_image, d_ptr->moving_image_path, "moving");
 
     Dcmtk_sro::save (
-        d_ptr->xform, rtm_src, rtm_reg, d_ptr->output_dir);
+        d_ptr->xform, rtm_src, rtm_reg, d_ptr->output_dir, true);
 
 #if defined (commentout)
     /* Fixed image */

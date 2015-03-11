@@ -17,7 +17,8 @@ public:
         const Xform::Pointer& xf,
         const Rt_study_metadata::Pointer& rsm_src,   /* Fixed image */
         const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */
-        const std::string& dicom_dir);
+        const std::string& dicom_dir,
+        bool filenames_with_uid);
 };
 
 #endif

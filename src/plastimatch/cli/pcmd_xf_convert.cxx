@@ -174,7 +174,7 @@ do_xf_convert (Xf_convert_parms *parms)
 
         lprintf ("Saving sro\n");
         Dcmtk_sro::save (
-            xf_out, rtm_src, rtm_reg, parms->output_dicom_dir);
+            xf_out, rtm_src, rtm_reg, parms->output_dicom_dir, true);
         lprintf ("Done saving sro\n");
 #endif
     }

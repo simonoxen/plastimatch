@@ -204,10 +204,9 @@ do_xvi_archive (Xvi_archive_parms *parms)
 #endif
 
         Dcmtk_sro::save (
-            xf,
-            reference_study.get_rt_study_metadata (),
+            xf, reference_study.get_rt_study_metadata (),
             cbct_study.get_rt_study_metadata (),
-            output_dir);
+            output_dir, true);
 
         //break;
     }

@@ -25,16 +25,13 @@ Dcmtk_sro::save (
     const Xform::Pointer& xf,
     const Rt_study_metadata::Pointer& rsm_src,   /* Fixed image */
     const Rt_study_metadata::Pointer& rsm_reg,   /* Moving image */
-    const std::string& dicom_dir)
+    const std::string& dicom_dir,
+    bool filenames_with_uid)
 {
+    /* Prepare xform */
     Xform xf_aff;
     xform_to_aff (&xf_aff, xf.get(), 0);
-
     AffineTransformType::Pointer itk_aff = xf_aff.get_aff();
-
-    /* Prepare output file */
-    std::string sro_fn = string_format ("%s/sro.dcm", dicom_dir.c_str());
-    make_parent_directories (sro_fn);
 
     /* Prepare dcmtk */
     OFCondition ofc;
@@ -60,11 +57,12 @@ Dcmtk_sro::save (
     Dcmtk_module_general_series::set_sro (dataset, rsm);
 
     /* Spatial registration specific items */
+    std::string sro_sop_instance_uid = dicom_uid(PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_Modality, "REG");
     dataset->putAndInsertString (DCM_SOPClassUID, 
         UID_SpatialRegistrationStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        dicom_uid(PLM_UID_PREFIX).c_str());
+        sro_sop_instance_uid.c_str());
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 
         rsm->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_ContentTime, 
@@ -165,6 +163,16 @@ Dcmtk_sro::save (
         matrix_string.c_str());
     m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrixType,
         "RIGID");
+
+    /* Prepare output file */
+    std::string sro_fn;
+    if (filenames_with_uid) {
+        sro_fn = string_format ("%s/sro_%s.dcm", dicom_dir.c_str(),
+            sro_sop_instance_uid.c_str());
+    } else {
+        sro_fn = string_format ("%s/sro.dcm", dicom_dir.c_str());
+    }
+    make_parent_directories (sro_fn);
 
     /* ----------------------------------------------------------------- *
      *  Write the output file
