@@ -49,6 +49,7 @@ public:
     void delete_structure (int index);
     Rtss_roi* find_structure_by_id (int structure_id);
     std::string get_structure_name (size_t index);
+    void set_structure_name (size_t index, const std::string& name);
     void debug (void);
     void adjust_structure_names (void);
     void prune_empty (void);

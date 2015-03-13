@@ -692,7 +692,10 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
             lprintf ("Deleted structure %s\n");
             cxt->delete_structure (i);
             --i;
+            continue;
         }
+        lprintf ("Resetting structure name to %s\n", mapped_name.c_str());
+        rtss->set_structure_name (i, mapped_name);
     }
 
     /* Rasterize structure set */

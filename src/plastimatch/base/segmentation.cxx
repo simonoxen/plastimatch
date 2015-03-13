@@ -374,6 +374,15 @@ Segmentation::get_structure_name (size_t index)
     return 0;
 }
 
+void 
+Segmentation::set_structure_name (size_t index, const std::string& name)
+{
+    if (!d_ptr->m_cxt) {
+        return;
+    }
+    d_ptr->m_cxt->set_structure_name (index, name);
+}
+
 UCharImageType::Pointer
 Segmentation::get_structure_image (int index)
 {

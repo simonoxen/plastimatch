@@ -1,7 +1,7 @@
 .. _segmentation_command_file_reference:
 
 Segmentation command file reference
------------------------------------
+===================================
 
 The mabs parameter file can have seven sections: PREALIGNMENT, ATLAS-SELECTION, 
 TRAINING, REGISTRATION, STRUCTURES, LABELING and OPTIMIZATION_RESULT.
@@ -288,3 +288,28 @@ The possible atlas selection criteria are nmi, nmi-post, nmi-ratio, mse, mse-pos
      - Random selection of a random number of atlases
    * - precomputed
      - Ranking read from a text file containing a precomputed list of atlases
+
+
+
+Structure name mapping
+----------------------
+It is required to put the name of each structure to be segmented into the
+STRUCTURES section.  If structure names are uniformly defined, then 
+you simply need to list them::
+
+  [STRUCTURES]
+  Prostate
+  Bladder
+  Rectum
+
+If the structure names are not uniform, you can use this section to 
+map multiple names (within an atlas) to the same target name.
+To do so, put the target name to the left of the equal sign, and the 
+original name to the right of the equal sign.  For example, 
+the following would map three different spellings to the same target name::
+
+  [STRUCTURES]
+  Prostate
+  Prostate=prostate
+  Prostate=Pros_GTV
+
