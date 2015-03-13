@@ -285,6 +285,7 @@ Mabs_private::extract_reference_image (const std::string& mapped_name)
         std::string ref_mapped_name 
             = this->map_structure_name (ref_ori_name);
         if (ref_mapped_name == mapped_name) {
+            lprintf ("Extracting %d, %s\n", j, ref_ori_name.c_str());
             this->ref_structure_image = rtss->get_structure_image (j);
             this->have_ref_structure = true;
             break;
@@ -615,7 +616,9 @@ Mabs::run_registration_loop ()
                 d_ptr->time_extract += timer.report();
 
                 /* Make the distance map */
-                if (d_ptr->compute_distance_map && d_ptr->parms->fusion_criteria == "gaussian") {
+                if (d_ptr->compute_distance_map 
+                    && d_ptr->parms->fusion_criteria == "gaussian")
+                {
                     timer.start();
                     lprintf ("Computing distance map...\n");
                     this->compute_dmap (structure_image,
@@ -624,7 +627,10 @@ Mabs::run_registration_loop ()
 
                 /* Extract reference structure as binary mask. */
                 timer.start();
+                lprintf ("Extracting reference image (%s)\n",
+                    mapped_name.c_str());
                 d_ptr->extract_reference_image (mapped_name);
+                lprintf ("Done extracting reference image.\n");
                 d_ptr->time_extract += timer.report();
 
                 /* Compute Dice, etc. */
@@ -2020,6 +2026,13 @@ Mabs::segment ()
     /* Load the image to be labeled.  For now, we'll assume this 
        is successful. */
     d_ptr->ref_rtds->load (d_ptr->segment_input_fn.c_str());
+
+    /* GCS TBD: For now, we delete any existing structures. 
+       This avoids (pushes into the future) any additional development
+       needed to update existing structure sets.  */
+    if (d_ptr->ref_rtds->have_rtss()) {
+        d_ptr->ref_rtds->get_rtss()->clear ();
+    }
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->preprocessed_dir);
