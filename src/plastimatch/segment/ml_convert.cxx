@@ -16,7 +16,7 @@ class Ml_convert_private
 {
 public:
     std::string label_filename;
-    std::string feature_dir;
+    std::list<std::string> feature_dir;
     std::string output_filename;
     std::string output_format;
 };
@@ -37,9 +37,9 @@ void Ml_convert::set_label_filename (const std::string& label_filename)
     d_ptr->label_filename = label_filename;
 }
 
-void Ml_convert::set_feature_directory (const std::string& feature_dir)
+void Ml_convert::add_feature_path (const std::string& feature_path)
 {
-    d_ptr->feature_dir = feature_dir;
+    d_ptr->feature_dir.push_back (feature_path);
 }
 
 void Ml_convert::set_output_filename (const std::string& output_filename)
@@ -88,16 +88,36 @@ void Ml_convert::run ()
             v == 0 ? -1 : 1, vw_format ? "|" : "");
     }
 
+    /* Compile a complete list of feature input files */
+    std::list<std::string> all_feature_files;
+    std::list<std::string>::iterator fpath_it;
+    for (fpath_it = d_ptr->feature_dir.begin();
+         fpath_it != d_ptr->feature_dir.end();
+         fpath_it++)
+    {
+        if (is_directory(*fpath_it)) {
+            Dir_list dir_list (*fpath_it);
+            for (int i = 0; i < dir_list.num_entries; i++) {
+                /* Skip directories */
+                std::string dir_entry = dir_list.entry (i);
+                if (is_directory(dir_entry)) {
+                    continue;
+                }
+                all_feature_files.push_back (dir_entry);
+            }
+        }
+        else {
+            all_feature_files.push_back (*fpath_it);
+        }
+    }
+    
     /* Loop through feature files */
     int idx = 0;
-    Dir_list dir_list (d_ptr->feature_dir);
-    for (int i = 0; i < dir_list.num_entries; i++) {
-        std::string dir_entry = dir_list.entry (i);
-
-        /* Skip directories */
-        if (is_directory(dir_entry)) {
-            continue;
-        }
+    for (fpath_it = all_feature_files.begin();
+         fpath_it != all_feature_files.end();
+         fpath_it++)
+    {
+        std::string dir_entry = *fpath_it;
 
         /* Load a feature image */
         Plm_image::Pointer feature = Plm_image::New (dir_entry);
@@ -107,7 +127,7 @@ void Ml_convert::run ()
         FloatImageType::Pointer feature_itk = feature->itk_float();
 
         /* Set up input and output file */
-        lprintf ("Processing %s\n", dir_list.entries[i]);
+        lprintf ("Processing %s\n", dir_entry.c_str());
         if (current == fp[0]) {
             previous = fp[0];
             current = fp[1];
@@ -156,7 +176,7 @@ void Ml_convert::run ()
 
             /* Append new value */
             if (vw_format) {
-                fprintf (current, " %s:%f\n", dir_list.entries[i], v);
+                fprintf (current, " %s:%f\n", dir_entry.c_str(), v);
             } else {
                 fprintf (current, " %d:%f\n", idx+1, v);
             }

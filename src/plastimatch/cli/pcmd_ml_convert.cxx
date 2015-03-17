@@ -10,7 +10,7 @@
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    std::cout << "Usage: plastimatch ml_convert [options] file\n";
+    std::cout << "Usage: plastimatch ml_convert [options] feature-path [feature-path ...]\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
@@ -27,14 +27,15 @@ parse_fn (
     parser->add_default_options ();
 
     /* Basic options */
-    parser->add_long_option ("", "feature-directory",
-	"Location of feature directory, one image per feature", 1, "");
     parser->add_long_option ("", "labelmap",
 	"Location of labelmap file", 1, "");
     parser->add_long_option ("", "output",
 	"Location of output file to be written", 1, "");
     parser->add_long_option ("", "output-format",
 	"Output format, either \"libsvm\" or \"vw\", default is \"vw\"", 
+        1, "");
+    parser->add_long_option ("", "append",
+	"Location of an existing input file, to which additional features will be appended",
         1, "");
 
     /* Parse options */
@@ -43,20 +44,23 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that an index or location was given */
-    if (!parser->have_option ("feature-directory") 
-	|| !parser->have_option("labelmap")
-	|| !parser->have_option("output"))
-    {
-	throw (dlib::error ("Error.  Must specify --feature-directory, "
-                "--labelmap, and --output options"));
+    /* Check that all necessary inputs are given */
+    if (!parser->have_option("labelmap") && !parser->have_option("append")) {
+	throw (dlib::error ("Error.  Must specify either --labelmap or --append option"));
+    }
+    if (!parser->have_option("output")) {
+	throw (dlib::error ("Error.  Must specify an --output option"));
     }
 
     /* Copy values into output struct */
-    parms->set_feature_directory (parser->get_string ("feature-directory"));
     parms->set_label_filename (parser->get_string ("labelmap"));
     parms->set_output_filename (parser->get_string ("output"));
     parms->set_output_format (parser->get_string ("output-format"));
+
+    /* Copy input filenames to parms struct */
+    for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
+        parms->add_feature_path ((*parser)[i]);
+    }
 }
 
 void
