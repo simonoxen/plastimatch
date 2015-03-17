@@ -213,11 +213,10 @@ if (keys(%seghash) == 0) {
     exit (0);
 }
 
-## This is a hack for version 1.0.   Use the same parameters 
-## for all structures.
+## Find best global values over all structures.
 foreach $seg (sort keys %seghash) {
     ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
-    print "$seg,$seghash{$seg}\n";
+#    print "$seg,$seghash{$seg}\n";
     ($struct,$parms) = split (',', $seg, 2);
     if (not exists $seg_dice_hash{$parms}) {
 	$seg_dice_hash{$parms} = $dice_sum;
@@ -236,24 +235,13 @@ foreach $parms (sort keys %seg_dice_hash) {
     $avg_hd95 = $seg_hd95_hash{$parms} / $seg_num{$parms};
     if ($avg_dice > $best_seg_score) {
 	$best_seg = $parms;
-	$best_seg_score = $avg_dice;
+	$best_seg_score = "$avg_dice,$avg_hd95";
     }
 }
 
-# Print everything
-foreach $parms (sort keys %seg_dice_hash) {
-    $avg_dice = $seg_dice_hash{$parms} / $seg_num{$parms};
-    $avg_hd95 = $seg_hd95_hash{$parms} / $seg_num{$parms};
-#    print "seg: $parms, $avg_dice, $avg_hd95";
-#    if ($parms eq $best_seg) {
-#	print " *";
-#    }
-#    print "\n";
-}
-
+## Print the best result
 if ($best_seg ne "") {
-    # Or, just print best
-    #print "seg: $best_seg,$best_seg_score\n";
+    print "seg: $best_seg,$best_seg_score\n";
     ## Update training file
     ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
 
@@ -267,7 +255,46 @@ gaussian_weighting_voting_thresh=$thresh
 EOSTRING
     ;
     $fn = "$dice_source_dir/optimization_result_seg.txt";
-    open FP, ">$fn";
-    print FP $output_string;
-    close FP;
+#    open FP, ">$fn";
+#    print FP $output_string;
+#    close FP;
 }
+
+
+## Find best values separately for each structure.
+undef %seg_dice_hash, %seg_hd95_hash, %seg_num;
+foreach $seg (sort keys %seghash)
+{
+    ($num,$dice_sum,$hd95_sum) = split (',', $seghash{$seg});
+    if (not exists $seg_dice_hash{$seg}) {
+	$seg_dice_hash{$seg} = $dice_sum;
+	$seg_hd95_hash{$seg} = $hd95_sum;
+	$seg_num{$seg} = $num;
+    } else {
+	$seg_dice_hash{$seg} += $dice_sum;
+	$seg_hd95_hash{$seg} += $hd95_sum;
+	$seg_num{$seg} += $num;
+    }
+    ($struct,$parms) = split (',', $seg, 2);
+    $struct_hash{$struct} = 1;
+}
+
+foreach $struct (sort keys %struct_hash)
+{
+    $best_dice = -1;
+    $best_parms = "";
+    foreach $seg (sort keys %seghash) {
+	($seg_struct,$parms) = split (',', $seg, 2);
+	($seg_struct eq $struct) or next;
+
+	$dice = $seg_dice_hash{$seg} / $seg_num{$seg};
+	$hd95 = $seg_hd95_hash{$seg} / $seg_num{$seg};
+	if ($best_dice < 0 || $dice > $best_dice) {
+	    $best_hd95 = $hd95;
+	    $best_dice = $dice;
+	    $best_parms = $parms;
+	}
+    }
+    print "seg: $struct,$best_parms,$best_dice,$best_hd95\n";
+}
+
