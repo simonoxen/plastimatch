@@ -7,6 +7,7 @@
 #include "plmsegment_config.h"
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include "plm_return_code.h"
 #include "pstring.h"
@@ -81,6 +82,7 @@ public:
 
     /* [STRUCTURES] */
     std::map<std::string, std::string> structure_map;
+    std::set<std::string> structure_set;
 
     /* [LABELING] */
     std::string labeling_input_fn;

@@ -1386,11 +1386,11 @@ Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
     }
 
     /* Loop through structures for this atlas image */
-    std::map<std::string, std::string>::const_iterator it;
-    for (it = d_ptr->parms->structure_map.begin ();
-         it != d_ptr->parms->structure_map.end (); it++)
+    std::set<std::string>::const_iterator it;
+    for (it = d_ptr->parms->structure_set.begin ();
+         it != d_ptr->parms->structure_set.end (); it++)
     {
-        std::string mapped_name = it->first;
+        const std::string& mapped_name = *it;
         lprintf ("Segmenting structure: %s\n", mapped_name.c_str());
 
         /* Make a new voter if needed */
@@ -1491,11 +1491,11 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
         d_ptr->output_dir.c_str(), atlas_id.c_str(), d_ptr->registration_id.c_str());
 
     /* Loop through structures for this atlas image */
-    std::map<std::string, std::string>::const_iterator it;
-    for (it = d_ptr->parms->structure_map.begin ();
-         it != d_ptr->parms->structure_map.end (); it++)
+    std::set<std::string>::const_iterator it;
+    for (it = d_ptr->parms->structure_set.begin ();
+         it != d_ptr->parms->structure_set.end (); it++)
     {
-        std::string mapped_name = it->first;
+        const std::string& mapped_name = *it;
 
         std::string atlas_struct_fn;
         atlas_struct_fn = string_format ("%s/structures/%s.nrrd",

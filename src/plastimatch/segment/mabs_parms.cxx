@@ -376,9 +376,10 @@ Mabs_parms::set_key_value (
             /* Key/value pair, so add for renaming */
             this->structure_map[val] = key;
         }
+        /* Add key to the set */
+        this->structure_set.insert (key);
         /* There is no filtering of structures values */
     }
-
 
     /* [LABELING] */
     if (section == "LABELING") {
