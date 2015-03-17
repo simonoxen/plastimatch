@@ -21,6 +21,7 @@ public:
     void set_label_filename (const std::string& label_filename);
     void set_feature_directory (const std::string& feature_dir);
     void set_output_filename (const std::string& output_filename);
+    void set_output_format (const std::string& output_format);
     void run ();
 };
 

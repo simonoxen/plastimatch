@@ -33,6 +33,9 @@ parse_fn (
 	"Location of labelmap file", 1, "");
     parser->add_long_option ("", "output",
 	"Location of output file to be written", 1, "");
+    parser->add_long_option ("", "output-format",
+	"Output format, either \"libsvm\" or \"vw\", default is \"vw\"", 
+        1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -53,6 +56,7 @@ parse_fn (
     parms->set_feature_directory (parser->get_string ("feature-directory"));
     parms->set_label_filename (parser->get_string ("labelmap"));
     parms->set_output_filename (parser->get_string ("output"));
+    parms->set_output_format (parser->get_string ("output-format"));
 }
 
 void

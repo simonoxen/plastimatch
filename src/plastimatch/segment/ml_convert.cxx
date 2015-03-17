@@ -18,6 +18,7 @@ public:
     std::string label_filename;
     std::string feature_dir;
     std::string output_filename;
+    std::string output_format;
 };
 
 Ml_convert::Ml_convert ()
@@ -46,6 +47,11 @@ void Ml_convert::set_output_filename (const std::string& output_filename)
     d_ptr->output_filename = output_filename;
 }
 
+void Ml_convert::set_output_format (const std::string& output_format)
+{
+    d_ptr->output_format = output_format;
+}
+
 void Ml_convert::run ()
 {
     Plm_timer pli;
@@ -58,7 +64,12 @@ void Ml_convert::run ()
     current = fp[0];
     previous = fp[0];
 
-#define BUFSIZE 1024*1024
+    bool vw_format = true;
+    if (d_ptr->output_format == "libsvm") {
+        vw_format = false;
+    }
+
+#define BUFSIZE 16*1024*1024
     char buf[BUFSIZE];
     size_t chars_in_buf = 0;
     char *buf_ptr;
@@ -73,7 +84,8 @@ void Ml_convert::run ()
     itk::ImageRegionIterator< UCharImageType > labelmap_it (labelmap_itk, rg);
     for (labelmap_it.GoToBegin(); !labelmap_it.IsAtEnd(); ++labelmap_it) {
         unsigned char v = (unsigned char) labelmap_it.Get();
-        fprintf (current, "%d |\n", v == 0 ? -1 : 1);
+        fprintf (current, "%d %s\n", 
+            v == 0 ? -1 : 1, vw_format ? "|" : "");
     }
 
     /* Loop through feature files */
@@ -143,7 +155,11 @@ void Ml_convert::run ()
             }
 
             /* Append new value */
-            fprintf (current, " %s:%f\n", dir_list.entries[i], v);
+            if (vw_format) {
+                fprintf (current, " %s:%f\n", dir_list.entries[i], v);
+            } else {
+                fprintf (current, " %d:%f\n", idx+1, v);
+            }
         }
         idx ++;
         printf ("Time = %f\n", (float) pli.report());
