@@ -5,6 +5,7 @@ use File::Basename;
 my $convert_dir = "";
 my $registration = "";
 my $training_dir = "";
+my $vw_format = "";
 
 ## -- ##
 sub process_one_atlas_structure {
@@ -20,13 +21,18 @@ sub process_one_atlas_structure {
     print "$cmd\n";
 #    system ($cmd);
 
+    my $output_format = "--output-format libsvm";
+    if ($vw_format) {
+	$output_format = "";
+    }
+
     my $outfile = "${atlas_id}-ml.txt";
     $cmd = "plastimatch ml-convert --output ${outfile} "
-      . "--mask ${mask_file} --labelmap $atlas_structure_file --output-format libsvm";
+      . "--mask ${mask_file} --labelmap $atlas_structure_file ${output_format}";
     print "$cmd\n";
 #    system ($cmd);
     $cmd = "plastimatch ml-convert --append ${outfile} "
-      . "--mask ${mask_file} --output-format libsvm $atlas_img_file";
+      . "--mask ${mask_file} ${output_format} $atlas_img_file";
     print "$cmd\n";
 #    system ($cmd);
 
@@ -56,7 +62,7 @@ sub process_one_atlas_structure {
 	(-f $dmap) or die "Error, file \"$dmap\" not found\n";
 	(-f $warp) or die "Error, file \"$warp\" not found\n";
 	my $cmd = "plastimatch ml-convert --append ${outfile} "
-	  . "--mask ${mask_file} --output-format libsvm $dmap $warp";
+	  . "--mask ${mask_file} ${output_format} $dmap $warp";
 	print "$cmd\n";
 #	system ($cmd);
     }
@@ -89,7 +95,8 @@ sub process_one_atlas {
 $usage = "make_ml_files.pl [options]\n";
 GetOptions ("convert-dir=s" => \$convert_dir,
 	    "training-dir=s" => \$training_dir,
-	    "registration=s" => \$registration
+	    "registration=s" => \$registration,
+	    "vw-format" => \$vw_format
 	   )
     or die $usage;
 
