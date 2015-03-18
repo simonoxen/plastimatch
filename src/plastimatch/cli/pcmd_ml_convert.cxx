@@ -48,13 +48,21 @@ parse_fn (
     if (!parser->have_option("labelmap") && !parser->have_option("append")) {
 	throw (dlib::error ("Error.  Must specify either --labelmap or --append option"));
     }
-    if (!parser->have_option("output")) {
-	throw (dlib::error ("Error.  Must specify an --output option"));
+    if (!parser->have_option("output") && !parser->have_option("append")) {
+	throw (dlib::error ("Error.  Must specify either --output or --append option"));
+    }
+    if (parser->have_option("labelmap") && parser->have_option("append")) {
+	throw (dlib::error ("Error.  Do not specify both --labelmap and --append option"));
     }
 
     /* Copy values into output struct */
+    parms->set_append_filename (parser->get_string ("append"));
     parms->set_label_filename (parser->get_string ("labelmap"));
-    parms->set_output_filename (parser->get_string ("output"));
+    if (parser->have_option ("output")) {
+        parms->set_output_filename (parser->get_string ("output"));
+    } else {
+        parms->set_output_filename (parser->get_string ("append"));
+    }
     parms->set_output_format (parser->get_string ("output-format"));
 
     /* Copy input filenames to parms struct */

@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmsegment_config.h"
+#include <fstream>
 #include <stdio.h>
 #include "itkImageRegionIterator.h"
 
@@ -11,14 +12,16 @@
 #include "ml_convert.h"
 #include "plm_image.h"
 #include "plm_timer.h"
+#include "string_util.h"
 
 class Ml_convert_private
 {
 public:
+    std::string append_filename;
     std::string label_filename;
-    std::list<std::string> feature_dir;
     std::string output_filename;
     std::string output_format;
+    std::list<std::string> feature_dir;
 };
 
 Ml_convert::Ml_convert ()
@@ -31,30 +34,41 @@ Ml_convert::~Ml_convert ()
     delete d_ptr;
 }
 
+void
+Ml_convert::set_append_filename (const std::string& append_filename)
+{
+    d_ptr->append_filename = append_filename;
+}
 
-void Ml_convert::set_label_filename (const std::string& label_filename)
+void
+Ml_convert::set_label_filename (const std::string& label_filename)
 {
     d_ptr->label_filename = label_filename;
 }
 
-void Ml_convert::add_feature_path (const std::string& feature_path)
-{
-    d_ptr->feature_dir.push_back (feature_path);
-}
-
-void Ml_convert::set_output_filename (const std::string& output_filename)
+void
+Ml_convert::set_output_filename (const std::string& output_filename)
 {
     d_ptr->output_filename = output_filename;
 }
 
-void Ml_convert::set_output_format (const std::string& output_format)
+void
+Ml_convert::set_output_format (const std::string& output_format)
 {
     d_ptr->output_format = output_format;
 }
 
-void Ml_convert::run ()
+void
+Ml_convert::add_feature_path (const std::string& feature_path)
+{
+    d_ptr->feature_dir.push_back (feature_path);
+}
+
+void
+Ml_convert::run ()
 {
     Plm_timer pli;
+    pli.start ();
 
     /* Create files for ping-pong -- unfortunately we have to use FILE* 
        due to lack of fstream support for temporary filenames */
@@ -69,25 +83,54 @@ void Ml_convert::run ()
         vw_format = false;
     }
 
-#define BUFSIZE 16*1024*1024
+    /* The index of the features */
+    int idx = 0;
+
+#define BUFSIZE 1024*1024
     char buf[BUFSIZE];
     size_t chars_in_buf = 0;
     char *buf_ptr;
 
     /* Load labelmap */
-    lprintf ("Processing labelmap\n");
-    Plm_image::Pointer labelmap = Plm_image::New (d_ptr->label_filename);
-    UCharImageType::Pointer labelmap_itk = labelmap->itk_uchar();
+    if (d_ptr->label_filename != "") {
+        lprintf ("Processing labelmap\n");
+        Plm_image::Pointer labelmap = Plm_image::New (d_ptr->label_filename);
+        UCharImageType::Pointer labelmap_itk = labelmap->itk_uchar();
 
-    /* Dump labels to file */
-    UCharImageType::RegionType rg = labelmap_itk->GetLargestPossibleRegion ();
-    itk::ImageRegionIterator< UCharImageType > labelmap_it (labelmap_itk, rg);
-    for (labelmap_it.GoToBegin(); !labelmap_it.IsAtEnd(); ++labelmap_it) {
-        unsigned char v = (unsigned char) labelmap_it.Get();
-        fprintf (current, "%d %s\n", 
-            v == 0 ? -1 : 1, vw_format ? "|" : "");
+        /* Dump labels to file */
+        UCharImageType::RegionType rg = labelmap_itk->GetLargestPossibleRegion ();
+        itk::ImageRegionIterator< UCharImageType > labelmap_it (labelmap_itk, rg);
+        for (labelmap_it.GoToBegin(); !labelmap_it.IsAtEnd(); ++labelmap_it) {
+            unsigned char v = (unsigned char) labelmap_it.Get();
+            fprintf (current, "%d %s\n", 
+                v == 0 ? -1 : 1, vw_format ? "|" : "");
+        }
     }
-
+    else if (d_ptr->append_filename != "") {
+        pli.start ();
+        lprintf ("Processing append\n");
+        FILE *app_fp = fopen (d_ptr->append_filename.c_str(), "r");
+        rewind (current);
+        /* Do the copy */
+        while ((chars_in_buf = fread (buf, 1, BUFSIZE, app_fp)) != 0) {
+            fwrite (buf, 1, chars_in_buf, current);
+        }
+        fclose (app_fp);
+        /* Re-open input, and get the highest index.  Only needed for libsvm format. */
+        if (!vw_format) {
+            std::string line;
+            std::ifstream app_fs (d_ptr->append_filename.c_str());
+            std::getline (app_fs, line);
+            app_fs.close ();
+            std::vector<std::string> tokens = string_split (line, ' ');
+            if (!tokens.empty()) {
+                sscanf (tokens.back().c_str(), "%d", &idx);
+                /* If sscanf fails, idx will remain zero */
+            }
+        }
+        lprintf ("Time = %f\n", (float) pli.report());
+    }
+    
     /* Compile a complete list of feature input files */
     std::list<std::string> all_feature_files;
     std::list<std::string>::iterator fpath_it;
@@ -112,7 +155,6 @@ void Ml_convert::run ()
     }
     
     /* Loop through feature files */
-    int idx = 0;
     for (fpath_it = all_feature_files.begin();
          fpath_it != all_feature_files.end();
          fpath_it++)
@@ -193,8 +235,9 @@ void Ml_convert::run ()
     while ((chars_in_buf = fread (buf, 1, BUFSIZE, current)) != 0) {
         fwrite (buf, 1, chars_in_buf, final_output);
     }
+    fclose (final_output);
+    
     printf ("Time = %f\n", (float) pli.report());
     fclose (fp[0]);
     fclose (fp[1]);
-    fclose (final_output);
 }
