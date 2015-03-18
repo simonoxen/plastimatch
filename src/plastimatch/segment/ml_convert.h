@@ -20,6 +20,7 @@ public:
 public:
     void set_append_filename (const std::string& append_filename);
     void set_label_filename (const std::string& label_filename);
+    void set_mask_filename (const std::string& mask_filename);
     void set_output_filename (const std::string& output_filename);
     void set_output_format (const std::string& output_format);
     void add_feature_path (const std::string& feature_path);

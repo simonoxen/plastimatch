@@ -19,6 +19,7 @@ class Ml_convert_private
 public:
     std::string append_filename;
     std::string label_filename;
+    std::string mask_filename;
     std::string output_filename;
     std::string output_format;
     std::list<std::string> feature_dir;
@@ -44,6 +45,12 @@ void
 Ml_convert::set_label_filename (const std::string& label_filename)
 {
     d_ptr->label_filename = label_filename;
+}
+
+void
+Ml_convert::set_mask_filename (const std::string& mask_filename)
+{
+    d_ptr->mask_filename = mask_filename;
 }
 
 void
@@ -91,6 +98,17 @@ Ml_convert::run ()
     size_t chars_in_buf = 0;
     char *buf_ptr;
 
+    /* Load mask */
+    bool have_mask = false;
+    UCharImageType::Pointer mask_itk;
+    itk::ImageRegionIterator< UCharImageType > mask_it;
+    if (d_ptr->mask_filename != "") {
+        Plm_image::Pointer mask = Plm_image::New (d_ptr->mask_filename);
+        mask_itk = mask->itk_uchar();
+        mask_it = itk::ImageRegionIterator< UCharImageType > (
+            mask_itk, mask_itk->GetLargestPossibleRegion());
+        have_mask = true;
+    }
     /* Load labelmap */
     if (d_ptr->label_filename != "") {
         lprintf ("Processing labelmap\n");
@@ -100,14 +118,23 @@ Ml_convert::run ()
         /* Dump labels to file */
         UCharImageType::RegionType rg = labelmap_itk->GetLargestPossibleRegion ();
         itk::ImageRegionIterator< UCharImageType > labelmap_it (labelmap_itk, rg);
+        if (have_mask) {
+            mask_it.GoToBegin();
+        }
         for (labelmap_it.GoToBegin(); !labelmap_it.IsAtEnd(); ++labelmap_it) {
+            if (have_mask) {
+                unsigned char m = (unsigned char) mask_it.Get();
+                ++mask_it;
+                if (!m) {
+                    continue;
+                }
+            }
             unsigned char v = (unsigned char) labelmap_it.Get();
             fprintf (current, "%d %s\n", 
                 v == 0 ? -1 : 1, vw_format ? "|" : "");
         }
     }
     else if (d_ptr->append_filename != "") {
-        pli.start ();
         lprintf ("Processing append\n");
         FILE *app_fp = fopen (d_ptr->append_filename.c_str(), "r");
         rewind (current);
@@ -124,11 +151,13 @@ Ml_convert::run ()
             app_fs.close ();
             std::vector<std::string> tokens = string_split (line, ' ');
             if (!tokens.empty()) {
-                sscanf (tokens.back().c_str(), "%d", &idx);
-                /* If sscanf fails, idx will remain zero */
+                float junk;
+                int rc = sscanf (tokens.back().c_str(), "%d:%f", &idx, &junk);
+                if (rc != 2) {
+                    idx = 0;
+                }
             }
         }
-        lprintf ("Time = %f\n", (float) pli.report());
     }
     
     /* Compile a complete list of feature input files */
@@ -181,14 +210,26 @@ Ml_convert::run ()
         rewind (current);
         
         /* Loop through pixels, appending them to each line of file */
-        pli.start ();
         buf_ptr = 0;
         itk::ImageRegionIterator< FloatImageType > feature_it (
             feature_itk, feature_itk->GetLargestPossibleRegion ());
+        if (have_mask) {
+            mask_it.GoToBegin();
+        }
         for (feature_it.GoToBegin(); !feature_it.IsAtEnd(); ++feature_it) {
+
+            /* Check mask */
+            if (have_mask) {
+                unsigned char m = (unsigned char) mask_it.Get();
+                ++mask_it;
+                if (!m) {
+                    continue;
+                }
+            }
+
             /* Get pixel value */
             float v = (float) feature_it.Get();
-
+            
             /* Copy existing line from previous file into current file */
             bool eol_found = false;
             while (1) {
@@ -224,20 +265,18 @@ Ml_convert::run ()
             }
         }
         idx ++;
-        printf ("Time = %f\n", (float) pli.report());
     }
 
     /* Finally, re-write temp file into final output file */
     lprintf ("Processing final output\n");
     rewind (current);
     FILE *final_output = plm_fopen (d_ptr->output_filename.c_str(), "wb");
-    pli.start ();
     while ((chars_in_buf = fread (buf, 1, BUFSIZE, current)) != 0) {
         fwrite (buf, 1, chars_in_buf, final_output);
     }
     fclose (final_output);
     
-    printf ("Time = %f\n", (float) pli.report());
     fclose (fp[0]);
     fclose (fp[1]);
+    printf ("Time = %f\n", (float) pli.report());
 }

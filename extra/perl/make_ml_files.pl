@@ -10,14 +10,25 @@ my $training_dir = "";
 sub process_one_atlas_structure {
     my ($atlas_id, $atlas_img_file, $atlas_structure_file) = @_;
 
-    print "Processing $atlas_id, $atlas_img_file, $atlas_structure_file\n";
+    # Make mask
+    my $mask_dmap_file = "dmap_mask.nrrd";
+    my $mask_file = "mask.nrrd";
+    my $cmd = "plastimatch dmap --output ${mask_dmap_file} --input ${atlas_structure_file}";
+    print "$cmd\n";
+#    system ($cmd);
+    $cmd = "plastimatch threshold --input ${mask_dmap_file} --output ${mask_file} --below 30";
+    print "$cmd\n";
+#    system ($cmd);
 
-    my $cmd = "plastimatch ml-convert --output gcs1.txt "
-      . "--labelmap $atlas_structure_file --output-format libsvm";
+    my $outfile = "${atlas_id}-ml.txt";
+    $cmd = "plastimatch ml-convert --output ${outfile} "
+      . "--mask ${mask_file} --labelmap $atlas_structure_file --output-format libsvm";
     print "$cmd\n";
-    $cmd = "plastimatch ml-convert --append gcs1.txt "
-      . "--output-format libsvm $atlas_img_file";
+#    system ($cmd);
+    $cmd = "plastimatch ml-convert --append ${outfile} "
+      . "--mask ${mask_file} --output-format libsvm $atlas_img_file";
     print "$cmd\n";
+#    system ($cmd);
 
     my $tdir1 = "$training_dir/$atlas_id";
     opendir TDIR1, $tdir1;
@@ -44,9 +55,10 @@ sub process_one_atlas_structure {
 	my $warp = "$tdir3/img.nrrd";
 	(-f $dmap) or die "Error, file \"$dmap\" not found\n";
 	(-f $warp) or die "Error, file \"$warp\" not found\n";
-	my $cmd = "plastimatch ml-convert --append gcs1.txt "
-	  . "--output-format libsvm $dmap $warp";
+	my $cmd = "plastimatch ml-convert --append ${outfile} "
+	  . "--mask ${mask_file} --output-format libsvm $dmap $warp";
 	print "$cmd\n";
+#	system ($cmd);
     }
     closedir TDIR1, $atlas_structure_dir;
 }
@@ -92,6 +104,6 @@ while (my $f = readdir(ADIR)) {
     $cdir = "$convert_dir/$f";
     (-d $cdir) or next;
     process_one_atlas ($f,$cdir);
-    last;
+#    last;
 }
 closedir ADIR;

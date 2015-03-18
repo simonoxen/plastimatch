@@ -27,15 +27,17 @@ parse_fn (
     parser->add_default_options ();
 
     /* Basic options */
+    parser->add_long_option ("", "append",
+	"Location of an existing input file, to which additional features will be appended",
+        1, "");
     parser->add_long_option ("", "labelmap",
 	"Location of labelmap file", 1, "");
+    parser->add_long_option ("", "mask",
+	"Location of mask file", 1, "");
     parser->add_long_option ("", "output",
 	"Location of output file to be written", 1, "");
     parser->add_long_option ("", "output-format",
 	"Output format, either \"libsvm\" or \"vw\", default is \"vw\"", 
-        1, "");
-    parser->add_long_option ("", "append",
-	"Location of an existing input file, to which additional features will be appended",
         1, "");
 
     /* Parse options */
@@ -58,6 +60,7 @@ parse_fn (
     /* Copy values into output struct */
     parms->set_append_filename (parser->get_string ("append"));
     parms->set_label_filename (parser->get_string ("labelmap"));
+    parms->set_mask_filename (parser->get_string ("mask"));
     if (parser->have_option ("output")) {
         parms->set_output_filename (parser->get_string ("output"));
     } else {

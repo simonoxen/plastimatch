@@ -16,6 +16,7 @@
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
+#include "rt_study.h"
 #include "ss_img_stats.h"
 #include "vf_stats.h"
 #include "volume.h"
@@ -23,6 +24,7 @@
 
 class Stats_parms {
 public:
+    bool structure;
     std::string mask_fn;
     std::list<std::string> input_fns;
 };
@@ -114,6 +116,13 @@ stats_ss_image_main (Stats_parms* parms, const std::string& current_fn)
 }
 
 static void
+stats_structure_main (Stats_parms* parms, const std::string& current_fn)
+{
+    Rt_study rt_study;
+    rt_study.load (current_fn);
+}
+
+static void
 stats_img_main (Stats_parms* parms, const std::string& current_fn)
 {
     Plm_image pli (current_fn);
@@ -152,6 +161,11 @@ stats_main (Stats_parms* parms)
     std::list<std::string>::iterator it = parms->input_fns.begin();
     while (it != parms->input_fns.end()) {
         std::string current_fn = *it;
+        if (parms->structure) {
+            stats_structure_main (parms, current_fn);
+            ++it;
+            continue;
+        }
         Plm_file_format file_format = plm_file_format_deduce (current_fn);
         switch (file_format) {
         case PLM_FILE_FMT_IMG:
@@ -206,6 +220,8 @@ parse_fn (
     parser->add_long_option ("", "mask", 
         "A binary image (usually unsigned char) where only non-zero voxels "
         "are considered for statistics", 1, "");
+    parser->add_long_option ("", "structure", 
+        "Compute structure statistics rather than image statistics", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -215,6 +231,11 @@ parse_fn (
 
     if (parser->option ("mask")) {
         parms->mask_fn = parser->get_string ("mask");
+    }
+    if (parser->option ("structure")) {
+        parms->structure = true;
+    } else {
+        parms->structure = false;
     }
 
     /* Check that no extraneous options were given */
