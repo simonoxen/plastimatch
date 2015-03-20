@@ -16,264 +16,111 @@
 #include "dlib/mlp.h"
 #include "dlib/revision.h"
 #include "dlib/svm.h"
+//#include "dlib/svm_threaded.h"
 
-using namespace dlib;
+#include "option_range.h"
+#include "plm_clp.h"
+#include "plm_math.h"
 
-typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 typedef std::map<unsigned long, double> sparse_sample_type;
 typedef dlib::matrix< sparse_sample_type::value_type::second_type,0,1
 		> dense_sample_type;
 typedef double label_type;
 
-/* exp10() is not in C/C++ standard */
-double
-exp10_ (double m)
-{
-    return exp (2.3025850929940456840179914546844 * m);
-}
-
-/* ---------------------------------------------------------------------
-   option_range class
-   --------------------------------------------------------------------- */
-struct option_range {
+class Dlib_test_parms {
 public:
-    bool log_range;
-    float min_value;
-    float max_value;
-    float incr;
-public:
-    option_range () {
-	log_range = false;
-	min_value = 0;
-	max_value = 100;
-	incr = 10;
-    }
-    void set_option (clp& parser, std::string const& option, 
-	float default_val);
-    float get_min_value ();
-    float get_max_value ();
-    float get_next_value (float curr_val);
+    int a;
 };
 
-void
-option_range::set_option (
-    clp& parser,
-    std::string const& option, 
-    float default_val
-)
-{
-    int rc;
-
-    /* No option specified */
-    if (!parser.option (option)) {
-	log_range = 0;
-	min_value = default_val;
-	max_value = default_val;
-	incr = 1;
-	return;
-    }
-
-    /* Range specified */
-    rc = sscanf (parser.option(option).argument().c_str(), "%f:%f:%f", 
-	&min_value, &incr, &max_value);
-    if (rc == 3) {
-	log_range = 1;
-	return;
-    }
-
-    /* Single value specified */
-    if (rc == 1) {
-	log_range = 0;
-	max_value = min_value;
-	incr = 1;
-	return;
-    }
-
-    else {
-	std::cerr << "Error parsing option" << option << "\n";
-	exit (-1);
-    }
-}
-
-float 
-option_range::get_min_value ()
-{
-    if (log_range) {
-	return exp10_ (min_value);
-    } else {
-	return min_value;
-    }
-}
-
-float 
-option_range::get_max_value ()
-{
-    if (log_range) {
-	return exp10_ (max_value);
-    } else {
-	return max_value;
-    }
-}
-
-float 
-option_range::get_next_value (float curr_value)
-{
-    if (log_range) {
-	curr_value = log10 (curr_value);
-	curr_value += incr;
-	curr_value = exp10_ (curr_value);
-    } else {
-	curr_value += incr;
-    }
-    return curr_value;
-}
-
-/* ---------------------------------------------------------------------
-   global functions
-   --------------------------------------------------------------------- */
 static void
-parse_args (clp& parser, int argc, char* argv[])
-{
-    try {
-	// Algorithm-independent options
-        parser.add_option ("a",
-	    "Choose the learning algorithm: {krls,krr,mlp,svr}.",1);
-        parser.add_option ("h","Display this help message.");
-        parser.add_option ("help","Display this help message.");
-        parser.add_option ("k",
-	    "Learning kernel (for krls,krr,svr methods): {lin,rbk}.",1);
-        parser.add_option ("in","A libsvm-formatted file to test.",1);
-        parser.add_option ("normalize",
-	    "Normalize the sample inputs to zero-mean unit variance?");
-        parser.add_option ("train-best",
-	    "Train and save a network using best parameters", 1);
-
-	// Algorithm-specific options
-        parser.add_option ("rbk-gamma",
-	    "Width of radial basis kernels: {float}.",1);
-        parser.add_option ("krls-tolerance",
-	    "Numerical tolerance of krls linear dependency test: {float}.",1);
-        parser.add_option ("mlp-hidden-units",
-	    "Number of hidden units in mlp: {integer}.",1);
-        parser.add_option ("mlp-num-iterations",
-	    "Number of epochs to train the mlp: {integer}.",1);
-        parser.add_option ("svr-c",
-	    "SVR regularization parameter \"C\": "
-	    "{float}.",1);
-        parser.add_option ("svr-epsilon-insensitivity",
-	    "SVR fitting tolerance parameter: "
-	    "{float}.",1);
-        parser.add_option ("verbose", "Use verbose trainers");
-
-	// Parse the command line arguments
-        parser.parse(argc,argv);
-
-	// Check that options aren't given multiple times
-        const char* one_time_opts[] = {"a", "h", "help", "in"};
-        parser.check_one_time_options(one_time_opts);
-
-        // Check if the -h option was given
-        if (parser.option("h") || parser.option("help")) {
-	    std::cout << "Usage: dlib_test [-a algorithm] --in input_file\n";
-            parser.print_options(std::cout);
-	    std::cout << std::endl;
-	    exit (0);
-        }
-
-	// Check that an input file was given
-        if (!parser.option("in")) {
-	    std::cout 
-		<< "Error in command line:\n"
-		<< "You must specify an input file with the --in option.\n"
-		<< "\nTry the -h option for more information\n";
-	    exit (0);
-	}
-    }
-    catch (std::exception& e) {
-        // Catch cmd_line_parse_error exceptions and print usage message.
-	std::cout << e.what() << std::endl;
-	exit (1);
-    }
-    catch (...) {
-	std::cout << "Some error occurred" << std::endl;
+set_range (
+    Option_range& range, 
+    dlib::Plm_clp* parser, 
+    const std::string& option_name, 
+    float default_value
+) {
+    if (parser->option (option_name)) {
+        range.set_range (parser->get_string (option_name));
+    } else {
+        range.set_range (default_value);
     }
 }
 
-static const char*
+static std::string
 get_kernel (
-    clp& parser
+    dlib::Plm_clp* parser
 )
 {
-    const char* kernel = "rbk";
-    if (parser.option ("k")) {
-	kernel = parser.option("k").argument().c_str();
+    std::string kernel = "rbk";
+    if (parser->option ("learning-kernel")) {
+	kernel = parser->get_string ("learning-kernel");
     }
     return kernel;
 }
 
 static void
 get_rbk_gamma (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
-    option_range& range
+    Option_range& range
 ) {
     float default_gamma = 3.0 / compute_mean_squared_distance (
 	randomly_subsample (dense_samples, 2000));
-    range.set_option (parser, "rbk-gamma", default_gamma);
+    set_range (range, parser, "rbk-gamma", default_gamma);
 }
 
 static void
 get_krls_tolerance (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples, 
-    option_range& range
+    Option_range& range
 )
 {
     float default_krls_tolerance = 0.001;
-    range.set_option (parser, "krls-tolerance", default_krls_tolerance);
+    set_range (range, parser, "krls-tolerance", default_krls_tolerance);
 }
 
 static double
 get_mlp_hidden_units (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples
 )
 {
     int num_hidden = 5;
-    if (parser.option ("mlp-hidden-units")) {
-	num_hidden = sa = parser.option("mlp-hidden-units").argument();
+    if (parser->option ("mlp-hidden-units")) {
+	num_hidden = parser->get_int ("mlp-hidden-units");
     }
     return num_hidden;
 }
 
 static double
 get_mlp_num_iterations (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples
 )
 {
     int num_iterations = 5000;
-    if (parser.option ("mlp-num-iterations")) {
-	num_iterations = sa = parser.option("mlp-num-iterations").argument();
+    if (parser->option ("mlp-num-iterations")) {
+	num_iterations = parser->get_int ("mlp-num-iterations");
     }
     return num_iterations;
 }
 
 static void
 get_svr_c (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples, 
-    option_range& range
+    Option_range& range
 )
 {
     float default_svr_c = 1000.;
-    range.set_option (parser, "svr-c", default_svr_c);
+    set_range (range, parser, "svr-c", default_svr_c);
 }
 
 #if defined (commentout)
 static double
 get_svr_epsilon_insensitivity (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples
 )
 {
@@ -284,9 +131,9 @@ get_svr_epsilon_insensitivity (
     // if the resulting regression function gets within 0.001 of the 
     // target value.
     double epsilon_insensitivity = 0.001;
-    if (parser.option ("svr-epsilon-insensitivity")) {
+    if (parser->option ("svr-epsilon-insensitivity")) {
 	epsilon_insensitivity 
-	    = sa = parser.option("svr-epsilon-insensitivity").argument();
+	    = sa = parser->option("svr-epsilon-insensitivity").argument();
     }
     return epsilon_insensitivity;
 }
@@ -294,13 +141,13 @@ get_svr_epsilon_insensitivity (
 
 static void
 krls_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    typedef radial_basis_kernel<dense_sample_type> kernel_type;
-    option_range gamma_range, krls_tol_range;
+    typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
+    Option_range gamma_range, krls_tol_range;
 
     get_rbk_gamma (parser, dense_samples, gamma_range);
     get_krls_tolerance (parser, dense_samples, krls_tol_range);
@@ -310,15 +157,19 @@ krls_test (
     unsigned int training_samples = (unsigned int) floor (
 	training_pct * dense_samples.size());
 
-    for (float krls_tol = krls_tol_range.get_min_value(); 
-	 krls_tol <= krls_tol_range.get_max_value();
-	 krls_tol = krls_tol_range.get_next_value (krls_tol))
+    const std::list<float>& krls_tol_list = krls_tol_range.get_range ();
+    std::list<float>::const_iterator krls_tol_it;
+    for (krls_tol_it = krls_tol_list.begin ();
+	 krls_tol_it != krls_tol_list.end (); krls_tol_it++)
     {
-	for (float gamma = gamma_range.get_min_value(); 
-	     gamma <= gamma_range.get_max_value();
-	     gamma = gamma_range.get_next_value (gamma))
+        float krls_tol = *krls_tol_it;
+        const std::list<float>& gamma_list = gamma_range.get_range ();
+        std::list<float>::const_iterator gamma_it;
+	for (gamma_it = gamma_list.begin ();
+	     gamma_it != gamma_list.end (); gamma_it ++)
 	{
-	    krls<kernel_type> net (kernel_type(gamma), krls_tol);
+            float gamma = *gamma_it;
+            dlib::krls<kernel_type> net (kernel_type(gamma), krls_tol);
 
 	    // Krls doesn't seem to come with any batch training function
 	    for (unsigned int j = 0; j < training_samples; j++) {
@@ -343,27 +194,29 @@ krls_test (
 
 static void
 krr_rbk_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    typedef radial_basis_kernel<dense_sample_type> kernel_type;
-    krr_trainer<kernel_type> trainer;
-    option_range gamma_range;
+    typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
+    dlib::krr_trainer<kernel_type> trainer;
+    Option_range gamma_range;
     double best_gamma = DBL_MAX;
     float best_loo = FLT_MAX;
 
     get_rbk_gamma (parser, dense_samples, gamma_range);
 
-    for (float gamma = gamma_range.get_min_value(); 
-	 gamma <= gamma_range.get_max_value();
-	 gamma = gamma_range.get_next_value (gamma))
+    const std::list<float>& gamma_list = gamma_range.get_range ();
+    std::list<float>::const_iterator gamma_it;
+    for (gamma_it = gamma_list.begin ();
+         gamma_it != gamma_list.end (); gamma_it ++)
     {
+        float gamma = *gamma_it;
 	// LOO cross validation
 	double loo_error = 0.;
-	if (parser.option("verbose")) {
-	    trainer.set_search_lambdas(logspace(-9, 4, 100));
+	if (parser->option("verbose")) {
+	    trainer.set_search_lambdas(dlib::logspace(-9, 4, 100));
 	    trainer.be_verbose();
 	}
 	trainer.set_kernel (kernel_type (gamma));
@@ -377,7 +230,7 @@ krr_rbk_test (
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
-        loo_error = mean_squared_error (labels, loo_values);
+        loo_error = dlib::mean_squared_error (labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -391,13 +244,13 @@ krr_rbk_test (
 
     printf ("Best result: gamma=10^%f (%g), loo_error=%9.6f\n",
 	log10(best_gamma), best_gamma, best_loo);
-    if (parser.option("train-best")) {
+    if (parser->option("train-best")) {
 	printf ("Training network with best parameters\n");
 	trainer.set_kernel (kernel_type (best_gamma));
-	decision_function<kernel_type> best_network = 
+        dlib::decision_function<kernel_type> best_network = 
 	    trainer.train (dense_samples, labels);
 
-	std::ofstream fout (parser.option("train-best").argument().c_str(), 
+	std::ofstream fout (parser->option("train-best").argument().c_str(), 
 	    std::ios::binary);
 	serialize (best_network, fout);
 	fout.close();
@@ -412,13 +265,13 @@ krr_rbk_test (
 
 static void
 krr_lin_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    typedef linear_kernel<dense_sample_type> kernel_type;
-    krr_trainer<kernel_type> trainer;
+    typedef dlib::linear_kernel<dense_sample_type> kernel_type;
+    dlib::krr_trainer<kernel_type> trainer;
 
     // LOO cross validation
     double loo_error;
@@ -432,7 +285,7 @@ krr_lin_test (
         std::vector<double> loo_values;
 	double lambda_used;
 	trainer.train (dense_samples, labels, loo_values, lambda_used);
-        loo_error = mean_squared_error (labels, loo_values);
+        loo_error = dlib::mean_squared_error (labels, loo_values);
 #else
         error, unknown DLIB version!;
 #endif
@@ -441,26 +294,26 @@ krr_lin_test (
 
 static void
 krr_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    const char* kernel = get_kernel (parser);
+    const std::string& kernel = get_kernel (parser);
 
-    if (!strcmp (kernel, "lin")) {
+    if (kernel == "lin") {
 	krr_lin_test (parser, dense_samples, labels);
-    } else if (!strcmp (kernel, "rbk")) {
+    } else if (kernel == "rbk") {
 	krr_rbk_test (parser, dense_samples, labels);
     } else {
-	fprintf (stderr, "Unknown kernel type: %s\n", kernel);
+	fprintf (stderr, "Unknown kernel type: %s\n", kernel.c_str());
 	exit (-1);
     }
 }
 
 static void
 mlp_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
@@ -469,7 +322,7 @@ mlp_test (
     const int num_input = dense_samples[0].size();
     int num_hidden = get_mlp_hidden_units (parser, dense_samples);
     printf ("Creating ANN with size (%d, %d)\n", num_input, num_hidden);
-    mlp::kernel_1a_c net (num_input, num_hidden);
+    dlib::mlp::kernel_1a_c net (num_input, num_hidden);
 
     // Dlib barfs if output values are not normalized to [0,1]
     double label_min = *(std::min_element (labels.begin(), labels.end()));
@@ -508,12 +361,12 @@ mlp_test (
 
 static void
 svr_lin_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    option_range svr_c_range;
+    Option_range svr_c_range;
 
 #if DLIB_REVISION == 4093
     /* dlib 17.34 */
@@ -545,13 +398,13 @@ svr_lin_test (
     printf ("Best result: svr_c=%3.6f, cv_error=%9.6f\n",
         best_svr_c, best_cv_error);
 
-    if (parser.option("train-best")) {
+    if (parser->option("train-best")) {
         printf ("Training network with best parameters\n");
         trainer.set_c (best_svr_c);
         decision_function<kernel_type> best_network =
             trainer.train (dense_samples, labels);
 
-        std::ofstream fout (parser.option("train-best").argument().c_str(),
+        std::ofstream fout (parser->option("train-best").argument().c_str(),
             std::ios::binary);
         serialize (best_network, fout);
         fout.close();
@@ -571,14 +424,14 @@ svr_lin_test (
 
 static void
 svr_rbk_test (
-    clp& parser,
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    typedef radial_basis_kernel<dense_sample_type> kernel_type;
-    svr_trainer<kernel_type> trainer;
-    option_range gamma_range, svr_c_range;
+    typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
+    dlib::svr_trainer<kernel_type> trainer;
+    Option_range gamma_range, svr_c_range;
 
 #if DLIB_REVISION == 4093
     /* dlib 17.34 */
@@ -617,14 +470,14 @@ svr_rbk_test (
     printf ("Best result: svr_c=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
         best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
  
-    if (parser.option("train-best")) {
+    if (parser->option("train-best")) {
         printf ("Training network with best parameters\n");
 	trainer.set_c (best_svr_c);
         trainer.set_kernel (kernel_type (best_gamma));
         decision_function<kernel_type> best_network =
             trainer.train (dense_samples, labels);
 
-        std::ofstream fout (parser.option("train-best").argument().c_str(),
+        std::ofstream fout (parser->option("train-best").argument().c_str(),
             std::ios::binary);
         serialize (best_network, fout);
         fout.close();
@@ -641,39 +494,146 @@ svr_rbk_test (
 #endif
 }
 
-static void svr_test  (
-    clp& parser,
+static void 
+svr_test (
+    dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
 )
 {
-    const char* kernel = get_kernel (parser);
+    const std::string& kernel = get_kernel (parser);
 
-    if (!strcmp (kernel, "lin")) {
+    if (kernel == "lin") {
         svr_lin_test (parser, dense_samples, labels);
-    } else if (!strcmp (kernel, "rbk")) {
+    } else if (kernel == "rbk") {
         svr_rbk_test (parser, dense_samples, labels);
     } else {
-        fprintf (stderr, "Unknown kernel type: %s\n", kernel);
+        fprintf (stderr, "Unknown kernel type: %s\n", kernel.c_str());
         exit (-1);
     }
 }
 
-int 
-main (int argc, char* argv[])
+static void
+svm_lin_test (
+    dlib::Plm_clp* parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<label_type>& labels
+)
 {
-    clp parser;
+    typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
 
-    parse_args(parser, argc, argv);
+    dlib::svm_c_trainer<kernel_type> trainer;
 
-    const clp::option_type& option_alg = parser.option("a");
-    const clp::option_type& option_in = parser.option("in");
+    Option_range gamma_range;
+    get_rbk_gamma (parser, dense_samples, gamma_range);
+    float svm_c = 10;
+
+    const std::list<float>& gamma_list = gamma_range.get_range ();
+    std::list<float>::const_iterator gamma_it;
+    for (gamma_it = gamma_list.begin ();
+         gamma_it != gamma_list.end (); gamma_it ++)
+    {
+        float gamma = *gamma_it;
+	trainer.set_kernel (kernel_type (gamma));
+        trainer.set_c (10);
+        dlib::matrix<double,1,2> cv_error;
+        cv_error = dlib::cross_validate_trainer (
+            trainer, dense_samples, labels, 3);
+#if defined (commentout)
+        if (cv_error < best_cv_error) {
+            best_cv_error = cv_error;
+            best_gamma = gamma;
+            best_svr_c = svr_c;
+        }
+#endif
+        printf ("%3.6f %3.6f %3.9f %3.9f\n", 
+            svm_c, gamma, cv_error(0), cv_error(1));
+    }
+}
+
+static void svm_test  (
+    dlib::Plm_clp* parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<label_type>& labels
+)
+{
+    const std::string& kernel = get_kernel (parser);
+
+    if (kernel == "lin") {
+        svm_lin_test (parser, dense_samples, labels);
+    } else if (kernel == "rbk") {
+        svm_lin_test (parser, dense_samples, labels);
+    } else {
+        fprintf (stderr, "Unknown kernel type: %s\n", kernel.c_str());
+        exit (-1);
+    }
+}
+
+static void
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
+{
+    std::cout << "Usage: dlib_test [options]\n";
+    parser->print_options (std::cout);
+    std::cout << std::endl;
+}
+
+static void
+parse_fn (
+    Dlib_test_parms *parms, dlib::Plm_clp* parser, int argc, char* argv[]
+)
+{
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    // Algorithm-independent options
+    parser->add_long_option ("", "learning-algorithm", 
+        "choose the learning algorithm: {krls,krr,mlp,svr}", 1, "");
+    parser->add_long_option ("", "learning-kernel", 
+        "Learning kernel (for krls,krr,svr methods): {lin,rbk}", 1, "");
+    parser->add_long_option ("", "input", 
+        "A libsvm-formatted file to test", 1, "");
+    parser->add_long_option ("", "normalize",
+        "Normalize the sample inputs to zero-mean unit variance?", 0);
+    parser->add_long_option ("", "train-best",
+        "Train and save a network using best parameters", 1, "");
+
+    // Algorithm-specific options
+    parser->add_long_option ("", "rbk-gamma",
+        "Width of radial basis kernels: {float}.", 1, "");
+    parser->add_long_option ("", "krls-tolerance",
+        "Numerical tolerance of krls linear dependency test: {float}.", 1, "");
+    parser->add_long_option ("", "mlp-hidden-units",
+        "Number of hidden units in mlp: {integer}.", 1, "");
+    parser->add_long_option ("", "mlp-num-iterations",
+        "Number of epochs to train the mlp: {integer}.", 1, "");
+    parser->add_long_option ("", "svr-c",
+        "SVR regularization parameter \"C\": {float}.", 1, "");
+    parser->add_long_option ("", "svr-epsilon-insensitivity",
+        "SVR fitting tolerance parameter: {float}.", 1, "");
+    parser->add_long_option ("", "verbose", "Use verbose trainers", 0);
+
+    // Parse the command line arguments
+    parser->parse(argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    // Check that an input file was given
+    if (!parser->option("input")) {
+        throw (dlib::error (
+                "Error.  You must specify an input "
+                "file with the --in option."));
+    }
+
+    /* DO THE TEST */
+    std::string option_alg = parser->get_string ("learning-algorithm");
+    std::string option_in = parser->get_string ("input");
 
     std::vector<sparse_sample_type> sparse_samples;
     std::vector<label_type> labels;
 
-    load_libsvm_formatted_data (
-	option_in.argument(), 
+    dlib::load_libsvm_formatted_data (
+	option_in, 
 	sparse_samples, 
 	labels
     );
@@ -686,7 +646,7 @@ main (int argc, char* argv[])
     }
 
     std::vector<dense_sample_type> dense_samples;
-    dense_samples = sparse_to_dense (sparse_samples);
+    dense_samples = dlib::sparse_to_dense (sparse_samples);
 
     /* GCS FIX: The sparse_to_dense converter adds an extra column, 
        because libsvm files are indexed starting with "1". */
@@ -699,8 +659,8 @@ main (int argc, char* argv[])
 	<< std::endl;
 
     // Normalize inputs to N(0,1)
-    if (parser.option ("normalize")) {
-	vector_normalizer<dense_sample_type> normalizer;
+    if (parser->option ("normalize")) {
+        dlib::vector_normalizer<dense_sample_type> normalizer;
 	normalizer.train (dense_samples);
 	for (unsigned long i = 0; i < dense_samples.size(); ++i) {
 	    dense_samples[i] = normalizer (dense_samples[i]);
@@ -710,28 +670,40 @@ main (int argc, char* argv[])
     // Randomize the order of the samples, labels
     randomize_samples (dense_samples, labels);
 
-    if (!option_alg) {
+    if (option_alg == "") {
 	// Do KRR if user didn't specify an algorithm
 	std::cout << "No algorithm specified, default to KRR\n";
 	krr_test (parser, dense_samples, labels);
     }
-    else if (option_alg.argument() == "krls") {
+    else if (option_alg == "krls") {
 	krls_test (parser, dense_samples, labels);
     }
-    else if (option_alg.argument() == "krr") {
+    else if (option_alg == "krr") {
 	krr_test (parser, dense_samples, labels);
     }
-    else if (option_alg.argument() == "mlp") {
+    else if (option_alg == "mlp") {
 	mlp_test (parser, dense_samples, labels);
     }
-    else if (option_alg.argument() == "svr") {
+    else if (option_alg == "svr") {
 	svr_test (parser, dense_samples, labels);
+    }
+    else if (option_alg == "svm") {
+	svm_test (parser, dense_samples, labels);
     }
     else {
 	fprintf (stderr, 
 	    "Error, algorithm \"%s\" is unknown.\n"
 	    "Please use -h to see the command line options\n",
-	    option_alg.argument().c_str());
+	    option_alg.c_str());
 	exit (-1);
     }
+
+}
+
+int 
+main (int argc, char* argv[])
+{
+    Dlib_test_parms parms;
+
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 0);
 }

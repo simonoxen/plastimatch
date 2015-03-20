@@ -104,6 +104,13 @@ Option_range::set_range (const std::string& range)
     }
 }
 
+void
+Option_range::set_range (float range)
+{
+    d_ptr->range.clear ();
+    d_ptr->range.push_back (range);
+}
+
 const std::list<float>&
 Option_range::get_range ()
 {
