@@ -21,18 +21,21 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- c++ properties
-    plm_add_executable (test_eps test_eps.cxx
+    plm_add_executable (cpp_eps_test cpp_eps_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-    plm_add_executable (test_limits test_limits.cxx
+    plm_add_executable (cpp_limits_test cpp_limits_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-    plm_add_executable (test_overflow test_overflow.cxx
+    plm_add_executable (cpp_overflow_test cpp_overflow_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-    plm_add_executable (template_test template_test.cxx
+    plm_add_executable (cpp_template_test cpp_template_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+    plm_add_executable (cpp_sizeof_test cpp_sizeof_test.cxx
+	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- cuda
     if (CUDA_FOUND)
@@ -84,6 +87,13 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	plm_add_executable (itk_test_threads itk_thread_test.cxx
 	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+    endif ()
+
+    # Test executable -- libyaml
+    if (LIBYAML_FOUND)
+	plm_add_executable (libyaml_test libyaml_test.cxx
+	    "${LIBYAML_LIBRARIES}" "" 
+	    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
     endif ()
 
     # Test executable -- matlab
@@ -166,29 +176,6 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
-    # Test executable -- rapidjson
-    if (RAPIDJSON_FOUND)
-	plm_add_executable (rapidjson_test rapidjson_test.cxx
-	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-    endif ()
-
-    # Test executable -- sizeof
-    plm_add_executable (sizeof_test sizeof_test.cxx
-	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_NEVER})
-
-    # Test executable -- smart pointers I
-    ## find_package (TR1)
-    plm_add_executable (smartp_test_i smartp_test_i.cxx
-	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_NEVER})
-
-    # Test executable -- smart pointers II
-    plm_add_executable (smartp_test_ii smartp_test_ii.cxx
-	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_NEVER})
-
     # Test executable -- qt
     if (QT4_FOUND)
 	plm_add_executable (qt_test qt_test.cxx
@@ -200,5 +187,23 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (ransac_test ransac_test.cxx
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+
+    # Test executable -- rapidjson
+    if (RAPIDJSON_FOUND)
+	plm_add_executable (rapidjson_test rapidjson_test.cxx
+	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+    endif ()
+
+    # Test executable -- smart pointers I
+    ## find_package (TR1)
+    plm_add_executable (smartp_test_i smartp_test_i.cxx
+	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
+
+    # Test executable -- smart pointers II
+    plm_add_executable (smartp_test_ii smartp_test_ii.cxx
+	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
 endif ()

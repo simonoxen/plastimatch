@@ -127,6 +127,11 @@ endif ()
 if (SQLITE_FOUND)
   include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 endif ()
+if (LIBYAML_FOUND)
+  include_directories (AFTER ${LIBYAML_INCLUDE_DIR})
+else ()
+  message (STATUS ">>>>> NOT FOUND??")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
