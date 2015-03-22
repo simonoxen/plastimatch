@@ -81,6 +81,7 @@ include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/Diffeomor
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/LOGDomainDemons)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
+include_directories (AFTER ${RAPIDJSON_INCLUDE_DIR})
 include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
 include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})

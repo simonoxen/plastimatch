@@ -166,6 +166,11 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
+    # Test executable -- rapidjson
+    plm_add_executable (rapidjson_test rapidjson_test.cxx
+	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
+
     # Test executable -- sizeof
     plm_add_executable (sizeof_test sizeof_test.cxx
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
