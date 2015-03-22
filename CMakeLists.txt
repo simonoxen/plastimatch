@@ -818,9 +818,13 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local rapidjson
 ##-----------------------------------------------------------------------------
-set (RAPIDJSON_INCLUDE_DIR 
-    "${CMAKE_SOURCE_DIR}/libs/rapidjson-2015-03-22/include"
-    )
+set (RAPIDJSON_DIR "${CMAKE_SOURCE_DIR}/libs/rapidjson-2015-03-22")
+if (EXISTS "${RAPIDJSON_DIR}" AND IS_DIRECTORY "${RAPIDJSON_DIR}")
+    set (RAPIDJSON_INCLUDE_DIR 
+	"${RAPIDJSON_DIR}/include"
+	)
+    set (RAPIDJSON_FOUND true)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Configure include files

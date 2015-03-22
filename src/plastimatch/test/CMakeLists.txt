@@ -167,9 +167,11 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- rapidjson
-    plm_add_executable (rapidjson_test rapidjson_test.cxx
-	"${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_NEVER})
+    if (RAPIDJSON_FOUND)
+	plm_add_executable (rapidjson_test rapidjson_test.cxx
+	    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
+	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+    endif ()
 
     # Test executable -- sizeof
     plm_add_executable (sizeof_test sizeof_test.cxx
