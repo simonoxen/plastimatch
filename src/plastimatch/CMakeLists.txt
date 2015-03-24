@@ -129,8 +129,6 @@ if (SQLITE_FOUND)
 endif ()
 if (LIBYAML_FOUND)
   include_directories (AFTER ${LIBYAML_INCLUDE_DIR})
-else ()
-  message (STATUS ">>>>> NOT FOUND??")
 endif ()
 
 ##-----------------------------------------------------------------------------
