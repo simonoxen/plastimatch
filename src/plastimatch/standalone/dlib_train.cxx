@@ -32,6 +32,91 @@ public:
     int a;
 };
 
+/* This particular is modified from libsvm_io.h, therefore part of 
+   dlib and distributed according to Boost license. */
+namespace dlib {
+template <typename sample_type, typename label_type, typename alloc1, typename alloc2>
+void load_libsvm_or_vw_data (
+    const std::string& file_name,
+    std::vector<sample_type, alloc1>& samples,
+    std::vector<label_type, alloc2>& labels
+)
+{
+    using namespace std;
+    typedef typename sample_type::value_type pair_type;
+    typedef typename basic_type<typename pair_type::first_type>::type key_type;
+    typedef typename pair_type::second_type value_type;
+
+    // You must use unsigned integral key types in your sparse vectors
+    COMPILE_TIME_ASSERT(is_unsigned_type<key_type>::value);
+
+    samples.clear();
+    labels.clear();
+
+    ifstream fin(file_name.c_str());
+
+    if (!fin)
+        throw sample_data_io_error("Unable to open file " + file_name);
+
+    string line;
+    istringstream sin;
+    key_type key;
+    value_type value;
+    label_type label;
+    sample_type sample;
+    long line_num = 0;
+    while (fin.peek() != EOF)
+    {
+        ++line_num;
+        getline(fin, line);
+
+        string::size_type pos = line.find_first_not_of(" \t\r\n");
+
+        // ignore empty lines or comment lines
+        if (pos == string::npos || line[pos] == '#')
+            continue;
+
+        sin.clear();
+        sin.str(line);
+        sample.clear();
+
+        sin >> label;
+
+        if (!sin)
+            throw sample_data_io_error("On line: " + cast_to_string(line_num) + ", error while reading file " + file_name );
+
+        // eat whitespace
+        sin >> ws;
+
+        /* Ignore pipe in vw format */
+        if (sin.peek() == '|') {
+            sin.get();
+            sin >> ws;
+        }
+
+        while (sin.peek() != EOF && sin.peek() != '#')
+        {
+
+            sin >> key >> ws;
+
+            // ignore what should be a : character
+            if (sin.get() != ':')
+                throw sample_data_io_error("On line: " + cast_to_string(line_num) + ", error while reading file " + file_name);
+
+            sin >> value >> ws;
+
+            if (sin && value != 0)
+            {
+                sample.insert(sample.end(), make_pair(key, value));
+            }
+        }
+
+        samples.push_back(sample);
+        labels.push_back(label);
+    }
+}
+}
+
 static void
 set_range (
     Option_range& range, 
@@ -594,6 +679,8 @@ parse_fn (
         "A libsvm-formatted file to test", 1, "");
     parser->add_long_option ("", "normalize",
         "Normalize the sample inputs to zero-mean unit variance?", 0);
+    parser->add_long_option ("", "subsample", 
+        "limit size of training set to this number: {int}", 1, "");
     parser->add_long_option ("", "train-best",
         "Train and save a network using best parameters", 1, "");
 
@@ -632,11 +719,34 @@ parse_fn (
     std::vector<sparse_sample_type> sparse_samples;
     std::vector<label_type> labels;
 
-    dlib::load_libsvm_formatted_data (
+    dlib::load_libsvm_or_vw_data (
 	option_in, 
 	sparse_samples, 
 	labels
     );
+    std::cout 
+	<< "Loaded " << sparse_samples.size() << " samples"
+            << std::endl
+            << "Each sample has size " << sparse_samples[0].size() 
+            << std::endl
+            << "First sample " << labels[0] << " | " 
+            << sparse_samples[0][1] << " "
+            << sparse_samples[0][2] << " ...\n";
+
+    // Randomize the order of the samples, labels
+    dlib::randomize_samples (sparse_samples, labels);
+
+    // Take a subset
+    if (parser->option ("subsample")) {
+        int num_subsamples = parser->get_int ("subsample");
+        int original_size = sparse_samples.size();
+        if (num_subsamples < original_size) {
+            sparse_samples.resize (num_subsamples);
+            labels.resize (num_subsamples);
+        }
+    }
+
+    dlib::fix_nonzero_indexing (sparse_samples);
 
     if (sparse_samples.size() < 1) {
 	std::cout 
@@ -648,16 +758,6 @@ parse_fn (
     std::vector<dense_sample_type> dense_samples;
     dense_samples = dlib::sparse_to_dense (sparse_samples);
 
-    /* GCS FIX: The sparse_to_dense converter adds an extra column, 
-       because libsvm files are indexed starting with "1". */
-    std::cout 
-	<< "Loaded " << sparse_samples.size() << " samples"
-	<< std::endl
-	<< "Each sample has size " << sparse_samples[0].size() 
-	<< std::endl
-	<< "Each dense sample has size " << dense_samples[0].size() 
-	<< std::endl;
-
     // Normalize inputs to N(0,1)
     if (parser->option ("normalize")) {
         dlib::vector_normalizer<dense_sample_type> normalizer;
@@ -666,9 +766,6 @@ parse_fn (
 	    dense_samples[i] = normalizer (dense_samples[i]);
 	}
     }
-
-    // Randomize the order of the samples, labels
-    randomize_samples (dense_samples, labels);
 
     if (option_alg == "") {
 	// Do KRR if user didn't specify an algorithm
