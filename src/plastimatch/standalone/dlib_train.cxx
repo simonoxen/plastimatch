@@ -609,6 +609,10 @@ svm_lin_test (
 
     dlib::svm_c_trainer<kernel_type> trainer;
 
+    double best_gamma = DBL_MAX;
+    double best_svm_c = DBL_MAX;
+    float best_cv_error = FLT_MAX;
+
     Option_range gamma_range;
     get_rbk_gamma (parser, dense_samples, gamma_range);
     float svm_c = 10;
@@ -625,14 +629,28 @@ svm_lin_test (
         cv_error = dlib::cross_validate_trainer (
             trainer, dense_samples, labels, 3);
 #if defined (commentout)
+        /* This should be total loss?  But instead the positive 
+           and negative examples are given separate loss values. */
         if (cv_error < best_cv_error) {
             best_cv_error = cv_error;
             best_gamma = gamma;
-            best_svr_c = svr_c;
+            best_svm_c = svm_c;
         }
 #endif
         printf ("%3.6f %3.6f %3.9f %3.9f\n", 
             svm_c, gamma, cv_error(0), cv_error(1));
+    }
+
+    if (parser->option("train-best")) {
+	printf ("Training network with best parameters\n");
+	trainer.set_kernel (kernel_type (best_gamma));
+        dlib::decision_function<kernel_type> best_network = 
+	    trainer.train (dense_samples, labels);
+
+	std::ofstream fout (parser->option("train-best").argument().c_str(), 
+	    std::ios::binary);
+	serialize (best_network, fout);
+	fout.close();
     }
 }
 
@@ -719,6 +737,7 @@ parse_fn (
     std::vector<sparse_sample_type> sparse_samples;
     std::vector<label_type> labels;
 
+    /* Load the data */
     dlib::load_libsvm_or_vw_data (
 	option_in, 
 	sparse_samples, 
@@ -733,10 +752,10 @@ parse_fn (
             << sparse_samples[0][1] << " "
             << sparse_samples[0][2] << " ...\n";
 
-    // Randomize the order of the samples, labels
+    /* Randomize the order of the samples, labels */
     dlib::randomize_samples (sparse_samples, labels);
 
-    // Take a subset
+    /* Take a subset */
     if (parser->option ("subsample")) {
         int num_subsamples = parser->get_int ("subsample");
         int original_size = sparse_samples.size();
@@ -746,6 +765,7 @@ parse_fn (
         }
     }
 
+    /* Remove empty feature */
     dlib::fix_nonzero_indexing (sparse_samples);
 
     if (sparse_samples.size() < 1) {
@@ -755,10 +775,11 @@ parse_fn (
 	exit (0);
     }
 
+    /* Convert sparse to dense */
     std::vector<dense_sample_type> dense_samples;
     dense_samples = dlib::sparse_to_dense (sparse_samples);
 
-    // Normalize inputs to N(0,1)
+    /* Normalize inputs to N(0,1) */
     if (parser->option ("normalize")) {
         dlib::vector_normalizer<dense_sample_type> normalizer;
 	normalizer.train (dense_samples);
