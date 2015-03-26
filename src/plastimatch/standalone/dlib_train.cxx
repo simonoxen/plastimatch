@@ -131,6 +131,23 @@ set_range (
     }
 }
 
+static float
+get_positive_rate (
+    std::vector<label_type>& labels
+) {
+    std::vector<label_type>::const_iterator label_it;
+    int np = 0;
+    int tot = 0;
+    for (label_it = labels.begin(); label_it != labels.end(); label_it++)
+    {
+        if (*label_it > 0) {
+            np++;
+        }
+        tot ++;
+    }
+    return (float) np / (float) tot;
+}
+
 static std::string
 get_kernel (
     dlib::Plm_clp* parser
@@ -192,14 +209,14 @@ get_mlp_num_iterations (
 }
 
 static void
-get_svr_c (
+get_svc (
     dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples, 
     Option_range& range
 )
 {
-    float default_svr_c = 1000.;
-    set_range (range, parser, "svr-c", default_svr_c);
+    float default_svc = 1000.;
+    set_range (range, parser, "sv-c", default_svc);
 }
 
 #if defined (commentout)
@@ -451,11 +468,11 @@ svr_lin_test (
     std::vector<label_type>& labels
 )
 {
-    Option_range svr_c_range;
+    Option_range svc_range;
 
 #if DLIB_REVISION == 4093
     /* dlib 17.34 */
-    double best_svr_c = DBL_MAX;
+    double best_svc = DBL_MAX;
     float best_cv_error = FLT_MAX;
 
     typedef linear_kernel<dense_sample_type> kernel_type;
@@ -466,26 +483,26 @@ svr_lin_test (
     trainer.set_epsilon_insensitivity (epsilon_insensitivity);
 
     double cv_error;
-    for (float svr_c = svr_c_range.get_min_value();
-	 svr_c <= svr_c_range.get_max_value();
-         svr_c = svr_c_range.get_next_value(svr_c))
+    for (float svc = svc_range.get_min_value();
+	 svc <= svc_range.get_max_value();
+         svc = svc_range.get_next_value(svc))
     {
-        trainer.set_c (svr_c);
+        trainer.set_c (svc);
         cv_error = cross_validate_regression_trainer (trainer,
             dense_samples, labels, 10);
         if (cv_error < best_cv_error) {
             best_cv_error = cv_error;
-            best_svr_c = svr_c;
+            best_svc = svc;
 	}
-        printf ("%3.6f %3.9f\n", svr_c, cv_error);
+        printf ("%3.6f %3.9f\n", svc, cv_error);
     }
 
-    printf ("Best result: svr_c=%3.6f, cv_error=%9.6f\n",
-        best_svr_c, best_cv_error);
+    printf ("Best result: svc=%3.6f, cv_error=%9.6f\n",
+        best_svc, best_cv_error);
 
     if (parser->option("train-best")) {
         printf ("Training network with best parameters\n");
-        trainer.set_c (best_svr_c);
+        trainer.set_c (best_svc);
         decision_function<kernel_type> best_network =
             trainer.train (dense_samples, labels);
 
@@ -516,26 +533,26 @@ svr_rbk_test (
 {
     typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
     dlib::svr_trainer<kernel_type> trainer;
-    Option_range gamma_range, svr_c_range;
+    Option_range gamma_range, svc_range;
 
 #if DLIB_REVISION == 4093
     /* dlib 17.34 */
     double best_gamma = DBL_MAX;
-    double best_svr_c = DBL_MAX;
+    double best_svc = DBL_MAX;
     float best_cv_error = FLT_MAX;
 
     get_rbk_gamma (parser, dense_samples, gamma_range);
-    get_svr_c (parser, dense_samples, svr_c_range);
+    get_svc (parser, dense_samples, svc_range);
 
     double epsilon_insensitivity = get_svr_epsilon_insensitivity (
 	parser, dense_samples);
     trainer.set_epsilon_insensitivity (epsilon_insensitivity);
 
-    for (float svr_c = svr_c_range.get_min_value(); 
-	 svr_c <= svr_c_range.get_max_value();
-	 svr_c = svr_c_range.get_next_value (svr_c))
+    for (float svc = svc_range.get_min_value(); 
+	 svc <= svc_range.get_max_value();
+	 svc = svc_range.get_next_value (svc))
     {
-	trainer.set_c (svr_c);
+	trainer.set_c (svc);
 	for (float gamma = gamma_range.get_min_value(); 
 	     gamma <= gamma_range.get_max_value();
 	     gamma = gamma_range.get_next_value (gamma))
@@ -547,17 +564,17 @@ svr_rbk_test (
             if (cv_error < best_cv_error) {
                 best_cv_error = cv_error;
                 best_gamma = gamma;
-                best_svr_c = svr_c;
+                best_svc = svc;
             }
-	    printf ("%3.6f %3.6f %3.9f\n", svr_c, gamma, cv_error);
+	    printf ("%3.6f %3.6f %3.9f\n", svc, gamma, cv_error);
 	}
     }
-    printf ("Best result: svr_c=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
-        best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
+    printf ("Best result: svc=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
+        best_svc, log10(best_gamma), best_gamma, best_cv_error);
  
     if (parser->option("train-best")) {
         printf ("Training network with best parameters\n");
-	trainer.set_c (best_svr_c);
+	trainer.set_c (best_svc);
         trainer.set_kernel (kernel_type (best_gamma));
         decision_function<kernel_type> best_network =
             trainer.train (dense_samples, labels);
@@ -610,39 +627,56 @@ svm_lin_test (
     dlib::svm_c_trainer<kernel_type> trainer;
 
     double best_gamma = DBL_MAX;
-    double best_svm_c = DBL_MAX;
-    float best_cv_error = FLT_MAX;
+    double best_svc = DBL_MAX;
+    float best_loss = FLT_MAX;
 
     Option_range gamma_range;
+    Option_range svc_range;
     get_rbk_gamma (parser, dense_samples, gamma_range);
-    float svm_c = 10;
+    get_svc (parser, dense_samples, svc_range);
 
-    const std::list<float>& gamma_list = gamma_range.get_range ();
-    std::list<float>::const_iterator gamma_it;
-    for (gamma_it = gamma_list.begin ();
-         gamma_it != gamma_list.end (); gamma_it ++)
+    float positive_rate = get_positive_rate (labels);
+    printf ("Positive rate = %3.6f\n", positive_rate);
+
+    const std::list<float>& svc_list = svc_range.get_range ();
+    std::list<float>::const_iterator svc_it;
+    for (svc_it = svc_list.begin ();
+         svc_it != svc_list.end (); svc_it ++)
     {
-        float gamma = *gamma_it;
-	trainer.set_kernel (kernel_type (gamma));
-        trainer.set_c (10);
-        dlib::matrix<double,1,2> cv_error;
-        cv_error = dlib::cross_validate_trainer (
-            trainer, dense_samples, labels, 3);
-#if defined (commentout)
-        /* This should be total loss?  But instead the positive 
-           and negative examples are given separate loss values. */
-        if (cv_error < best_cv_error) {
-            best_cv_error = cv_error;
-            best_gamma = gamma;
-            best_svm_c = svm_c;
+        const std::list<float>& gamma_list = gamma_range.get_range ();
+        std::list<float>::const_iterator gamma_it;
+        for (gamma_it = gamma_list.begin ();
+             gamma_it != gamma_list.end (); gamma_it ++)
+        {
+            float svc = *svc_it;
+            float gamma = *gamma_it;
+            trainer.set_kernel (kernel_type (gamma));
+            trainer.set_c (svc);
+            dlib::matrix<double,1,2> cv_error;
+            cv_error = dlib::cross_validate_trainer (
+                trainer, dense_samples, labels, 3);
+            /* cv_error(0) = percent correct positive = TP / (TP + FN)
+               cv_error(1) = percent correct negative = TN / (TN + FP) */
+            float loss = cv_error(0) * positive_rate 
+                + cv_error(1) * (1 - positive_rate);
+            float tp = cv_error(0) * positive_rate;
+            // float tn = cv_error(1) * (1 - positive_rate);
+            float fn = (1 - cv_error(0)) * positive_rate;
+            float fp = (1 - cv_error(1)) * (1 - positive_rate);
+            float dice = 2 * tp / (2 * tp + fn + fp);
+            if (loss < best_loss) {
+                best_loss = loss;
+                best_gamma = gamma;
+                best_svc = svc;
+            }
+            printf ("%3.6f %.3e %3.6f %3.6f %3.6f %3.6f\n", 
+                svc, gamma, cv_error(0), cv_error(1), loss, dice);
         }
-#endif
-        printf ("%3.6f %3.6f %3.9f %3.9f\n", 
-            svm_c, gamma, cv_error(0), cv_error(1));
     }
 
     if (parser->option("train-best")) {
 	printf ("Training network with best parameters\n");
+	trainer.set_kernel (kernel_type (best_svc));
 	trainer.set_kernel (kernel_type (best_gamma));
         dlib::decision_function<kernel_type> best_network = 
 	    trainer.train (dense_samples, labels);
@@ -711,8 +745,8 @@ parse_fn (
         "Number of hidden units in mlp: {integer}.", 1, "");
     parser->add_long_option ("", "mlp-num-iterations",
         "Number of epochs to train the mlp: {integer}.", 1, "");
-    parser->add_long_option ("", "svr-c",
-        "SVR regularization parameter \"C\": {float}.", 1, "");
+    parser->add_long_option ("", "sv-c",
+        "SV regularization parameter \"C\": {float}.", 1, "");
     parser->add_long_option ("", "svr-epsilon-insensitivity",
         "SVR fitting tolerance parameter: {float}.", 1, "");
     parser->add_long_option ("", "verbose", "Use verbose trainers", 0);
