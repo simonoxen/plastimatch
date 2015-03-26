@@ -688,7 +688,7 @@ svm_lin_test (
     }
 }
 
-static void svm_test  (
+static void svm_train  (
     dlib::Plm_clp* parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<label_type>& labels
@@ -704,6 +704,43 @@ static void svm_test  (
         fprintf (stderr, "Unknown kernel type: %s\n", kernel.c_str());
         exit (-1);
     }
+}
+
+
+static void svm_test  (
+    dlib::Plm_clp* parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<label_type>& labels
+)
+{
+    /* Load the network */
+    typedef dlib::radial_basis_kernel<dense_sample_type> kernel_type;
+    dlib::svm_c_trainer<kernel_type> trainer;
+    dlib::decision_function<kernel_type> best_network;
+    std::ifstream fin (parser->option("input-net").argument().c_str(), 
+        std::ios::binary);
+    deserialize (best_network, fin);
+
+    size_t tp = 0, fp = 0, fn = 0, tn = 0;
+    for (size_t j = 0; j < dense_samples.size(); j++) {
+        if (best_network(dense_samples[j]) > 0) {
+            if (labels[j] > 0) {
+                tp ++;
+            } else {
+                fp ++;
+            }
+        } else {
+            if (labels[j] > 0) {
+                fn ++;
+            } else {
+                tn ++;
+            }
+        }
+    }
+    printf ("Testing result: TP=%d TN=%d FP=%d FN=%d Loss=%f Dice=%f\n",
+        (int) tp, (int) tn, (int) fp, (int) fn,
+        (fp + fn) / (float) (fp + fn + tp + tn),
+        (2 * tp) / (float) (2 * tp + fp + fn));
 }
 
 static void
@@ -729,6 +766,8 @@ parse_fn (
         "Learning kernel (for krls,krr,svr methods): {lin,rbk}", 1, "");
     parser->add_long_option ("", "input", 
         "A libsvm-formatted file to test", 1, "");
+    parser->add_long_option ("", "input-net", 
+        "Test a pre-existing network", 1, "");
     parser->add_long_option ("", "normalize",
         "Normalize the sample inputs to zero-mean unit variance?", 0);
     parser->add_long_option ("", "subsample", 
@@ -765,15 +804,16 @@ parse_fn (
     }
 
     /* DO THE TEST */
-    std::string option_alg = parser->get_string ("learning-algorithm");
-    std::string option_in = parser->get_string ("input");
+    std::string learning_algorithm = parser->get_string ("learning-algorithm");
+    std::string input_data = parser->get_string ("input");
+    std::string input_net = parser->get_string ("input-net");
 
     std::vector<sparse_sample_type> sparse_samples;
     std::vector<label_type> labels;
 
     /* Load the data */
     dlib::load_libsvm_or_vw_data (
-	option_in, 
+	input_data, 
 	sparse_samples, 
 	labels
     );
@@ -805,7 +845,7 @@ parse_fn (
     if (sparse_samples.size() < 1) {
 	std::cout 
 	    << "Sorry, I couldn't find any samples in your data set.\n"
-	    << "Aborting the operation.\n";
+                << "Aborting the operation.\n";
 	exit (0);
     }
 
@@ -822,32 +862,41 @@ parse_fn (
 	}
     }
 
-    if (option_alg == "") {
-	// Do KRR if user didn't specify an algorithm
-	std::cout << "No algorithm specified, default to KRR\n";
-	krr_test (parser, dense_samples, labels);
+    /* Handle the case where we are testing, and not training */
+    if (input_net != "") {
+        if (learning_algorithm == "svm") {
+            svm_test (parser, dense_samples, labels);
+        }
     }
-    else if (option_alg == "krls") {
-	krls_test (parser, dense_samples, labels);
-    }
-    else if (option_alg == "krr") {
-	krr_test (parser, dense_samples, labels);
-    }
-    else if (option_alg == "mlp") {
-	mlp_test (parser, dense_samples, labels);
-    }
-    else if (option_alg == "svr") {
-	svr_test (parser, dense_samples, labels);
-    }
-    else if (option_alg == "svm") {
-	svm_test (parser, dense_samples, labels);
-    }
+
     else {
-	fprintf (stderr, 
-	    "Error, algorithm \"%s\" is unknown.\n"
-	    "Please use -h to see the command line options\n",
-	    option_alg.c_str());
-	exit (-1);
+        if (learning_algorithm == "") {
+            // Do KRR if user didn't specify an algorithm
+            std::cout << "No algorithm specified, default to KRR\n";
+            krr_test (parser, dense_samples, labels);
+        }
+        else if (learning_algorithm == "krls") {
+            krls_test (parser, dense_samples, labels);
+        }
+        else if (learning_algorithm == "krr") {
+            krr_test (parser, dense_samples, labels);
+        }
+        else if (learning_algorithm == "mlp") {
+            mlp_test (parser, dense_samples, labels);
+        }
+        else if (learning_algorithm == "svr") {
+            svr_test (parser, dense_samples, labels);
+        }
+        else if (learning_algorithm == "svm") {
+            svm_train (parser, dense_samples, labels);
+        }
+        else {
+            fprintf (stderr, 
+                "Error, algorithm \"%s\" is unknown.\n"
+                "Please use -h to see the command line options\n",
+                learning_algorithm.c_str());
+            exit (-1);
+        }
     }
 
 }
