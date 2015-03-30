@@ -820,8 +820,6 @@ parse_fn (
     std::cout 
 	<< "Loaded " << sparse_samples.size() << " samples"
             << std::endl
-            << "Each sample has size " << sparse_samples[0].size() 
-            << std::endl
             << "First sample " << labels[0] << " | " 
             << sparse_samples[0][1] << " "
             << sparse_samples[0][2] << " ...\n";
@@ -852,6 +850,9 @@ parse_fn (
     /* Convert sparse to dense */
     std::vector<dense_sample_type> dense_samples;
     dense_samples = dlib::sparse_to_dense (sparse_samples);
+
+    std::cout << "Each sample has size " << dense_samples[0].nr()
+        << std::endl;
 
     /* Normalize inputs to N(0,1) */
     if (parser->option ("normalize")) {
