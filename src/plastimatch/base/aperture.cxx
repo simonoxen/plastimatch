@@ -283,7 +283,7 @@ Aperture::set_range_compensator_image (const char *rc_filename)
 void
 Aperture::set_range_compensator_volume (Volume::Pointer rc)
 {
-    d_ptr->aperture_image->set_volume(rc);
+    d_ptr->range_compensator_image->set_volume(rc);
 }
 
 void 

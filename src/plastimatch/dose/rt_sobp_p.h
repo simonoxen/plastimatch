@@ -26,7 +26,9 @@ public:
 
     float* d_lut;               /* depth array (mm) */
     float* e_lut;               /* energy array (MeV) */
+	float* f_lut;				/* integrated energy array (MeV) */
     double dres;
+	float dose_max;
     int num_samples;	        /* number of depths */
 
     int eres;			/* energy resolution */

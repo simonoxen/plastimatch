@@ -14,14 +14,15 @@ Rt_depth_dose::Rt_depth_dose ()
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
+	this->f_lut = NULL;
 
     this->E0 = 100.0;
     this->spread = 1.0;
-    this->dres = 1.0;
+    this->dres = .01;
     this->dmax = 400.0;
     this->weight = 1.0;
 
-    this->num_samples = 400;
+    this->num_samples = 40000;
 }
 
 Rt_depth_dose::Rt_depth_dose (
@@ -29,6 +30,7 @@ Rt_depth_dose::Rt_depth_dose (
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
+	this->f_lut = NULL;
 
     this->E0 = E0;
     this->spread = spread;
@@ -47,6 +49,9 @@ Rt_depth_dose::~Rt_depth_dose ()
     if (this->e_lut) {
         free (this->e_lut);
     }
+	if (this->f_lut) {
+		free (this->f_lut);
+	}
 }
 
 bool
@@ -90,9 +95,11 @@ Rt_depth_dose::load_xio (const char* fn)
 
     this->d_lut = (float*)malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*)malloc (this->num_samples*sizeof(float));
+	this->f_lut = (float*)malloc (this->num_samples*sizeof(float));
     
     memset (this->d_lut, 0, this->num_samples*sizeof(float));
     memset (this->e_lut, 0, this->num_samples*sizeof(float));
+	memset (this->f_lut, 0, this->num_samples*sizeof(float));
 
     /* load in the depths (10 samples per line) */
     for (i=0, j=0; i<(this->num_samples/10)+1; i++) {
@@ -116,6 +123,17 @@ Rt_depth_dose::load_xio (const char* fn)
         }
     }
 
+	/* load in the energies (10 samples per line) */
+    for (i=0, j=0; i<(this->num_samples/10)+1; i++) {
+        fgets (linebuf, 128, fp);
+        ptoken = strtok (linebuf, ",\n\0");
+        while (ptoken) {
+            this->f_lut[j] = (float) strtod (ptoken, NULL);
+            ptoken = strtok (NULL, ",\n\0");
+            j++;
+        }
+    }
+
     fclose (fp);
     return true;
 }
@@ -127,7 +145,7 @@ Rt_depth_dose::load_txt (const char* fn)
     FILE* fp = fopen (fn, "r");
 
     while (fgets (linebuf, 128, fp)) {
-        float range, dose;
+        float range, dose, dose_int;
 
         if (2 != sscanf (linebuf, "%f %f", &range, &dose)) {
             break;
@@ -141,9 +159,13 @@ Rt_depth_dose::load_txt (const char* fn)
         this->e_lut = (float*) realloc (
                         this->e_lut,
                         this->num_samples * sizeof(float));
+		this->f_lut = (float*) realloc (
+						this->f_lut,
+						this->num_samples * sizeof(float));
 
         this->d_lut[this->num_samples-1] = range;
         this->e_lut[this->num_samples-1] = dose;
+		this->f_lut[this->num_samples-1] = dose_int;
         this->dmax = range;         /* Assume entries are sorted */
     }
 
@@ -175,13 +197,16 @@ Rt_depth_dose::generate ()
 
     this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
+	this->f_lut = (float*) malloc (this->num_samples*sizeof(float));
     
     memset (this->d_lut, 0, this->num_samples*sizeof(float));
     memset (this->e_lut, 0, this->num_samples*sizeof(float));
+	memset (this->f_lut, 0, this->num_samples*sizeof(float));
 
     for (d=0, i=0; i<this->num_samples; d+=this->dres, i++) {
         d_lut[i] = d;
-        e_lut[i] = bragg_curve (this->E0, this->spread, d);
+		e_lut[i] = bragg_curve_norm (this->E0, this->spread, d)*this->dres;
+		if (d == 0) {f_lut[i] = e_lut[i];} else {f_lut[i] = f_lut[i-1] + e_lut[i];}
     }
     return true;
 #else
@@ -203,40 +228,61 @@ Rt_depth_dose::dump (const char* fn) const
 }
 
 float
-Rt_depth_dose::lookup_energy (float depth) const
+Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
 {	
     int i;
+	int j;
     float energy = 0.0f;
 
+	float dres = this->dres;
+
+	float dmin = depth - dz/2.0;
+	float dmax = depth + dz/2.0;
+
     /* Sanity check */
-    if (depth < 0) {
-        return 0.0f;
-    }
+	if (depth + dz/2.0 < 0) {
+		return 0.0f;
+	}
 
     /* Find index into profile arrays */
     for (i = 0; i < this->num_samples-1; i++) {
-        if (this->d_lut[i] > depth) {
-            i--;
+        if (this->d_lut[i]> dmin) {
+			i--;
             break;
         }
     }
 
-    /* Clip input depth to maximum in lookup table */
-    if (i == this->num_samples-1) {
-        depth = this->d_lut[i];
-    }
+	for (j = i; j < this->num_samples-1; j++) {
+		if (this->d_lut[j] > dmax) {
+			j--;
+			break;
+		}
+	}
 
-    /* Use index to lookup and interpolate energy */
-    if (i >= 0 && i < this->num_samples-1) {
-        /* linear interpolation */
-        energy = this->e_lut[i]
-            + (depth - this->d_lut[i])
-            * ((this->e_lut[i+1] - this->e_lut[i]) 
+	/* Use index to lookup and interpolate energy */
+    if (j >= 0 && j < this->num_samples-1) {
+        // linear interpolation
+        energy = this->f_lut[j]
+            + (dmax - this->d_lut[j])
+            * ((this->f_lut[j+1] - this->f_lut[j]) 
+                / (this->d_lut[j+1] - this->d_lut[j]));
+    } 
+	else //(j == num_samples-1)
+	{
+		energy = this->f_lut[num_samples-1];
+	}
+
+	if (i >= 0 && i < this->num_samples-1) {
+		// linear interpolation
+        energy -= this->f_lut[i]
+            + (dmin - this->d_lut[i])
+            * ((this->f_lut[i+1] - this->f_lut[i]) 
                 / (this->d_lut[i+1] - this->d_lut[i]));
-    } else {
-        /* we went past the end of the lookup table */
-        energy = 0.0f;
-    }
+    } 
+	else if (i == num_samples-1) //(i == num_samples-1)
+	{
+		energy -= this->f_lut[num_samples-1];
+	}
 
-    return energy;   
+	return energy;  
 }

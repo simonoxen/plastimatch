@@ -49,7 +49,7 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
         printf("Sigma source computed - sigma_src_max = 0 mm. (Source size <= 0)\n");
     }    
     /* + sigma^2 range compensator */
-    if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
+	if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
         compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, energy, margins);
     }
@@ -206,7 +206,6 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
     printf ("sigma_img: %d %d %d\n", (int) sigma_vol->get_vol()->dim[0], 
         (int) sigma_vol->get_vol()->dim[1], (int) sigma_vol->get_vol()->dim[2]);
     printf("dim: %d %d %d\n", (int) dim[0], (int) dim[1], (int) dim[2]);
-
 	
     for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {   
@@ -400,6 +399,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     {
         sigma0 = 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;;
     }
+	sigma0 = sigma0/0.915; // MD Fix... works only the hong's test
 
     /* sigma calculation and length computations */
     
@@ -441,13 +441,13 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
         for (int i = 0; i < dim[0] * dim[1]; i++)
         {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
-            if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[i] > 0))
+			if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
             {
-                rc_over_range = rc_img[i] / range; // energy is >1, so range > 0
+                rc_over_range = rc_img[i] *1.19 *0.98 / range; // energy is >1, so range > 0 (range is in water: rho * WER)
 	
                 if (rc_over_range < 1)
                 {
-                    sigma_srm = sigma0 * rc_over_range * ( 0.26232 + 0.64298 * rc_over_range + 0.0952393 * rc_over_range * rc_over_range);
+                    sigma_srm = sigma0 * rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
 
                     /* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
                     rc_eff = get_rc_eff(rc_over_range);

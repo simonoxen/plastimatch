@@ -63,10 +63,10 @@ set (CONFIG_FILE_LIST
   "plm-reg-trans-mi-a.txt"
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
-  "proton-dose-a-1.txt"
-  "proton-dose-f-1.txt"
-  "proton-dose-g-1.txt"
-  "proton-dose-h-1.txt"
+  "proton-dose-1.txt"
+  "proton-dose-2.txt"
+  "proton-dose-3.txt"
+  "proton-dose-4.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -288,6 +288,7 @@ endif ()
 ##   gauss-ushort-2    Off-center gauss, ushort
 ##   lung-1            Synthetic lung, tumor position 0
 ##   lung-2            Synthetic lung, tumor position -5
+##   ptv-1             rect PTV target for dose calculation
 ##   rect-1            Inverted rect, centered
 ##   rect-2            Standard rect, off-center
 ##   rect-3            Standard rect, centered
@@ -302,10 +303,13 @@ endif ()
 ##   rect-14           Small, off-center rect, bg=0, fg=10
 ##   rect-15           Standard rect, slicer direction cosines
 ##   rect-16           Off-center rect, slicer direction cosines
+##   rect-17           Water phantom, resolution 5x5x5, for dose calculation
+##   rect-18	       Water phantom, very low resolution 20x20, dose calc.
 ##   rectarr-01        Two rectangles, both centered
 ##   rectarr-02        Two rectangles, lower rect offset
 ##   rectarr-m-01      Upper mask for rectarr-01 and rectarr-02
 ##   rectarr-m-02      Lower mask for rectarr-01 and rectarr-02
+##   rgc-1             rect range compensator for dose calculation
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
 ## -------------------------------------------------------------------------
@@ -390,6 +394,11 @@ plm_add_test (
   "lung-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;-5"
+  )
+plm_add_test (
+  "ptv-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/ptv-1.mha;--pattern;rect;--dim;60 60 60;--background;0;--foreground;6;--rect-size;20 20 20;--origin;-150 -150 -150;--spacing;5 5 5"
   )
 plm_add_test (
   "rect-1"
@@ -487,6 +496,16 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-16.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50;--origin;243.421 243.421 -243.421;--spacing;13.1579 13.1579 13.1579;--direction-cosines;-1 0 0 0 -1 0 0 0 1"
   )
 plm_add_test (
+  "rect-17"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-17.mha;--pattern;rect;--dim;60 60 60;--background;-1000;--foreground;0;--rect-size;-100 100 -100 100 -100 100;--origin;-150 -150 -150;--spacing;5 5 5"
+  )
+plm_add_test (
+  "rect-18"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-18.mha;--pattern;rect;--dim;15 15 15;--background;-1000;--foreground;0;--rect-size;-100 100 -100 100 -100 100;--origin;-150 -150 -150;--spacing;20 20 20"
+  )
+plm_add_test (
   "rectarr-01-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rectarr-01-a.mha;--output-type;float;--pattern;rect;--dim;30 50 30;--background;-1000;--foreground;0;--rect-size;-5 5 -15 -5 -5 5;--origin;-14.5 -24.5 -14.5;--spacing;1 1 1"
@@ -515,6 +534,11 @@ plm_add_test (
   )
 set_property (TEST rectarr-m-01 APPEND PROPERTY DEPENDS rectarr-01-a)
 set_property (TEST rectarr-m-02 APPEND PROPERTY DEPENDS rectarr-01-a)
+plm_add_test (
+  "rgc-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rgc-1.mha;--output-type;float;--pattern;rect;--dim;10 10 1;--background;0;--foreground;30;--rect-size;0 10 0 5 0 0;--origin;0 0 0;--spacing;1 1 1"
+  )
 plm_add_test (
   "sphere-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -3999,10 +4023,10 @@ set_tests_properties (vf-invert-trans-1-check
 
 ## -------------------------------------------------------------------------
 ## bragg-curve
-## proton-dose-a-1    Flavor a, automatic compensator
-## proton-dose-f-1    Flavor f, automatic compensator
-## proton-dose-g-1    Flavor g, automatic compensator
-## proton-dose-h-1    Flavor h, automatic compensator
+## proton-dose-1    Flavor a, sobp
+## proton-dose-2    Flavor f, single bragg peak, target, autom. rgcomp
+## proton-dose-3    Flavor g, multiple beam
+## proton-dose-4    Flavor h, load range comp file
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -4015,32 +4039,34 @@ add_test (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
 set_tests_properties (bragg-curve-check PROPERTIES DEPENDS bragg-curve)
 
 plm_add_test (
-    "proton-dose-a-1"
+    "proton-dose-1"
     ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-a-1.txt"
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
     )
-set_tests_properties (proton-dose-a-1 PROPERTIES DEPENDS rect-2)
+set_tests_properties (proton-dose-1 PROPERTIES DEPENDS rect-17)
 
-# plm_add_test (
-#     "proton-dose-f-1"
-#     ${PLM_PLASTIMATCH_PATH}/proton_dose
-#     "${PLM_BUILD_TESTING_DIR}/proton-dose-f-1.txt"
-#     )
-# set_tests_properties (proton-dose-f-1 PROPERTIES DEPENDS rect-2)
+ plm_add_test (
+     "proton-dose-2"
+     ${PLM_PLASTIMATCH_PATH}/proton_dose
+     "${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
+     )
+ set_tests_properties (proton-dose-2 PROPERTIES DEPENDS rect-17)
+ set_tests_properties (proton-dose-2 PROPERTIES DEPENDS ptv-1)
 
-# plm_add_test (
-#     "proton-dose-g-1"
-#     ${PLM_PLASTIMATCH_PATH}/proton_dose
-#     "${PLM_BUILD_TESTING_DIR}/proton-dose-g-1.txt"
-#     )
-# set_tests_properties (proton-dose-g-1 PROPERTIES DEPENDS rect-2)
+ plm_add_test (
+     "proton-dose-3"
+     ${PLM_PLASTIMATCH_PATH}/proton_dose
+     "${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
+     )
+ set_tests_properties (proton-dose-3 PROPERTIES DEPENDS rect-17)
 
-# plm_add_test (
-#     "proton-dose-h-1"
-#     ${PLM_PLASTIMATCH_PATH}/proton_dose
-#     "${PLM_BUILD_TESTING_DIR}/proton-dose-h-1.txt"
-#     )
-# set_tests_properties (proton-dose-h-1 PROPERTIES DEPENDS rect-2)
+ plm_add_test (
+     "proton-dose-4"
+     ${PLM_PLASTIMATCH_PATH}/proton_dose
+     "${PLM_BUILD_TESTING_DIR}/proton-dose-4.txt"
+     )
+ set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rect-18)
+ set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rgc-1)
 
 ## -------------------------------------------------------------------------
 ## i hate myself

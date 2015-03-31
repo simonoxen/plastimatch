@@ -14,4 +14,11 @@ bragg_curve (
     double z            /* in mm */
 );
 
+double
+bragg_curve_norm (
+    double E_0,         /* in MeV */
+    double sigma_E0,    /* in MeV */
+    double z            /* in mm */
+);
+
 #endif

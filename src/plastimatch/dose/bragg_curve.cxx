@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <math.h>
 #include "bragg_curve.h"
+#include "rt_lut.h"
 
 typedef double doublereal;
 
@@ -78,4 +79,13 @@ bragg_curve (
         + (0.157 + 11.26 * epsilon / R_0) * D_v_2);
 
     return bragg;
+}
+
+double bragg_curve_norm (
+	double E_0,         /* in MeV */
+    double sigma_E0,    /* in MeV */
+    double z            /* in mm */
+)
+{
+		return bragg_curve(E_0, sigma_E0, z)/ get_dose_max(E_0);
 }

@@ -50,7 +50,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
         }
         else
         {
-            spacing[i] = volume->get_proj_volume()->get_step_length();
+            spacing[i] = 1; //volume->get_proj_volume()->get_step_length();
             dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/spacing[i] + 1);
         }
     }
@@ -84,7 +84,8 @@ calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinate
             ray_bev[2] = -vec3_dot(ray_data->ray, rpl_volume->get_proj_volume()->get_nrm()); // ray_beam_eye_view is already normalized
 
             find_xyz_center(aperture, ray_bev, rpl_volume->get_aperture()->get_distance(),0, rpl_volume->get_vol()->spacing[2]);
-            find_xyz_center_entrance(entrance, ray_bev, rpl_volume->get_front_clipping_plane()-rpl_volume->get_aperture()->get_distance());
+            find_xyz_center_entrance(entrance, ray_bev, rpl_volume->get_front_clipping_plane());
+
             vec3_add2(entrance, aperture);
 
             for (int k = 0; k < rpl_volume->get_vol()->dim[2]; k++){

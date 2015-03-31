@@ -8,11 +8,16 @@
 
 double getrange(double energy);
 double getstop(double energy);
+double get_dose_max(double E0);
+int get_depth_max(double E0);
 
 double compute_X0_from_HU(double CT_HU); // Radiation length
 
 extern const double lookup_proton_range_water[][2];
 extern const double lookup_proton_stop_water[][2];
+
+extern const double lookup_proton_dose_max_bragg[][2];
+
 
 extern const double lookup_off_axis[][2];
 

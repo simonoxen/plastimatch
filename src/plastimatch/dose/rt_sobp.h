@@ -127,12 +127,16 @@ public:
     /* set the energy step only */
     void SetEnergyStep(int new_step);
     /* set energy step */
-    void SetDepthStep(float new_step);	
+    void SetDepthStep(float new_step);
+	/* set/get the dose max of the normalized SOBP */
+	void SetDoseMax(float dose_max);
+	float GetDoseMax();
     /* get peaks - not a pointer */
     std::vector<const Rt_depth_dose*> getPeaks();
     /* Weight optimizer */
     void Optimizer (int num_peaks);
     void Optimizer2 (int num_peaks);
+	void Optimizer3 ();
 
 };
 

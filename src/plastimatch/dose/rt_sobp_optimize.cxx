@@ -274,6 +274,101 @@ void Rt_sobp::Optimizer2 (int num_peaks)
     }
 }
 
+// Maxime Desplanques's better optimizer to get the optimized weights 
+// for pristine peaks -- working also for beams with different sigmaE
+void Rt_sobp::Optimizer3 ()
+{
+    int num_samples = d_ptr->num_samples;
+	int num_peaks = optimizer_num_peaks();
+
+	std::vector<int> energies (num_peaks,0);
+	std::vector<double> weight (num_peaks, 0);
+  
+    std::vector<double> init_vector (num_samples, 0);
+    std::vector< std::vector<double> > depth_dose (num_peaks, init_vector);
+
+    printf("\n %d Mono-energetic BP used:\n", num_peaks);
+
+	/* updating the energies in the table) */
+    for (int i = 0; i < num_peaks; i++)
+    {
+        energies[i]= d_ptr->E_min + i * d_ptr->eres;
+        printf("%d ", energies[i]);
+    }
+	printf("\n");
+
+
+    for (int i = 0; i < num_peaks; i++)
+    {
+        for (int j = 0; j < num_samples; j++)
+        {
+            depth_dose[i][j] = bragg_curve_norm((double)energies[i],1,(double)d_ptr->d_lut[j]);
+        }
+    }
+
+    for (int i = num_peaks -1 ; i >= 0; i--)
+    {
+        if (i == num_peaks - 1)
+        {
+            weight[i] = 1.0;
+        }
+        else
+        {
+			weight[i] = 1.0 - d_ptr->e_lut[get_depth_max(energies[i])];
+            if (weight[i] < 0)
+            {
+                weight[i] = 0;
+            }
+        }
+
+        for (int j = 0; j < num_samples; j++)
+        {
+            d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+        }
+    }
+
+    for (int n = 0; n < 100; n++)
+    {
+        for (int i = 0; i < num_peaks; i++)
+		{
+			weight[i] = weight[i] / d_ptr->e_lut[get_depth_max(energies[i])];
+		}
+
+		for (int j = 0 ; j < num_samples; j++)
+		{
+            d_ptr->e_lut[j] = 0;
+            for (int i = 0; i < num_peaks; i++)
+            {
+                d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+            }
+		}
+    }
+
+    while (!d_ptr->depth_dose.empty())
+    {
+        d_ptr->depth_dose.pop_back();
+    }
+
+	d_ptr->num_peaks = num_peaks;
+    for(int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        this->add_peak ((double)energies[i],1, d_ptr->dres, 
+            (double)d_ptr->dend, weight[i]);
+        d_ptr->sobp_weight.push_back(weight[i]);
+    }
+
+	/* look for the max */
+	double dose_max = 0;
+	for(int i = d_ptr->num_samples-1; i >=0; i--)
+    {
+		if (d_ptr->e_lut[i] > dose_max)
+		{
+			dose_max = d_ptr->e_lut[i];
+		}
+    }
+	this->SetDoseMax(dose_max);
+}
+
 // cost function to be optimized in order to find the 
 // best weights and fit a perfect sobp
 double cost_function_calculation (

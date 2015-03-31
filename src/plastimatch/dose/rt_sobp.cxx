@@ -135,7 +135,7 @@ Rt_sobp::optimize ()
         d_ptr->prescription_dmin,
         d_ptr->prescription_dmax,
         d_ptr->dres);
-    this->Optimizer2 (this->optimizer_num_peaks ());
+    this->Optimizer3 ();
 }
 
 float
@@ -282,6 +282,14 @@ Rt_sobp::set_dose_lut(float* d_lut, float* e_lut, int num_samples)
     {
         d_ptr->d_lut[i] = d_lut[i];
         d_ptr->e_lut[i] = e_lut[i];
+		if (i == 0) 
+		{
+			d_ptr->f_lut[i] = e_lut[i];
+		} 
+		else 
+		{
+			d_ptr->f_lut[i] = d_ptr->f_lut[i-1] + e_lut[i];
+		}
     }
     d_ptr->num_samples = num_samples;
 }
@@ -301,7 +309,15 @@ Rt_sobp::get_e_lut()
 void 
 Rt_sobp::set_dres(double dres)
 {
-    d_ptr->dres = dres;
+	if (dres != 0)
+	{
+		d_ptr->dres = dres;
+		d_ptr->num_samples = d_ptr->dmax / dres;
+	}
+	else
+	{
+		printf("the depth resolution for depth dose cannot be null\n");
+	}
 }
 
 double
@@ -386,6 +402,15 @@ void
 Rt_sobp::set_dmax(float dmax)
 {
     d_ptr->dmax = dmax;
+	float num_sample = dmax / (float) d_ptr->dres;
+	if (num_sample - (float) ((int) num_sample) == 0)
+	{
+		d_ptr->num_samples = num_sample;
+	}
+	else
+	{
+		d_ptr->num_samples = num_sample + 1;
+	}
 }
 
 float 
@@ -491,6 +516,7 @@ Rt_sobp::add_depth_dose(const Rt_depth_dose* depth_dose)
     for (int i = 0; i < depth_dose->num_samples; i++)
     {
         dose->e_lut[i] = depth_dose->e_lut[i];
+		dose->f_lut[i] = depth_dose->f_lut[i];
         dose->d_lut[i] = depth_dose->d_lut[i];
         dose->dmax = depth_dose->dmax;
         dose->dres = depth_dose->dres;
@@ -551,16 +577,19 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp pa
         d_ptr->d_lut = new float[d_ptr->num_samples];
         if (d_ptr->e_lut) delete[] d_ptr->e_lut;
         d_ptr->e_lut = new float[d_ptr->num_samples];
-
+		if (d_ptr->f_lut) delete[] d_ptr->f_lut;
+        d_ptr->f_lut = new float[d_ptr->num_samples];
 
         for (int i = 0; i < d_ptr->num_samples-1; i++)
         {
             d_ptr->d_lut[i] = i*d_ptr->dres;
             d_ptr->e_lut[i] = 0;
+			d_ptr->f_lut[i] = 0;
         }
 
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
+		d_ptr->f_lut[d_ptr->num_samples-1] = 0;
     }
 }
 
@@ -600,16 +629,20 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // s
         d_ptr->d_lut = new float[d_ptr->num_samples];
         if (d_ptr->e_lut) delete[] d_ptr->e_lut;
         d_ptr->e_lut = new float[d_ptr->num_samples];
+		if (d_ptr->f_lut) delete[] d_ptr->f_lut;
+        d_ptr->f_lut = new float[d_ptr->num_samples];
 
 
         for (int i = 0; i < d_ptr->num_samples-1; i++)
         {
             d_ptr->d_lut[i] = i*d_ptr->dres;
             d_ptr->e_lut[i] = 0;
+			d_ptr->f_lut[i] = 0;
         }
 
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
+		d_ptr->f_lut[d_ptr->num_samples-1] = 0;
     }
 }
 
@@ -647,16 +680,19 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp 
         d_ptr->d_lut = new float[d_ptr->num_samples];
         if (d_ptr->e_lut) delete[] d_ptr->e_lut;
         d_ptr->e_lut = new float[d_ptr->num_samples];
+		if (d_ptr->f_lut) delete[] d_ptr->f_lut;
+        d_ptr->f_lut = new float[d_ptr->num_samples];
 
         for (int i = 0; i < d_ptr->num_samples-1; i++)
         {
             d_ptr->d_lut[i] = i*d_ptr->dres;
             d_ptr->e_lut[i] = 0;
+			d_ptr->f_lut[i] = 0;
         }
 
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
-
+		d_ptr->f_lut[d_ptr->num_samples-1] = 0;
     }
 }
 
@@ -696,16 +732,19 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step) 
         d_ptr->d_lut = new float[d_ptr->num_samples];
         if (d_ptr->e_lut) delete[] d_ptr->e_lut;
         d_ptr->e_lut = new float[d_ptr->num_samples];
+		if (d_ptr->f_lut) delete[] d_ptr->f_lut;
+        d_ptr->f_lut = new float[d_ptr->num_samples];
 
         for (int i = 0; i < d_ptr->num_samples-1; i++)
         {
             d_ptr->d_lut[i] = i*d_ptr->dres;
             d_ptr->e_lut[i] = 0;
+			d_ptr->f_lut[i] = 0;
         }
 
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
-		
+		d_ptr->f_lut[d_ptr->num_samples-1] = 0;		
     }
 }
 
@@ -717,6 +756,15 @@ void Rt_sobp::SetEnergyStep(int new_step)
 void Rt_sobp::SetDepthStep(float new_step)
 {
     SetMinMaxDepths(d_ptr->dmin, d_ptr->dmax, new_step);
+}
+
+void Rt_sobp::SetDoseMax(float dose_max)
+{
+	d_ptr->dose_max = dose_max;
+}
+float Rt_sobp::GetDoseMax()
+{
+	return d_ptr->dose_max;
 }
 
 float Rt_sobp::get_maximum_depth()

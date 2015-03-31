@@ -19,7 +19,7 @@ public:
     /* debug: print bragg curve to file */
     void dump (const char* fn) const;
 
-	float lookup_energy(float depth) const;
+	float lookup_energy_integration(float depth, float dz) const;
 
 private:
     bool load_xio (const char* fn);
@@ -28,6 +28,7 @@ private:
 public:
     float* d_lut;                   /* depth array (mm) */
     float* e_lut;                   /* energy array (MeV) */
+	float* f_lut;					/* integrated energy array (MeV) */
 
     double E0;                      /* initial ion energy (MeV) */
     double spread;                  /* beam energy sigma (MeV) */

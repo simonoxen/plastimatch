@@ -48,8 +48,8 @@ public:
         this->E0 = 100.;
         this->spread = 1.;
         this->weight = 1.;
-        this->max_depth = 800.0f;
-        this->depth_res = 1.f;
+        this->max_depth = 400.0f;
+        this->depth_res = 0.01f;
         this->bragg_curve ="";
 
         /* Other parameters not directly defined by config the config 

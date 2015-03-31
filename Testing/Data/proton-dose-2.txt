@@ -1,0 +1,25 @@
+#this file will create two beams (0° and 180°) of 100 MeV, automatically shaped to fit a target with 5 mm margins - if you don't specify the PEAKS, a SOBP will be automatically created to fit the target, you can also defined proximal and distal margins
+
+[PLAN]
+patient = @PLM_BUILD_TESTING_DIR@/rect-17.mha
+dose_out = @PLM_BUILD_TESTING_DIR@/dose-2.mha
+target = @PLM_BUILD_TESTING_DIR@/ptv-1.mha
+
+[BEAM]
+flavor = f
+homo_approx = n
+
+source = 0 -2000 0
+isocenter = 0 0 0
+
+aperture_offset = 1500
+aperture_origin = -75 -75
+aperture_spacing = 3.75 3.75
+aperture_resolution = 41 41
+aperture_smearing = 5
+source_size = 0
+
+[PEAK]
+energy=100.00000
+spread=1.000000
+weight=1.0

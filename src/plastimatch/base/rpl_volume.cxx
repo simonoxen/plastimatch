@@ -1669,6 +1669,13 @@ Rpl_volume::compute_beam_modifiers (
 
     //End extra code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	/* The range compensator is made of Lucite */
+	for (int i=0; i!=ires2[1]; ++i) {
+		for (int j=0; j!=ires2[0]; ++j) {
+            output_idx = i*ires[0]+j;
+			segdepth_img[output_idx] = segdepth_img[output_idx] / (1.19*0.98); // rho * WER
+		}
+	}
 }
 
 void

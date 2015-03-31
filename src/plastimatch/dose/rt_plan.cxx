@@ -35,6 +35,7 @@ public:
     bool debug;
 
     float normalization_dose; // dose prescription
+	float depth_dose_max;
 
     /* Filenames for input and output images */
     std::string patient_fn;
@@ -55,6 +56,7 @@ public:
     {
         debug = false;
         normalization_dose = 1.f;
+		depth_dose_max = 1.f;
         
         patient = Plm_image::New();
         target = Plm_image::New();
@@ -368,6 +370,8 @@ Rt_plan::compute_dose ()
     double time_dose_misc = 0.0;
     double time_dose_reformat = 0.0;
 
+	double dose_max = 0;
+
 	printf ("Computing rpl_ct\n");
 	this->beam->rpl_ct_vol_HU->compute_rpl_HU ();
 
@@ -624,7 +628,7 @@ Rt_plan::compute_dose ()
                         dose = dose_direct (ct_xyz, this->beam);
                         break;
                     case 'b':
-                        dose = dose_scatter (ct_xyz, ct_ijk, this->beam);
+                        dose = dose_scatter (ct_xyz, ct_ijk, this->beam); 
                         break;
                     case 'c':
                         dose = dose_hong (ct_xyz, ct_ijk, this->beam);
@@ -645,6 +649,25 @@ Rt_plan::compute_dose ()
         }
         display_progress ((float)idx, (float)ct_vol->npix);
     }
+
+	/* finding dose_max */
+	dose_max = 0;
+	for(int i = 0; i < ct_vol->dim[0] * ct_vol->dim[1] * ct_vol->dim[2]; i++)
+	{
+		if (dose_img[i] > dose_max)
+		{
+			dose_max = dose_img[i];
+		}
+	}
+
+	/* Normalize the dose for this beam to the dose prescription corrected by the SOBP max */
+	if (dose_max != 0)
+	{
+		for(int i = 0; i < ct_vol->dim[0] * ct_vol->dim[1] * ct_vol->dim[2]; i++)
+		{
+			dose_img[i] = dose_img[i] * this->get_normalization_dose() * this->beam->get_sobp()->GetDoseMax()/dose_max;
+		}
+	}
 
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
@@ -678,7 +701,7 @@ Rt_plan::compute_plan ()
     if (!ct) {
         print_and_exit ("Error: Unable to load patient volume.\n");
     }
-    this->set_patient (ct); 
+    this->set_patient (ct);
 
 #if defined (commentout_TODO)
     /* Check if the target prescription or the peaks (SOBP) were set 
@@ -716,14 +739,22 @@ Rt_plan::compute_plan ()
         if (!this->init ()) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-
-        /* handle auto-generated beam modifiers */
-        if (d_ptr->target_fn != "") {
-            printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
-            this->set_target (d_ptr->target_fn);
-            this->beam->compute_beam_modifiers ();
-            this->beam->apply_beam_modifiers ();
-        }
+		if (this->beam->get_range_compensator_in() !="")
+		{
+			Plm_image::Pointer rgc = Plm_image::New (this->beam->get_range_compensator_in(), PLM_IMG_TYPE_ITK_FLOAT);
+			this->beam->get_aperture()->set_range_compensator_image(this->beam->get_range_compensator_in().c_str());
+			this->beam->get_aperture()->set_range_compensator_volume(rgc->get_volume_float());
+		}
+		else
+		{
+			/* handle auto-generated beam modifiers */
+			if (d_ptr->target_fn != "") {
+				printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
+				this->set_target (d_ptr->target_fn);
+				this->beam->compute_beam_modifiers ();
+				this->beam->apply_beam_modifiers ();
+			}
+		}
 	
         /* generate depth dose curve, might be manual peaks or 
            optimized based on prescription, or automatic based on target */
@@ -806,7 +837,7 @@ Rt_plan::compute_plan ()
         /* Dose cumulation to the plan dose volume */
         for (int j = 0; j < dim[0] * dim[1] * dim[2]; j++)
         {
-            total_dose_img[j] += beam_dose_img[j];
+			total_dose_img[j] += beam->get_beam_weight() * beam_dose_img[j];
         }
     }
     /* Dose max */
@@ -818,6 +849,7 @@ Rt_plan::compute_plan ()
             dose_maxmax = total_dose_img[j];
         }
     }
+
     printf("\n dose max: %lg\n", dose_maxmax);
 
     /* Save dose output */
