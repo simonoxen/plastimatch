@@ -19,6 +19,8 @@ public:
 
 public:
     void set_append_filename (const std::string& append_filename);
+    void set_input_ml_results_filename (
+        const std::string& input_ml_results_filename);
     void set_label_filename (const std::string& label_filename);
     void set_mask_filename (const std::string& mask_filename);
     void set_output_filename (const std::string& output_filename);

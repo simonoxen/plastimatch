@@ -8,71 +8,34 @@
 
 #include "dir_list.h"
 #include "file_util.h"
+#include "itk_image_create.h"
+#include "itk_image_save.h"
 #include "logfile.h"
 #include "ml_convert.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_timer.h"
+#include "print_and_exit.h"
 #include "string_util.h"
 
 class Ml_convert_private
 {
 public:
     std::string append_filename;
+    std::string input_ml_results_filename;
     std::string label_filename;
     std::string mask_filename;
     std::string output_filename;
     std::string output_format;
     std::list<std::string> feature_dir;
+public:
+    void image_from_ml ();
+    void ml_from_image ();
 };
 
-Ml_convert::Ml_convert ()
-{
-    d_ptr = new Ml_convert_private;
-}
-
-Ml_convert::~Ml_convert ()
-{
-    delete d_ptr;
-}
 
 void
-Ml_convert::set_append_filename (const std::string& append_filename)
-{
-    d_ptr->append_filename = append_filename;
-}
-
-void
-Ml_convert::set_label_filename (const std::string& label_filename)
-{
-    d_ptr->label_filename = label_filename;
-}
-
-void
-Ml_convert::set_mask_filename (const std::string& mask_filename)
-{
-    d_ptr->mask_filename = mask_filename;
-}
-
-void
-Ml_convert::set_output_filename (const std::string& output_filename)
-{
-    d_ptr->output_filename = output_filename;
-}
-
-void
-Ml_convert::set_output_format (const std::string& output_format)
-{
-    d_ptr->output_format = output_format;
-}
-
-void
-Ml_convert::add_feature_path (const std::string& feature_path)
-{
-    d_ptr->feature_dir.push_back (feature_path);
-}
-
-void
-Ml_convert::run ()
+Ml_convert_private::ml_from_image ()
 {
     Plm_timer pli;
     pli.start ();
@@ -86,7 +49,7 @@ Ml_convert::run ()
     previous = fp[0];
 
     bool vw_format = true;
-    if (d_ptr->output_format == "libsvm") {
+    if (this->output_format == "libsvm") {
         vw_format = false;
     }
 
@@ -102,17 +65,17 @@ Ml_convert::run ()
     bool have_mask = false;
     UCharImageType::Pointer mask_itk;
     itk::ImageRegionIterator< UCharImageType > mask_it;
-    if (d_ptr->mask_filename != "") {
-        Plm_image::Pointer mask = Plm_image::New (d_ptr->mask_filename);
+    if (this->mask_filename != "") {
+        Plm_image::Pointer mask = Plm_image::New (this->mask_filename);
         mask_itk = mask->itk_uchar();
         mask_it = itk::ImageRegionIterator< UCharImageType > (
             mask_itk, mask_itk->GetLargestPossibleRegion());
         have_mask = true;
     }
     /* Load labelmap */
-    if (d_ptr->label_filename != "") {
+    if (this->label_filename != "") {
         lprintf ("Processing labelmap\n");
-        Plm_image::Pointer labelmap = Plm_image::New (d_ptr->label_filename);
+        Plm_image::Pointer labelmap = Plm_image::New (this->label_filename);
         UCharImageType::Pointer labelmap_itk = labelmap->itk_uchar();
 
         /* Dump labels to file */
@@ -134,9 +97,9 @@ Ml_convert::run ()
                 v == 0 ? -1 : 1, vw_format ? "|" : "");
         }
     }
-    else if (d_ptr->append_filename != "") {
+    else if (this->append_filename != "") {
         lprintf ("Processing append\n");
-        FILE *app_fp = fopen (d_ptr->append_filename.c_str(), "r");
+        FILE *app_fp = fopen (this->append_filename.c_str(), "r");
         rewind (current);
         /* Do the copy */
         while ((chars_in_buf = fread (buf, 1, BUFSIZE, app_fp)) != 0) {
@@ -146,7 +109,7 @@ Ml_convert::run ()
         /* Re-open input, and get the highest index.  Only needed for libsvm format. */
         if (!vw_format) {
             std::string line;
-            std::ifstream app_fs (d_ptr->append_filename.c_str());
+            std::ifstream app_fs (this->append_filename.c_str());
             std::getline (app_fs, line);
             app_fs.close ();
             std::vector<std::string> tokens = string_split (line, ' ');
@@ -163,8 +126,8 @@ Ml_convert::run ()
     /* Compile a complete list of feature input files */
     std::list<std::string> all_feature_files;
     std::list<std::string>::iterator fpath_it;
-    for (fpath_it = d_ptr->feature_dir.begin();
-         fpath_it != d_ptr->feature_dir.end();
+    for (fpath_it = this->feature_dir.begin();
+         fpath_it != this->feature_dir.end();
          fpath_it++)
     {
         if (is_directory(*fpath_it)) {
@@ -270,7 +233,7 @@ Ml_convert::run ()
     /* Finally, re-write temp file into final output file */
     lprintf ("Processing final output\n");
     rewind (current);
-    FILE *final_output = plm_fopen (d_ptr->output_filename.c_str(), "wb");
+    FILE *final_output = plm_fopen (this->output_filename.c_str(), "wb");
     while ((chars_in_buf = fread (buf, 1, BUFSIZE, current)) != 0) {
         fwrite (buf, 1, chars_in_buf, final_output);
     }
@@ -279,4 +242,141 @@ Ml_convert::run ()
     fclose (fp[0]);
     fclose (fp[1]);
     printf ("Time = %f\n", (float) pli.report());
+}
+
+void
+Ml_convert_private::image_from_ml ()
+{
+    Plm_image::Pointer mask;
+    bool have_mask = false;
+    if (this->mask_filename != "") {
+        have_mask = true;
+        mask = Plm_image::New (this->mask_filename);
+    }
+    else if (this->label_filename != "") {
+        have_mask = false;
+        mask = Plm_image::New (this->label_filename);
+    }
+    else {
+        print_and_exit ("Sorry, could not convert ml text file to image "
+            "without knowing the image size");
+    }
+
+    UCharImageType::Pointer output_image
+        = itk_image_create<unsigned char> (
+            Plm_image_header (mask)
+        );
+
+    std::ifstream fp (this->input_ml_results_filename.c_str());
+    
+    itk::ImageRegionIterator< UCharImageType > out_it (output_image, 
+        output_image->GetLargestPossibleRegion());
+    itk::ImageRegionIterator< UCharImageType > mask_it;
+    if (have_mask) {
+        mask_it = itk::ImageRegionIterator< UCharImageType > (
+            mask->itk_uchar(),
+            mask->itk_uchar()->GetLargestPossibleRegion());
+        mask_it.GoToBegin();
+    }
+    int skipped_by_mask = 0;
+    int skipped_by_scan = 0;
+    int skipped_by_value = 0;
+    for (out_it.GoToBegin(); !out_it.IsAtEnd(); ++out_it) {
+        if (have_mask) {
+            unsigned char mask_value = mask_it.Get();
+            ++mask_it;
+            if (mask_value == 0) {
+                skipped_by_mask ++;
+                out_it.Set (0);
+                continue;
+            }
+        }
+
+        std::string line;
+        if (!std::getline (fp, line)) {
+            print_and_exit ("Error, getline unexpected returned false during ml text read.\n");
+        }
+        float value;
+        int rc = sscanf (line.c_str(), "%f", &value);
+        if (rc != 1) {
+            skipped_by_scan ++;
+            out_it.Set (0);
+        }
+        else if (value <= 0) {
+            skipped_by_value ++;
+            out_it.Set (0);
+        }
+        else {
+            out_it.Set (1);
+        }
+    }
+#if defined (commentout)
+    printf ("Skipped (%d mask), (%d scan), (%d value)\n",
+        skipped_by_mask, skipped_by_scan, skipped_by_value);
+#endif
+        
+    itk_image_save (output_image, this->output_filename);
+}
+
+Ml_convert::Ml_convert ()
+{
+    d_ptr = new Ml_convert_private;
+}
+
+Ml_convert::~Ml_convert ()
+{
+    delete d_ptr;
+}
+
+void
+Ml_convert::set_append_filename (const std::string& append_filename)
+{
+    d_ptr->append_filename = append_filename;
+}
+
+void
+Ml_convert::set_input_ml_results_filename (
+    const std::string& input_ml_results_filename)
+{
+    d_ptr->input_ml_results_filename = input_ml_results_filename;
+}
+
+void
+Ml_convert::set_label_filename (const std::string& label_filename)
+{
+    d_ptr->label_filename = label_filename;
+}
+
+void
+Ml_convert::set_mask_filename (const std::string& mask_filename)
+{
+    d_ptr->mask_filename = mask_filename;
+}
+
+void
+Ml_convert::set_output_filename (const std::string& output_filename)
+{
+    d_ptr->output_filename = output_filename;
+}
+
+void
+Ml_convert::set_output_format (const std::string& output_format)
+{
+    d_ptr->output_format = output_format;
+}
+
+void
+Ml_convert::add_feature_path (const std::string& feature_path)
+{
+    d_ptr->feature_dir.push_back (feature_path);
+}
+
+void
+Ml_convert::run ()
+{
+    if (d_ptr->input_ml_results_filename != "") {
+        d_ptr->image_from_ml ();
+    } else {
+        d_ptr->ml_from_image ();
+    }
 }

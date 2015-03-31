@@ -18,7 +18,7 @@ sub sort_file {
 	# Remove feature numbers
 	$_ =~ s/(\d+)://g;
 
-	print OFH "$label | $intensity";
+	print OFH "$label $intensity";
 	undef %dhash;
 	while (($a,$b,$_) = split (' ', $_, 3)) {
 	    $dhash{$b} = $a;
