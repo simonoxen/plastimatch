@@ -71,6 +71,8 @@ Mabs_stats::compute_statistics (
     hd.set_reference_image (ref_img);
     hd.set_compare_image (cmp_img);
     hd.set_distance_map_algorithm (d_ptr->dmap_alg);
+    /* GCS FIX: This should not be hard-coded */
+    hd.set_maximum_distance (500);
     hd.run ();
     d_ptr->time_hausdorff += timer.report();
 

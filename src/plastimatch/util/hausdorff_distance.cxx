@@ -25,6 +25,7 @@ public:
     Hausdorff_distance_private () {
         pct_hausdorff_distance_fraction = 0.95;
         dmap_alg = "";
+        maximum_distance = FLT_MAX;
         this->clear_statistics ();
     }
 public:
@@ -46,6 +47,7 @@ public:
     float pct_hausdorff_distance_fraction;
 
     std::string dmap_alg;
+    float maximum_distance;
 
     UCharImageType::Pointer ref_image;
     UCharImageType::Pointer cmp_image;
@@ -101,6 +103,12 @@ Hausdorff_distance::set_distance_map_algorithm (const std::string& dmap_alg)
 }
 
 void 
+Hausdorff_distance::set_maximum_distance (float maximum_distance)
+{
+    d_ptr->maximum_distance = maximum_distance;
+}
+
+void 
 Hausdorff_distance::run_internal (
     UCharImageType::Pointer image1,
     UCharImageType::Pointer image2
@@ -108,11 +116,11 @@ Hausdorff_distance::run_internal (
 {
     /* Compute distance map */
     Distance_map dmap_filter;
-//    dmap_filter.set_algorithm ("itk-maurer");
     dmap_filter.set_algorithm (d_ptr->dmap_alg);
     dmap_filter.set_input_image (image2);
     dmap_filter.set_inside_is_positive (false);
     dmap_filter.set_use_squared_distance (false);
+    dmap_filter.set_maximum_distance (d_ptr->maximum_distance);
     dmap_filter.run ();
     FloatImageType::Pointer dmap = dmap_filter.get_output_image ();
 

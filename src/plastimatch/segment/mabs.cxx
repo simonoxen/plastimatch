@@ -1294,7 +1294,7 @@ Mabs::compute_dmap (
     dmap.set_inside_is_positive (false);
     dmap.set_use_squared_distance (false);
     /* GCS FIX: This should not be hard-coded */
-    dmap.set_maximum_distance (400);
+    dmap.set_maximum_distance (500);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
 
@@ -1306,8 +1306,8 @@ Mabs::compute_dmap (
     Float_pair_list al;
     al.push_back (std::make_pair (
             -std::numeric_limits<float>::max(), 0));
-    al.push_back (std::make_pair (-400, -400));
-    al.push_back (std::make_pair (400, 400));
+    al.push_back (std::make_pair (-500, -500));
+    al.push_back (std::make_pair (500, 500));
     al.push_back (std::make_pair (
             std::numeric_limits<float>::max(), 0));
     itk_adjust (dmap_image, al);

@@ -111,6 +111,9 @@ public:
         float hausdorff_distance_fraction);
     /*! \brief Choose which distance map algorithm to use */
     void set_distance_map_algorithm (const std::string& dmap_alg);
+    /*! \brief Choose the maximum distance that is returned when 
+      computing the distance map */
+    void set_maximum_distance (float maximum_distance);
     ///@}
 
     /*! \name Execution */
