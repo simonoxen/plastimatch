@@ -345,7 +345,7 @@ bool string_value_true (const char* s)
 bool string_value_true (const std::string& s)
 {
     std::string t = make_lowercase (s);
-    return t == "1" || t == "true" || t == "on";
+    return t == "1" || t == "true" || t == "on" || t == "yes";
 }
 
 // compiler does not recognize the std::to_string (c++11), so made our own

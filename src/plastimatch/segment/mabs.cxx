@@ -128,9 +128,12 @@ public:
        it is set to false when --train-registration is used */
     bool train_segmentation;
 
+    /* Decide whether distance map should be computed during the 
+       main registration loop */
+    bool compute_distance_map;
+
     /* You can set these variables to save some intermediate data 
        for debugging and tuning */
-    bool compute_distance_map;
     bool write_weight_files;
     bool write_thresholded_files;
     bool write_distance_map_files;
@@ -2129,6 +2132,6 @@ void
 Mabs::train_registration ()
 {
     d_ptr->train_segmentation = false;
-    d_ptr->compute_distance_map = false;
+    d_ptr->compute_distance_map = d_ptr->write_distance_map_files;
     this->train_internal ();
 }
