@@ -1293,8 +1293,13 @@ Mabs::compute_dmap (
     dmap.set_input_image (structure_image);
     dmap.set_inside_is_positive (false);
     dmap.set_use_squared_distance (false);
+    /* GCS FIX: This should not be hard-coded */
+    dmap.set_maximum_distance (400);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image ();
+
+    /* GCS FIX: The below is no longer needed if set_maximum_distance 
+       is implemented for other distance map alternatives */
 
     /* Truncate the dmap.  This is to save disk space. 
        Maybe we won't need this if we can crop. */

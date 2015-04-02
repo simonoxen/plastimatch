@@ -1,5 +1,10 @@
 #! /usr/bin/perl
 
+use Cwd;
+
+my $structure = "";
+my $convert_dir = "/PHShome/gcs6/gelato_shared/mabs/pddca/convert";
+
 my @group_a = 
   (
    "0522c0001",
@@ -54,18 +59,41 @@ sub classify_group {
 	$cmd = "plastimatch ml-convert --mask ${item}_mask.nrrd --input-ml-results ${item}_predicted.txt --output ${item}_predicted.nrrd";
 	print "$cmd\n";
 	system ($cmd);
+	$cmd = "plastimatch dice --dice --hausdorff ${convert_dir}/${item}/structures/${structure}.nrrd ${item}_predicted.nrrd";
+	print "$cmd\n";
+	$dice = -1;
+	$hd = -1;
+	open (CMD, "$cmd|");
+	while (<CMD>) {
+	    if (/^DICE:\s*(\d.*)/) {
+		$dice = $1;
+	    }
+	    elsif (/^Hausdorff distance =\s*(\d.*)/) {
+		$hd = $1;
+	    }
+	}
+	close CMD;
+	if ($dice != -1 and $hd != -1) {
+	    print "$item,$dice,$hd\n";
+	}
     }
 }
 
 
 $cmd = "zcat group_a-ml-sorted.txt.gz group_b-ml-sorted.txt.gz | shuf | vw -f group_ab.vw --loss_function=hinge --binary";
+#print "$cmd\n";
 #system ($cmd);
 $cmd = "zcat group_a-ml-sorted.txt.gz group_c-ml-sorted.txt.gz | shuf | vw -f group_ac.vw --loss_function=hinge --binary";
-#system ($cmd);
+print "$cmd\n";
+system ($cmd);
 $cmd = "zcat group_b-ml-sorted.txt.gz group_c-ml-sorted.txt.gz | shuf | vw -f group_bc.vw --loss_function=hinge --binary";
+#print "$cmd\n";
 #system ($cmd);
 
+# Grab structure from current directory
+$structure = getcwd;
+$structure =~ s/.*\///;
 
-classify_group (\@group_a, "group_a", "-ml-sorted", "group_bc.vw");
-classify_group (\@group_b, "group_b", "-ml-sorted", "group_ac.vw");
-classify_group (\@group_c, "group_c", "-ml-sorted", "group_ab.vw");
+#classify_group (\@group_a, "group_a", "-ml-sorted", "group_bc.vw");
+#classify_group (\@group_b, "group_b", "-ml-sorted", "group_ac.vw");
+#classify_group (\@group_c, "group_c", "-ml-sorted", "group_ab.vw");

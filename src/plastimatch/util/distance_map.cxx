@@ -21,13 +21,14 @@ public:
     Distance_map_private () {
         inside_is_positive = false;
         use_squared_distance = false;
-        //algorithm = Distance_map::ITK_MAURER;
+        maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
     }
 public:
     Distance_map::Algorithm algorithm;
     bool inside_is_positive;
     bool use_squared_distance;
+    float maximum_distance;
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
 public:
@@ -382,12 +383,14 @@ Distance_map_private::run_native_danielsson ()
         if (!this->use_squared_distance) {
             dmap_img[v] = sqrt(SQ_DIST(v,sp2));
         }
+        if (dmap_img[v] >= maximum_distance) {
+            dmap_img[v] = maximum_distance;
+        }
         if ((this->inside_is_positive && !imgs[v])
             || (!this->inside_is_positive && imgs[v]))
         {
             dmap_img[v] = -dmap_img[v];
         }
-
     }
     
     /* Free temporary memory */
@@ -464,6 +467,12 @@ void
 Distance_map::set_use_squared_distance (bool use_squared_distance)
 {
     d_ptr->use_squared_distance = use_squared_distance;
+}
+
+void 
+Distance_map::set_maximum_distance (float maximum_distance)
+{
+    d_ptr->maximum_distance = maximum_distance;
 }
 
 void 

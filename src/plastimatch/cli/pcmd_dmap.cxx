@@ -17,11 +17,15 @@ public:
     std::string img_out_fn;
     std::string algorithm;
     bool squared_distance;
+    bool have_maximum_distance;
+    float maximum_distance;
     bool inside_positive;
 public:
     Dmap_parms () {
-        squared_distance = false;
         inside_positive = false;
+        have_maximum_distance = false;
+        maximum_distance = FLT_MAX;
+        squared_distance = false;
     }
 };
 
@@ -34,6 +38,9 @@ dmap_main (Dmap_parms* parms)
 
     dmap.set_inside_is_positive (parms->inside_positive);
     dmap.set_use_squared_distance (parms->squared_distance);
+    if (parms->have_maximum_distance) {
+        dmap.set_maximum_distance (parms->maximum_distance);
+    }
 
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image();
@@ -74,13 +81,16 @@ parse_fn (
         "\"maurer\", "
         "\"danielsson\", "
         " or \"itk-danielsson\" "
-        "(default is \"maurer\")",
+        "(default is \"danielsson\")",
         1, "maurer");
     parser->add_long_option ("", "squared-distance",
         "return the squared distance instead of distance", 0);
     parser->add_long_option ("", "inside-positive",
         "voxels inside the structure should be positive"
         " (by default they are negative)", 0);
+    parser->add_long_option ("", "maximum-distance",
+        "voxels with distances greater than this number will have the "
+        "distance truncated to this number", 1, "");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -113,6 +123,10 @@ parse_fn (
     }
     if (parser->option("inside-positive")) {
         parms->inside_positive = true;
+    }
+    if (parser->option("maximum-distance")) {
+        parms->have_maximum_distance = true;
+        parms->maximum_distance = parser->get_float ("maximum-distance");
     }
 }
 

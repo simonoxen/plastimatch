@@ -42,6 +42,8 @@ public:
     void set_inside_is_positive (bool inside_is_positive);
     /*! \brief Choose which algorithm to use */
     void set_algorithm (const std::string& algorithm);
+    /*! \brief Set maximum distance */
+    void set_maximum_distance (float max_distance);
     ///@}
 
     /*! \name Execution */
