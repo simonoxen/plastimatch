@@ -443,13 +443,17 @@ Mabs::check_seg_checkpoint (std::string folder)
     }
 }
 
-/* The following variables should be set before running this:
+/* ------------------------------------------------------------------------- *
+   This function runs a registration for a group of atlases against 
+   a single reference image.
+ * ------------------------------------------------------------------------- *
+   The following variables should be set before running this:
    d_ptr->ref_rtds           the fixed image and its structure set
    d_ptr->atlas_list         list of images that should be registred
    d_ptr->output_dir         directory containing output results
                              (e.g. .../prealign or .../mabs-train)
    d_ptr->registration_list  list of registration command files
-*/
+ * ------------------------------------------------------------------------- */
 void
 Mabs::run_registration_loop ()
 {

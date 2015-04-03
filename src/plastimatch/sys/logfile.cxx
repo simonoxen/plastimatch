@@ -28,8 +28,8 @@ logfile_open (const char* log_fn, const char* mode)
 	/* Already open? */
     }
     logfile_printf ("Plastimatch " 
-		     PLASTIMATCH_VERSION_STRING
-		     "\n");
+        PLASTIMATCH_VERSION_STRING
+        "\n");
 }
 
 void
