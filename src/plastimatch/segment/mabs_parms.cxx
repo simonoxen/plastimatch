@@ -329,29 +329,19 @@ Mabs_parms::set_key_value (
             this->confidence_weight = val;
         }
         else if (key == "write_distance_map_files") {
-            if (val == "0") {
-                this->write_distance_map_files = false;
-            }
+            this->write_distance_map_files = string_value_true (val);
         }
         else if (key == "write_thresholded_files") {
-            if (val == "0") {
-                this->write_thresholded_files = false;
-            }
+            this->write_thresholded_files = string_value_true (val);
         }
         else if (key == "write_weight_files") {
-            if (val == "0") {
-                this->write_weight_files = false;
-            }
+            this->write_weight_files = string_value_true (val);
         }
         else if (key == "write_warped_images") {
-            if (val == "0") {
-                this->write_warped_images = false;
-            }
+            this->write_warped_images = string_value_true (val);
         }
         else if (key == "write_warped_structures") {
-            if (val == "0") {
-                this->write_warped_structures = false;
-            }
+            this->write_warped_structures = string_value_true (val);
         }
         else {
             goto error_exit;
