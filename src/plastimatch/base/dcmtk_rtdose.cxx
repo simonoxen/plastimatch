@@ -476,7 +476,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     /* ----------------------------------------------------------------- */
     std::string filename;
     if (d_ptr->filenames_with_uid) {
-        filename = string_format ("%s/dose.dcm_%s", dicom_dir,
+        filename = string_format ("%s/dose_%s.dcm", dicom_dir,
             d_ptr->rt_study_metadata->get_dose_series_uid());
     } else {
         filename = string_format ("%s/dose.dcm", dicom_dir);
