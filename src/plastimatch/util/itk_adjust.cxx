@@ -63,8 +63,7 @@ itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
         else if (ait_start != ait_end) {
             Float_pair_list::const_iterator ait = ait_start;
             Float_pair_list::const_iterator prev = ait_start;
-            ait++;
-            do {
+            while (++ait != ait_end) {
                 /* Case 2 */
                 if (vin <= ait->first) {
                     float slope = (ait->second - prev->second) 
@@ -77,7 +76,7 @@ itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
                     goto found_vout;
                 }
                 prev = ait;
-            } while (++ait != al.end());
+            }
         }
         /* Case 3 */
         vout = ait_end->second + (vin - ait_end->first) * right_slope;
