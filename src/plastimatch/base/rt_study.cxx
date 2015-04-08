@@ -146,7 +146,7 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
 #elif GDCM_VERSION_1
-    d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+    d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_drs.get());
 #else
     /* Do nothing */

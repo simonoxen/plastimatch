@@ -34,7 +34,7 @@ Rt_study::load_gdcm (const char *dicom_dir)
     }
     if (gdcm_series->m_rtstruct_file_list) {
 	const std::string& filename = gdcm_series->get_rtstruct_filename();
-	d_ptr->m_rtss = Segmentation::New (new Segmentation (this));
+	d_ptr->m_rtss = Segmentation::New ();
 	d_ptr->m_rtss->load_gdcm_rtss (filename.c_str(), d_ptr->m_drs.get());
     }
 #endif
