@@ -228,14 +228,20 @@ foreach $seg (sort keys %seghash) {
 	$seg_num{$parms} += $num;
     }
 }
-$best_seg = "";
-$best_seg_score = 0;
+$best_dice_seg = "";
+$best_dice_seg_score = 0;
+$best_hd95_seg = "";
+$best_hd95_seg_score = 0;
 foreach $parms (sort keys %seg_dice_hash) {
     $avg_dice = $seg_dice_hash{$parms} / $seg_num{$parms};
     $avg_hd95 = $seg_hd95_hash{$parms} / $seg_num{$parms};
-    if ($avg_dice > $best_seg_score) {
-	$best_seg = $parms;
-	$best_seg_score = "$avg_dice,$avg_hd95";
+    if ($avg_dice > $best_dice_seg_score) {
+	$best_dice_seg = $parms;
+	$best_dice_seg_score = "$avg_dice,$avg_hd95";
+    }
+    if ($avg_hd95 > $best_hd95_seg_score) {
+	$best_hd95_seg = $parms;
+	$best_hd95_seg_score = "$avg_dice,$avg_hd95";
     }
 }
 
@@ -282,7 +288,9 @@ foreach $seg (sort keys %seghash)
 foreach $struct (sort keys %struct_hash)
 {
     $best_dice = -1;
-    $best_parms = "";
+    $best_dice_parms = "";
+    $best_hd95 = -1;
+    $best_hd95_parms = "";
     foreach $seg (sort keys %seghash) {
 	($seg_struct,$parms) = split (',', $seg, 2);
 	($seg_struct eq $struct) or next;
@@ -290,11 +298,15 @@ foreach $struct (sort keys %struct_hash)
 	$dice = $seg_dice_hash{$seg} / $seg_num{$seg};
 	$hd95 = $seg_hd95_hash{$seg} / $seg_num{$seg};
 	if ($best_dice < 0 || $dice > $best_dice) {
-	    $best_hd95 = $hd95;
 	    $best_dice = $dice;
-	    $best_parms = $parms;
+	    $best_dice_parms = $parms;
+	}
+	if ($best_hd95 < 0 || $hd95 < $best_hd95) {
+	    $best_hd95 = $hd95;
+	    $best_hd95_parms = $parms;
 	}
     }
-    print "seg: $struct,$best_parms,$best_dice,$best_hd95\n";
+    print "seg (dice): $struct,$best_dice_parms,$best_dice\n";
+    print "seg (hd95): $struct,$best_hd95_parms,$best_hd95\n";
 }
 
