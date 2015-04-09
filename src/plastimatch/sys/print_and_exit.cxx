@@ -31,19 +31,10 @@ print_and_wait (char* prompt_fmt, ...)
 void
 print_and_exit (char* prompt_fmt, ...)
 {
-#if defined (commentout)
-    if (prompt_fmt) {
-        va_list argptr;
-	va_start (argptr, prompt_fmt);
-	vprintf (prompt_fmt, argptr);
-	va_end (argptr);
-    }
-    exit (1);
-#endif
     if (prompt_fmt) {
         va_list argptr;
         va_start (argptr, prompt_fmt);
-        std::string error_message = string_format (prompt_fmt, argptr);
+        std::string error_message = string_format_va (prompt_fmt, argptr);
         lprintf ("%s\n", error_message.c_str());
         Plm_exception pe = Plm_exception (error_message);
         va_end (argptr);

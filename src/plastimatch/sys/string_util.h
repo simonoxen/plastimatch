@@ -34,6 +34,7 @@ PLMSYS_API const std::string trim (
 );
 PLMSYS_API std::string slurp_file (const char* fn);
 PLMSYS_API std::string slurp_file (const std::string& fn);
+PLMSYS_API std::string string_format_va (const char *fmt, va_list ap);
 PLMSYS_API std::string string_format (const char* fmt, ...);
 PLMSYS_API size_t ci_find (const std::string& str1, const std::string& str2);
 
