@@ -10,6 +10,8 @@
 
 class Mabs_private;
 class Mabs_parms;
+class Mabs_seg_weights;
+class Mabs_seg_weights_list;
 
 class PLMSEGMENT_API Mabs {
 public:
@@ -31,12 +33,25 @@ protected:
         const std::string& mapped_name);
     void run_registration_loop ();
     void run_single_registration ();
-    void run_segmentation ();
-    void run_segmentation_loop ();
-    void gaussian_segmentation_vote (const std::string& atlas_id);
-    void gaussian_segmentation_label ();
-    void prepare_staple_segmentation (const std::string& atlas_id);
-    void staple_segmentation_label ();
+    void run_segmentation (const Mabs_seg_weights_list& seg_weights);
+    void run_segmentation_train (const Mabs_seg_weights& seg_weights);
+    void run_segmentation_train_loop ();
+    void gaussian_segmentation_vote (
+        const std::string& atlas_id,
+        const Mabs_seg_weights_list& seg_weights
+    );
+    void gaussian_segmentation_label (
+        const std::string& label_output_dir, 
+        const Mabs_seg_weights_list& seg_weights
+    );
+    void staple_segmentation_prepare (
+        const std::string& atlas_id,
+        const Mabs_seg_weights_list& seg_weights
+    );
+    void staple_segmentation_label (
+        const std::string& label_output_dir, 
+        const Mabs_seg_weights_list& seg_weights
+    );
     void train_internal ();
 
 public:

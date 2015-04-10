@@ -9,8 +9,8 @@
 #include <map>
 #include <set>
 #include <string>
+#include "mabs_seg_weights.h"
 #include "plm_return_code.h"
-#include "pstring.h"
 
 class PLMSEGMENT_API Mabs_parms {
 public:
@@ -20,10 +20,6 @@ public:
 public:
     bool parse_args (int argc, char** argv);
     void parse_config (const char* config_fn);
-    Plm_return_code set_key_value (
-        const std::string& section,
-        const std::string& key, 
-        const std::string& val);
 
 public:
     /* [CONVERT] */
@@ -88,13 +84,11 @@ public:
     std::string labeling_input_fn;
     std::string labeling_output_fn;
 
-    /* [OPTIMIZATION-RESULT] */
+    /* [OPTIMIZATION-RESULT-REG] */
     std::string optimization_result_reg;
-    float optimization_result_seg_rho;
-    float optimization_result_seg_sigma;
-    float optimization_result_seg_minsim;
-    float optimization_result_confidence_weight;
-    std::string optimization_result_seg_thresh;
+
+    /* [OPTIMIZATION-RESULT-SEG] */
+    Mabs_seg_weights_list optimization_result_seg;
 
     /* misc */
     bool debug;

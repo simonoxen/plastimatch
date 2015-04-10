@@ -71,11 +71,7 @@ public:
     std::list<std::string> registration_list;
     /* output_dir is ??? */
     std::string output_dir;
-    /* segmentation_training_dir is of the form:
-       training/0035/segmentations/reg_parm.txt/rho_0.5_sigma_1.2/
-    */
-    std::string segmentation_training_dir;
-
+    
     /* process_dir_list is a list of the input directories which 
        need to be processed, one directory per case
        - during the atlas_convert stage, it is the list of 
@@ -111,12 +107,7 @@ public:
 
     /* Segmentation parameters */
     std::string registration_id;
-    float minsim;
-    float rho;
-    float sigma;
-    float confidence_weight;
-    std::string threshold_values;
-
+    
     /* While segmenting an image, we sometimes loop through 
        the structures for evaluation.  This holds the 
        binary image of the current structure which we are 
@@ -168,10 +159,6 @@ public:
         prealign_resample = false;
 
         registration_id = "";
-        minsim = 0.0;
-        rho = 0.0;
-        sigma = 0.0;
-        threshold_values = "";
 
         ref_rtds = Rt_study::New ();
 
@@ -216,9 +203,11 @@ public:
     std::string map_structure_name (const std::string& ori_name);
     void extract_reference_image (const std::string& mapped_name);
     void segmentation_threshold_weight (
+        const std::string& label_output_dir, 
         FloatImageType::Pointer weight_image, 
         const std::string& mapped_name, 
         const std::string& structure_label, 
+        const Mabs_seg_weights* msw,
         float thresh_val);
 };
 
@@ -298,9 +287,11 @@ Mabs_private::extract_reference_image (const std::string& mapped_name)
 
 void
 Mabs_private::segmentation_threshold_weight (
+    const std::string& label_output_dir, 
     FloatImageType::Pointer weight_image, 
     const std::string& mapped_name, 
-    const std::string& structure_label, 
+    const std::string& structure_label,
+    const Mabs_seg_weights* msw,
     float thresh_val
 )
 {
@@ -317,7 +308,7 @@ Mabs_private::segmentation_threshold_weight (
         lprintf ("Saving thresholded structures\n");
         std::string thresh_img_fn = string_format (
             "%s/%s_thresh_%f.nrrd", 
-            this->segmentation_training_dir.c_str(), 
+            label_output_dir.c_str(), 
             structure_label.c_str(), 
             thresh_val);
         timer.start();
@@ -343,9 +334,9 @@ Mabs_private::segmentation_threshold_weight (
             this->ref_id.c_str(),
             this->registration_id.c_str(),
             mapped_name.c_str(),
-            this->rho,
-            this->sigma,
-            this->minsim,
+            msw->rho,
+            msw->sigma,
+            msw->minsim,
             thresh_val,
             stats_string.c_str());
         lprintf ("%s", seg_log_string.c_str());
@@ -1329,7 +1320,10 @@ Mabs::compute_dmap (
 }
 
 void
-Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
+Mabs::gaussian_segmentation_vote (
+    const std::string& atlas_id,
+    const Mabs_seg_weights_list& seg_weights
+)
 {
     Plm_timer timer;
    
@@ -1410,10 +1404,15 @@ Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
         std::map<std::string, Mabs_vote*>::const_iterator vote_it 
             = d_ptr->vote_map.find (mapped_name);
         if (vote_it == d_ptr->vote_map.end()) {
+
+            /* Find fusion weights for this structure */
+            const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
+
+            /* Make the voter */
             vote = new Mabs_vote;
-            vote->set_rho (d_ptr->rho);
-            vote->set_sigma (d_ptr->sigma);
-            vote->set_minimum_similarity (d_ptr->minsim);
+            vote->set_rho (msw->rho);
+            vote->set_sigma (msw->sigma);
+            vote->set_minimum_similarity (msw->minsim);
             d_ptr->vote_map[mapped_name] = vote;
             vote->set_fixed_image (
                 d_ptr->ref_rtds->get_image()->itk_float());
@@ -1487,7 +1486,10 @@ Mabs::gaussian_segmentation_vote (const std::string& atlas_id)
 }
 
 void
-Mabs::prepare_staple_segmentation (const std::string& atlas_id)
+Mabs::staple_segmentation_prepare (
+    const std::string& atlas_id,
+    const Mabs_seg_weights_list& seg_weights
+)
 {
     Plm_timer timer;
     timer.start();
@@ -1529,7 +1531,9 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
         Plm_image::Pointer warped_structure = 
             plm_image_load_native (warped_structure_fn);
        
-
+        /* Find fusion weights for this structure */
+        const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
+            
         if (warped_structure) {
             /* Make a new staple object if needed */
             Mabs_staple *staple;
@@ -1537,7 +1541,7 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
                 = d_ptr->staple_map.find (mapped_name);
             if (staple_it == d_ptr->staple_map.end()) {
                 staple = new Mabs_staple;
-                staple->set_confidence_weight(d_ptr->confidence_weight);
+                staple->set_confidence_weight(msw->confidence_weight);
                 staple->add_input_structure (warped_structure);
                 d_ptr->staple_map[mapped_name] = staple;
             } else {
@@ -1551,95 +1555,17 @@ Mabs::prepare_staple_segmentation (const std::string& atlas_id)
 }
 
 void
-Mabs::staple_segmentation_label ()
-{
-    Plm_timer timer;
-    timer.start();
-
-    /* Set up files & directories for this job */
-    d_ptr->segmentation_training_dir
-        = string_format ("%s/segmentations/%s/staple_confidence_weight_%.9f",
-            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
-            d_ptr->confidence_weight);
-    lprintf ("segmentation_training_dir: %s\n", 
-        d_ptr->segmentation_training_dir.c_str());
-    make_directory (d_ptr->segmentation_training_dir.c_str());
-
-    /* Get output image for each label */
-    lprintf ("Extracting and saving final contours\n");
-    for (std::map<std::string, Mabs_staple*>::const_iterator staple_it 
-             = d_ptr->staple_map.begin(); 
-         staple_it != d_ptr->staple_map.end(); staple_it++)
-    {
-        const std::string& mapped_name = staple_it->first;
-        std::string atl_name = basename (d_ptr->output_dir);
-
-        std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
-            d_ptr->preprocessed_dir.c_str(), atl_name.c_str(), mapped_name.c_str());
-
-        std::string final_segmentation_img_fn = string_format (
-            "%s/%s_staple.nrrd", 
-            d_ptr->segmentation_training_dir.c_str(), 
-            mapped_name.c_str());
-
-        printf("Structure %s \n", final_segmentation_img_fn.c_str());
-        staple_it->second->run();
-
-        itk_image_save (staple_it->second->output_img->itk_uchar(), final_segmentation_img_fn.c_str());
-
-        Plm_image::Pointer ref_stru = 
-            plm_image_load_native (ref_stru_fn);
-
-        if (!ref_stru) {
-            /* User is not running train, so no statistics */
-            continue;
-        }
-        
-        /* Compute Dice, etc. */
-        std::string stats_string = d_ptr->stats.compute_statistics (
-            "segmentation", /* Not used yet */
-            ref_stru->itk_uchar(),
-            staple_it->second->output_img->itk_uchar());
-        std::string seg_log_string = string_format (
-            "target=%s,reg=%s,struct=%s,"
-            "confidence_weight=%.9f,"
-            "%s\n",
-            d_ptr->ref_id.c_str(),
-            d_ptr->registration_id.c_str(),
-            mapped_name.c_str(),
-            d_ptr->confidence_weight,
-            stats_string.c_str());
-        lprintf ("%s", seg_log_string.c_str());
-
-        /* Update seg_dice file */
-        std::string seg_dice_log_fn = string_format (
-            "%s/seg_dice.csv",
-            d_ptr->mabs_train_dir.c_str());
-        FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
-        fprintf (fp, "%s", seg_log_string.c_str());
-        fclose (fp);
-    }
-
-    d_ptr->time_staple += timer.report();
-}
-
-void
-Mabs::gaussian_segmentation_label ()
+Mabs::gaussian_segmentation_label (
+    const std::string& label_output_dir, 
+    const Mabs_seg_weights_list& seg_weights
+)
 {
     Plm_timer timer;
 
-    /* Set up files & directories for this job */
-    d_ptr->segmentation_training_dir
-        = string_format ("%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
-            d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
-            d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
-    lprintf ("segmentation_training_dir: %s\n", 
-        d_ptr->segmentation_training_dir.c_str());
-
     /* Get output image for each label */
-    lprintf ("Normalizing and saving weights\n");
-    for (std::map<std::string, Mabs_vote*>::const_iterator vote_it 
-             = d_ptr->vote_map.begin(); 
+    lprintf ("Extracting and saving final contours (gaussian)\n");
+    std::map<std::string, Mabs_vote*>::const_iterator vote_it;
+    for (vote_it = d_ptr->vote_map.begin();
          vote_it != d_ptr->vote_map.end(); vote_it++)
     {
         const std::string& mapped_name = vote_it->first;
@@ -1657,15 +1583,20 @@ Mabs::gaussian_segmentation_label ()
         if (d_ptr->write_weight_files) {
             lprintf ("Saving weights\n");
             std::string fn = string_format ("%s/weight_%s.nrrd", 
-                d_ptr->segmentation_training_dir.c_str(),
+                label_output_dir.c_str(),
                 vote_it->first.c_str());
             timer.start();
             itk_image_save (weight_image, fn.c_str());
             d_ptr->time_io += timer.report();
         }
 
+        /* Find fusion weights for this structure */
+        const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
+        msw->print ();
+            
+        /*  threshold values */
         Option_range thresh_range;
-        thresh_range.set_range (d_ptr->threshold_values);
+        thresh_range.set_range (msw->thresh);
 
         /* Loop through each threshold value, do thresholding,
            and then record score */
@@ -1676,14 +1607,141 @@ Mabs::gaussian_segmentation_label ()
              thresh_it != thresh_list.end(); thresh_it++) 
         {
             d_ptr->segmentation_threshold_weight (
-                weight_image, mapped_name, 
-                vote_it->first.c_str(), *thresh_it);
+                label_output_dir, weight_image, mapped_name, 
+                vote_it->first.c_str(), msw, *thresh_it);
         }
     }
 }
 
 void
-Mabs::run_segmentation ()
+Mabs::staple_segmentation_label (
+    const std::string& label_output_dir, 
+    const Mabs_seg_weights_list& seg_weights
+)
+{
+    Plm_timer timer;
+    timer.start();
+
+    /* Set up files & directories for this job */
+    make_directory (label_output_dir);
+
+    /* Get output image for each label */
+    lprintf ("Extracting and saving final contours (staple)\n");
+    for (std::map<std::string, Mabs_staple*>::const_iterator staple_it 
+             = d_ptr->staple_map.begin(); 
+         staple_it != d_ptr->staple_map.end(); staple_it++)
+    {
+        const std::string& mapped_name = staple_it->first;
+        std::string atl_name = basename (d_ptr->output_dir);
+
+        std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
+            d_ptr->preprocessed_dir.c_str(), atl_name.c_str(),
+            mapped_name.c_str());
+
+        std::string final_segmentation_img_fn = string_format (
+            "%s/%s_staple.nrrd", label_output_dir.c_str(), 
+            mapped_name.c_str());
+
+        printf("Structure %s \n", final_segmentation_img_fn.c_str());
+        staple_it->second->run();
+
+        itk_image_save (staple_it->second->output_img->itk_uchar(),
+            final_segmentation_img_fn.c_str());
+
+        Plm_image::Pointer ref_stru = 
+            plm_image_load_native (ref_stru_fn);
+
+        if (!ref_stru) {
+            /* User is not running train, so no statistics */
+            continue;
+        }
+       
+        /* Find fusion weights for this structure */
+        const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
+        
+        /* Compute Dice, etc. */
+        std::string stats_string = d_ptr->stats.compute_statistics (
+            "segmentation", /* Not used yet */
+            ref_stru->itk_uchar(),
+            staple_it->second->output_img->itk_uchar());
+        std::string seg_log_string = string_format (
+            "target=%s,reg=%s,struct=%s,"
+            "confidence_weight=%.9f,"
+            "%s\n",
+            d_ptr->ref_id.c_str(),
+            d_ptr->registration_id.c_str(),
+            mapped_name.c_str(),
+            msw->confidence_weight,
+            stats_string.c_str());
+        lprintf ("%s", seg_log_string.c_str());
+
+        /* Update seg_dice file */
+        std::string seg_dice_log_fn = string_format (
+            "%s/seg_dice.csv",
+            d_ptr->mabs_train_dir.c_str());
+        FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
+        fprintf (fp, "%s", seg_log_string.c_str());
+        fclose (fp);
+    }
+    
+    d_ptr->time_staple += timer.report();
+}
+
+void
+Mabs::run_segmentation (const Mabs_seg_weights_list& seg_weights)
+{
+    /* Clear out internal structures */
+    d_ptr->clear_vote_map ();
+    d_ptr->clear_staple_map ();
+
+    /* This function is only run on new examples, so no checkpointing 
+       is performed */
+    
+    /* Loop through images in the atlas */
+    std::list<std::string>::iterator atl_it;
+    for (atl_it = d_ptr->atlas_list.begin();
+         atl_it != d_ptr->atlas_list.end(); atl_it++)
+    {
+        std::string atlas_id = basename (*atl_it);
+        
+        /* If gaussian is chosen (alone or with staple) run its code */
+        if (d_ptr->parms->fusion_criteria.find("gaussian")
+            != std::string::npos)
+        {
+            gaussian_segmentation_vote (atlas_id, seg_weights);
+        }
+        /* If staple is chosen (alone or with gaussian) run its code */
+        if (d_ptr->parms->fusion_criteria.find("staple")
+            != std::string::npos)
+        {
+            staple_segmentation_prepare (atlas_id, seg_weights);
+        }
+    }
+    
+    /* If gaussian is chosen (alone or with staple) run its code */
+    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos) {
+        /* Threshold images based on weight */
+        std::string label_output_dir =
+            string_format ("%s/segmentations", d_ptr->output_dir.c_str());
+        gaussian_segmentation_label (label_output_dir, seg_weights);
+
+        /* Clear out internal structure */
+        d_ptr->clear_vote_map ();
+    }
+    /* If staple is chosen (alone or with gaussian) run its code */
+    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos) {
+        /* Threshold images */
+        std::string label_output_dir =
+            string_format ("%s/segmentations", d_ptr->output_dir.c_str());
+        staple_segmentation_label (label_output_dir, seg_weights);
+
+        /* Clear out internal structure */
+        d_ptr->clear_staple_map ();
+    }
+}
+
+void
+Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
 {
     /* Clear out internal structures */
     d_ptr->clear_vote_map ();
@@ -1694,13 +1752,16 @@ Mabs::run_segmentation ()
     std::string gaussian_seg_checkpoint_fn = "";
     std::string staple_seg_checkpoint_fn = "";
 
+    Mabs_seg_weights_list seg_weights;
+    seg_weights.push_back (msw);
+    
     /* Gaussian checkpoint */
-    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos) {
-        
+    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos)
+    {
         std::string curr_output_dir = string_format (
             "%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
-            d_ptr->rho, d_ptr->sigma, d_ptr->minsim);
+            msw.rho, msw.sigma, msw.minsim);
 
         if (!this->check_seg_checkpoint(curr_output_dir)) {
             gaussian_seg_checkpoint_fn = string_format ("%s/checkpoint.txt",
@@ -1709,11 +1770,12 @@ Mabs::run_segmentation ()
     }
 
     /* Staple checkpoint */
-    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos) {
+    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos)
+    {
         std::string curr_output_dir = string_format (
             "%s/segmentations/%s/staple_confidence_weight_%.9f",
             d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
-            d_ptr->confidence_weight);
+            msw.confidence_weight);
         if (!this->check_seg_checkpoint(curr_output_dir)) {
             staple_seg_checkpoint_fn = string_format ("%s/checkpoint.txt",
                 curr_output_dir.c_str());
@@ -1727,28 +1789,42 @@ Mabs::run_segmentation ()
     {
         std::string atlas_id = basename (*atl_it);
         
-        /* If gaussian is chosen (alone or with staple) and its segmentations aren't already present run its code */
+        /* If gaussian is chosen (alone or with staple) and its 
+           segmentations aren't already present run its code */
         if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos && gaussian_seg_checkpoint_fn != "") {
-            gaussian_segmentation_vote (atlas_id);
+            gaussian_segmentation_vote (atlas_id, seg_weights);
         }
-        /* If staple is chosen (alone or with gaussian) and its segmentations aren't already present run its code */
+        /* If staple is chosen (alone or with gaussian) and its 
+           segmentations aren't already present run its code */
         if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos && staple_seg_checkpoint_fn != "") {
-            prepare_staple_segmentation (atlas_id);
+            staple_segmentation_prepare (atlas_id, seg_weights);
         }
     }
     
     /* If gaussian is chosen (alone or with staple) and its segmentations aren't already present run its code */
-    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos && gaussian_seg_checkpoint_fn != "") {
+    if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos
+        && gaussian_seg_checkpoint_fn != "")
+    {
         /* Threshold images based on weight */
-        gaussian_segmentation_label ();
+        std::string label_output_dir =
+            string_format ("%s/segmentations/%s/rho_%f_sig_%f_ms_%f",
+                d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+                msw.rho, msw.sigma, msw.minsim);
+        gaussian_segmentation_label (label_output_dir, seg_weights);
 
         /* Clear out internal structure */
         d_ptr->clear_vote_map ();
     }
     /* If staple is chosen (alone or with gaussian) and its segmentations aren't already present run its code */
-    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos && staple_seg_checkpoint_fn != "") {
+    if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos
+        && staple_seg_checkpoint_fn != "")
+    {
         /* Threshold images */
-        staple_segmentation_label ();
+        std::string label_output_dir =
+            string_format ("%s/segmentations/%s/staple_confidence_weight_%.9f",
+                d_ptr->output_dir.c_str(), d_ptr->registration_id.c_str(),
+                msw.confidence_weight);
+        staple_segmentation_label (label_output_dir, seg_weights);
 
         /* Clear out internal structure */
         d_ptr->clear_staple_map ();
@@ -1761,9 +1837,8 @@ Mabs::run_segmentation ()
 
 }
 
-
 void
-Mabs::run_segmentation_loop ()
+Mabs::run_segmentation_train_loop ()
 {
 
     Option_range minsim_range, rho_range, sigma_range, confidence_weight_range;
@@ -1772,8 +1847,6 @@ Mabs::run_segmentation_loop ()
     confidence_weight_range.set_range (d_ptr->parms->confidence_weight);
     sigma_range.set_range (d_ptr->parms->sigma_values);
 
-    d_ptr->threshold_values = d_ptr->parms->threshold_values;
-
     /* Loop through each registration parameter set */
     std::list<std::string>::iterator reg_it;
     for (reg_it = d_ptr->registration_list.begin(); 
@@ -1781,23 +1854,27 @@ Mabs::run_segmentation_loop ()
     {
         d_ptr->registration_id = basename (*reg_it);
 
-
+        Mabs_seg_weights_list mswl;
+        mswl.push_back (Mabs_seg_weights());
+        Mabs_seg_weights& msw = mswl.front();
+        msw.thresh = d_ptr->parms->threshold_values;
+        
         /* Loop through each training parameter: confidence_weight */
-        const std::list<float>& confidence_weight_list = confidence_weight_range.get_range();
+        const std::list<float>& confidence_weight_list
+            = confidence_weight_range.get_range();
         std::list<float>::const_iterator confidence_weight_it;
         for (confidence_weight_it = confidence_weight_list.begin();
              confidence_weight_it != confidence_weight_list.end();
              confidence_weight_it++) 
         {
-            d_ptr->confidence_weight = *confidence_weight_it;
+            msw.confidence_weight = *confidence_weight_it;
 
             /* Loop through each training parameter: rho */
             const std::list<float>& rho_list = rho_range.get_range();
             std::list<float>::const_iterator rho_it;
             for (rho_it = rho_list.begin(); rho_it != rho_list.end(); rho_it++) 
             {
-                d_ptr->rho = *rho_it;
-
+                msw.rho = *rho_it;
          
                 /* Loop through each training parameter: sigma */
                 const std::list<float>& sigma_list = sigma_range.get_range();
@@ -1805,17 +1882,17 @@ Mabs::run_segmentation_loop ()
                 for (sigma_it = sigma_list.begin(); 
                      sigma_it != sigma_list.end(); sigma_it++) 
                 {
-                    d_ptr->sigma = *sigma_it;
+                    msw.sigma = *sigma_it;
                     
                     /* Loop through each training parameter: minimum similarity */
-                    const std::list<float>& minsim_list = minsim_range.get_range();
+                    const std::list<float>& minsim_list
+                        = minsim_range.get_range();
                     std::list<float>::const_iterator minsim_it;
                     for (minsim_it = minsim_list.begin(); 
                          minsim_it != minsim_list.end(); minsim_it++) 
                     {
-                        d_ptr->minsim = *minsim_it;
-
-                        run_segmentation ();
+                        msw.minsim = *minsim_it;
+                        run_segmentation (mswl);
                     }
                 }
             }
@@ -1990,7 +2067,7 @@ Mabs::train_internal ()
         /* Run the segmentation */
         this->run_registration_loop ();
         if (d_ptr->train_segmentation == true) {
-            this->run_segmentation_loop ();
+            this->run_segmentation_train_loop ();
         }
     }
 
@@ -2113,13 +2190,8 @@ Mabs::segment ()
         d_ptr->registration_id = basename (
             d_ptr->registration_list.front());
     }
-    d_ptr->rho = d_ptr->parms->optimization_result_seg_rho;
-    d_ptr->sigma = d_ptr->parms->optimization_result_seg_sigma;
-    d_ptr->minsim = d_ptr->parms->optimization_result_seg_minsim;
-    d_ptr->threshold_values = d_ptr->parms->optimization_result_seg_thresh;
-    d_ptr->confidence_weight = d_ptr->parms->optimization_result_confidence_weight;
     
-    run_segmentation ();
+    run_segmentation (d_ptr->parms->optimization_result_seg);
 
     /* Save the output */
     std::string dicomrt_output_dir = string_format (

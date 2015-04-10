@@ -3,6 +3,7 @@ use Getopt::Long;
 use File::Basename;
 
 my $display_failures = 0;
+my $save_optimization_result = 0;
 
 sub digest_file {
     my ($fn, $reghash, $seghash) = @_;
@@ -140,54 +141,52 @@ sub digest_file {
 ###########################################################################
 ##  MAIN
 ###########################################################################
-$usage = "Usage: digest_mabs_stats.pl [options] dice_file | training_dir\n";
+$usage = "Usage: digest_mabs_stats.pl [options] training_dir\n";
 
 if ($#ARGV < 0) {
     die $usage;
 }
 
-GetOptions ("display-failures" => \$display_failures)
-    or die $usage;
+GetOptions ("display-failures" => \$display_failures,
+	    "save-optimization-result" => \$save_optimization_result
+	   )
+  or die $usage;
 
-$dice_source = shift;
+$training_dir = shift;
 
 $max_hd = 200;
 
 %reghash = ();
 %seghash = ();
 
-if (-f $dice_source) {
-    digest_file ($dice_source, \%reghash, \%seghash);
-} elsif (-d $dice_source) {
-    opendir DIR, $dice_source or die "Can't open \"$dice_source\" for parsing";
+if (-d $training_dir) {
+    opendir DIR, $training_dir or die "Can't open \"$training_dir\" for parsing";
     while (my $f = readdir(DIR)) {
 	($f eq "." || $f eq "..") and next;
-	$fn = "$dice_source/$f";
+	$fn = "$training_dir/$f";
 	if (-f $fn) {
 	    if ($f eq "seg_dice.csv") {
 		digest_file ($fn, \%reghash, \%seghash);
 	    }
 	    next;
 	}
-	$fn = "$dice_source/$f/reg_dice.csv";
+	$fn = "$training_dir/$f/reg_dice.csv";
 	if (-f "$fn") {
 	    digest_file ($fn, \%reghash, \%seghash);
 	} 
-	$fn = "$dice_source/$f/seg_dice.csv";
+	$fn = "$training_dir/$f/seg_dice.csv";
 	if (-f "$fn") {
 	    digest_file ($fn, \%reghash, \%seghash);
 	} 
     }
     closedir DIR;
 } else {
-    die "Can't open \"$dice_source\" for parsing";
+    die "Can't open \"$training_dir\" for parsing";
 }
 
 if ($display_failures) {
     exit;
 }
-
-($junk, $dice_source_dir, $junk) = fileparse ($dice_source);
 
 $best_reg = "";
 $best_reg_score = 0;
@@ -245,28 +244,6 @@ foreach $parms (sort keys %seg_dice_hash) {
     }
 }
 
-## Print the best result
-if ($best_seg ne "") {
-    print "seg: $best_seg,$best_seg_score\n";
-    ## Update training file
-    ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
-
-    ;
-    $output_string = <<EOSTRING
-[OPTIMIZATION_RESULT]
-gaussian_weighting_voting_rho=$rho
-gaussian_weighting_voting_sigma=$sigma
-gaussian_weighting_voting_minsim=$minsim
-gaussian_weighting_voting_thresh=$thresh
-EOSTRING
-    ;
-    $fn = "$dice_source_dir/optimization_result_seg.txt";
-#    open FP, ">$fn";
-#    print FP $output_string;
-#    close FP;
-}
-
-
 ## Find best values separately for each structure.
 undef %seg_dice_hash, %seg_hd95_hash, %seg_num;
 foreach $seg (sort keys %seghash)
@@ -308,5 +285,30 @@ foreach $struct (sort keys %struct_hash)
     }
     print "seg (dice): $struct,$best_dice_parms,$best_dice\n";
     print "seg (hd95): $struct,$best_hd95_parms,$best_hd95\n";
+    $best_seg_parms{$struct} = $best_dice_parms;
 }
 
+## Print the best result
+if ($save_optimization_result) {
+    $fn = "$training_dir/optimization_result_seg.txt";
+    open FP, ">$fn";
+    foreach $struct (sort keys %struct_hash) {
+	$best_seg = $best_seg_parms{$struct};
+	if ($best_seg ne "") {
+	    ## Update training file
+	    ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
+	    $output_string = <<EOSTRING
+[OPTIMIZATION_RESULT]
+structure=$struct
+gaussian_weighting_voting_rho=$rho
+gaussian_weighting_voting_sigma=$sigma
+gaussian_weighting_voting_minsim=$minsim
+gaussian_weighting_voting_thresh=$thresh
+EOSTRING
+	      ;
+	    print FP $output_string;
+	    print $output_string;
+	}
+    }
+    close FP;
+}

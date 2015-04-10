@@ -122,6 +122,12 @@ make_directory (const char *dirname)
 }
 
 void
+make_directory (const std::string& dirname)
+{
+    make_directory (dirname.c_str());
+}
+
+void
 make_parent_directories (const char *dirname)
 {
     char *p, *tmp;
