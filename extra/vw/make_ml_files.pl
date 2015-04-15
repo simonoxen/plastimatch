@@ -7,7 +7,16 @@ my $convert_dir = "";
 my $registration = "";
 my $structure = "";
 my $training_dir = "";
+my $execute = "";
 my $vw_format = "";
+
+sub execute_command {
+    my ($cmd) = @_;
+    print "$cmd\n";
+    if ($execute) {
+	system ($cmd);
+    }
+}
 
 ## -- ##
 sub process_one_atlas_structure {
@@ -17,11 +26,9 @@ sub process_one_atlas_structure {
     my $mask_dmap_file = "${structure}/${atlas_id}_dmap_mask.nrrd";
     my $mask_file = "${structure}/${atlas_id}_mask.nrrd";
     my $cmd = "plastimatch dmap --output \"${mask_dmap_file}\" --input \"${atlas_structure_file}\"";
-    print "$cmd\n";
-#    system ($cmd);
+    execute_command ($cmd);
     $cmd = "plastimatch threshold --input \"${mask_dmap_file}\" --output \"${mask_file}\" --below 30";
-    print "$cmd\n";
-#    system ($cmd);
+    execute_command ($cmd);
 
     my $output_format = "--output-format libsvm";
     if ($vw_format) {
@@ -32,12 +39,10 @@ sub process_one_atlas_structure {
     $cmd = "plastimatch ml-convert --output \"${outfile}\" "
       . "--mask \"${mask_file}\" "
       . "--labelmap $atlas_structure_file ${output_format}";
-    print "$cmd\n";
-#    system ($cmd);
+    execute_command ($cmd);
     $cmd = "plastimatch ml-convert --append \"${outfile}\" "
       . "--mask \"${mask_file}\" ${output_format} $atlas_img_file";
-    print "$cmd\n";
-#    system ($cmd);
+    execute_command ($cmd);
 
     my $tdir1 = "$training_dir/$atlas_id";
     opendir TDIR1, $tdir1;
@@ -66,8 +71,7 @@ sub process_one_atlas_structure {
 	(-f $warp) or die "Error, file \"$warp\" not found\n";
 	my $cmd = "plastimatch ml-convert --append ${outfile} "
 	  . "--mask ${mask_file} ${output_format} $dmap $warp";
-	print "$cmd\n";
-#	system ($cmd);
+	execute_command ($cmd);
     }
     closedir TDIR1, $atlas_structure_dir;
 }
@@ -99,6 +103,7 @@ GetOptions ("convert-dir=s" => \$convert_dir,
 	    "training-dir=s" => \$training_dir,
 	    "registration=s" => \$registration,
 	    "structure=s" => \$structure,
+	    "execute" => \$execute,
 	    "vw-format" => \$vw_format
 	   )
     or die $usage;

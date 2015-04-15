@@ -41,6 +41,9 @@ parse_fn (
 	"Location of output file to be written; if --input-ml-results "
         "is specified, an image will be written, otherwise a text file "
         "will be written", 1, "");
+    parser->add_long_option ("", "output-type",
+	"Data type of output image file (either \"uchar\" or \"float\")",
+        1, "uchar");
     parser->add_long_option ("", "output-format",
 	"Output format, either \"libsvm\" or \"vw\", default is \"vw\"", 
         1, "");
@@ -98,6 +101,7 @@ parse_fn (
     } else {
         parms->set_output_filename (parser->get_string ("append"));
     }
+    parms->set_output_type (parser->get_string ("output-type"));
     parms->set_output_format (parser->get_string ("output-format"));
 
     /* Copy input filenames to parms struct */

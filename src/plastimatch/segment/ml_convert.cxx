@@ -28,9 +28,17 @@ public:
     std::string output_filename;
     std::string output_format;
     std::list<std::string> feature_dir;
+    Plm_image_type plm_image_type;
 public:
     void image_from_ml ();
     void ml_from_image ();
+protected:
+    template<class T>
+    void image_from_ml_internal ();
+    template<class T>
+    T choose_value (
+        float value
+    );
 };
 
 
@@ -244,8 +252,32 @@ Ml_convert_private::ml_from_image ()
     printf ("Time = %f\n", (float) pli.report());
 }
 
+template<>
+unsigned char
+Ml_convert_private::choose_value<unsigned char> (
+    float value
+)
+{
+    if (value <= 0) {
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+template<>
+float
+Ml_convert_private::choose_value<float> (
+    float value
+)
+{
+    return value;
+}
+
+template<class T>
 void
-Ml_convert_private::image_from_ml ()
+Ml_convert_private::image_from_ml_internal ()
 {
     Plm_image::Pointer mask;
     bool have_mask = false;
@@ -262,14 +294,14 @@ Ml_convert_private::image_from_ml ()
             "without knowing the image size");
     }
 
-    UCharImageType::Pointer output_image
-        = itk_image_create<unsigned char> (
-            Plm_image_header (mask)
-        );
+    typedef typename itk::Image<T,3> ImageType;
+    typename ImageType::Pointer output_image = itk_image_create<T> (
+        Plm_image_header (mask)
+    );
 
     std::ifstream fp (this->input_ml_results_filename.c_str());
     
-    itk::ImageRegionIterator< UCharImageType > out_it (output_image, 
+    itk::ImageRegionIterator< ImageType > out_it (output_image, 
         output_image->GetLargestPossibleRegion());
     itk::ImageRegionIterator< UCharImageType > mask_it;
     if (have_mask) {
@@ -278,15 +310,11 @@ Ml_convert_private::image_from_ml ()
             mask->itk_uchar()->GetLargestPossibleRegion());
         mask_it.GoToBegin();
     }
-    int skipped_by_mask = 0;
-    int skipped_by_scan = 0;
-    int skipped_by_value = 0;
     for (out_it.GoToBegin(); !out_it.IsAtEnd(); ++out_it) {
         if (have_mask) {
             unsigned char mask_value = mask_it.Get();
             ++mask_it;
             if (mask_value == 0) {
-                skipped_by_mask ++;
                 out_it.Set (0);
                 continue;
             }
@@ -299,23 +327,33 @@ Ml_convert_private::image_from_ml ()
         float value;
         int rc = sscanf (line.c_str(), "%f", &value);
         if (rc != 1) {
-            skipped_by_scan ++;
-            out_it.Set (0);
-        }
-        else if (value <= 0) {
-            skipped_by_value ++;
-            out_it.Set (0);
+            out_it.Set ((T) 0);
         }
         else {
-            out_it.Set (1);
+            out_it.Set (this->choose_value<T> (value));
         }
     }
-#if defined (commentout)
-    printf ("Skipped (%d mask), (%d scan), (%d value)\n",
-        skipped_by_mask, skipped_by_scan, skipped_by_value);
-#endif
         
     itk_image_save (output_image, this->output_filename);
+}
+
+void
+Ml_convert_private::image_from_ml ()
+{
+    switch (this->plm_image_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+        this->image_from_ml_internal<unsigned char> ();
+        break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+        this->image_from_ml_internal<float> ();
+        break;
+    default:
+        print_and_exit ("Warning: unimplemented image type in image_from_ml()\n");
+        this->image_from_ml_internal<float> ();
+        break;
+    }
 }
 
 Ml_convert::Ml_convert ()
@@ -363,6 +401,12 @@ void
 Ml_convert::set_output_format (const std::string& output_format)
 {
     d_ptr->output_format = output_format;
+}
+
+void
+Ml_convert::set_output_type (const std::string& output_type)
+{
+    d_ptr->plm_image_type = plm_image_type_parse (output_type.c_str());
 }
 
 void

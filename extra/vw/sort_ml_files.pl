@@ -2,7 +2,6 @@
 use Getopt::Long;
 use File::Basename;
 
-
 sub sort_file {
     my ($infile) = @_;
 
@@ -38,8 +37,6 @@ sub sort_file {
     close FH;
     close OFH;
 }
-
-
 
 opendir DIR, ".";
 while (my $f = readdir(DIR)) {
