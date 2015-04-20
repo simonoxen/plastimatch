@@ -623,7 +623,8 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     execute_process (
       COMMAND 
-      ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
+      ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" 
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
       ERROR_VARIABLE svn_error
