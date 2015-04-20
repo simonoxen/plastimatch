@@ -9,8 +9,7 @@
 class Xvi_archive_parms
 {
 public:
-    std::string patient_base_dir;
-    std::string patient_id;
+    std::string patient_dir;
     std::string patient_id_override;
 };
 

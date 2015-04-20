@@ -33,24 +33,16 @@
 #include "string_util.h"
 #include "xvi_archive.h"
 
-#if _WIN32
-#define DEFAULT_DATABASE_DIRECTORY "D:/db"
-#define DEFAULT_PATIENT_DIRECTORY "D:/db"
-#else
 #define DEFAULT_DATABASE_DIRECTORY ""
 #define DEFAULT_PATIENT_DIRECTORY ""
-#endif
 
 void
 do_xvi_archive (Xvi_archive_parms *parms)
 {
-    std::string patient_dir = compose_filename (
-        parms->patient_base_dir, 
-        string_format ("patient_%s", parms->patient_id.c_str()));
     std::string patient_ct_set_dir = compose_filename (
-        patient_dir, "CT_SET");
+        parms->patient_dir, "CT_SET");
     std::string patient_images_dir = compose_filename (
-        patient_dir, "IMAGES");
+        parms->patient_dir, "IMAGES");
 
     /* Load one of the reference CTs */
     Dir_list ct_set_dir (patient_ct_set_dir);
@@ -150,7 +142,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
         if (!cbct_study.have_image()) {
             printf ("ERROR: decompression failure with patient %s\n",
-                parms->patient_id.c_str());
+                reference_meta->get_patient_id().c_str());
             exit (1);
         }
 
@@ -163,7 +155,8 @@ do_xvi_archive (Xvi_archive_parms *parms)
         if (parms->patient_id_override != "") {
             cbct_meta->set_patient_id (parms->patient_id_override);
         } else {
-            cbct_meta->set_patient_id (parms->patient_id);
+            cbct_meta->set_patient_id (
+                reference_meta->get_patient_id().c_str());
         }
         cbct_meta->set_patient_name (patient_name);
         cbct_study.save_dicom (output_dir);
@@ -246,22 +239,15 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that a patient id was given */
-    if (parser->number_of_arguments() == 0) {
-	throw (dlib::error ("Error.  You must specify a patient ID"));
-    }
-
     /* Input files */
-    parms->patient_base_dir = parser->get_string("patient-directory");
-    if (parms->patient_base_dir == "") {
+    parms->patient_dir = parser->get_string("patient-directory");
+    if (parms->patient_dir == "") {
         throw (dlib::error (
                 "Error.  The use of --patient-directory is needed"));
     }
 
     /* Other options */
     parms->patient_id_override = parser->get_string("patient-id-override");
-
-    parms->patient_id = (*parser)[0];
 }
 
 
