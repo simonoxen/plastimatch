@@ -7,9 +7,9 @@
 #include "nkidecompress.h"
 
 #include "file_util.h"
+#include "logfile.h"
 #include "nki_io.h"
 #include "plm_int.h"
-#include "print_and_exit.h"
 #include "volume.h"
 
 #define LINELEN 512
@@ -38,6 +38,7 @@ nki_load (const char* filename)
     bool have_start_pos = false;
     int junk;
     fpos_t pos;
+    size_t compressed_size = 0;
     while (fgetpos (fp, &pos), fgets (linebuf, LINELEN, fp))
     {
 	if (sscanf (linebuf, "dim1=%d", &dim1) == 1) {
@@ -50,8 +51,7 @@ nki_load (const char* filename)
             continue;
         }
 	if (sscanf (linebuf, "nki_compression=%d", &junk) == 1) {
-            /* End of ascii header, so back up, and find beginning 
-               of compressed data. */
+            /* End of ascii header, look for beginning of compressed data. */
             fsetpos (fp, &pos);
             int prev = fgetc (fp);
             do {
@@ -63,14 +63,14 @@ nki_load (const char* filename)
                 prev = curr;
             } while (prev != EOF);
 
-            /* Slurp up rest of file into a buffer */
+            /* Found beginning of compressed data, slurp up rest of file into a buffer */
             signed char *p = src;
             while (1) {
                 size_t bytes_read = fread (p, 1, 2048, fp);
-                if (bytes_read != 2048) break;
                 p += bytes_read;
+                compressed_size += bytes_read;
+                if (bytes_read != 2048) break;
             }
-
             /* Done! */
             break;
         }
@@ -78,18 +78,19 @@ nki_load (const char* filename)
     fclose (fp);
 
     if (dim1 == -1 || dim2 == -1 || dim3 == -1 || !have_start_pos) {
-        print_and_exit ("Failure to parse NKI header\n");
+        lprintf ("Failure to parse NKI header\n");
+        free (src);
+        return 0;
     }
 
     short int *nki = (short*) malloc (sizeof(short) * dim1 * dim2 * dim3);
-    
-    int rc = nki_private_decompress (nki, src, dim1 * dim2 * dim3);
-    free (src);
 
-    printf ("Decoded NKI size: %d %d %d, rc = %d\n", dim1, dim2, dim3, rc);
+    int rc = nki_private_decompress (nki, src, compressed_size);
+    free (src);
 
     if (rc == 0) {
         /* Decompression failure */
+        lprintf ("NKI decompression failure.\n");
         free (nki);
         return 0;
     }
