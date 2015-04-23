@@ -35,14 +35,16 @@ itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
     }
 
     /* Debug adjustment lists */
-#if defined (commentout)
     Float_pair_list::const_iterator it_d = ait_start;
+#if defined (commentout)
     while (it_d != ait_end) {
         printf ("[%f,%f]\n", it_d->first, it_d->second);
         it_d ++;
     }
     printf ("[%f,%f]\n", it_d->first, it_d->second);
     printf ("slopes [%f,%f]\n", left_slope, right_slope);
+    printf ("ait_start [%f,%f]\n", ait_start->first, ait_start->second);
+    printf ("ait_end [%f,%f]\n", ait_end->first, ait_end->second);
 #endif
     
     for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
@@ -63,7 +65,8 @@ itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
         else if (ait_start != ait_end) {
             Float_pair_list::const_iterator ait = ait_start;
             Float_pair_list::const_iterator prev = ait_start;
-            while (++ait != ait_end) {
+            do {
+                ait++;
                 /* Case 2 */
                 if (vin <= ait->first) {
                     float slope = (ait->second - prev->second) 
@@ -76,7 +79,7 @@ itk_adjust (FloatImageType::Pointer image_in, const Float_pair_list& al)
                     goto found_vout;
                 }
                 prev = ait;
-            }
+            } while (ait != ait_end);
         }
         /* Case 3 */
         vout = ait_end->second + (vin - ait_end->first) * right_slope;
