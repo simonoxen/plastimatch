@@ -243,41 +243,36 @@ insist on using VS 2010, there are some workarounds
 Compiling plastimatch (Unix)
 ----------------------------
 
-Run CMake as follows:
+Build plastimatch as follows:
 
 #. mkdir /path/to/build/files; cd /path/to/build/files
 #. ccmake /path/to/source/files
 #. Type "c" to configure
 #. <CMake configures>
-#. Set the ITK directory (sometimes it might be found automatically)
-#. Set directories for optional components (such as slicer)
-#. You probably want to change the build type to "Release" (type it in)
+#. Set the ITK directory (it may be found automatically)
+#. Set directories for other optional components (if necessary)
 #. Type "c" to configure
 #. <CMake configures>
 #. Type "g" to generate
 #. <CMake generates>
-
-Then build as follows:
-
-#. Navigate to the plastimatch binary directory
 #. Type "make"
 
-   Users with multicore systems can speed up the process of compiling
-   plastimatch considerably by invoking make with the -j option.  For
-   example, a user with a dual-core system would type:
+Users with multicore systems can speed up the process of compiling
+plastimatch considerably by invoking make with the -j option.  For
+example, a user with a dual-core system would type:
 
    make -j 2
 
-   whereas a user with a quad-core system would type:
+whereas a user with a quad-core system would type:
 
    make -j 4
 
-   You can probably get even better performance by increasing the 
-   the number of processes (specified by the -j option) 
-   beyond the number of cores.  One rule of thumb is to 
-   use approximately 1.5 times the number of available CPUs (see 
-   `[1] <http://developers.sun.com/solaris/articles/parallel_make.html#3>`_,
-   `[2] <http://stackoverflow.com/questions/414714/compiling-with-g-using-multiple-cores>`_).
+You can probably get even better performance by increasing the 
+the number of processes (specified by the -j option) 
+beyond the number of cores.  One rule of thumb is to 
+use approximately 1.5 times the number of available CPUs (see 
+`[1] <http://developers.sun.com/solaris/articles/parallel_make.html#3>`_,
+`[2] <http://stackoverflow.com/questions/414714/compiling-with-g-using-multiple-cores>`_).
 
 Compiling the 3D Slicer extensions
 ----------------------------------
