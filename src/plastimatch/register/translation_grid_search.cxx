@@ -21,6 +21,7 @@
 #include "translation_mi.h"
 #include "translation_mse.h"
 #include "volume.h"
+#include "volume_grad.h"
 #include "volume_macros.h"
 #include "volume_resample.h"
 #include "xform.h"
@@ -205,6 +206,10 @@ translation_grid_search_stage (
     fixed_ss = registration_resample_volume (
         fixed, stage, stage->resample_rate_fixed);
 
+    if (stage->metric_type[0] == METRIC_GRADIENT_MAGNITUDE) {
+        fixed_ss = volume_gradient_magnitude (fixed_ss);
+        moving_ss = volume_gradient_magnitude (moving_ss);
+    }
     
     if (stage->debug_dir != "") {
         std::string fn;
@@ -222,9 +227,11 @@ translation_grid_search_stage (
     /* Choose the correct score function */
     float (*translation_score) (
         const Stage_parms *stage, const Volume::Pointer& fixed,
-        const Volume::Pointer& moving, const float dxyz[3]);
+        const Volume::Pointer& moving, const float dxyz[3]) 
+        = &translation_mse;
     switch (stage->metric_type[0]) {
     case METRIC_MSE:
+    case METRIC_GRADIENT_MAGNITUDE:
         translation_score = &translation_mse;
         break;
     case METRIC_MI:
