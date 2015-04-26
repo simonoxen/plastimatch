@@ -9,23 +9,23 @@ Synopsis
 Description
 -----------
 The plastimatch executable is used for 
-a variety of operations, including image
-registration, image warping, image resampling, and file format
-conversion. 
+a variety of operations on either 2D or 3D images, including image
+registration, warping, resampling, and file format conversion. 
 The form of the options depends upon the command given.
 The list of possible commands can be seen by simply typing "plastimatch" 
 without any additional command line arguments::
 
  $ plastimatch
- plastimatch version 1.5.12-beta (4019)
+ plastimatch version 1.6.0-beta (5023)
  Usage: plastimatch command [options]
  Commands:
-  add           adjust        average       crop          compare     
-  compose       convert       dice          diff          dvh         
-  fill          header        jacobian      mask          probe       
+  add           adjust        average       boundary      crop        
+  compare       compose       convert       dice          diff        
+  dmap          dvh           fill          filter        gamma       
+  header        jacobian      mabs          mask          probe       
   register      resample      scale         segment       stats       
-  synth         synth-vf      thumbnail     union         warp        
-  xf-convert  
+  synth         synth-vf      threshold     thumbnail     union       
+  warp          xf-convert  
 
  For detailed usage of a specific command, type:
    plastimatch command
@@ -76,14 +76,15 @@ The command line usage is given as follows::
 
   Usage: plastimatch adjust [options]
   Required:
-      --input <arg>       input directory or filename 
-      --output <arg>      output image 
+    --input <arg>       input directory or filename 
+    --output <arg>      output image 
   Optional:
-      --pw-linear <arg>   a string that forms a piecewise linear map from 
-                           input values to output values, of the form 
-                           "in1,out1,in2,out2,..." 
+    --pw-linear <arg>   a string that forms a piecewise linear 
+                         map from input values to output values, 
+                         of the form "in1,out1,in2,out2,..." 
 
-The adjust command can be used to make a piecewise linear adjustment of 
+The adjust command can be used to make a piecewise 
+linear adjustment of
 the image intensities.  The --pw-linear option is used to create 
 the mapping from input intensities to output intensities.  
 The input intensities in the curve must increase from left to right 
@@ -151,6 +152,20 @@ The command line usage is given as follows::
         --input <arg>     Input image filename (required) 
         --network <arg>   Input trained network filename (required) 
         --output <arg>    Output csv filename (required) 
+
+plastimatch boundary
+--------------------
+The *boundary* command takes a binary label image as input, and
+generates an image of the image boundary as the output.
+The boundary is defined as the voxels within the label
+which have neighboring voxels outside the label.
+
+The command line usage is given as follows::
+
+  Usage: plastimatch boundary [options] input_file
+  Required:
+    --output <arg>   filename for output image 
+
 
 plastimatch crop
 ----------------
@@ -254,78 +269,94 @@ The command line usage is given as follows::
 
  Usage: plastimatch convert [options]
  Options:
-      --algorithm <arg>         algorithm to use for warping, either 
-                                 "itk" or "native", default is native 
-      --ctatts <arg>            ct attributes file (used by dij warper) 
-      --default-value <arg>     value to set for pixels with unknown 
-                                 value, default is 0 
-      --dif <arg>               dif file (used by dij warper) 
-      --dim <arg>               size of output image in voxels "x [y z]" 
-  -F, --fixed <arg>             fixed image (match output size to this 
-                                 image) 
-  -h, --help                    display this help message 
-      --input <arg>             input directory or filename; can be an 
-                                 image, structure set file (cxt or 
-                                 dicom-rt), dose file (dicom-rt, 
-                                 monte-carlo or xio), dicom directory, or
-                                 xio directory 
-      --input-cxt <arg>         input a cxt file 
-      --input-dose-ast <arg>    input an astroid dose volume 
-      --input-dose-img <arg>    input a dose volume 
-      --input-dose-mc <arg>     input an monte carlo volume 
-      --input-dose-xio <arg>    input an xio dose volume 
-      --input-ss-img <arg>      input a structure set image file 
-      --input-ss-list <arg>     input a structure set list file 
-                                 containing names and colors 
-      --interpolation <arg>     interpolation to use when resampling, 
-                                 either "nn" for nearest neighbors or 
-                                 "linear" for tri-linear, default is 
-                                 linear 
-      --metadata <arg>          patient metadata (you may use this 
-                                 option multiple times) 
-      --origin <arg>            location of first image voxel in mm "x y
-                                 z" 
-      --output-colormap <arg>   create a colormap file that can be used 
-                                 with 3d slicer 
-      --output-cxt <arg>        output a cxt-format structure set file 
-      --output-dicom <arg>      create a directory containing dicom and 
-                                 dicom-rt files 
-      --output-dij <arg>        create a dij matrix file 
-      --output-dose-img <arg>   create a dose image volume 
-      --output-img <arg>        output image; can be mha, mhd, nii, 
-                                 nrrd, or other format supported by ITK 
-      --output-labelmap <arg>   create a structure set image with each 
-                                 voxel labeled as a single structure 
-      --output-pointset <arg>   create a pointset file that can be used 
-                                 with 3d slicer 
-      --output-prefix <arg>     create a directory with a separate image
-                                 for each structure 
-      --output-prefix-fcsv <arg>   
-                                create a directory with a separate fcsv 
-                                 pointset file for each structure 
-      --output-ss-img <arg>     create a structure set image which 
-                                 allows overlapping structures 
-      --output-ss-list <arg>    create a structure set list file 
-                                 containing names and colors 
-      --output-type <arg>       type of output image, one of {uchar, 
-                                 short, float, ...} 
-      --output-vf <arg>         create a vector field from the input xf 
-      --output-xio <arg>        create a directory containing xio-format
-                                 files 
-      --patient-id <arg>        patient id metadata: string 
-      --patient-name <arg>      patient name metadata: string 
-      --patient-pos <arg>       patient position metadata: one of 
-                                 {hfs,hfp,ffs,ffp} 
-      --prune-empty             delete empty structures from output 
-      --referenced-ct <arg>     dicom directory used to set UIDs and 
-                                 metadata 
-      --simplify-perc <arg>     delete <arg> percent of the vertices 
-                                 from output polylines 
-      --spacing <arg>           voxel spacing in mm "x [y z]" 
-      --version                 display the program version 
-      --xf <arg>                input transform used to warp image(s) 
-      --xor-contours            overlapping contours should be xor'd 
-                                 instead of or'd 
+  --algorithm <arg>         algorithm to use for warping, either 
+                             "itk" or "native", default is native 
+  --ctatts <arg>            ct attributes file (used by dij warper) 
+  --default-value <arg>     value to set for pixels with unknown 
+                             value, default is 0 
+  --dicom-with-uids <arg>   set to false to remove uids from created
+                             dicom filenames, default is true 
+  --dif <arg>               dif file (used by dij warper) 
+  --dim <arg>               size of output image in voxels "x [y z]" 
+  --direction-cosines <arg>   
+                            oriention of x, y, and z axes; Specify 
+                             either preset value, 
+                             {identity,rotated-{1,2,3},sheared}, or 9
+                             digit matrix string "a b c d e f g h i" 
+  --dose-scale <arg>        scale the dose by this value 
+  --fixed <arg>             fixed image (match output size to this 
+                             image) 
+  --input <arg>             input directory or filename; can be an 
+                             image, structure set file (cxt or 
+                             dicom-rt), dose file (dicom-rt, 
+                             monte-carlo or xio), dicom directory, or
+                             xio directory 
+  --input-cxt <arg>         input a cxt file 
+  --input-dose-ast <arg>    input an astroid dose volume 
+  --input-dose-img <arg>    input a dose volume 
+  --input-dose-mc <arg>     input an monte carlo volume 
+  --input-dose-xio <arg>    input an xio dose volume 
+  --input-prefix <arg>      input a directory of structure set 
+                             images (one image per file) 
+  --input-ss-img <arg>      input a structure set image file 
+  --input-ss-list <arg>     input a structure set list file 
+                             containing names and colors 
+  --interpolation <arg>     interpolation to use when resampling, 
+                             either "nn" for nearest neighbors or 
+                             "linear" for tri-linear, default is 
+                             linear 
+  --metadata <arg>          patient metadata (you may use this 
+                             option multiple times), option written 
+                             as "XXXX,YYYY=string" 
+  --modality <arg>          modality metadata: such as {CT, MR, PT},
+                             default is CT 
+  --origin <arg>            location of first image voxel in mm "x y
+                             z" 
+  --output-colormap <arg>   create a colormap file that can be used 
+                             with 3d slicer 
+  --output-cxt <arg>        output a cxt-format structure set file 
+  --output-dicom <arg>      create a directory containing dicom and 
+                             dicom-rt files 
+  --output-dij <arg>        create a dij matrix file 
+  --output-dose-img <arg>   create a dose image volume 
+  --output-img <arg>        output image; can be mha, mhd, nii, 
+                             nrrd, or other format supported by ITK 
+  --output-labelmap <arg>   create a structure set image with each 
+                             voxel labeled as a single structure 
+  --output-pointset <arg>   create a pointset file that can be used 
+                             with 3d slicer 
+  --output-prefix <arg>     create a directory with a separate image
+                             for each structure 
+  --output-prefix-fcsv <arg>   
+                            create a directory with a separate fcsv 
+                             pointset file for each structure 
+  --output-ss-img <arg>     create a structure set image which 
+                             allows overlapping structures 
+  --output-ss-list <arg>    create a structure set list file 
+                             containing names and colors 
+  --output-type <arg>       type of output image, one of {uchar, 
+                             short, float, ...} 
+  --output-vf <arg>         create a vector field from the input xf 
+  --output-xio <arg>        create a directory containing xio-format
+                             files 
+  --patient-id <arg>        patient id metadata: string 
+  --patient-name <arg>      patient name metadata: string 
+  --patient-pos <arg>       patient position metadata: one of 
+                             {hfs,hfp,ffs,ffp} 
+  --prefix-format <arg>     file format of rasterized structures, 
+                             either "mha" or "nrrd" 
+  --prune-empty             delete empty structures from output 
+  --referenced-ct <arg>     dicom directory used to set UIDs and 
+                             metadata 
+  --series-description <arg>   
+                            series description metadata: string 
+  --simplify-perc <arg>     delete <arg> percent of the vertices 
+                             from output polylines 
+  --spacing <arg>           voxel spacing in mm "x [y z]" 
+  --version                 display the program version 
+  --xf <arg>                input transform used to warp image(s) 
+  --xor-contours            overlapping contours should be xor'd 
+                             instead of or'd 
 
 Examples
 ^^^^^^^^
@@ -403,7 +434,7 @@ have to tell plastimatch where it is located with the --dicom-dir option. ::
 
 plastimatch dice
 ----------------
-The plastimatch *dice* compares binary volumes using Dice coefficient, 
+The plastimatch *dice* compares binary label images using Dice coefficient, 
 Hausdorff distance, or contour mean distance.  The input images are 
 treated as boolean, where non-zero values mean that voxel is inside 
 of the structure and zero values mean that the voxel is outside 
@@ -411,16 +442,15 @@ of the structure.
 
 The command line usage is given as follows::
 
-  Usage: plastimatch dice [options] reference-image test-image
-  Options:
-      --all            Compute Dice, Hausdorff, and contour mean distance 
-                        (equivalent to --dice --hausdorff --contour-mean) 
-      --contour-mean   Compute contour mean distance 
-      --dice           Compute Dice coefficient (default) 
-      --hausdorff      Compute Hausdorff distance and average Hausdorff 
-                        distance 
-  -h, --help           display this help message 
-      --version        display the program version 
+ Usage: plastimatch dice [options] reference-image test-image
+ Options:
+  --all            Compute Dice, Hausdorff, and contour mean 
+                    distance (equivalent to --dice --hausdorff 
+                    --contour-mean) 
+  --contour-mean   Compute contour mean distance 
+  --dice           Compute Dice coefficient (default) 
+  --hausdorff      Compute Hausdorff distance and average Hausdorff 
+                    distance 
 
 Example
 ^^^^^^^
@@ -449,9 +479,48 @@ the result in outfile.nrrd::
   plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 
 
+plastimatch dmap
+----------------
+The plastimatch *dmap* command takes a binary label image as input, 
+and creates a distance map image as the output.  
+The output image has the 
+same image geometry (origin, dimensions, voxel spacing) as the
+input image.
+
+The command line usage is given as follows::
+
+
+ Usage: plastimatch dmap [options]
+ Required:
+  --input <arg>        input directory or filename 
+  --output <arg>       output image 
+ Optional:
+  --algorithm <arg>    a string that specifies the algorithm used 
+                        for distance map calculation, either 
+                        "maurer", "danielsson", or "itk-danielsson" 
+                        (default is "danielsson") 
+  --inside-positive    voxels inside the structure should be 
+                        positive (by default they are negative) 
+  --maximum-distance <arg>   
+                       voxels with distances greater than this 
+                        number will have the distance truncated to 
+                        this number 
+  --squared-distance   return the squared distance instead of 
+                        distance 
+
+
+Example
+^^^^^^^
+The following command computes a distance map file dmap.nrrd 
+from a binary labelmap image label.nrrd.::
+
+  plastimatch dmap --input label.nrrd --output dmap.nrrd
+
+  
 plastimatch drr
 ---------------
 This command is under construction.
+
 
 plastimatch dvh
 ---------------
@@ -511,16 +580,16 @@ The command line usage is given as follows::
 
  Usage: plastimatch fill [options]
  Options:
-   --input <arg>           input directory or filename; can be an image 
-                            or dicom directory 
-   --mask <arg>            input filename for mask image 
-   --mask-value <arg>      value to set for pixels within mask (for 
-                            "fill"), or outside of mask (for "mask" 
-   --output <arg>          output filename (for image file) or directory 
-                            (for dicom) 
-   --output-format <arg>   arg should be "dicom" for dicom output 
-   --output-type <arg>     type of output image, one of {uchar, short, 
-                            float, ...} 
+   --input <arg>         input directory or filename; can be an image 
+                          or dicom directory 
+   --mask <arg>          input filename for mask image 
+   --mask-value <arg>    value to set for pixels within mask (for 
+                          "fill"), or outside of mask (for "mask" 
+   --output <arg>        output filename (for image file) or directory 
+                          (for dicom) 
+   --output-format <arg> arg should be "dicom" for dicom output 
+   --output-type <arg>   type of output image, one of {uchar, short, 
+                          float, ...} 
 
 Examples
 ^^^^^^^^
@@ -537,6 +606,125 @@ the following command. ::
     --mask prostate.nrrd
 
 
+plastimatch filter
+------------------
+The *filter* command applies a filter to an input image,
+and creates a filtered image as its output.
+The filter can be either built-in, or custom.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch filter [options] input_image
+ Options:
+  --gabor-k-fib <arg>     choose gabor direction at index i within 
+                           fibonacci spiral of length n; specified as
+                           "i n" where i and n are integers, and i is
+                           between 0 and n-1 
+  --gauss-width <arg>     the width (in mm) of a uniform Gaussian 
+                           smoothing filter 
+  --kernel <arg>          kernel image filename 
+  --output <arg>          output image filename 
+  --output-kernel <arg>   output kernel filename 
+  --pattern <arg>         filter type: {gabor, gauss, kernel}, 
+                           default is gauss 
+
+The built-in filters supported are "gabor" and "gauss".  
+For a Gaussian, the width of the Gaussian can be controlled
+using the --gauss-width option.
+The Gabor filter is currently limited to automatic selection of
+filter directions, which are spaced quasi-uniformly on the 
+unit sphere.
+Custom filters are specified by supplying a kernel file,
+which is convolved with the image.
+
+Example
+^^^^^^^
+The following command will generate a filtered image from the
+first gabor filter within a bank of 10 filters.::
+
+  plastimatch filter --pattern gabor Testing/rect-1.mha \
+    --gabor-k-fib "0 5" --output g-05.mha
+
+plastimatch gamma
+-----------------
+The *gamma* command compares two images using the so-called
+gamma criterion.  The gamma criterion specifies that
+images are similar at a givel location within a reference
+image if there exists a voxel with similar intensity
+nearby in the comparison image.
+Both local gamma and global gamma can be performed
+using this command.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch gamma [options] image_1 image_2
+ Options:
+  --analysis-threshold <arg>   
+      Analysis threshold for dose in float (for
+       example, input 0.1 to apply 10% of the 
+       reference dose). The final threshold dose
+       (Gy) is calculated by multiplying this 
+       value and a given reference dose (or 
+       maximum dose if not given). (default is 
+       0.1) 
+  --compute-full-region    With this option, full gamma map will be 
+       generated over the entire image region 
+       (even for low-dose region). It is 
+       recommended not to use this option to 
+       speed up the computation. It has no 
+       effect on gamma pass-rate. 
+  --dose-tolerance <arg>   The scaling coefficient for dose 
+       difference. (e.g. put 0.02 if you want to
+       apply 2% dose difference criterion) 
+       (default is 0.03) 
+  --dta-tolerance <arg>    The distance-to-agreement (DTA) scaling 
+       coefficient in mm (default is 3) 
+  --gamma-max <arg>        The maximum value of gamma to compute; 
+       smaller values run faster (default is 
+       2.0) 
+  --inherent-resample <arg>   
+      Spacing value in [mm]. The reference 
+       image itself will be resampled by this 
+       value (Note: resampling compare-image to 
+       ref-image is inherent already). If arg < 
+       0, this option is disabled. (default is 
+       -1.0) 
+  --interp-search          With this option, smart interpolation 
+       search will be used in points near the 
+       reference point. This will eliminate the 
+       needs of fine resampling. However, it 
+       will take longer time to compute. 
+  --local-gamma            With this option, dose difference is 
+       calculated based on local dose 
+       difference. Otherwise, a given reference 
+       dose will be used, which is called 
+       global-gamma. 
+  --output <arg>           Output image 
+  --output-failmap <arg>   File path for binary gamma evaluation 
+       result. 
+  --output-text <arg>      Text file path for gamma evaluation 
+       result. 
+  --reference-dose <arg>   The prescription dose (Gy) used to 
+       compute dose tolerance; if not specified,
+       then maximum dose in reference volume is 
+       used 
+  --resample-nn            With this option, Nearest Neighbor will 
+       be used instead of linear interpolation 
+       in resampling the compare-image to the 
+       reference image. Not recommended for 
+       better results. 
+
+
+Example
+^^^^^^^
+A gamma image is produced from two input images using the default
+parameters.  This will be a global gamma, using maximum intensity
+of the reference image as the gamma normalization value.::
+
+ plastimatch gamma --output gamma.mha \
+   reference-image.mha compare-image.mha
+
+
 plastimatch header
 ------------------
 The *header* command is used to display simple properties about 
@@ -551,7 +739,8 @@ The command line usage is given as follows::
 
 Example
 ^^^^^^^
-We can display the geometry of any supported file type, such as mha, nrrd, 
+We can display the geometry of any supported file type,
+such as mha, nrrd, 
 or dicom.  We can run the command as follows::
 
   $ plastimatch header input.mha
@@ -567,6 +756,62 @@ and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm,
 and the in-plane pixel spacing is 0.7031 mm.
 
 
+plastimatch jacobian
+--------------------
+The *jacobian* command computes the Jacobian determinant
+of a vector field.  Either a Jacobian determinant image,
+or its summary statistics, can be computed.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch jacobian [options]
+ Options:
+   --input <arg>          input directory or filename of image 
+   --output-img <arg>     output image; can be mha, mhd, nii, nrrd, 
+                           or other format supported by ITK 
+   --output-stats <arg>   output stats file; .txt format 
+
+Example
+^^^^^^^
+To create a Jacobian determinant image from a vector field
+file vf.mha, run the following::
+
+  plastimatch jacobian \
+    --input vf.mha --output-img vf_jac.mha
+
+
+plastimatch mabs
+----------------
+The *mabs* command performs a multi-atlas based segmentation (MABS) 
+operation.  The command can operate in one of several
+training mode, or in segmentation mode.  
+
+The command line usage is given as follows::
+
+ Usage: plastimatch mabs [options] command_file
+ Options:
+   --atlas-selection         run just atlas selection 
+   --convert                 pre-process atlas 
+   --output <arg>            output (non-dicom) directory when doing 
+                              a segmentation 
+   --output-dicom <arg>      output dicom directory when doing a 
+                              segmentation 
+   --pre-align               pre-process atlas 
+   --segment <arg>           use mabs to segment the specified image 
+                              or directory 
+   --train                   perform full training to find the best 
+                              registration and segmentation parameters 
+   --train-atlas-selection   run just train atlas selection 
+   --train-registration      perform limited training to find the 
+                              best registration parameters only 
+
+Prior to running the mabs command, you must create a configuration 
+file, and you must arrange your training data into the proper
+directory format.  
+For a complete description of the command file syntax and
+usage examples, please refer to the :ref:`mabs_guidebook`
+and the :ref:`segmentation_command_file_reference`.
+
 plastimatch mask
 ----------------
 The *mask* command is used to fill an image region with a constant 
@@ -578,13 +823,13 @@ The command line usage is given as follows::
 
  Usage: plastimatch mask [options]
  Options:
-   --input <arg>           input directory or filename; can be an image 
-                            or dicom directory 
+   --input <arg>           input directory or filename; can be an 
+                            image or dicom directory 
    --mask <arg>            input filename for mask image 
    --mask-value <arg>      value to set for pixels within mask (for 
                             "fill"), or outside of mask (for "mask" 
-   --output <arg>          output filename (for image file) or directory 
-                            (for dicom) 
+   --output <arg>          output filename (for image file) or 
+                            directory (for dicom) 
    --output-format <arg>   arg should be "dicom" for dicom output 
    --output-type <arg>     type of output image, one of {uchar, short, 
                             float, ...} 
@@ -604,6 +849,12 @@ outside of the patient with value -1000, we use the following command. ::
     --mask-value -1000 \
     --mask patient.nrrd
 
+
+plastimatch ml-convert
+----------------------
+To be written.
+
+
 plastimatch probe
 -----------------
 The plastimatch *probe* command is used to examine the image intensity 
@@ -617,7 +868,8 @@ The command line usage is given as follows::
 
  Usage: plastimatch probe [options] file
  Options:
-  -i, --index <arg>      List of voxel indices, such as "i j k;i j k;..." 
+  -i, --index <arg>      List of voxel indices, such as 
+                          "i j k;i j k;..." 
   -l, --location <arg>   List of spatial locations, such as 
                           "i j k;i j k;..." 
 
@@ -796,7 +1048,7 @@ The following command displays statistics for the 3D vector field vf.mha::
   Mean:          13.200      0.593      0.593
   Max:           21.250      1.488      1.488
   Mean abs:      13.200      0.594      0.594
-  Energy: MINDIL -6.7975 MAXDIL 0.16602 MAXSTRAIN 41.576 TOTSTRAIN 70849.7
+  Energy: MINDIL -6.79 MAXDIL 0.166 MAXSTRAIN 41.576 TOTSTRAIN 70849
   Min dilation at: (29 19 19)
   Jacobian: MINJAC -6.32835 MAXJAC 1.15443 MINABSJAC 0.360538
   Min abs jacobian at: (28 36 36)
@@ -845,49 +1097,71 @@ The command line usage is given as follows::
 
  Usage: plastimatch synth [options]
  Options:
-   --background <arg>        intensity of background region 
-   --dim <arg>               size of output image in voxels "x [y z]" 
-   --direction-cosines <arg>   
-                             oriention of x, y, and z axes; Specify 
-                              either preset value, {identity,
-                              rotated-{1,2,3},sheared}, or 9 digit
-                              matrix string "a b c d e f g h i" 
-   --donut-center <arg>      location of donut center in mm "x [y z]" 
-   --donut-radius <arg>      size of donut in mm "x [y z]" 
-   --donut-rings <arg>       number of donut rings (2 rings for 
-                              traditional donut) 
-   --dose-center <arg>       location of dose center in mm "x y z" 
-   --dose-size <arg>         dimensions of dose aperture in mm "x [y z]", 
-                              or locations of rectangle corners in 
-                              mm "x1 x2 y1 y2 z1 z2" 
-   --fixed <arg>             fixed image (match output size to this 
-                              image) 
-   --foreground <arg>        intensity of foreground region 
-   --gauss-center <arg>      location of Gaussian center in mm "x [y z]" 
-   --gauss-std <arg>         width of Gaussian in mm "x [y z]" 
-   --grid-pattern <arg>      grid pattern spacing in voxels "x [y z]" 
-   --lung-tumor-pos <arg>    position of tumor in mm "z" or "x y z" 
-   --origin <arg>            location of first image voxel in mm "x y z" 
-   --output <arg>            output filename 
-   --output-dicom <arg>      output dicom directory 
-   --output-dose-img <arg>   filename for output dose image 
-   --output-ss-img <arg>     filename for output structure set image 
-   --output-ss-list <arg>    filename for output file containing 
-                              structure names 
-   --output-type <arg>       data type for output image: {uchar, short, 
-                              ushort, ulong, float}, default is float 
-   --pattern <arg>           synthetic pattern to create: {donut, dose, 
-                              enclosed_rect, gauss, grid, lung, osd, 
-                              rect, sphere, xramp, yramp, zramp}, 
-                              default is gauss 
-   --penumbra <arg>          width of dose penumbra in mm 
-   --rect-size <arg>         width of rectangle in mm "x [y z]", or 
-                              locations of rectangle corners in mm 
-                              "x1 x2 y1 y2 z1 z2" 
-   --spacing <arg>           voxel spacing in mm "x [y z]" 
-   --sphere-center <arg>     location of sphere center in mm "x y z" 
-   --sphere-radius <arg>     radius of sphere in mm "x [y z]" 
-   --volume-size <arg>       size of output image in mm "x [y z]" 
+  --background <arg>        intensity of background region 
+  --cylinder-center <arg>   location of cylinder center in mm "x [y 
+                             z]" 
+  --cylinder-radius <arg>   size of cylinder in mm "x [y z]" 
+  --dicom-with-uids <arg>   set to false to remove uids from created
+                             dicom filenames, default is true 
+  --dim <arg>               size of output image in voxels "x [y z]" 
+  --direction-cosines <arg>   
+                            oriention of x, y, and z axes; Specify 
+                             either preset value, 
+                             {identity,rotated-{1,2,3},sheared}, or 9
+                             digit matrix string "a b c d e f g h i" 
+  --donut-center <arg>      location of donut center in mm "x [y z]" 
+  --donut-radius <arg>      size of donut in mm "x [y z]" 
+  --donut-rings <arg>       number of donut rings (2 rings for 
+                             traditional donut) 
+  --dose-center <arg>       location of dose center in mm "x y z" 
+  --dose-size <arg>         dimensions of dose aperture in mm "x [y 
+                             z]", or locations of rectangle corners 
+                             in mm "x1 x2 y1 y2 z1 z2" 
+  --fixed <arg>             fixed image (match output size to this 
+                             image) 
+  --foreground <arg>        intensity of foreground region 
+  --gabor-k-fib <arg>       choose gabor direction at index i within
+                             fibonacci spiral of length n; specified 
+                             as "i n" where i and n are integers, and
+                             i is between 0 and n-1 
+  --gauss-center <arg>      location of Gaussian center in mm "x [y 
+                             z]" 
+  --gauss-std <arg>         width of Gaussian in mm "x [y z]" 
+  --grid-pattern <arg>      grid pattern spacing in voxels "x [y z]" 
+  --input <arg>             input image (add synthetic pattern onto 
+                             existing image) 
+  --lung-tumor-pos <arg>    position of tumor in mm "z" or "x y z" 
+  --metadata <arg>          patient metadata (you may use this 
+                             option multiple times) 
+  --noise-mean <arg>        mean intensity of gaussian noise 
+  --noise-std <arg>         standard deviation of gaussian noise 
+  --origin <arg>            location of first image voxel in mm "x y
+                             z" 
+  --output <arg>            output filename 
+  --output-dicom <arg>      output dicom directory 
+  --output-dose-img <arg>   filename for output dose image 
+  --output-ss-img <arg>     filename for output structure set image 
+  --output-ss-list <arg>    filename for output file containing 
+                             structure names 
+  --output-type <arg>       data type for output image: {uchar, 
+                             short, ushort, ulong, float}, default is
+                             float 
+  --patient-id <arg>        patient id metadata: string 
+  --patient-name <arg>      patient name metadata: string 
+  --patient-pos <arg>       patient position metadata: one of 
+                             {hfs,hfp,ffs,ffp} 
+  --pattern <arg>           synthetic pattern to create: {cylinder, 
+                             donut, dose, gabor, gauss, grid, lung, 
+                             noise, rect, sphere, xramp, yramp, 
+                             zramp}, default is gauss 
+  --penumbra <arg>          width of dose penumbra in mm 
+  --rect-size <arg>         width of rectangle in mm "x [y z]", or 
+                             locations of rectangle corners in mm "x1
+                             x2 y1 y2 z1 z2" 
+  --spacing <arg>           voxel spacing in mm "x [y z]" 
+  --sphere-center <arg>     location of sphere center in mm "x y z" 
+  --sphere-radius <arg>     radius of sphere in mm "x [y z]" 
+  --volume-size <arg>       size of output image in mm "x [y z]" 
 
 Examples
 ^^^^^^^^
@@ -930,29 +1204,62 @@ The command line usage is given as follows::
 
  Usage: plastimatch synth-vf [options]
  Options:
-   --dim <arg>             size of output image in voxels "x [y z]" 
-   --direction-cosines <arg>   
-                           oriention of x, y, and z axes; Specify either 
-                            preset value, {identity, rotated-{1,2,3}, 
-                            sheared}, or 9 digit matrix string "a b c 
-                            d e f g h i" 
-   --fixed <arg>           An input image used to set the size of the 
-                            output 
-   --gauss-center <arg>    location of center of gaussian warp "x [y z]" 
-   --gauss-mag <arg>       displacment magnitude for gaussian warp in 
-                            mm "x [y z]" 
-   --gauss-std <arg>       width of gaussian std in mm "x [y z]" 
-   --origin <arg>          location of first image voxel in mm "x y z" 
-   --output <arg>          output filename 
-   --radial-center <arg>   location of center of radial warp "x [y z]" 
-   --radial-mag <arg>      displacement magnitude for radial warp in 
-                            mm "x [y z]" 
-   --spacing <arg>         voxel spacing in mm "x [y z]" 
-   --volume-size <arg>     size of output image in mm "x [y z]" 
-   --xf-gauss              gaussian warp 
-   --xf-radial             radial expansion (or contraction) 
-   --xf-trans <arg>        uniform translation in mm "x y z" 
-   --xf-zero               Null transform 
+  --dim <arg>             size of output image in voxels "x [y z]" 
+  --direction-cosines <arg>   
+                          oriention of x, y, and z axes; Specify 
+                           either preset value, {identity, 
+                           rotated-{1,2,3}, sheared}, or 9 digit 
+                           matrix string "a b c d e f g h i" 
+  --fixed <arg>           An input image used to set the size of the
+                           output 
+  --gauss-center <arg>    location of center of gaussian warp "x [y 
+                           z]" 
+  --gauss-mag <arg>       displacment magnitude for gaussian warp in
+                           mm "x [y z]" 
+  --gauss-std <arg>       width of gaussian std in mm "x [y z]" 
+  --origin <arg>          location of first image voxel in mm "x y 
+                           z" 
+  --output <arg>          output filename 
+  --radial-center <arg>   location of center of radial warp "x [y 
+                           z]" 
+  --radial-mag <arg>      displacement magnitude for radial warp in 
+                           mm "x [y z]" 
+  --spacing <arg>         voxel spacing in mm "x [y z]" 
+  --volume-size <arg>     size of output image in mm "x [y z]" 
+  --xf-gauss              gaussian warp 
+  --xf-radial             radial expansion (or contraction) 
+  --xf-trans <arg>        uniform translation in mm "x y z" 
+  --xf-zero               Null transform 
+
+plastimatch threshold
+---------------------
+The *threshold* command creates a binary labelmap image from an
+input intensity image.  
+
+The command line usage is given as follows::
+
+ Usage: plastimatch threshold [options]
+ Options:
+    --above <arg>    value above which output has value high 
+    --below <arg>    value below which output has value high 
+    --input <arg>    input directory or filename 
+    --output <arg>   output image 
+    --range <arg>    a string that forms a list of threshold ranges 
+                      ofthe form "r1-lo,r1-hi,r2-lo,r2-hi,...", 
+                      such thatvoxels with intensities within any 
+                      of the ranges ([r1-lo,r1-hi], [r2-lo,r2-hi], 
+                      ...) have output value high 
+
+Example
+^^^^^^^
+The following command creates a binary label image with
+value 1 when input intensities are between 100 and 200,
+and value 0 otherwise.::
+
+ plastimatch threshold \
+   --input input_image.nrrd \
+   --output output_labe.nrrd \
+   --range "100,200"
 
 
 plastimatch thumbnail
@@ -1013,8 +1320,8 @@ union of two input images::
 plastimatch warp
 ----------------
 The *warp* command is an alias for *convert*.  
-Please refer to :ref:`plastimatch_convert` for the list of command line 
-parameters.
+Please refer to :ref:`plastimatch_convert` for the list
+of command line parameters.
 
 Examples
 ^^^^^^^^
@@ -1096,8 +1403,8 @@ The command line usage is given as follows::
    --nobulk               Omit bulk transform for itk_bspline 
    --origin <arg>         Location of first image voxel in mm "x y z" 
    --output <arg>         Output xform filename (required) 
-   --output-type <arg>    Type of xform to create (required), choose from 
-                           {bspline, itk_bspline, vf} 
+   --output-type <arg>    Type of xform to create (required), choose 
+                           from {bspline, itk_bspline, vf} 
    --spacing <arg>        Voxel spacing in mm "x [y z]" 
 
 Example

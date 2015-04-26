@@ -22,7 +22,8 @@ The command line usage is given as follows::
                                  wendland} 
   -d, --default-value <arg>     Value to set for pixels with unknown 
                                  value 
-      --dim <arg>               Size of output image in voxels "x [y z]" 
+      --dim <arg>               Size of output image 
+                                 in voxels "x [y z]" 
   -F, --fixed <arg>             Fixed image (match output size to this 
       	      			 image) 
   -f, --fixed-landmarks <arg>   Input fixed landmarks 
@@ -39,7 +40,8 @@ The command line usage is given as follows::
   -L, --output-landmarks <arg>   
                                 Output warped landmarks 
   -V, --output-vf <arg>         Output vector field 
-  -r, --radius <arg>            Radius of radial basis function (in mm) 
+  -r, --radius <arg>            Radius of radial basis function 
+                                 (in mm)
       --spacing <arg>           Voxel spacing in mm "x [y z]" 
   -Y, --stiffness <arg>         Young modulus (default = 0.0) 
 
