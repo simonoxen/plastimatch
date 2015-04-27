@@ -2468,6 +2468,7 @@ set_tests_properties (plm-bsp-mse-l-stats PROPERTIES
 set_tests_properties (plm-bsp-mse-l-check PROPERTIES 
   DEPENDS plm-bsp-mse-l-stats)
 
+## This test (and bsp-mi-k) fails on windows with 2008 compiler.
 plm_add_test (
   "plm-bsp-mi-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
