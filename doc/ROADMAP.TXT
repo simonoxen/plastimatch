@@ -1,7 +1,24 @@
+2.0
+
+Features
+*  All registration parameters have auto defaults
+*  Dataclasp for scripting
+*  Multi-value registration
+*  Overlap fraction penalty for native registration methods
+*  Full support for irregular slice spacing
+
+Documentation
+*  Registration tutorial based on NA-MIC case library
+*  MABS tutorial
+
+Backward incompatible changes
+*  Remove short options "-F"
+*  DRR/FDK uses IEC coordinates
+
 1.6.0
 
-*  B-spline auto-parameters
-**  Needs improved subsampling framework
+*  B-spline auto-parameters (partly done)
+**  Needs improved subsampling framework (done)
 *  B-spline direction cosines (done)
 *  B-spline regularization (done)
 *  B-spline ROI (done)
@@ -12,35 +29,26 @@
 *  plastimatch dmap (done)
 *  plastimatch threshold (done)
 
-High priority future release
-
-*  Extend B-spline loop template to other flavors
-*  Multi-value registration
-*  Native translation registration (partly done, needs mi)
-*  Overlap fraction
-
-Unspecified future release
+Wishlist
 
 *  Autolabel (la,tsv1,tsv2)
-*  Command parsing improvements (command file, command line, python/swig)
 *  Copy-free conversion between itk and native volumes
 *  CUDA demons
 ** (What is wrong with current one?)
+*  Extend B-spline loop template to other flavors
 *  RTK wrapping
 *  DRR/FDK dicom
 *  Evaluate native vs itk jacobian
-*  Irregular slice spacing
+*  IEC patient coordinate system
 *  MSVC express multicore strategy (done -- use MSVC 2013)
 *  Native rigid registration
 *  Normalized MI
 *  patient mask to support MRI
-*  plastimatch filter gradient magnitude
+*  plastimatch gradient magnitude
 *  Proton/photon/electron dose calculation
 ** Add multi-beam to command file
 ** Remove duplication of code for photons
-*  RTOG support
 *  RTPLAN support
-*  Scripting
 *  Standalone GUI
 *  Superbuild
 
@@ -48,5 +56,5 @@ Cleanup
 
 *  Better handling of ??_parms class
 *  Rename volume::offset -> volume::origin
-*  Missing parameters in documentation
-*  Registration tutorial based on NA-MIC case library
+*  Remove Pstring
+*  Move vf-invert, landmark-warp, drr, fdk into plastimatch executable
