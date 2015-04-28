@@ -424,16 +424,7 @@ add_subdirectory (libs/bstrlib-05122010)
 set (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
 
-##-----------------------------------------------------------------------------
-##  Only use local dbf, dbf-core
-##-----------------------------------------------------------------------------
-set (DBF_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/libdbf")
-set (DBFCORE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dbf-core")
-set (DBF_LIBRARIES dbf dbfcore)
-add_subdirectory (libs/libdbf)
-add_subdirectory (libs/dbf-core)
-
-##-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 ##  Only use local devillard
 ##-----------------------------------------------------------------------------
 set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
