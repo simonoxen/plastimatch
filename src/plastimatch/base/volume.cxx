@@ -52,25 +52,25 @@ Volume::Volume () {
 
 Volume::Volume (
     const plm_long dim[3], 
-    const float offset[3], 
+    const float origin[3], 
     const float spacing[3], 
     const float direction_cosines[9], 
     enum Volume_pixel_type vox_type, 
     int vox_planes
 ) {
-    create (dim, offset, spacing, direction_cosines, vox_type, 
+    create (dim, origin, spacing, direction_cosines, vox_type, 
         vox_planes);
 }
 
 Volume::Volume (
     const plm_long dim[3], 
-    const float offset[3], 
+    const float origin[3], 
     const float spacing[3], 
     const Direction_cosines& direction_cosines, 
     enum Volume_pixel_type vox_type, 
     int vox_planes
 ) {
-    create (dim, offset, spacing, direction_cosines.get_matrix(), 
+    create (dim, origin, spacing, direction_cosines.get_matrix(), 
         vox_type, vox_planes);
 }
 
@@ -99,7 +99,7 @@ Volume::init ()
 	
     for (int d = 0; d < 3; d++) {
         dim[d] = 0;
-        offset[d] = 0;
+        origin[d] = 0;
         spacing[d] = 0;
     }
     for (int i = 0; i < 3; i++) {
@@ -148,7 +148,7 @@ Volume::allocate (void)
 void 
 Volume::create (
     const plm_long new_dim[3], 
-    const float offset[3], 
+    const float origin[3], 
     const float spacing[3], 
     const float direction_cosines[9], 
     enum Volume_pixel_type vox_type, 
@@ -158,7 +158,7 @@ Volume::create (
     init ();
     for (int i = 0; i < 3; i++) {
 	this->dim[i] = new_dim[i];
-	this->offset[i] = offset[i];
+	this->origin[i] = origin[i];
 	this->spacing[i] = spacing[i];
     }
     this->npix = this->dim[0] * this->dim[1] * this->dim[2];
@@ -217,14 +217,14 @@ Volume::create (
 const float*
 Volume::get_origin ()
 {
-    return this->offset;
+    return this->origin;
 }
 
 void
 Volume::set_origin (const float origin[3])
 {
     for (int d = 0; d < 3; d++) {
-        this->offset[d] = origin[d];
+        this->origin[d] = origin[d];
     }
 }
 
@@ -273,7 +273,7 @@ Volume*
 volume_clone_empty (Volume* ref)
 {
     Volume* vout;
-    vout = new Volume (ref->dim, ref->offset, ref->spacing, 
+    vout = new Volume (ref->dim, ref->origin, ref->spacing, 
 	ref->direction_cosines, ref->pix_type, ref->vox_planes);
     return vout;
 }
@@ -282,7 +282,7 @@ Volume*
 volume_clone (const Volume* ref)
 {
     Volume* vout;
-    vout = new Volume (ref->dim, ref->offset, ref->spacing, 
+    vout = new Volume (ref->dim, ref->origin, ref->spacing, 
 	ref->direction_cosines, ref->pix_type, ref->vox_planes);
     switch (ref->pix_type) {
     case PT_UCHAR:
@@ -695,7 +695,7 @@ Volume::clone (Volume_pixel_type new_type) const
 {
     Volume::Pointer vol_out = Volume::New ();
     vol_out->create (
-        this->dim, this->offset, this->spacing, 
+        this->dim, this->origin, this->spacing, 
 	this->direction_cosines, new_type,
         this->vox_planes);
     switch (new_type) {
@@ -797,9 +797,9 @@ Volume::get_ijk_value (const float ijk[3])
 void 
 Volume::get_xyz_from_ijk (double xyz[3], const int ijk[3])
 {
-    xyz[0] = this->offset[0] + ijk[0] * this->spacing[0];
-    xyz[1] = this->offset[1] + ijk[1] * this->spacing[1];
-    xyz[2] = this->offset[2] + ijk[2] * this->spacing[2];
+    xyz[0] = this->origin[0] + ijk[0] * this->spacing[0];
+    xyz[1] = this->origin[1] + ijk[1] * this->spacing[1];
+    xyz[2] = this->origin[2] + ijk[2] * this->spacing[2];
 }
 
 void
@@ -809,7 +809,7 @@ Volume::get_ijk_from_xyz (float ijk[3], const float xyz[3], bool* in)
 
     for (int i = 0; i < 3; i++)
     {
-        ijk[i] = (float) (xyz[i]-this->offset[i])/this->spacing[i];
+        ijk[i] = (float) (xyz[i]-this->origin[i])/this->spacing[i];
         if (ijk[i] < 0 || ijk[i] >= this->dim[i] -1)
         {
             *in = false;
@@ -826,7 +826,7 @@ Volume::get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in)
 
     for (int i = 0; i < 3; i++)
     {
-        ijk[i] = (int) floor(xyz[i]-this->offset[i])/this->spacing[i];
+        ijk[i] = (int) floor(xyz[i]-this->origin[i])/this->spacing[i];
         if (ijk[i] < 0 || ijk[i] >= this->dim[i])
         {
             *in = false;
@@ -859,9 +859,9 @@ Volume::debug ()
 	(int) dim[2]
     );
     lprintf ("org:%f %f %f\n",
-	offset[0],
-	offset[1],
-	offset[2]
+	origin[0],
+	origin[1],
+	origin[2]
     );
     lprintf ("spac:%f %f %f\n",
 	spacing[0],
@@ -885,9 +885,9 @@ void
 Volume::direction_cosines_debug ()
 {
     lprintf ("org:%f %f %f\n",
-	offset[0],
-	offset[1],
-	offset[2]
+	origin[0],
+	origin[1],
+	origin[2]
     );
     lprintf ("spac:%f %f %f\n",
 	spacing[0],
@@ -948,7 +948,7 @@ volume_difference (Volume* vol, Volume* warped)
 
     for(i=0;i<3; i++){
 	temp->dim[i] = vol->dim[i];
-	temp->offset[i] = vol->offset[i];
+	temp->origin[i] = vol->origin[i];
 	temp->spacing[i] = vol->spacing[i];
     }
 

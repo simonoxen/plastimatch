@@ -85,7 +85,7 @@ write_mha_internal (
 	vol->direction_cosines[2], 
         vol->direction_cosines[5], 
 	vol->direction_cosines[8], 
-	vol->offset[0], vol->offset[1], vol->offset[2], 
+	vol->origin[0], vol->origin[1], vol->origin[2], 
 	vol->spacing[0], vol->spacing[1], vol->spacing[2], 
 	vol->dim[0], vol->dim[1], vol->dim[2],
 	(vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
@@ -141,9 +141,9 @@ read_mha_internal (
 	    continue;
 	}
 	if (sscanf (linebuf, "Offset = %g %g %g",
-		&vol->offset[0],
-		&vol->offset[1],
-		&vol->offset[2]) == 3) {
+		&vol->origin[0],
+		&vol->origin[1],
+		&vol->origin[2]) == 3) {
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementSpacing = %g %g %g",

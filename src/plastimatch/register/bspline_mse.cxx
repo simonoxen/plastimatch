@@ -840,9 +840,9 @@ bspline_score_c_mse (
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Compute moving image coordinate of fixed image voxel */
-                mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
-                mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
-                mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
+                mxyz[2] = fxyz[2] + dxyz[2] - moving->origin[2];
+                mxyz[1] = fxyz[1] + dxyz[1] - moving->origin[1];
+                mxyz[0] = fxyz[0] + dxyz[0] - moving->origin[0];
                 mijk[2] = PROJECT_Z (mxyz, moving->proj);
                 mijk[1] = PROJECT_Y (mxyz, moving->proj);
                 mijk[0] = PROJECT_X (mxyz, moving->proj);

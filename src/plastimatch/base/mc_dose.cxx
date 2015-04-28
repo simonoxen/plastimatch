@@ -27,7 +27,7 @@
 typedef struct mc_dose_header MC_dose_header;
 struct mc_dose_header {
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
     int header_size;
 };
@@ -68,10 +68,10 @@ mc_dose_load_header (MC_dose_header *mcdh, const char *filename)
 	}
     }
 
-    /* Get offset */
-    mcdh->offset[0] = header[3] * 10;
-    mcdh->offset[1] = header[3 + 1 + mcdh->dim[0]] * 10;
-    mcdh->offset[2] = header[3 + 2 + mcdh->dim[0] + mcdh->dim[1]] * 10;
+    /* Get origin */
+    mcdh->origin[0] = header[3] * 10;
+    mcdh->origin[1] = header[3 + 1 + mcdh->dim[0]] * 10;
+    mcdh->origin[2] = header[3 + 2 + mcdh->dim[0] + mcdh->dim[1]] * 10;
 
     /* Get element spacing */
     /* NOTE: assuming uniform spacing! */
@@ -136,7 +136,7 @@ mc_dose_create_volume (
 {
     Volume *v;
 
-    v = new Volume (mcdh->dim, mcdh->offset, mcdh->spacing, 0, 
+    v = new Volume (mcdh->dim, mcdh->origin, mcdh->spacing, 0, 
 	PT_FLOAT, 1);
     pli->set_volume (v);
 
@@ -162,9 +162,9 @@ mc_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 
     Volume *v = pli->get_vol ();
 
-    /* Set offsets */
-    v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
-    v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
+    /* Set origins */
+    v->origin[0] = (v->origin[0] * transform->direction_cosines[0]) + transform->x_offset;
+    v->origin[1] = (v->origin[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
     v->set_direction_cosines (transform->direction_cosines);

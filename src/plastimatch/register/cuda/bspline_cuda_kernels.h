@@ -26,7 +26,7 @@ struct gpu_bspline_data
 
     // moving volume items
     int3 mov_dim;       
-    float3 mov_offset;
+    float3 mov_origin;
     float3 mov_spacing;
 };
 
@@ -100,7 +100,7 @@ struct gpu_bspline_data
         int3 cdim,          // # control points in x,y,z
         float3 img_origin,  // image origin
         float3 img_spacing, // image spacing
-        float3 mov_offset,  // moving image offset
+        float3 mov_origin,  // moving image offset
         float3 mov_ps       // moving image pixel spacing
     );
 
@@ -118,7 +118,7 @@ struct gpu_bspline_data
         int3 cdim,          // # control points in x,y,z
         float3 img_origin,  // image origin
         float3 img_spacing, // image spacing
-        float3 mov_offset,  // moving image offset
+        float3 mov_origin,  // moving image offset
         float3 mov_ps       // moving image pixel spacing
     );
 
@@ -141,7 +141,7 @@ struct gpu_bspline_data
         int3 cdim,              // INPUT: # control points in x,y,z
         float3 img_origin,      // INPUT: image origin
         float3 img_spacing,     // INPUT: image spacing
-        float3 mov_offset,      // INPUT: moving image offset
+        float3 mov_origin,      // INPUT: moving image offset
         float3 mov_ps,          // INPUT: moving image pixel spacing
         int3 roi_dim,           // INPUT: ROI dimensions
         int3 roi_offset         // INPUT: ROI Offset
@@ -176,7 +176,7 @@ struct gpu_bspline_data
         int3 cdim,          // INPUT: # control points in x,y,z
         float3 img_origin,  // INPUT: image origin
         float3 img_spacing, // INPUT: image spacing
-        float3 mov_offset,  // INPUT: moving image offset
+        float3 mov_origin,  // INPUT: moving image offset
         float3 mov_ps,      // INPUT: moving image pixel spacing
         int3 roi_dim,       // INPUT: ROI dimensions
         int3 roi_offset,    // INPUT: ROI Offset
@@ -202,7 +202,7 @@ struct gpu_bspline_data
         int3 vpr,           // voxels per region
         float3 img_origin,  // image origin
         float3 img_spacing, // image spacing
-        float3 mov_offset,  // moving image offset
+        float3 mov_origin,  // moving image offset
         float3 mov_ps,      // moving image pixel spacing
         int pad);           // tile padding
 
@@ -222,7 +222,7 @@ struct gpu_bspline_data
        float3 *m,
        float3 *n,
        float3 f,
-       float3 mov_offset,
+       float3 mov_origin,
        float3 mov_ps,
        int3 mdim,
        int3 cdim,

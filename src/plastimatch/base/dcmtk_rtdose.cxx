@@ -165,7 +165,7 @@ Dcmtk_loader::rtdose_load ()
 	    logfile_printf (
 		"Warning: RTDOSE gfov[0] is neither 0 nor ipp[2].\n"
 		"This violates the DICOM standard.  Proceeding anyway...\n");
-	    /* Nucletron seems to work by ignoring absolute offset (???) */
+	    /* Nucletron seems to work by ignoring absolute origin (???) */
 	}
     }
 
@@ -351,8 +351,8 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SeriesNumber, "");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     
-    s = string_format ("%g\\%g\\%g", dose_volume->offset[0], 
-        dose_volume->offset[1], dose_volume->offset[2]);
+    s = string_format ("%g\\%g\\%g", dose_volume->origin[0], 
+        dose_volume->origin[1], dose_volume->origin[2]);
     /* GCS FIX: PatientOrientation */
     dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, s.c_str());

@@ -41,7 +41,7 @@ public:
     plm_long dim[3];            // x, y, z Dims
     plm_long npix;              // # of voxels in volume
                                 // = dim[0] * dim[1] * dim[2] 
-    float offset[3];
+    float origin[3];
     float spacing[3];
     Direction_cosines direction_cosines;
 
@@ -58,7 +58,7 @@ public:
     Volume ();
     Volume (
         const plm_long dim[3], 
-        const float offset[3], 
+        const float origin[3], 
         const float spacing[3], 
         const float direction_cosines[9], 
         enum Volume_pixel_type vox_type, 
@@ -66,7 +66,7 @@ public:
     );
     Volume (
         const plm_long dim[3], 
-        const float offset[3], 
+        const float origin[3], 
         const float spacing[3], 
         const Direction_cosines& direction_cosines, 
         enum Volume_pixel_type vox_type, 
@@ -87,7 +87,7 @@ public:
     }
     void create (
         const plm_long new_dim[3], 
-        const float offset[3], 
+        const float origin[3], 
         const float spacing[3], 
         const float direction_cosines[9], 
         enum Volume_pixel_type vox_type, 

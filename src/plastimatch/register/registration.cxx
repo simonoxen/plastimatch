@@ -427,7 +427,7 @@ check_output_resolution (Xform::Pointer& xf_out, Registration_data::Pointer& reg
         /* Transform input xform to gpuit vector field */
         pih.set_from_gpuit (
             fixed->dim, 
-            fixed->offset,
+            fixed->origin,
             fixed->spacing, 
             fixed->direction_cosines
         );

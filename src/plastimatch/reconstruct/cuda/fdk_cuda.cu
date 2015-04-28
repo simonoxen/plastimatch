@@ -29,7 +29,7 @@
 //#define TIME_KERNEL
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-__global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_spacing, unsigned int Blocks_Y, float invBlocks_Y);
+__global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_origin, int3 vol_dim, float3 vol_spacing, unsigned int Blocks_Y, float invBlocks_Y);
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -56,7 +56,7 @@ void kernel_fdk_gmem (
     float3 nrm,
     float sad,
     float scale,
-    float3 vol_offset,
+    float3 vol_origin,
     int3 vol_dim,
     float3 vol_spacing,
     unsigned int Blocks_Y,
@@ -85,10 +85,10 @@ void kernel_fdk_gmem (
     float  s;
     float voxel_data;
 
-    // offset volume coords
-    vp.x = vol_offset.x + i * vol_spacing.x;
-    vp.y = vol_offset.y + j * vol_spacing.y;
-    vp.z = vol_offset.z + k * vol_spacing.z;
+    // origin volume coords
+    vp.x = vol_origin.x + i * vol_spacing.x;
+    vp.y = vol_origin.y + j * vol_spacing.y;
+    vp.z = vol_origin.z + k * vol_spacing.z;
 
     // matrix multiply
     ip.x = pmat[0]*vp.x + pmat[1]*vp.y + pmat[2]*vp.z + pmat[3];
@@ -129,7 +129,7 @@ void kernel_fdk (
     float3 nrm,
     float sad,
     float scale,
-    float3 vol_offset,
+    float3 vol_origin,
     int3 vol_dim,
     float3 vol_spacing,
     unsigned int Blocks_Y,
@@ -158,10 +158,10 @@ void kernel_fdk (
     float  s;
     float voxel_data;
 
-    // offset volume coords
-    vp.x = vol_offset.x + i * vol_spacing.x;
-    vp.y = vol_offset.y + j * vol_spacing.y;
-    vp.z = vol_offset.z + k * vol_spacing.z;
+    // origin volume coords
+    vp.x = vol_origin.x + i * vol_spacing.x;
+    vp.y = vol_origin.y + j * vol_spacing.y;
+    vp.z = vol_origin.z + k * vol_spacing.z;
 
     // matrix multiply
     ip.x = tex1Dfetch(tex_matrix, 0)*vp.x + tex1Dfetch(tex_matrix, 1)*vp.y + tex1Dfetch(tex_matrix, 2)*vp.z + tex1Dfetch(tex_matrix, 3);
@@ -248,9 +248,9 @@ CUDA_reconstruct_conebeam (
 
     // Load static kernel arguments
     kargs->scale = scale;
-    kargs->vol_offset.x = vol->offset[0];
-    kargs->vol_offset.y = vol->offset[1];
-    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_origin.x = vol->origin[0];
+    kargs->vol_origin.y = vol->origin[1];
+    kargs->vol_origin.z = vol->origin[2];
     kargs->vol_dim.x = vol->dim[0];
     kargs->vol_dim.y = vol->dim[1];
     kargs->vol_dim.z = vol->dim[2];
@@ -371,7 +371,7 @@ CUDA_reconstruct_conebeam (
             kargs->nrm,
             kargs->sad,
             kargs->scale,
-            kargs->vol_offset,
+            kargs->vol_origin,
             kargs->vol_dim,
             kargs->vol_spacing,
             blocksInY,
@@ -498,9 +498,9 @@ fdk_cuda_state_create_cu (
     /* Set static kernel arguments */
     kargs = &state->kargs;
     kargs->scale = scale;
-    kargs->vol_offset.x = vol->offset[0];
-    kargs->vol_offset.y = vol->offset[1];
-    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_origin.x = vol->origin[0];
+    kargs->vol_origin.y = vol->origin[1];
+    kargs->vol_origin.z = vol->origin[2];
     kargs->vol_dim.x = vol->dim[0];
     kargs->vol_dim.y = vol->dim[1];
     kargs->vol_dim.z = vol->dim[2];
@@ -611,7 +611,7 @@ fdk_cuda_backproject_cu (void *dev_state)
         kargs->nrm,
         kargs->sad,
         kargs->scale,
-        kargs->vol_offset,
+        kargs->vol_origin,
         kargs->vol_dim,
         kargs->vol_spacing,
         state->blocksInY,

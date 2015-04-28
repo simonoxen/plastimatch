@@ -44,13 +44,13 @@ volume_resample_float_nn (
     out_img = (float*) vol_out->img;
 
     for (k = 0, v = 0, z = origin[2]; k < dim[2]; k++, z += spacing[2]) {
-        z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
+        z_in = (z - vol_in->origin[2]) / vol_in->spacing[2];
         ijk[2] = ROUND_INT (z_in);
         for (j = 0, y = origin[1]; j < dim[1]; j++, y += spacing[1]) {
-            y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
+            y_in = (y - vol_in->origin[1]) / vol_in->spacing[1];
             ijk[1] = ROUND_INT (y_in);
             for (i = 0, x = origin[0]; i < dim[0]; i++, x += spacing[0], v++) {
-                x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
+                x_in = (x - vol_in->origin[0]) / vol_in->spacing[0];
                 ijk[0] = ROUND_INT (x_in);
                 if (index_in_volume (vol_in->dim, ijk)) {
                     plm_long idx = volume_index (vol_in->dim, ijk);
@@ -90,13 +90,13 @@ volume_resample_float_li (
     out_img = (float*) vol_out->img;
 
     for (k = 0, v = 0, z = origin[2]; k < dim[2]; k++, z += spacing[2]) {
-        ijk[2] = (z - vol_in->offset[2]) / vol_in->spacing[2];
+        ijk[2] = (z - vol_in->origin[2]) / vol_in->spacing[2];
         zidx = ROUND_INT (ijk[2]);
         for (j = 0, y = origin[1]; j < dim[1]; j++, y += spacing[1]) {
-            ijk[1] = (y - vol_in->offset[1]) / vol_in->spacing[1];
+            ijk[1] = (y - vol_in->origin[1]) / vol_in->spacing[1];
             yidx = ROUND_INT (ijk[1]);
             for (i = 0, x = origin[0]; i < dim[0]; i++, x += spacing[0], v++) {
-                ijk[0] = (x - vol_in->offset[0]) / vol_in->spacing[0];
+                ijk[0] = (x - vol_in->origin[0]) / vol_in->spacing[0];
                 xidx = ROUND_INT (ijk[0]);
                 if (zidx < 0 || zidx >= vol_in->dim[2] || 
                     yidx < 0 || yidx >= vol_in->dim[1] || 
@@ -156,13 +156,13 @@ volume_resample_vf_float_interleaved (
     out_img = (float*) vol_out->img;
 
     for (k = 0, v = 0, z = origin[2]; k < dim[2]; k++, z += spacing[2]) {
-        z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
+        z_in = (z - vol_in->origin[2]) / vol_in->spacing[2];
         zidx = ROUND_INT (z_in);
         for (j = 0, y = origin[1]; j < dim[1]; j++, y += spacing[1]) {
-            y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
+            y_in = (y - vol_in->origin[1]) / vol_in->spacing[1];
             yidx = ROUND_INT (y_in);
             for (i = 0, x = origin[0]; i < dim[0]; i++, x += spacing[0]) {
-                x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
+                x_in = (x - vol_in->origin[0]) / vol_in->spacing[0];
                 xidx = ROUND_INT (x_in);
                 if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
                     val = default_val;
@@ -200,13 +200,13 @@ volume_resample_vf_float_planar (
     out_img = (float**) vol_out->img;
 
     for (k = 0, v = 0, z = origin[2]; k < dim[2]; k++, z += spacing[2]) {
-        z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
+        z_in = (z - vol_in->origin[2]) / vol_in->spacing[2];
         zidx = ROUND_INT (z_in);
         for (j = 0, y = origin[1]; j < dim[1]; j++, y += spacing[1]) {
-            y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
+            y_in = (y - vol_in->origin[1]) / vol_in->spacing[1];
             yidx = ROUND_INT (y_in);
             for (i = 0, x = origin[0]; i < dim[0]; i++, x += spacing[0], v++) {
-                x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
+                x_in = (x - vol_in->origin[0]) / vol_in->spacing[0];
                 xidx = ROUND_INT (x_in);
                 if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
                     for (d = 0; d < 3; d++) {
@@ -310,7 +310,7 @@ volume_subsample_vox (
         plm_long int_rate = ROUND_PLM_LONG (sampling_rate[d]);
 
         dim[d] = (vol_in->dim[d] + int_rate - 1) / int_rate;
-        origin[d] = vol_in->offset[d];
+        origin[d] = vol_in->origin[d];
         spacing[d] = vol_in->spacing[d] * int_rate;
     }
     return volume_resample (vol_in, dim, origin, spacing);
@@ -330,7 +330,7 @@ volume_subsample_vox_nn (
         plm_long int_rate = ROUND_PLM_LONG (sampling_rate[d]);
 
         dim[d] = (vol_in->dim[d] + int_rate - 1) / int_rate;
-        origin[d] = vol_in->offset[d];
+        origin[d] = vol_in->origin[d];
         spacing[d] = vol_in->spacing[d] * int_rate;
     }
     return volume_resample_nn (vol_in, dim, origin, spacing);
@@ -352,7 +352,7 @@ volume_subsample_vox_legacy (
         dim[d] = vol_in->dim[d] / (plm_long) sampling_rate[d];
         if (dim[d] < 1) dim[d] = 1;
         spacing[d] = in_size / dim[d];
-        origin[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 
+        origin[d] = (float) (vol_in->origin[d] - 0.5 * vol_in->spacing[d] 
             + 0.5 * spacing[d]);
     }
     return volume_resample (vol_in, dim, origin, spacing);
@@ -374,7 +374,7 @@ volume_subsample_vox_legacy_nn (
         dim[d] = vol_in->dim[d] / (plm_long) sampling_rate[d];
         if (dim[d] < 1) dim[d] = 1;
         spacing[d] = in_size / dim[d];
-        origin[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 
+        origin[d] = (float) (vol_in->origin[d] - 0.5 * vol_in->spacing[d] 
             + 0.5 * spacing[d]);
     }
     return volume_resample_nn (vol_in, dim, origin, spacing);
@@ -391,7 +391,7 @@ volume_resample_spacing (
         dim[d] = 1 + ROUND_PLM_LONG (in_size / spacing[d]);
     }
 
-    return volume_resample (vol_in, dim, vol_in->offset, spacing);
+    return volume_resample (vol_in, dim, vol_in->origin, spacing);
 }
 
 Volume::Pointer 
@@ -411,5 +411,5 @@ volume_resample_percent (
         }
     }
 
-    return volume_resample (vol_in, dim, vol_in->offset, spacing);
+    return volume_resample (vol_in, dim, vol_in->origin, spacing);
 }

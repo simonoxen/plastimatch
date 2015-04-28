@@ -27,7 +27,7 @@ demons_c (
     plm_long i, j, k, v;
     int	it;	           /* Iterations */
     plm_long fi, fj, fk, fv; /* Indices into fixed image */
-    float f2mo[3];         /* Offset difference (in mm) from fixed to moving */
+    float f2mo[3];         /* Origin difference (in mm) from fixed to moving */
     float f2ms[3];         /* Slope to convert fixed to moving */
     float invmps[3];       /* 1/pixel spacing of moving image */
     float *kerx, *kery, *kerz;
@@ -56,14 +56,14 @@ demons_c (
 	vf_convert_to_interleaved (vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
+	vf_smooth = new Volume (fixed->dim, fixed->origin, fixed->spacing, 
 	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     }
-    vf_est = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
+    vf_est = new Volume (fixed->dim, fixed->origin, fixed->spacing, 
 	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
-    m_grad_mag = new Volume (moving->dim, moving->offset, moving->spacing, 
+    m_grad_mag = new Volume (moving->dim, moving->origin, moving->spacing, 
 	moving->direction_cosines, PT_FLOAT, 1);
     m_grad_mag_img = (float*) m_grad_mag->img;
 
@@ -87,10 +87,10 @@ demons_c (
     kerz = create_ker (parms->filter_std / fixed->spacing[2], fw[2]/2);
     kernel_stats (kerx, kery, kerz, fw);
 
-    /* Compute some variables for converting pixel sizes / offsets */
+    /* Compute some variables for converting pixel sizes / origins */
     for (i = 0; i < 3; i++) {
 	invmps[i] = 1 / moving->spacing[i];
-	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->spacing[i];
+	f2mo[i] = (fixed->origin[i] - moving->origin[i]) / moving->spacing[i];
 	f2ms[i] = fixed->spacing[i] / moving->spacing[i];
     }
 

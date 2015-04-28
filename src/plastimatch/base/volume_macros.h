@@ -38,10 +38,10 @@ index_in_volume (const plm_long dims[3], const plm_long ijk[3])
 #define LOOP_Z(ijk,fxyz,vol)                                            \
     for (                                                               \
     ijk[2] = 0,                                                         \
-        fxyz[2] = vol->offset[2];                                       \
+        fxyz[2] = vol->origin[2];                                       \
     ijk[2] < vol->dim[2];                                               \
     ++ijk[2],                                                           \
-        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2*3+2]              \
+        fxyz[2] = vol->origin[2] + ijk[2]*vol->step[2*3+2]              \
         )
 #define LOOP_Z_OMP(k,vol)                                               \
     for (                                                               \
@@ -52,18 +52,18 @@ index_in_volume (const plm_long dims[3], const plm_long ijk[3])
 #define LOOP_Y(ijk,fxyz,vol)                                            \
     for (                                                               \
     ijk[1] = 0,                                                         \
-        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1*3+2];             \
+        fxyz[1] = vol->origin[1] + ijk[2]*vol->step[1*3+2];             \
     ijk[1] < vol->dim[1];                                               \
     ++ijk[1],                                                           \
-        fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2*3+2]              \
+        fxyz[2] = vol->origin[2] + ijk[2]*vol->step[2*3+2]              \
         + ijk[1]*vol->step[2*3+1],                                      \
-        fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1*3+2]              \
+        fxyz[1] = vol->origin[1] + ijk[2]*vol->step[1*3+2]              \
         + ijk[1]*vol->step[1*3+1]                                       \
         )
 #define LOOP_X(ijk,fxyz,vol)                                            \
     for (                                                               \
     ijk[0] = 0,                                                         \
-        fxyz[0] = vol->offset[0] + ijk[2]*vol->step[0*3+2]              \
+        fxyz[0] = vol->origin[0] + ijk[2]*vol->step[0*3+2]              \
         + ijk[1]*vol->step[0*3+1];                                      \
     ijk[0] < vol->dim[0];                                               \
     ++ijk[0],                                                           \

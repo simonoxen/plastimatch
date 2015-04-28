@@ -234,9 +234,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
 void
 set_isocenter (Volume* vol, Drr_options* options)
 {
-    vol->offset[0] -= options->isocenter[0];
-    vol->offset[1] -= options->isocenter[1];
-    vol->offset[2] -= options->isocenter[2];
+    vol->origin[0] -= options->isocenter[0];
+    vol->origin[1] -= options->isocenter[1];
+    vol->origin[2] -= options->isocenter[2];
 }
 
 int

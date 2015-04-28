@@ -30,7 +30,7 @@ opencl_reconstruct_conebeam (
     Opencl_buf *ocl_buf_img;
     Opencl_buf *ocl_buf_matrix;
     cl_int4 ocl_vol_dim;
-    Opencl_buf *ocl_buf_vol_offset;
+    Opencl_buf *ocl_buf_vol_origin;
     Opencl_buf *ocl_buf_vol_spacing;
     cl_int2 ocl_proj_dim;
     Opencl_buf *ocl_buf_nrm;
@@ -84,11 +84,11 @@ opencl_reconstruct_conebeam (
     opencl_idx(ocl_vol_dim,1) = vol->dim[1];
     opencl_idx(ocl_vol_dim,2) = vol->dim[2];
 
-    ocl_buf_vol_offset = opencl_buf_create (
+    ocl_buf_vol_origin = opencl_buf_create (
         &ocl_dev, 
         CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
         3 * sizeof(float),
-        vol->offset
+        vol->origin
     );
 
     ocl_buf_vol_spacing = opencl_buf_create (
@@ -173,7 +173,7 @@ opencl_reconstruct_conebeam (
             sizeof (cl_mem), &ocl_buf_img[0], 
             sizeof (cl_mem), &ocl_buf_matrix[0], 
             sizeof (cl_int4), &ocl_vol_dim, 
-            sizeof (cl_mem), &ocl_buf_vol_offset[0], 
+            sizeof (cl_mem), &ocl_buf_vol_origin[0], 
             sizeof (cl_mem), &ocl_buf_vol_spacing[0], 
             sizeof (cl_int2), &ocl_proj_dim, 
             sizeof (cl_mem), &ocl_buf_nrm[0], 

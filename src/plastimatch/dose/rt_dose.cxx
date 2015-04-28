@@ -945,7 +945,7 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
         {
 			for(int k = 0; k < dose_volume->dim[2] ;k++)
             {
-                find_xyz_center(xyz_ray_center, ray_bev, dose_volume->offset[2],k, dose_volume->spacing[2]);
+                find_xyz_center(xyz_ray_center, ray_bev, dose_volume->origin[2],k, dose_volume->spacing[2]);
 				distance = vec3_dist(xyz_ray_center, entrance_bev);
 
 				ct_density = compute_density_from_HU(ct_rpl_volume->get_rgdepth(ap_ij, distance));
@@ -981,15 +981,15 @@ compute_dose_ray_desplanques(Volume* dose_volume, Volume::Pointer ct_vol, Rpl_vo
 
 						/* calculation of the corresponding position in the room and its HU number*/
 						vec3_copy(xyz_room_tmp, vec_antibug_prt);
-						vec3_scale2(xyz_room_tmp, dose_volume->offset[0] + (float) i2 * dose_volume->spacing[0]);
+						vec3_scale2(xyz_room_tmp, dose_volume->origin[0] + (float) i2 * dose_volume->spacing[0]);
 						vec3_copy(xyz_room, (xyz_room_tmp));
 
 						vec3_copy(xyz_room_tmp, rpl_volume->get_aperture()->pdn);
-						vec3_scale2(xyz_room_tmp, dose_volume->offset[1] + (float) j2 * dose_volume->spacing[1]);
+						vec3_scale2(xyz_room_tmp, dose_volume->origin[1] + (float) j2 * dose_volume->spacing[1]);
 						vec3_add2(xyz_room, (xyz_room_tmp));
 
 						vec3_copy(xyz_room_tmp, rpl_volume->get_proj_volume()->get_nrm());
-						vec3_scale2(xyz_room_tmp, (double) (-dose_volume->offset[2] - (float) k * dose_volume->spacing[2]));
+						vec3_scale2(xyz_room_tmp, (double) (-dose_volume->origin[2] - (float) k * dose_volume->spacing[2]));
 						vec3_add2(xyz_room, (xyz_room_tmp));
 						vec3_add2(xyz_room, rpl_volume->get_proj_volume()->get_src());
 						
@@ -1376,9 +1376,9 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                 idx = ijk[0] + ct_dim[0] * (ijk[1] + ct_dim[1] * ijk[2]);
 
                 /* calculation of the pixel coordinates in the room coordinates */
-                xyz[0] = (double) dose_vol->offset[0] + ijk[0] * dose_vol->spacing[0];
-                xyz[1] = (double) dose_vol->offset[1] + ijk[1] * dose_vol->spacing[1];
-                xyz[2] = (double) dose_vol->offset[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
+                xyz[0] = (double) dose_vol->origin[0] + ijk[0] * dose_vol->spacing[0];
+                xyz[1] = (double) dose_vol->origin[1] + ijk[1] * dose_vol->spacing[1];
+                xyz[2] = (double) dose_vol->origin[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
 
                 sigma_3 = 3 * plan->beam->sigma_vol_lg->get_rgdepth(xyz);
 

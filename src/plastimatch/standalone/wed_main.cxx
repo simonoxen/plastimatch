@@ -299,8 +299,8 @@ wed_ct_initialize(Wed_Parms *parms)
 	  //it shouldn't be), then default values should be reset
 	  if ((parms->ic[0]==-99.5)&&(parms->ic[1]==-99.5))  {
 	    Volume *wed_vol = dose_vol->get_volume_float().get();
-	    parms->ic[0] = wed_vol->offset[0] + wed_vol->dim[0];
-	    parms->ic[1] = wed_vol->offset[1] + wed_vol->dim[1];
+	    parms->ic[0] = wed_vol->origin[0] + wed_vol->dim[0];
+	    parms->ic[1] = wed_vol->origin[1] + wed_vol->dim[1];
 	  }
 
 	  //else set it at the center

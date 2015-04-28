@@ -56,9 +56,9 @@ inside_roi (float* xyz, const Volume* roi)
     float tmp[3];
     plm_long p[3];
 
-    tmp[0] = xyz[0] - roi->offset[0];
-    tmp[1] = xyz[1] - roi->offset[1];
-    tmp[2] = xyz[2] - roi->offset[2];
+    tmp[0] = xyz[0] - roi->origin[0];
+    tmp[1] = xyz[1] - roi->origin[1];
+    tmp[2] = xyz[2] - roi->origin[2];
 
     p_f[0] = PROJECT_X (tmp, roi->proj);
     p_f[1] = PROJECT_Y (tmp, roi->proj);
@@ -87,15 +87,15 @@ bspline_find_correspondence
  )
 {
     mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->spacing[0];
+    mijk[0] = (mxyz[0] - moving->origin[0]) / moving->spacing[0];
     if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
 
     mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->spacing[1];
+    mijk[1] = (mxyz[1] - moving->origin[1]) / moving->spacing[1];
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
 
     mxyz[2] = fxyz[2] + dxyz[2];
-    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->spacing[2];
+    mijk[2] = (mxyz[2] - moving->origin[2]) / moving->spacing[2];
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
     return 1;
@@ -121,9 +121,9 @@ bspline_find_correspondence_dcos
     mxyz[1] = fxyz[1] + dxyz[1];
     mxyz[2] = fxyz[2] + dxyz[2];
 
-    tmp[0] = mxyz[0] - moving->offset[0];
-    tmp[1] = mxyz[1] - moving->offset[1];
-    tmp[2] = mxyz[2] - moving->offset[2];
+    tmp[0] = mxyz[0] - moving->origin[0];
+    tmp[1] = mxyz[1] - moving->origin[1];
+    tmp[2] = mxyz[2] - moving->origin[2];
 
     mijk[0] = PROJECT_X (tmp, moving->proj);
     mijk[1] = PROJECT_Y (tmp, moving->proj);
@@ -157,9 +157,9 @@ bspline_find_correspondence_dcos_roi
     mxyz[1] = fxyz[1] + dxyz[1];
     mxyz[2] = fxyz[2] + dxyz[2];
 
-    tmp[0] = mxyz[0] - moving->offset[0];
-    tmp[1] = mxyz[1] - moving->offset[1];
-    tmp[2] = mxyz[2] - moving->offset[2];
+    tmp[0] = mxyz[0] - moving->origin[0];
+    tmp[1] = mxyz[1] - moving->origin[1];
+    tmp[2] = mxyz[2] - moving->origin[2];
 
     mijk[0] = PROJECT_X (tmp, moving->proj);
     mijk[1] = PROJECT_Y (tmp, moving->proj);

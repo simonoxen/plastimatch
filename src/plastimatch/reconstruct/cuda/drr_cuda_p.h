@@ -22,7 +22,7 @@ struct drr_kernel_args
     int4 image_window;
     float3 lower_limit;
     float3 upper_limit;
-    float3 vol_offset;
+    float3 vol_origin;
     int3 vol_dim;
     float3 vol_spacing;
     float matrix[12];

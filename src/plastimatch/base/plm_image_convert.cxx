@@ -34,7 +34,7 @@ Plm_image::convert_gpuit_to_itk (Volume *vol)
 	st[d1] = 0;
 	sz[d1] = vol->dim[d1];
 	sp[d1] = vol->spacing[d1];
-	og[d1] = vol->offset[d1];
+	og[d1] = vol->origin[d1];
 	for (d2 = 0; d2 < 3; d2++) {
 	    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
 	}
@@ -80,12 +80,12 @@ Plm_image::convert_itk_to_gpuit (T img)
 
     /* Copy header & allocate data for gpuit float */
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
     float direction_cosines[9];
     for (d1 = 0; d1 < 3; d1++) {
         dim[d1] = sz[d1];
-        offset[d1] = og[d1];
+        origin[d1] = og[d1];
         spacing[d1] = sp[d1];
     }
     dc_from_itk_direction (direction_cosines, &dc);
@@ -110,7 +110,7 @@ Plm_image::convert_itk_to_gpuit (T img)
     }
 
     /* Create volume */
-    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
+    Volume* vol = new Volume (dim, origin, spacing, direction_cosines, 
         pix_type, 1);
     U *vol_img = (U*) vol->img;
 
@@ -225,7 +225,7 @@ Plm_image::convert_gpuit_uint32_to_itk_uchar_vec ()
     /* Copy header & allocate data for itk */
     for (d = 0; d < 3; d++) {
 	sz_out[d] = vol->dim[d];
-	og_out[d] = vol->offset[d];
+	og_out[d] = vol->origin[d];
 	sp_out[d] = vol->spacing[d];
     }
     for (unsigned int d1 = 0; d1 < 3; d1++) {
@@ -281,7 +281,7 @@ Plm_image::convert_gpuit_uchar_vec_to_itk_uchar_vec ()
     /* Copy header & allocate data for itk */
     for (d = 0; d < 3; d++) {
 	sz_out[d] = vol->dim[d];
-	og_out[d] = vol->offset[d];
+	og_out[d] = vol->origin[d];
 	sp_out[d] = vol->spacing[d];
     }
     for (unsigned int d1 = 0; d1 < 3; d1++) {
@@ -335,18 +335,18 @@ Plm_image::convert_itk_uchar_vec_to_gpuit_uchar_vec ()
     UCharVecImageType::SizeType sz = rg.GetSize();
     UCharVecImageType::DirectionType itk_dc = itk_uchar_vec->GetDirection();
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
     float direction_cosines[9];
     for (int d = 0; d < 3; d++) {
 	dim[d] = sz[d];
-	offset[d] = og[d];
+	origin[d] = og[d];
 	spacing[d] = sp[d];
     }
     dc_from_itk_direction (direction_cosines, &itk_dc);
     int vox_planes = itk_uchar_vec->GetVectorLength ();
 
-    Volume* vol = new Volume (dim, offset, spacing, direction_cosines, 
+    Volume* vol = new Volume (dim, origin, spacing, direction_cosines, 
 	PT_UCHAR_VEC_INTERLEAVED, vox_planes);
 
     unsigned char* vol_img = (unsigned char*) vol->img;

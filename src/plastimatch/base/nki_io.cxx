@@ -118,9 +118,9 @@ nki_load (const char* filename)
     vol->dim[0] = dim3;
     vol->dim[1] = dim2;
     vol->dim[2] = dim1;
-    vol->offset[0] = -0.5 * dim3;
-    vol->offset[1] = -0.5 * dim2;
-    vol->offset[2] = -0.5 * dim1;
+    vol->origin[0] = -0.5 * dim3;
+    vol->origin[1] = -0.5 * dim2;
+    vol->origin[2] = -0.5 * dim1;
     vol->img = (void*) tgt;
     vol->npix = dim1*dim2*dim3; //bug fixed by YKPark 20131029
 

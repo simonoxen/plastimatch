@@ -48,8 +48,8 @@ bspline_warp_dcos (
             print_and_exit ("Error: bspline_warp dim mismatch\n");
             return;
         }
-        if (vout->offset[d] != bxf->img_origin[d]) {
-            print_and_exit ("Error: bspline_warp offset mismatch\n");
+        if (vout->origin[d] != bxf->img_origin[d]) {
+            print_and_exit ("Error: bspline_warp origin mismatch\n");
             return;
         }
         if (vout->spacing[d] != bxf->img_spacing[d]) {
@@ -80,7 +80,7 @@ bspline_warp_dcos (
         float dxyz[3];
 
         fijk[2] = k;
-        fxyz[2] = vout->offset[2] + fijk[2] * vout->step[2*3+2];
+        fxyz[2] = vout->origin[2] + fijk[2] * vout->step[2*3+2];
         p[2] = REGION_INDEX_Z (fijk, bxf);
         q[2] = REGION_OFFSET_Z (fijk, bxf);
         LOOP_Y (fijk, fxyz, vout) {
@@ -115,9 +115,9 @@ bspline_warp_dcos (
                 }
 
                 /* Compute moving image coordinate of fixed image voxel */
-                mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
-                mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
-                mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
+                mxyz[2] = fxyz[2] + dxyz[2] - moving->origin[2];
+                mxyz[1] = fxyz[1] + dxyz[1] - moving->origin[1];
+                mxyz[0] = fxyz[0] + dxyz[0] - moving->origin[0];
                 mijk[2] = PROJECT_Z (mxyz, moving->proj);
                 mijk[1] = PROJECT_Y (mxyz, moving->proj);
                 mijk[0] = PROJECT_X (mxyz, moving->proj);

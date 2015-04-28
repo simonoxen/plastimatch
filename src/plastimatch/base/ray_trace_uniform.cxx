@@ -84,18 +84,18 @@ ray_trace_uniform (
 
 #if defined (commentout)
         /* OLD VERSION - Compute CT Volume indices @ point */
-        ai[0] = (int) floorf ((ipx[0] - vol->offset[0] + 0.5 * ps[0]) / ps[0]);
-        ai[1] = (int) floorf ((ipx[1] - vol->offset[1] + 0.5 * ps[1]) / ps[1]);
-        ai[2] = (int) floorf ((ipx[2] - vol->offset[2] + 0.5 * ps[2]) / ps[2]);
+        ai[0] = (int) floorf ((ipx[0] - vol->origin[0] + 0.5 * ps[0]) / ps[0]);
+        ai[1] = (int) floorf ((ipx[1] - vol->origin[1] + 0.5 * ps[1]) / ps[1]);
+        ai[2] = (int) floorf ((ipx[2] - vol->origin[2] + 0.5 * ps[2]) / ps[2]);
         idx = ((ai[2]*vol->dim[1] + ai[1]) * vol->dim[0]) + ai[0];
         pix_density = img[idx];
 #endif
 
         // NEW VERSION - Compute CT volume indices and their fraction @ point + interpolation
 
-        mijk[0] = (float) ((ipx[0] - vol->offset[0])/ps[0]);
-        mijk[1] = (float) ((ipx[1] - vol->offset[1])/ps[1]);
-        mijk[2] = (float) ((ipx[2] - vol->offset[2])/ps[2]);
+        mijk[0] = (float) ((ipx[0] - vol->origin[0])/ps[0]);
+        mijk[1] = (float) ((ipx[1] - vol->origin[1])/ps[1]);
+        mijk[2] = (float) ((ipx[2] - vol->origin[2])/ps[2]);
 
         li_clamp_3d(mijk, mijk_f, mijk_r, li_frac1, li_frac2, vol);
         idx = volume_index (vol->dim, mijk_f);

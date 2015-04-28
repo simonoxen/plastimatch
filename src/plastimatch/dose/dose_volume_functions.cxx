@@ -15,7 +15,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
     float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
     float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
 	plm_long dim[3] = {0,0,0};
-	float offset[3] = {0,0,0};
+	float origin[3] = {0,0,0};
 	float spacing[3] = {0,0,0};
 	plm_long npix = 0;
 	const float dc[9] = {
@@ -41,7 +41,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
 
     for (int i = 0; i < 3; i++)
     {
-        offset[i] = first_pixel[i];
+        origin[i] = first_pixel[i];
         if (i != 2)
         {   
             spacing[i] = 1;
@@ -57,7 +57,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
 
     npix = dim[0]*dim[1]*dim[2];
 
-	dose_volume->create(dim, offset, spacing, dc, PT_FLOAT,1);
+	dose_volume->create(dim, origin, spacing, dc, PT_FLOAT,1);
 }
 
 void
@@ -119,9 +119,9 @@ dose_volume_reconstruction (
                 dose = 0.0;
 
                 /* Transform vol index into space coords */
-                ct_xyz[0] = (double) (dose_vol->offset[0] + ct_ijk[0] * dose_vol->spacing[0]);
-                ct_xyz[1] = (double) (dose_vol->offset[1] + ct_ijk[1] * dose_vol->spacing[1]);
-                ct_xyz[2] = (double) (dose_vol->offset[2] + ct_ijk[2] * dose_vol->spacing[2]);
+                ct_xyz[0] = (double) (dose_vol->origin[0] + ct_ijk[0] * dose_vol->spacing[0]);
+                ct_xyz[1] = (double) (dose_vol->origin[1] + ct_ijk[1] * dose_vol->spacing[1]);
+                ct_xyz[2] = (double) (dose_vol->origin[2] + ct_ijk[2] * dose_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
                 idx = volume_index (dose_vol->dim, ct_ijk);
 
@@ -157,17 +157,17 @@ void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, in
 void 
 find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume)
 {
-    ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->offset[0]) / dose_volume->spacing[0] + 0.5);
-    ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->offset[1]) / dose_volume->spacing[1] + 0.5);
-    ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->offset[2]) / dose_volume->spacing[2] + 0.5);
+    ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->origin[0]) / dose_volume->spacing[0] + 0.5);
+    ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->origin[1]) / dose_volume->spacing[1] + 0.5);
+    ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->origin[2]) / dose_volume->spacing[2] + 0.5);
 }
 
 void 
 find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume::Pointer dose_volume)
 {
-    ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->offset[0]) / dose_volume->spacing[0] + 0.5);
-    ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->offset[1]) / dose_volume->spacing[1] + 0.5);
-    ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->offset[2]) / dose_volume->spacing[2] + 0.5);
+    ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->origin[0]) / dose_volume->spacing[0] + 0.5);
+    ijk_idx[1] = (int) floor((xyz_ray_center[1] - dose_volume->origin[1]) / dose_volume->spacing[1] + 0.5);
+    ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->origin[2]) / dose_volume->spacing[2] + 0.5);
 }
 
 void 
@@ -196,9 +196,9 @@ find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k,
 void 
 find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
 {
-    xyz[0] = volume->offset[0] + ijk[0]*volume->spacing[0];
-    xyz[1] = volume->offset[1] + ijk[1]*volume->spacing[1];
-    xyz[2] = volume->offset[2] + ijk[2]*volume->spacing[2];
+    xyz[0] = volume->origin[0] + ijk[0]*volume->spacing[0];
+    xyz[1] = volume->origin[1] + ijk[1]*volume->spacing[1];
+    xyz[2] = volume->origin[2] + ijk[2]*volume->spacing[2];
 }
 
 double distance(const std::vector< std::vector<double> >& v, int i1, int i2)

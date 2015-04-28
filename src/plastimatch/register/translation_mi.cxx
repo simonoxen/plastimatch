@@ -33,9 +33,6 @@ translation_mi (
     mi_hist->initialize (fixed.get(), moving.get());
     mi_hist->reset_histograms ();
         
-    long pidx;
-    float num_vox_f;
-
     float mse_score = 0.0f;
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -60,9 +57,9 @@ translation_mi (
             LOOP_X (fijk, fxyz, fixed) {
 
                 /* Compute moving image coordinate of fixed image voxel */
-                mxyz[2] = fxyz[2] + dxyz[2] - moving->offset[2];
-                mxyz[1] = fxyz[1] + dxyz[1] - moving->offset[1];
-                mxyz[0] = fxyz[0] + dxyz[0] - moving->offset[0];
+                mxyz[2] = fxyz[2] + dxyz[2] - moving->origin[2];
+                mxyz[1] = fxyz[1] + dxyz[1] - moving->origin[1];
+                mxyz[0] = fxyz[0] + dxyz[0] - moving->origin[0];
                 mijk[2] = PROJECT_Z (mxyz, moving->proj);
                 mijk[1] = PROJECT_Y (mxyz, moving->proj);
                 mijk[0] = PROJECT_X (mxyz, moving->proj);

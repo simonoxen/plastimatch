@@ -33,9 +33,9 @@ Demons_state::init (
 	vf_convert_to_interleaved (this->vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
+	vf_smooth = new Volume (fixed->dim, fixed->origin, fixed->spacing, 
 	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
     }
-    vf_est = new Volume (fixed->dim, fixed->offset, fixed->spacing, 
+    vf_est = new Volume (fixed->dim, fixed->origin, fixed->spacing, 
 	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3);
 }

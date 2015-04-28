@@ -559,15 +559,15 @@ Dcmtk_rt_study::save_image (
 
     for (plm_long k = 0; k < dsd.vol->dim[2]; k++) {
         /* GCS FIX #2:  This is possibly correct.  Not 100% sure. */
-        float z_loc = dsd.vol->offset[2] + dc[8] * k * dsd.vol->spacing[2];
+        float z_loc = dsd.vol->origin[2] + dc[8] * k * dsd.vol->spacing[2];
         dsd.instance_no = k;
         dsd.sthk.format ("%f", dsd.vol->spacing[2]);
         dsd.sloc.format ("%f", z_loc);
         /* GCS FIX #2:  "Ditto" */
         dsd.ipp.format ("%f\\%f\\%f", 
-            dsd.vol->offset[0] + dc[2] * k * dsd.vol->spacing[2],
-            dsd.vol->offset[1] + dc[5] * k * dsd.vol->spacing[2],
-            dsd.vol->offset[2] + dc[8] * k * dsd.vol->spacing[2]);
+            dsd.vol->origin[0] + dc[2] * k * dsd.vol->spacing[2],
+            dsd.vol->origin[1] + dc[5] * k * dsd.vol->spacing[2],
+            dsd.vol->origin[2] + dc[8] * k * dsd.vol->spacing[2]);
         dcmtk_uid (dsd.slice_uid, PLM_UID_PREFIX);
 
         dsd.slice_float = &((float*)dsd.vol->img)[k*dsd.slice_size];

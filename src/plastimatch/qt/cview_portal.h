@@ -57,7 +57,7 @@ class PortalWidget : public QGraphicsView
         int dim[2];             /* rendering surface dims (in pixels)    */
         float res[2];           /* portal resolution (in mm per pixel)   */
         float spacing[3];       /* voxel spacing in slice (in mm)        */
-        float offset[3];        /* volume slice offset (in mm)           */
+        float origin[3];        /* volume slice origin (in mm)           */
         PortalViewType view;    /* Axial or Coronal or Sagittal          */
         ScaleHandler scale;
 

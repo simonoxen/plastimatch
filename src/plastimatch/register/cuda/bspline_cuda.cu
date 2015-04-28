@@ -62,7 +62,7 @@ build_gbd (
     if (moving != NULL) {
         // populate moving volume entries
         CUDA_array2vec_int3 (&gbd->mov_dim, moving->dim);
-        CUDA_array2vec_float3 (&gbd->mov_offset, moving->offset);
+        CUDA_array2vec_float3 (&gbd->mov_origin, moving->origin);
         CUDA_array2vec_float3 (&gbd->mov_spacing, moving->spacing);
     }
     
@@ -818,7 +818,7 @@ CUDA_bspline_mi_hist_fix (
     kernel_bspline_mi_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->f_hist_seg,       // partial histogram (moving image)
         dev_ptrs->fixed_image,      // moving image voxels
-        mi_hist->fixed.offset,      // histogram offset
+        mi_hist->fixed.offset,      // histogram origin
         1.0f/mi_hist->fixed.delta,  // histogram delta
         mi_hist->fixed.bins,        // # histogram bins
         gbd.vox_per_rgn,            // voxels per region
@@ -828,7 +828,7 @@ CUDA_bspline_mi_hist_fix (
         gbd.cdims,                  // # control points in x,y,z
         gbd.img_origin,             // image origin
         gbd.img_spacing,            // image spacing
-        gbd.mov_offset,             // moving image offset
+        gbd.mov_origin,             // moving image origin
         gbd.mov_spacing             // moving image pixel spacing
     );
 
@@ -920,7 +920,7 @@ CUDA_bspline_mi_hist_mov (
     kernel_bspline_mi_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->m_hist_seg,       // partial histogram (moving image)
         dev_ptrs->moving_image,     // moving image voxels
-        mi_hist->moving.offset,     // histogram offset
+        mi_hist->moving.offset,     // histogram origin
         1.0f/mi_hist->moving.delta, // histogram delta
         mi_hist->moving.bins,       // # histogram bins
         gbd.vox_per_rgn,            // voxels per region
@@ -930,7 +930,7 @@ CUDA_bspline_mi_hist_mov (
         gbd.cdims,                  // # control points in x,y,z
         gbd.img_origin,             // image origin
         gbd.img_spacing,            // image spacing
-        gbd.mov_offset,             // moving image offset
+        gbd.mov_origin,             // moving image origin
         gbd.mov_spacing             // moving image pixel spacing
     );
 
@@ -1061,8 +1061,8 @@ CUDA_bspline_mi_hist_jnt (
             dev_ptrs->j_hist_seg,       // partial histogram (moving image)
             dev_ptrs->fixed_image,      // fixed  image voxels
             dev_ptrs->moving_image,     // moving image voxels
-            mi_hist->fixed.offset,      // fixed histogram offset
-            mi_hist->moving.offset,     // moving histogram offset
+            mi_hist->fixed.offset,      // fixed histogram origin
+            mi_hist->moving.offset,     // moving histogram origin
             1.0f/mi_hist->fixed.delta,  // fixed histogram delta
             1.0f/mi_hist->moving.delta, // moving histogram delta
             mi_hist->fixed.bins,        // # fixed bins
@@ -1074,7 +1074,7 @@ CUDA_bspline_mi_hist_jnt (
             gbd.cdims,                  // # control points in x,y,z
             gbd.img_origin,             // image origin
             gbd.img_spacing,            // image spacing
-            gbd.mov_offset,             // moving image offset
+            gbd.mov_origin,             // moving image origin
             gbd.mov_spacing,            // moving image pixel spacing
             gbd.roi_dim,                // region dims
             gbd.roi_offset              // region offset
@@ -1286,7 +1286,7 @@ CUDA_bspline_mi_grad (
         gbd.cdims,
         gbd.img_origin,
         gbd.img_spacing,
-        gbd.mov_offset,
+        gbd.mov_origin,
         gbd.mov_spacing,
         gbd.roi_dim,
         gbd.roi_offset,
@@ -1665,7 +1665,7 @@ CUDA_bspline_mse_score_dc_dv (
             gbd.vox_per_rgn,
             gbd.img_origin,
             gbd.img_spacing,
-            gbd.mov_offset,
+            gbd.mov_origin,
             gbd.mov_spacing,
             tile_padding);
 }
@@ -1924,7 +1924,7 @@ kernel_bspline_mi_hist_fix (
     int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
-    float3 mov_offset,  // moving image offset
+    float3 mov_origin,  // moving image origin
     float3 mov_ps       // moving image pixel spacing
 )
 {
@@ -1955,7 +1955,7 @@ kernel_bspline_mi_hist_fix (
             fv, fdim, vpr, rdim, img_origin, img_spacing);
 
         int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+            f, mov_origin, mov_ps, mdim, cdim, vpr, p, q);
 
         // accumulate into segmented histograms
         int idx_fbin;
@@ -2048,7 +2048,7 @@ kernel_bspline_mi_hist_mov (
     int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
-    float3 mov_offset,  // moving image offset
+    float3 mov_origin,  // moving image offset
     float3 mov_ps       // moving image pixel spacing
 )
 {
@@ -2084,7 +2084,7 @@ kernel_bspline_mi_hist_mov (
 
 
         int fell_out = find_correspondence (&d, &m, &n,
-                f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+                f, mov_origin, mov_ps, mdim, cdim, vpr, p, q);
 
         if (!fell_out) {
             float3 li_1, li_2;
@@ -2165,7 +2165,7 @@ kernel_bspline_mi_hist_jnt (
     int3 cdim,              // INPUT: # control points in x,y,z
     float3 img_origin,      // INPUT: image origin
     float3 img_spacing,     // INPUT: image spacing
-    float3 mov_offset,      // INPUT: moving image offset
+    float3 mov_origin,      // INPUT: moving image offset
     float3 mov_ps,          // INPUT: moving image pixel spacing
     int3 roi_dim,           // INPUT: ROI dimensions
     int3 roi_offset         // INPUT: ROI Offset
@@ -2207,7 +2207,7 @@ kernel_bspline_mi_hist_jnt (
                 fv, fdim, vpr, rdim, img_origin, img_spacing);
 
         int fell_out = find_correspondence (&d, &m, &n,
-                f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+                f, mov_origin, mov_ps, mdim, cdim, vpr, p, q);
 
         // did the voxel map into the moving image?
         if (fell_out) {
@@ -2364,7 +2364,7 @@ kernel_bspline_mi_dc_dv (
     int3 cdim,          // INPUT: # control points in x,y,z
     float3 img_origin,  // INPUT: image origin
     float3 img_spacing, // INPUT: image spacing
-    float3 mov_offset,  // INPUT: moving image offset
+    float3 mov_origin,  // INPUT: moving image offset
     float3 mov_ps,      // INPUT: moving image pixel spacing
     int3 roi_dim,       // INPUT: ROI dimensions
     int3 roi_offset,    // INPUT: ROI Offset
@@ -2414,7 +2414,7 @@ kernel_bspline_mi_dc_dv (
     }
 
     int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+            f, mov_origin, mov_ps, mdim, cdim, vpr, p, q);
 
     if (fell_out) {
         return;
@@ -2627,7 +2627,7 @@ kernel_bspline_mse_score_dc_dv (
     int3 vpr,           // voxels per region
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
-    float3 mov_offset,  // moving image offset
+    float3 mov_origin,  // moving image offset
     float3 mov_ps,      // moving image pixel spacing
     int pad             // tile padding
 )
@@ -2654,7 +2654,7 @@ kernel_bspline_mse_score_dc_dv (
             fv, fdim, vpr, rdim, img_origin, img_spacing);
 
     int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+            f, mov_origin, mov_ps, mdim, cdim, vpr, p, q);
 
     if (fell_out) {
         skipped[fv]++;
@@ -3507,7 +3507,7 @@ find_correspondence (
    float3 *m,
    float3 *n,
    float3 f,
-   float3 mov_offset,
+   float3 mov_origin,
    float3 mov_ps,
    int3 mdim,
    int3 cdim,
@@ -3525,9 +3525,9 @@ find_correspondence (
     m->z = f.z + d->z;
 
     // Displacement in voxels
-    n->x = (m->x - mov_offset.x) / mov_ps.x;
-    n->y = (m->y - mov_offset.y) / mov_ps.y;
-    n->z = (m->z - mov_offset.z) / mov_ps.z;
+    n->x = (m->x - mov_origin.x) / mov_ps.x;
+    n->y = (m->y - mov_origin.y) / mov_ps.y;
+    n->z = (m->z - mov_origin.z) / mov_ps.z;
 
     if (n->x < -0.5 || n->x > mdim.x - 0.5 ||
         n->y < -0.5 || n->y > mdim.y - 0.5 ||

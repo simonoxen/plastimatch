@@ -1135,9 +1135,9 @@ Rpl_volume::compute_wed_volume (
 			//NEW
 
 			float in_ijk_f[3];
-			in_ijk_f[0] = (xyz[0] - in_vol->offset[0]) / in_vol->spacing[0];
-			in_ijk_f[1] = (xyz[1] - in_vol->offset[1]) / in_vol->spacing[1];
-			in_ijk_f[2] = (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2];
+			in_ijk_f[0] = (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0];
+			in_ijk_f[1] = (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1];
+			in_ijk_f[2] = (xyz[2] - in_vol->origin[2]) / in_vol->spacing[2];
 
 			if (ROUND_PLM_LONG(in_ijk_f[0]) < 0 || ROUND_PLM_LONG(in_ijk_f[0]) >= in_vol->dim[0]) {break;}
 			if (ROUND_PLM_LONG(in_ijk_f[1]) < 0 || ROUND_PLM_LONG(in_ijk_f[1]) >= in_vol->dim[1]) {break;}
@@ -1165,11 +1165,11 @@ Rpl_volume::compute_wed_volume (
 			/*
                         plm_long in_ijk[3];
                         in_ijk[2] = ROUND_PLM_LONG(
-                            (xyz[2] - in_vol->offset[2]) / in_vol->spacing[2]);
+                            (xyz[2] - in_vol->origin[2]) / in_vol->spacing[2]);
                         in_ijk[1] = ROUND_PLM_LONG(
-                            (xyz[1] - in_vol->offset[1]) / in_vol->spacing[1]);
+                            (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1]);
                         in_ijk[0] = ROUND_PLM_LONG(
-                            (xyz[0] - in_vol->offset[0]) / in_vol->spacing[0]);
+                            (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0]);
 
                         if (debug) {
                             printf ("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
@@ -1289,11 +1289,11 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
     double ray_rad_len[4]; //radiation length of each ray
 
     for (dijk[0] = 0; dijk[0] != dew_dim[0]; ++dijk[0])  {
-        coord[0] = dijk[0]*dew_vol->spacing[0]+dew_vol->offset[0];
+        coord[0] = dijk[0]*dew_vol->spacing[0]+dew_vol->origin[0];
         for (dijk[1] = 0; dijk[1] != dew_dim[1]; ++dijk[1])  {
-            coord[1] = dijk[1]*dew_vol->spacing[1]+dew_vol->offset[1];
+            coord[1] = dijk[1]*dew_vol->spacing[1]+dew_vol->origin[1];
             for (dijk[2] = 0; dijk[2] != dew_dim[2]; ++dijk[2])  {
-                coord[2] = dijk[2]*dew_vol->spacing[2]+dew_vol->offset[2];
+                coord[2] = dijk[2]*dew_vol->spacing[2]+dew_vol->origin[2];
 
                 didx = volume_index (dew_dim, dijk);
 
@@ -1418,17 +1418,17 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                         //	    wijk[1] = ray_lookup[i][1] - 1;
 
                         //Needed if dew dimensions are not automatically set by wed in wed_main.
-			//			wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->offset[0])/wed_vol->spacing[0];
-			//			wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->offset[1])/wed_vol->spacing[1];
+			//			wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->origin[0])/wed_vol->spacing[0];
+			//			wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->origin[1])/wed_vol->spacing[1];
 
                         if (wijk[0] < 0 || wijk[0] >= wed_vol->dim[0]) {break;}
                         if (wijk[1] < 0 || wijk[1] >= wed_vol->dim[1]) {break;}
 	    
-                        wijk[2] = (int) ((floor(ray_rad_len[i])) - wed_vol->offset[2])/wed_vol->spacing[2];
+                        wijk[2] = (int) ((floor(ray_rad_len[i])) - wed_vol->origin[2])/wed_vol->spacing[2];
                         if (wijk[2] < 0) {break;}
                         dummy_index1 = volume_index ( wed_vol->dim, wijk );
 
-                        wijk[2] = (int) ((ceil(ray_rad_len[i])) - wed_vol->offset[2])/wed_vol->spacing[2];
+                        wijk[2] = (int) ((ceil(ray_rad_len[i])) - wed_vol->origin[2])/wed_vol->spacing[2];
                         if (wijk[2] >= wed_vol->dim[2]) {break;}
                         dummy_index2 = volume_index ( wed_vol->dim, wijk );
 
@@ -1564,9 +1564,9 @@ Rpl_volume::compute_beam_modifiers (
                 vec3_scale3(seg_long_ray, seg_unit_ray, rijk[2]);
                 vec3_add3(final_vec, cp_origin, seg_long_ray);
 		
-                final_index[0] = (final_vec[0]-seg_vol->offset[0])/seg_vol->spacing[0];
-                final_index[1] = (final_vec[1]-seg_vol->offset[1])/seg_vol->spacing[1];
-                final_index[2] = (final_vec[2]-seg_vol->offset[2])/seg_vol->spacing[2];
+                final_index[0] = (final_vec[0]-seg_vol->origin[0])/seg_vol->spacing[0];
+                final_index[1] = (final_vec[1]-seg_vol->origin[1])/seg_vol->spacing[1];
+                final_index[2] = (final_vec[2]-seg_vol->origin[2])/seg_vol->spacing[2];
 
                 //Trilinear interpolate the seg_vol binary matrix to find value of point
                 li_clamp_3d (final_index, ijk_floor, ijk_round,li_1,li_2,seg_vol);

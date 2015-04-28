@@ -197,22 +197,22 @@ xio_ct_create_volume (
 {
     Volume *v;
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
 
     dim[0] = xch->dim[0];
     dim[1] = xch->dim[1];
     dim[2] = best_chunk_len;
 
-    offset[0] = - xch->slice_size[0];
-    offset[1] = - xch->slice_size[1];
-    offset[2] = xch->z_loc;
+    origin[0] = - xch->slice_size[0];
+    origin[1] = - xch->slice_size[1];
+    origin[2] = xch->z_loc;
 
     spacing[0] = xch->spacing[0];
     spacing[1] = xch->spacing[1];
     spacing[2] = best_chunk_diff;
 
-    v = new Volume (dim, offset, spacing, 0, PT_SHORT, 1);
+    v = new Volume (dim, origin, spacing, 0, PT_SHORT, 1);
     pli->set_volume (v);
 
     printf ("img: %p\n", v->img);
@@ -255,9 +255,9 @@ xio_ct_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 
     Volume *v = pli->get_vol ();
 
-    /* Set offsets */
-    v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
-    v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
+    /* Set origins */
+    v->origin[0] = (v->origin[0] * transform->direction_cosines[0]) + transform->x_offset;
+    v->origin[1] = (v->origin[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
     v->set_direction_cosines (transform->direction_cosines);

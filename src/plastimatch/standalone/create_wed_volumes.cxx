@@ -40,9 +40,9 @@ create_dew_volume (Wed_Parms* parms, Rt_plan *scene)
     Volume::Pointer patient_vol = scene->get_patient_volume();
 
     float dew_off[3];
-    dew_off[0] = patient_vol->offset[0];
-    dew_off[1] = patient_vol->offset[1];
-    dew_off[2] = patient_vol->offset[2];
+    dew_off[0] = patient_vol->origin[0];
+    dew_off[1] = patient_vol->origin[1];
+    dew_off[2] = patient_vol->origin[2];
 
     float dew_ps[3];
     dew_ps[0] = patient_vol->spacing[0];
@@ -87,9 +87,9 @@ Volume* create_proj_wed_volume (Rpl_volume* rpl_vol)
 Volume* create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
 {
     float proj_wed_off[3];
-    proj_wed_off[0] = proj_wed_vol->offset[0];
-    proj_wed_off[1] = proj_wed_vol->offset[1];
-    proj_wed_off[2] = proj_wed_vol->offset[2];
+    proj_wed_off[0] = proj_wed_vol->origin[0];
+    proj_wed_off[1] = proj_wed_vol->origin[1];
+    proj_wed_off[2] = proj_wed_vol->origin[2];
 
     float proj_wed_ps[3];
     proj_wed_ps[0] = proj_wed_vol->spacing[0];

@@ -115,7 +115,7 @@ check_gradient (
         bxf = new Bspline_xform;
         bspline_xform_initialize (
             bxf,
-            fixed->offset,
+            fixed->origin,
             fixed->spacing,
             fixed->dim,
             roi_offset,

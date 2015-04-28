@@ -67,7 +67,7 @@ do_gpuit_demons_stage_internal (
 	vf_in = 0;
     } else {
         pih.set_from_gpuit (fixed_ss->dim, 
-            fixed_ss->offset, fixed_ss->spacing, 
+            fixed_ss->origin, fixed_ss->spacing, 
             fixed_ss->direction_cosines);
 	xf_out = xform_to_gpuit_vf (xf_in, &pih);
 	vf_in = xf_out->get_gpuit_vf().get();

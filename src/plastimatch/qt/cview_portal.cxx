@@ -139,12 +139,12 @@ PortalWidget::updateCursor (const QPoint& view_ij)
     slice_offset.rx() = ((FIELD_RES - pmap.width())/2.0)*res[0];
     slice_offset.ry() = ((FIELD_RES - pmap.height())/2.0)*res[1];
 
-    slice_xy.rx() = (scene_ij.x()*res[0]-slice_offset.x())/scale.factor() + offset[0];
-    slice_xy.ry() = (scene_ij.y()*res[1]-slice_offset.y())/scale.factor() + offset[1];
-    slice_z = (current_slice*spacing[2] + offset[2]);
+    slice_xy.rx() = (scene_ij.x()*res[0]-slice_offset.x())/scale.factor() + origin[0];
+    slice_xy.ry() = (scene_ij.y()*res[1]-slice_offset.y())/scale.factor() + origin[1];
+    slice_z = (current_slice*spacing[2] + origin[2]);
 
-    slice_ij.rx() = (slice_xy.x()-offset[0])/res[0];
-    slice_ij.ry() = (slice_xy.y()-offset[1])/res[1];
+    slice_ij.rx() = (slice_xy.x()-origin[0])/res[0];
+    slice_ij.ry() = (slice_xy.y()-origin[1])/res[1];
 
     switch (view) {
     case Axial:
@@ -480,9 +480,9 @@ PortalWidget::setView (enum PortalViewType view)
         spacing[1] = fabs (vol->spacing[1]);
         spacing[2] = fabs (vol->spacing[2]);
 
-        offset[0] = vol->offset[0];
-        offset[1] = vol->offset[1];
-        offset[2] = vol->offset[2];
+        origin[0] = vol->origin[0];
+        origin[1] = vol->origin[1];
+        origin[2] = vol->origin[2];
         break;
     case Coronal:
         ijk_max[0] = vol->dim[0];
@@ -497,9 +497,9 @@ PortalWidget::setView (enum PortalViewType view)
         spacing[1] = fabs (vol->spacing[2]);
         spacing[2] = fabs (vol->spacing[1]);
 
-        offset[0] = vol->offset[0];
-        offset[1] = vol->offset[2];
-        offset[2] = vol->offset[1];
+        origin[0] = vol->origin[0];
+        origin[1] = vol->origin[2];
+        origin[2] = vol->origin[1];
         break;
     case Sagittal:
         ijk_max[0] = vol->dim[1];
@@ -514,9 +514,9 @@ PortalWidget::setView (enum PortalViewType view)
         spacing[1] = fabs (vol->spacing[2]);
         spacing[2] = fabs (vol->spacing[0]);
 
-        offset[0] = vol->offset[1];
-        offset[1] = vol->offset[2];
-        offset[2] = vol->offset[0];
+        origin[0] = vol->origin[1];
+        origin[1] = vol->origin[2];
+        origin[2] = vol->origin[0];
         break;
     default:
         exit (-1);

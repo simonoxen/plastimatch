@@ -31,7 +31,7 @@
 typedef struct xio_dose_header Xio_dose_header;
 struct xio_dose_header {
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
     double dose_scale_factor;
     double dose_weight;
@@ -59,7 +59,7 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     int nx; int ny; int nz;
     /* Element spacing */
     double dx; double dy; double dz;
-    /* Offset */
+    /* Origin */
     double topx; double topy; double topz;
 
     char line1[1024];
@@ -153,9 +153,9 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     dy = ry / (ny - 1);
     dz = rz / (nz - 1);
 
-    /* Calculate offset */
+    /* Calculate origin */
     /* ND 12/18/2014 - something does not work for dose placement, there is a
-     * half a voxel offset. The values in the grid geometry are not defined at
+     * half a voxel origin. The values in the grid geometry are not defined at
      * the top of the voxel but the center.
      */
     //topx = ox - (rx / 2);
@@ -174,9 +174,9 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     xdh->spacing[1] = dz;
     xdh->spacing[2] = dy;
 
-    xdh->offset[0] = topx;
-    xdh->offset[1] = topz;
-    xdh->offset[2] = topy;
+    xdh->origin[0] = topx;
+    xdh->origin[1] = topz;
+    xdh->origin[2] = topy;
 
     xdh->dose_scale_factor = xio_dose_scalefactor;
     xdh->dose_weight = xio_dose_weight;
@@ -246,7 +246,7 @@ xio_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = new Volume (v->dim, v->offset, v->spacing, 
+    vflip = new Volume (v->dim, v->origin, v->spacing, 
 	v->direction_cosines, v->pix_type, 1);
 
     for (k=0;k<v->dim[2];k++) {
@@ -282,7 +282,7 @@ xio_dose_create_volume (
 {
     Volume *v;
 
-    v = new Volume (xdh->dim, xdh->offset, xdh->spacing, 0, 
+    v = new Volume (xdh->dim, xdh->origin, xdh->spacing, 0, 
 	PT_UINT32, 1);
     pli->set_volume (v);
 
@@ -370,9 +370,9 @@ xio_dose_save (
     ry = v->spacing[2] * (v->dim[2] - 1);
     rz = v->spacing[1] * (v->dim[1] - 1);
 
-    ox = (v->offset[0] + (rx / 2)) - transform->x_offset;
-    oy = (v->offset[2] + (ry / 2)) - transform->y_offset;
-    oz = - (v->offset[1] + (rz / 2));
+    ox = (v->origin[0] + (rx / 2)) - transform->x_offset;
+    oy = (v->origin[2] + (ry / 2)) - transform->y_offset;
+    oz = - (v->origin[1] + (rz / 2));
 
     std::string patient_pos = meta->get_metadata(0x0018, 0x5100);
 
@@ -413,7 +413,7 @@ xio_dose_save (
 
     /* Create new volume for output */
     Volume* v_write;
-    v_write = new Volume (v->dim, v->offset, v->spacing, 
+    v_write = new Volume (v->dim, v->origin, v->spacing, 
 	v->direction_cosines, v->pix_type, v->vox_planes);
 
     /* Clone volume and flip XiO Z axis */
@@ -474,9 +474,9 @@ xio_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 
     Volume *v = pli->get_vol ();
 
-    /* Set offsets */
-    v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
-    v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
+    /* Set origins */
+    v->origin[0] = (v->origin[0] * transform->direction_cosines[0]) + transform->x_offset;
+    v->origin[1] = (v->origin[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
     v->set_direction_cosines (transform->direction_cosines);

@@ -22,18 +22,18 @@ ray_trace_exact_init_loopvars (
     double* al,        /* Output: length between voxel crossings */
     double pt,         /* Input:  initial intersection of ray with volume */
     double ry,         /* Input:  normalized direction of ray */
-    double offset,     /* Input:  origin of volume */
+    double origin,     /* Input:  origin of volume */
     double samp        /* Input:  pixel spacing of volume */
 )
 {
 #if (DRR_VERBOSE)
-    printf ("pt/ry/off/samp: %g %g %g %g\n", pt, ry, offset, samp);
+    printf ("pt/ry/off/samp: %g %g %g %g\n", pt, ry, origin, samp);
 #endif
 
     *aidir = SIGN (ry) * SIGN (samp);
-    *ai = ROUND_INT ((pt - offset) / samp);
+    *ai = ROUND_INT ((pt - origin) / samp);
     *ao = SIGN (ry) 
-	* (((*ai) * samp + offset) + (SIGN (ry) * 0.5 * fabs (samp)) - pt);
+	* (((*ai) * samp + origin) + (SIGN (ry) * 0.5 * fabs (samp)) - pt);
 
     if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
 	*ao = *ao / fabs(ry);
@@ -46,12 +46,12 @@ ray_trace_exact_init_loopvars (
 #if defined (commentout)
     if (ry > 0) {
 	*aidir = 1 * SIGN (samp);
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = fabs(samp - ((pt - offset + 0.5 * samp) - (*ai) * samp));
+        *ai = (int) floor ((pt - origin + 0.5 * samp) / samp);
+        *ao = fabs(samp - ((pt - origin + 0.5 * samp) - (*ai) * samp));
     } else {
 	*aidir = -1 * SIGN (samp);
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = fabs(samp - ((*ai+1) * samp - (pt - offset + 0.5 * samp)));
+        *ai = (int) floor ((pt - origin + 0.5 * samp) / samp);
+        *ao = fabs(samp - ((*ai+1) * samp - (pt - origin + 0.5 * samp)));
     }
     if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
 	*ao = *ao / fabs(ry);
@@ -117,19 +117,19 @@ ray_trace_exact_init (
 	ai_x, aixdir, ao_x, al_x, 
 	ip1[0],
 	ray[0], 
-	vol->offset[0], 
+	vol->origin[0], 
 	vol->spacing[0]);
     ray_trace_exact_init_loopvars (
 	ai_y, aiydir, ao_y, al_y, 
 	ip1[1],
 	ray[1], 
-	vol->offset[1], 
+	vol->origin[1], 
 	vol->spacing[1]);
     ray_trace_exact_init_loopvars (
 	ai_z, aizdir, ao_z, al_z, 
 	ip1[2], 
 	ray[2], 
-	vol->offset[2], 
+	vol->origin[2], 
 	vol->spacing[2]);
 
 #if defined (DRR_VERBOSE)

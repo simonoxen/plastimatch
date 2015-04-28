@@ -171,7 +171,7 @@ Bspline_stage::initialize ()
         if (!m_roi)
         {
             m_roi = Volume::New ();
-            m_roi->create (moving->dim, moving->offset, moving->spacing,
+            m_roi->create (moving->dim, moving->origin, moving->spacing,
                 moving->direction_cosines, PT_UCHAR);
         }
 
@@ -192,7 +192,7 @@ Bspline_stage::initialize ()
         if(!f_roi)
         {
             f_roi = Volume::New ();
-            f_roi->create (fixed->dim, fixed->offset, fixed->spacing,
+            f_roi->create (fixed->dim, fixed->origin, fixed->spacing,
                 fixed->direction_cosines, PT_UCHAR);
         }
 
@@ -348,7 +348,7 @@ Bspline_stage::initialize ()
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (d_ptr->fixed_ss->dim, 
-        d_ptr->fixed_ss->offset, d_ptr->fixed_ss->spacing, 
+        d_ptr->fixed_ss->origin, d_ptr->fixed_ss->spacing, 
         d_ptr->fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 

@@ -55,18 +55,18 @@ translation_grid_search (
         float mov_siz = moving->dim[d] * moving->spacing[d];
         float fix_siz = fixed->dim[d] * fixed->spacing[d];
         lprintf ("Dimension %d, mo=%g F=(%g, %g) M=(%g, %g)\n",
-            d, mo, fixed->offset[d], fix_siz,
-            moving->offset[d], mov_siz);
+            d, mo, fixed->origin[d], fix_siz,
+            moving->origin[d], mov_siz);
         
         if (fix_siz > mov_siz) {
-            search_min[d] = moving->offset[d] - fixed->offset[d] 
+            search_min[d] = moving->origin[d] - fixed->origin[d] 
                 - fix_siz + mo * mov_siz;
-            search_max[d] = moving->offset[d] - fixed->offset[d] 
+            search_max[d] = moving->origin[d] - fixed->origin[d] 
                 + mov_siz - mo * mov_siz;
         } else {
-            search_min[d] = moving->offset[d] - fixed->offset[d] 
+            search_min[d] = moving->origin[d] - fixed->origin[d] 
                 - fix_siz + mo * fix_siz;
-            search_max[d] = moving->offset[d] - fixed->offset[d] 
+            search_max[d] = moving->origin[d] - fixed->origin[d] 
                 + mov_siz - mo * fix_siz;
         }
     }

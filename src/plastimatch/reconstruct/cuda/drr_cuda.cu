@@ -256,7 +256,7 @@ drr_cuda_state_create_cu (
     //cudaMalloc ((void**) &state->dev_matrix, 12 * sizeof(float));
     cudaMalloc ((void**) &state->dev_kargs, sizeof(Drr_kernel_args));
 
-    kargs->vol_offset = make_float3 (vol->offset);
+    kargs->vol_origin = make_float3 (vol->origin);
     kargs->vol_dim = make_int3 (vol->dim);
     kargs->vol_spacing = make_float3 (vol->spacing);
 
@@ -403,7 +403,7 @@ drr_cuda_ray_trace_image (
 	kargs->image_window, 
 	kargs->lower_limit,
 	kargs->upper_limit,
-	kargs->vol_offset,
+	kargs->vol_origin,
 	kargs->vol_dim,
 	kargs->vol_spacing);
     CUDA_check_error ("Kernel Panic!");

@@ -16,7 +16,7 @@ struct kernel_args_fdk
     float sad;
     float sid;
     float scale;
-    float3 vol_offset;
+    float3 vol_origin;
     int3 vol_dim;
     float3 vol_spacing;
     float matrix[12];

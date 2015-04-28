@@ -86,8 +86,8 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	    printf("Resolutions mismatch between fixed and moving\n");
 	    return 0;
 	}
-	if (vout->offset[d] != vf->offset[d]) {
-	    printf("offset mismatch between fixed and moving\n");
+	if (vout->origin[d] != vf->origin[d]) {
+	    printf("Origin mismatch between fixed and moving\n");
 	    return 0;
 	}
     }
@@ -100,9 +100,9 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 
 		float *dxyz = &vf_img[3*fv];
 		float mo_xyz[3] = {
-		    fxyz[0] + dxyz[0] - vin->offset[0],
-		    fxyz[1] + dxyz[1] - vin->offset[1],
-		    fxyz[2] + dxyz[2] - vin->offset[2]
+		    fxyz[0] + dxyz[0] - vin->origin[0],
+		    fxyz[1] + dxyz[1] - vin->origin[1],
+		    fxyz[2] + dxyz[2] - vin->origin[2]
 		};
 		float m_val;
 		float li_1[3];  /* Fraction of interpolant in lower index */

@@ -54,7 +54,7 @@ Volume_header::Volume_header (
     const Volume::Pointer& vol)
 {
     this->d_ptr = new Volume_header_private;
-    this->set (vol->dim, vol->offset, vol->spacing, vol->direction_cosines);
+    this->set (vol->dim, vol->origin, vol->spacing, vol->direction_cosines);
 }
 
 Volume_header::~Volume_header ()

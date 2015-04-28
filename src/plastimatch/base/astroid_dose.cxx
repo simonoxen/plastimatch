@@ -17,7 +17,7 @@
 typedef struct astroid_dose_header Astroid_dose_header;
 struct astroid_dose_header {
     plm_long dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
     std::string dose_type;
 };
@@ -35,7 +35,7 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     int nx; int ny; int nz;
     /* Element spacing */
     double dx; double dy; double dz;
-    /* Offset */
+    /* Origin */
     double topx; double topy; double topz;
 
     char line1[1024];
@@ -84,7 +84,7 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     dy = ry / (ny - 1);
     dz = rz / (nz - 1);
 
-    /* Calculate offset */
+    /* Calculate origin */
     //topx = ox - (rx / 2);
     //topy = oy - (ry / 2);
     //topz = -oz - (rz / 2);
@@ -101,9 +101,9 @@ astroid_dose_load_header (Astroid_dose_header *adh, const char *filename)
     adh->spacing[1] = dz;
     adh->spacing[2] = dy;
 
-    adh->offset[0] = topx;
-    adh->offset[1] = topz;
-    adh->offset[2] = topy;
+    adh->origin[0] = topx;
+    adh->origin[1] = topz;
+    adh->origin[2] = topy;
 
     if (fgets(line2, sizeof(line2), fp)) {
         /* Remove newline if exists */
@@ -155,7 +155,7 @@ astroid_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = new Volume (v->dim, v->offset, v->spacing, 
+    vflip = new Volume (v->dim, v->origin, v->spacing, 
 	v->direction_cosines, v->pix_type, v->vox_planes);
 
     for (k=0;k<v->dim[2];k++) {
@@ -189,10 +189,10 @@ astroid_dose_create_volume (
     Volume *v;
 
     if (adh->dose_type != "ERROR") {
-	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
+	v = new Volume (adh->dim, adh->origin, adh->spacing, 0,
 	    PT_UINT32, 1);
     } else {
-	v = new Volume (adh->dim, adh->offset, adh->spacing, 0,
+	v = new Volume (adh->dim, adh->origin, adh->spacing, 0,
 	    PT_INT32, 1);
         std::cout<<"Reading cube as int32"<<std::endl;
     }
@@ -241,9 +241,9 @@ astroid_dose_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
     Volume *v;
     v = pli->get_vol ();
 
-    /* Set offsets */
-    v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;
-    v->offset[1] = (v->offset[1] * transform->direction_cosines[4]) + transform->y_offset;
+    /* Set origins */
+    v->origin[0] = (v->origin[0] * transform->direction_cosines[0]) + transform->x_offset;
+    v->origin[1] = (v->origin[1] * transform->direction_cosines[4]) + transform->y_offset;
 
     /* Set direction cosines */
     v->set_direction_cosines (transform->direction_cosines);
