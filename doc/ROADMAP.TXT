@@ -3,31 +3,25 @@
 Features
 *  All registration parameters have auto defaults
 *  Dataclasp for scripting
-*  Multi-value registration
+*  Multi-planar registration
+*  Multi-similarity registration
 *  Overlap fraction penalty for native registration methods
 *  Full support for irregular slice spacing
-
-Documentation
-*  Registration tutorial based on NA-MIC case library
-*  MABS tutorial
+*  Superbuild
 
 Backward incompatible changes
 *  Remove short options "-F"
 *  DRR/FDK uses IEC coordinates
 
-1.6.0
+Documentation
+*  Registration tutorial based on NA-MIC case library
+*  MABS tutorial
 
-*  B-spline auto-parameters (partly done)
-**  Needs improved subsampling framework (done)
-*  B-spline direction cosines (done)
-*  B-spline regularization (done)
-*  B-spline ROI (done)
-*  DCMTK support (done)
-*  Large image support (done)
-*  plastimatch average (done)
-*  plastimatch dice (done)
-*  plastimatch dmap (done)
-*  plastimatch threshold (done)
+Cleanup
+*  Remove Pstring/bstring
+*  Remove unnecessary third party libraries
+*  Better handling of ??_parms class
+*  Move vf-invert, landmark-warp, drr, fdk, wed into plastimatch executable
 
 Wishlist
 
@@ -50,11 +44,3 @@ Wishlist
 ** Remove duplication of code for photons
 *  RTPLAN support
 *  Standalone GUI
-*  Superbuild
-
-Cleanup
-
-*  Better handling of ??_parms class
-*  Rename volume::offset -> volume::origin
-*  Remove Pstring
-*  Move vf-invert, landmark-warp, drr, fdk into plastimatch executable
