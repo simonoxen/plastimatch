@@ -162,13 +162,16 @@ Sift::match_features (
 }
 
 
-/**************************************************************************/
+/* ***********************************************************************
+ * The below is left here for reference.
+ *************************************************************************/
+#if defined (commentout)
+
 #define DIMENSION 3
 // Command Line Arguments
 int ARG_IMG1=2;
 int ARG_IMG2=3;
 
-#if defined (commentout)
 int main( int argc, char *argv[] ) 
 {
     const unsigned int Dimension = DIMENSION;

@@ -95,9 +95,6 @@ set (RAW_TO_MHA_SRC
 #set (RTOG_TO_MHA_SRC
 #  rtog_to_mha.cxx
 #  )
-set (SIFTnD_SRC
-  siftnD.cxx
-  )
 set (VISCOUS_SRC
   viscous.cxx
   )
@@ -173,9 +170,6 @@ if (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (siftnD "${SIFTnD_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
   if (PLM_BUILD_VISCOUS)
