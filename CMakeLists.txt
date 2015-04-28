@@ -87,8 +87,13 @@ include (CheckTypeSize)
 include (TestBigEndian)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
+# http://www.cmake.org/Bug/view.php?id=15117
 set (CMAKE_INSTALL_OPENMP_LIBRARIES ON)
-include (InstallRequiredSystemLibrariesPatched)
+if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.1)
+    include (InstallRequiredSystemLibrariesPatched)
+else ()
+    include (InstallRequiredSystemLibraries)
+endif ()
 
 # http://www.cmake.org/Bug/view.php?id=9220
 include (cmake/language_support.cmake)
