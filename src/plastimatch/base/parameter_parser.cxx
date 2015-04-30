@@ -33,8 +33,8 @@ Parameter_parser::parse_config_string (
 
     while (getline (ss, buf)) {
         buf_ori = buf;
-        buf = trim (buf);
-        buf_ori = trim (buf_ori, "\r\n");
+        buf = string_trim (buf);
+        buf_ori = string_trim (buf_ori, "\r\n");
 
         if (buf == "") continue;
         if (buf[0] == '#') continue;
@@ -77,8 +77,8 @@ Parameter_parser::parse_config_string (
             key = buf.substr (0, key_loc);
             val = buf.substr (key_loc+1);
         }
-        key = trim (key);
-        val = trim (val);
+        key = string_trim (key);
+        val = string_trim (val);
 
         /* Key becomes lowercase, with "_" & "-" unified */
         if (this->key_regularization) {

@@ -370,8 +370,8 @@ Wed_Parms::parse_config (
 
     while (getline (ss, buf)) {
         buf_ori = buf;
-        buf = trim (buf);
-        buf_ori = trim (buf_ori, "\r\n");
+        buf = string_trim (buf);
+        buf_ori = string_trim (buf_ori, "\r\n");
 
         if (buf == "") continue;
         if (buf[0] == '#') continue;
@@ -425,8 +425,8 @@ Wed_Parms::parse_config (
 
         std::string key = buf.substr (0, key_loc);
         std::string val = buf.substr (key_loc+1);
-        key = trim (key);
-        val = trim (val);
+        key = string_trim (key);
+        val = string_trim (val);
 
         if (key != "" && val != "") {
             if (this->set_key_val (key.c_str(), val.c_str(), section) < 0) {

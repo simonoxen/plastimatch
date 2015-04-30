@@ -11,11 +11,13 @@
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_math.h"
+#include "print_and_exit.h"
 #include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"
 #include "rtss_roi.h"
+#include "string_util.h"
 
 #define CXT_BUFLEN 2048
 
@@ -26,7 +28,6 @@ cxt_load (
     const char *cxt_fn               /* Input: file to load from */
 )
 {
-    FILE* fp;
     Rtss_contour* curr_contour;
 
     float val_x = 0;
@@ -36,90 +37,72 @@ cxt_load (
     int have_offset = 0;
     int have_dim = 0;
     int have_spacing = 0;
-    float x = 0;
-    float y = 0;
-    float z = 0;
 
-//    std::ifstream fp (cxt_fn);
-//    if (!fp.is_open() {
-    fp = fopen (cxt_fn, "r");
-    if (!fp) {
-	fprintf (stderr, "Could not open contour file for read: %s\n", cxt_fn);
-        exit (-1);
+    std::ifstream fp (cxt_fn);
+    if (!fp.is_open()) {
+	print_and_exit ("Could not open contour file for read: %s\n", cxt_fn);
     }
 
     Metadata::Pointer meta = rsm->get_study_metadata ();
 
     /* Part 1: Dicom info */
     while (1) {
-	int tag_idx;
-        //std::string tag, val;
-	bstring tag, val;
+        std::string tag, val;
 
-	tag = bgets ((bNgetc) fgetc, fp, '\n');
-        if (!tag) {
+        getline (fp, tag);
+        if (!fp.good()) {
             fprintf (stderr, 
                 "Error. cxt file is not formatted correctly: %s\n",
                 cxt_fn);
             exit (-1);
         }
 
-	btrimws (tag);
-        tag_idx = bstrchr (tag, ' ');
-	if (tag_idx == BSTR_ERR) {
-	    val = 0;
-	} else {
-	    val = bmidstr (tag, tag_idx, tag->slen);
-	    btrimws (val);
-	    btrunc (tag, tag_idx);
+        size_t loc = tag.find (' ');
+	if (loc != std::string::npos) {
+	    val = string_trim (tag.substr (loc + 1));
+	    tag = tag.substr (0, loc);
 	}
-	//printf ("%s|%s|\n", tag->data, val ? val->data : (unsigned char*) "(null)");
+	printf ("%s|%s|\n", tag.c_str(), val.c_str());
 
-	if (biseqcstr (tag, "ROI_NAMES")) {
-	    bdestroy (tag);
-	    bdestroy (val);
+	if (tag == "ROI_NAMES") {
             break;
         }
-        else if (!val) {
-	    /* fall through */
+        else if (val == "") {
+            continue;
 	}
-        else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    meta->set_metadata (0x0010, 0x0010, 
-		(const char*) val->data);
+        else if (tag == "PATIENT_NAME") {
+	    meta->set_metadata (0x0010, 0x0010, val.c_str());
 	}
-        else if (biseqcstr (tag, "PATIENT_ID")) {
-	    meta->set_metadata (0x0010, 0x0020, 
-		(const char*) val->data);
+        else if (tag == "PATIENT_ID") {
+	    meta->set_metadata (0x0010, 0x0020, val.c_str());
 	}
-        else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    meta->set_metadata (0x0010, 0x0040, 
-		(const char*) val->data);
+        else if (tag == "PATIENT_SEX") {
+	    meta->set_metadata (0x0010, 0x0040, val.c_str());
 	}
-        else if (biseqcstr (tag, "STUDY_ID")) {
-            meta->set_metadata (0x0020, 0x0010, 
-                (const char*) val->data);
+        else if (tag == "STUDY_ID") {
+            meta->set_metadata (0x0020, 0x0010, val.c_str());
 	}
-        else if (biseqcstr (tag, "CT_STUDY_UID")) {
-            rsm->set_study_uid ((const char*) val->data);
+        else if (tag == "CT_STUDY_UID") {
+            rsm->set_study_uid (val.c_str());
 	}
-        else if (biseqcstr (tag, "CT_SERIES_UID")) {
-            rsm->set_ct_series_uid ((const char*) val->data);
+        else if (tag == "CT_SERIES_UID") {
+            rsm->set_ct_series_uid (val.c_str());
 	}
-        else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-            rsm->set_frame_of_reference_uid ((const char*) val->data);
+        else if (tag == "CT_FRAME_OF_REFERENCE_UID") {
+            rsm->set_frame_of_reference_uid (val.c_str());
 	}
-        else if (biseqcstr (tag, "OFFSET")) {
-	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
-		    &val_x, &val_y, &val_z)) {
+        else if (tag == "OFFSET") {
+	    if (3 == sscanf (val.c_str(), "%f %f %f", 
+                    &val_x, &val_y, &val_z)) {
 		have_offset = 1;
 		cxt->m_offset[0] = val_x;
 		cxt->m_offset[1] = val_y;
 		cxt->m_offset[2] = val_z;
 	    }
 	}
-        else if (biseqcstr (tag, "DIMENSION")) {
+        else if (tag == "DIMENSION") {
 	    int int_x, int_y, int_z;
-	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
+	    if (3 == sscanf (val.c_str(), "%d %d %d", 
                     &int_x, &int_y, &int_z)) {
 		have_dim = 1;
 		cxt->m_dim[0] = int_x;
@@ -127,8 +110,8 @@ cxt_load (
 		cxt->m_dim[2] = int_z;
 	    }
 	}
-        else if (biseqcstr (tag, "SPACING")) {
-	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
+        else if (tag == "SPACING") {
+	    if (3 == sscanf (val.c_str(), "%f %f %f", 
 		    &val_x, &val_y, &val_z)) {
 		have_spacing = 1;
 		cxt->m_spacing[0] = val_x;
@@ -136,8 +119,6 @@ cxt_load (
 		cxt->m_spacing[2] = val_z;
 	    }
 	}
-	bdestroy (tag);
-	bdestroy (val);
     }
     if (have_offset && have_dim && have_spacing) {
 	cxt->have_geometry = 1;
@@ -146,75 +127,85 @@ cxt_load (
     /* Part 2: Structures info */
     printf ("Starting structure parsing\n");
     while (1) {
-        char color[CXT_BUFLEN];
-        char name[CXT_BUFLEN];
-        char buf[CXT_BUFLEN];
+        std::string line, color, name;
 	int struct_id;
-        char *p;
         int rc;
 
-        p = fgets (buf, CXT_BUFLEN, fp);
-        if (!p) {
+        getline (fp, line);
+        if (!fp.good()) {
             fprintf (stderr, 
                 "Error. cxt file is not formatted correctly: %s\n",
                 cxt_fn);
             exit (-1);
         }
-        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
-        if (rc != 3) {
+
+        std::vector<std::string> tokens = string_split (line, '|');
+        if (tokens.size() < 3) {
+            /* Normal loop exit */
             break;
         }
-	cxt->add_structure (std::string (name), std::string (color), struct_id);
+        rc = sscanf (tokens[0].c_str(), "%d", &struct_id);
+        if (rc != 1) {
+            goto not_successful;
+        }
+        color = tokens[1];
+        name = tokens[2];
+	cxt->add_structure (name, color, struct_id);
     }
 
     /* Part 3: Contour info */
     printf ("Starting contour parsing\n");
     while (1) {
-	int k;
-	int num_pt;
+        int rc, k;
+	int num_pt = 0;
 	int struct_id = 0;
 	int slice_idx;
-	char slice_uid[1024];
 	Rtss_roi* curr_structure;
+        std::string line;
 
-	/* Structure id */
-        if (1 != fscanf (fp, " %d", &struct_id)) {
-	    /* Normal exit from loop */
-	    break;
+        if (!getline (fp, line)) {
+            /* Normal loop exit */
+            break;
         }
-        fgetc (fp);
 
-        /* Skip contour thickness */
-        while (fgetc (fp) != '|') ;
+        std::vector<std::string> tokens = string_split (line, '|');
+        if (tokens.size() == 0) {
+	    /* No data on this line; should not happen, but we'll 
+               accept this. */
+            continue;
+        }
+        if (tokens.size() != 6) {
+            goto not_successful;
+        }
+
+	/* Structure id: required */
+        rc = sscanf (tokens[0].c_str(), "%d", &struct_id);
+        if (rc != 1) {
+            goto not_successful;
+        }
+
+        /* Contour thickness: not used */
 
         /* Num vertices: required */
-	num_pt = 0;
-        if (1 != fscanf (fp, "%d", &num_pt)) {
+        rc = sscanf (tokens[2].c_str(), "%d", &num_pt);
+        if (rc != 1) {
 	    goto not_successful;
         }
-        fgetc (fp);
 
         /* Slice idx: optional */
-	slice_idx = -1;
-        if (1 != fscanf (fp, "%d", &slice_idx)) {
-	    slice_idx = -1;
+        rc = sscanf (tokens[3].c_str(), "%d", &slice_idx);
+        if (rc != 1) {
+            slice_idx = -1;
         }
-        fgetc (fp);
 
         /* Slice uid: optional */
-	slice_uid[0] = 0;
-        if (1 != fscanf (fp, "%1023[0-9.]", slice_uid)) {
-	    slice_uid[0] = 0;
-	}
-        fgetc (fp);
+        std::string slice_uid = tokens[4];
 
+	/* Find structure which was created when parsing structure. 
+           If there is no header line for this structure, we will 
+	   will not add the contour into the structure */
         curr_structure = cxt->find_structure_by_id (struct_id);
-
-	/* If there is no header line for this structure, we will 
-	   skip all contours for the structure. */
 	if (!curr_structure) {
-	    /* Skip to end of line */
-	    while (fgetc (fp) != '\n') ;
 	    continue;
 	}
 
@@ -230,32 +221,34 @@ cxt_load (
         curr_contour->x = (float*) malloc (num_pt * sizeof(float));
         curr_contour->y = (float*) malloc (num_pt * sizeof(float));
         curr_contour->z = (float*) malloc (num_pt * sizeof(float));
-        if (curr_contour->y == 0 || curr_contour->x == 0) {
-            fprintf (stderr, "Error allocating memory");
-            exit (-1);
+        if (curr_contour->x == 0 || curr_contour->y == 0 
+            || curr_contour->z == 0)
+        {
+            print_and_exit ("Error allocating memory");
         }
+        const char *p = tokens[5].c_str();
         for (k = 0; k < num_pt; k++) {
-	    //long floc;
-	    //floc = ftell (fp);
-            if (fscanf (fp, "%f\\%f\\%f\\", &x, &y, &z) != 3) {
+            float x, y, z;
+            int nchar;
+            if (*p == '\\') {
+                p++;
+            }
+            rc = sscanf (p, "%f\\%f\\%f%n", &x, &y, &z, &nchar);
+            if (rc < 3) {
 		goto not_successful;
             }
             curr_contour->x[k] = x;
             curr_contour->y[k] = y;
             curr_contour->z[k] = z;
-            x = 0;
-            y = 0;
-            z = 0;
+            p += nchar;
         }
         slice_idx = 0;
         num_pt = 0;
     }
-    fclose (fp);
     return;
+
 not_successful:
-    fclose (fp);
-    fprintf (stderr, "Error parsing input file: %s\n", cxt_fn);
-    exit (1);
+    print_and_exit ("Error parsing input file: %s\n", cxt_fn);
 }
 
 void

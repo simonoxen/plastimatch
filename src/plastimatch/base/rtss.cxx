@@ -136,7 +136,7 @@ Rtss::add_structure (
     if (structure_name == "" || structure_name == "Unknown structure") {
 	new_structure->name = find_unused_structure_name ();
     }
-    new_structure->name = trim (new_structure->name);
+    new_structure->name = string_trim (new_structure->name);
     new_structure->id = structure_id;
     new_structure->bit = bit;
     if (color != "") {

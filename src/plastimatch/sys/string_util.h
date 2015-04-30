@@ -28,7 +28,7 @@ PLMSYS_API std::vector<int> parse_int3_string (const char* s);
 PLMSYS_API std::vector<float> parse_float3_string (const char* s);
 PLMSYS_API std::vector<float> parse_float_string (const char* s);
 PLMSYS_API std::vector<float> parse_float_string (const std::string& s);
-PLMSYS_API const std::string trim (
+PLMSYS_API const std::string string_trim (
     const std::string& str,
     const std::string& whitespace = " \t\r\n"
 );

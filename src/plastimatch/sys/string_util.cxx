@@ -241,7 +241,7 @@ parse_float_string (const std::string& s)
    http://creativecommons.org/licenses/by-sa/3.0/
 */
 const std::string
-trim (
+string_trim (
     const std::string& str,
     const std::string& whitespace
 )
@@ -369,7 +369,7 @@ std::vector<std::string>& string_split (
     std::stringstream ss(s);
     std::string item;
     while (std::getline(ss, item, delim)) {
-        item = trim (item);
+        item = string_trim (item);
         elems.push_back(item);
     }
     return elems;
