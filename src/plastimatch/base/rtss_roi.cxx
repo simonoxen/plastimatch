@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "plm_math.h"
-#include "pstring.h"
 #include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "string_util.h"

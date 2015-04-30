@@ -355,10 +355,10 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /* ----------------------------------------------------------------- */
     for (size_t i = 0; i < cxt->num_structures; i++) {
         DcmItem *ssroi_item = 0;
-        Pstring tmp;
+        std::string tmp;
         dataset->findOrCreateSequenceItem (
             DCM_StructureSetROISequence, ssroi_item, -2);
-        tmp.format ("%d", cxt->slist[i]->id);
+        tmp = string_format ("%d", cxt->slist[i]->id);
         ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
         ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
             d_ptr->rt_study_metadata->get_frame_of_reference_uid());
@@ -442,7 +442,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     /* ----------------------------------------------------------------- */
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_roi *curr_structure = cxt->slist[i];
-	Pstring tmp;
+        std::string tmp;
 
         /* RTROIObservationsSequence */
         DcmItem *rtroio_item = 0;
@@ -450,10 +450,10 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
             DCM_RTROIObservationsSequence, rtroio_item, -2);
 
 	/* ObservationNumber */
-        tmp.format ("%d", (int) curr_structure->id);
-	rtroio_item->putAndInsertString (DCM_ObservationNumber, tmp);
+        tmp = string_format ("%d", (int) curr_structure->id);
+	rtroio_item->putAndInsertString (DCM_ObservationNumber, tmp.c_str());
 	/* ReferencedROINumber */
-	rtroio_item->putAndInsertString (DCM_ReferencedROINumber, tmp);
+	rtroio_item->putAndInsertString (DCM_ReferencedROINumber, tmp.c_str());
 	/* ROIObservationLabel */
         if (curr_structure->name.length() <= 16) {
             rtroio_item->putAndInsertString (DCM_ROIObservationLabel, 

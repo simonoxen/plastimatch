@@ -5,7 +5,6 @@
 #define _slice_list_h_
 
 #include "plmbase_config.h"
-#include "pstring.h"
 
 class Plm_image_header;
 class Slice_list_private;

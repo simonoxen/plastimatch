@@ -20,7 +20,7 @@ public:
     Plm_image_header m_pih;
 
     /* These must be sorted in order, starting with origin slice */
-    std::vector<Pstring> m_ct_slice_uids;
+    std::vector<std::string> m_ct_slice_uids;
 public:
     Slice_list_private () {
         this->m_have_pih = false;
@@ -68,7 +68,7 @@ Slice_list::get_slice_uid (int index) const
     if (index < 0 || ((size_t) index) >= d_ptr->m_ct_slice_uids.size()) {
 	return "";
     }
-    return d_ptr->m_ct_slice_uids[index];
+    return d_ptr->m_ct_slice_uids[index].c_str();
 }
 
 void
@@ -89,7 +89,7 @@ Slice_list::set_slice_uid (int index, const char* slice_uid)
             "Index %d > Size %d.\n", 
             index, d_ptr->m_ct_slice_uids.size());
     }
-    d_ptr->m_ct_slice_uids[index] = Pstring (slice_uid);
+    d_ptr->m_ct_slice_uids[index] = std::string (slice_uid);
 }
 
 bool

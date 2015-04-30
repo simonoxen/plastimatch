@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +11,7 @@
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_math.h"
+#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"
@@ -38,8 +40,9 @@ cxt_load (
     float y = 0;
     float z = 0;
 
+//    std::ifstream fp (cxt_fn);
+//    if (!fp.is_open() {
     fp = fopen (cxt_fn, "r");
-
     if (!fp) {
 	fprintf (stderr, "Could not open contour file for read: %s\n", cxt_fn);
         exit (-1);
@@ -50,6 +53,7 @@ cxt_load (
     /* Part 1: Dicom info */
     while (1) {
 	int tag_idx;
+        //std::string tag, val;
 	bstring tag, val;
 
 	tag = bgets ((bNgetc) fgetc, fp, '\n');

@@ -10,7 +10,6 @@
 
 #include "direction_cosines.h"
 #include "plm_int.h"
-#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "smart_pointer.h"
 

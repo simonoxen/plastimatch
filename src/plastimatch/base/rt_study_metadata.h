@@ -10,7 +10,6 @@
 #include "itk_image_type.h"
 #include "plm_image.h"
 #include "plm_int.h"
-#include "pstring.h"
 #include "smart_pointer.h"
 
 class Rt_study_metadata_private;

@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <climits>
 #include <stdlib.h>
 #include <stdio.h>
 #include "dcmtk_config.h"
@@ -382,7 +383,7 @@ Dcmtk_loader::image_load ()
 static void
 dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
 {
-    Pstring tmp;
+    std::string tmp;
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
     Metadata::Pointer image_metadata;
@@ -453,7 +454,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         drs->get_ct_series_uid());
     dataset->putAndInsertString (DCM_SeriesNumber, "303");
-    tmp.format ("%d", dsd->instance_no);
+    tmp = string_format ("%d", dsd->instance_no);
     dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
     //dataset->putAndInsertString (DCM_InstanceNumber, "0");
     /* DCM_PatientOrientation seems to be not required.  */
@@ -470,16 +471,16 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
     dataset->putAndInsertUint16 (DCM_Rows, (Uint16) dsd->vol->dim[1]);
     dataset->putAndInsertUint16 (DCM_Columns, (Uint16) dsd->vol->dim[0]);
-    tmp.format ("%f\\%f", dsd->vol->spacing[0], dsd->vol->spacing[1]);
+    tmp = string_format ("%f\\%f", dsd->vol->spacing[0], dsd->vol->spacing[1]);
     dataset->putAndInsertString (DCM_PixelSpacing, tmp.c_str());
     dataset->putAndInsertString (DCM_BitsAllocated, "16");
     dataset->putAndInsertString (DCM_BitsStored, "16");
     dataset->putAndInsertString (DCM_HighBit, "15");
     dataset->putAndInsertString (DCM_PixelRepresentation, "1");
 
-    tmp.format ("%f", dsd->intercept);
+    tmp = string_format ("%f", dsd->intercept);
     dataset->putAndInsertString (DCM_RescaleIntercept, tmp.c_str());
-    tmp.format ("%f", dsd->slope);
+    tmp = string_format ("%f", dsd->slope);
     dataset->putAndInsertString (DCM_RescaleSlope, tmp.c_str());
 
     //dataset->putAndInsertString (DCM_RescaleIntercept, "-1024");

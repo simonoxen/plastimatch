@@ -12,7 +12,6 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_math.h"
-#include "pstring.h"
 #include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "rtss.h"
