@@ -10,6 +10,7 @@
 #include "pstring.h"
 #include "rtss_contour.h"
 #include "rtss_roi.h"
+#include "string_util.h"
 
 Rtss_roi::Rtss_roi ()
 {
@@ -55,22 +56,20 @@ Rtss_roi::add_polyline ()
     return new_polyline;
 }
 
-void
-Rtss_roi::adjust_name (Pstring *name_out, const Pstring *name_in)
+std::string
+Rtss_roi::adjust_name (const std::string& name_in)
 {
-    int i;
-
-    *name_out = *name_in;
-
     /* GE Adv sim doesn't like names with strange punctuation. */
     /* 3D Slicer color table doesn't allow spaces */
-    for (i = 0; i < name_in->length(); i++) {
-	if (isalnum ((*name_in)[i])) {
-	    (*name_out)[i] = (*name_in)[i];
+    std::string name_out = name_in;
+    for (size_t i = 0; i < name_in.length(); i++) {
+	if (isalnum (name_in[i])) {
+	    name_out[i] = name_in[i];
 	} else {
-	    (*name_out)[i] = '_';
+	    name_out[i] = '_';
 	}
     }
+    return name_out;
 }
 
 void
@@ -90,19 +89,19 @@ Rtss_roi::set_color (const char* color_string)
         }
     }
 
-    this->color.format ("%d %d %d", r, g, b);
+    this->color = string_format ("%d %d %d", r, g, b);
 }
 
-void
-Rtss_roi::get_dcm_color_string (Pstring *dcm_color) const
+std::string
+Rtss_roi::get_dcm_color_string () const
 {
     int r, g, b;
-    this->structure_rgb (&r, &g, &b);
-    dcm_color->format ("%d\\%d\\%d", r, g, b);
+    this->get_rgb (&r, &g, &b);
+    return string_format ("%d\\%d\\%d", r, g, b);
 }
 
 void
-Rtss_roi::structure_rgb (int *r, int *g, int *b) const
+Rtss_roi::get_rgb (int *r, int *g, int *b) const
 {
     *r = 255;
     *g = 0;
@@ -112,6 +111,6 @@ Rtss_roi::structure_rgb (int *r, int *g, int *b) const
     }
 
     /* Ignore return code -- unparsed values will remain unassigned */
-    sscanf (this->color, "%d %d %d", r, g, b);
+    sscanf (this->color.c_str(), "%d %d %d", r, g, b);
 }
 

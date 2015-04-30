@@ -174,7 +174,8 @@ cxt_extract (
 	int k = 1;
 	while (cxt->find_structure_by_id (k)) k++;
 	/* Add the structure */
-	cxt->add_structure (Pstring ("Unknown structure"), Pstring(), k);
+	cxt->add_structure (
+            std::string ("Unknown structure"), std::string(), k);
     }
 
     /* Loop through slices */
@@ -262,7 +263,8 @@ cxt_extract (
 	int k = 1;
 	while (cxt->find_structure_by_id (k)) k++;
 	/* Add the structure */
-	cxt->add_structure (Pstring ("Unknown structure"), Pstring(), k);
+	cxt->add_structure (
+            std::string ("Unknown structure"), std::string(), k);
     }
 
 

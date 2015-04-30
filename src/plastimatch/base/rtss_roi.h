@@ -5,14 +5,14 @@
 #define _rtss_roi_h_
 
 #include "plmbase_config.h"
-#include "pstring.h"
+#include <string>
 
 class Rtss_contour;
 
 class PLMBASE_API Rtss_roi {
 public:
-    Pstring name;
-    Pstring color;
+    std::string name;
+    std::string color;
     int id;                    /* Used for import/export (must be >= 1) */
     int bit;                   /* Used for ss-img (-1 for no bit) */
     size_t num_contours;
@@ -24,10 +24,10 @@ public:
     void clear ();
     Rtss_contour* add_polyline ();
     void set_color (const char* color_string);
-    void get_dcm_color_string (Pstring *dcm_color) const;
-    void structure_rgb (int *r, int *g, int *b) const;
+    std::string get_dcm_color_string () const;
+    void get_rgb (int *r, int *g, int *b) const;
 
-    static void adjust_name (Pstring *name_out, const Pstring *name_in);
+    static std::string adjust_name (const std::string& name_in);
 };
 
 

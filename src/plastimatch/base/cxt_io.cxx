@@ -10,7 +10,6 @@
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_math.h"
-#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"
@@ -161,7 +160,7 @@ cxt_load (
         if (rc != 3) {
             break;
         }
-	cxt->add_structure (Pstring (name), Pstring (color), struct_id);
+	cxt->add_structure (std::string (name), std::string (color), struct_id);
     }
 
     /* Part 3: Contour info */
@@ -323,8 +322,8 @@ cxt_save (
 	    curr_structure->id, 
 	    (curr_structure->color.empty() 
 		? "255\\0\\0"
-		: (const char*) curr_structure->color), 
-	    (const char*) curr_structure->name);
+		: curr_structure->color.c_str()), 
+	    curr_structure->name.c_str());
     }
     fprintf (fp, "END_OF_ROI_NAMES\n");
 

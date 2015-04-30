@@ -60,13 +60,13 @@ static void
 compose_prefix_fn (
     Pstring *fn, 
     const Pstring &output_prefix, 
-    const Pstring &structure_name,
+    const std::string& structure_name,
     const char* extension
 )
 {
     fn->format ("%s/%s.%s", 
         (const char*) output_prefix, 
-        (const char*) structure_name, 
+        structure_name.c_str(), 
         extension);
 }
 

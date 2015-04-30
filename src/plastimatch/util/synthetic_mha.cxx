@@ -880,16 +880,16 @@ synthetic_mha (
         /* Add structure names */
         switch (parms->pattern) {
         case PATTERN_LUNG:
-            rtss_ss->add_structure (Pstring ("Body"),
-                Pstring(), 1, 0);
-            rtss_ss->add_structure (Pstring ("Tumor"),
-                Pstring(), 2, 1);
-            rtss_ss->add_structure (Pstring ("Lung"),
-                Pstring(), 3, 2);
+            rtss_ss->add_structure (
+                std::string ("Body"), std::string(), 1, 0);
+            rtss_ss->add_structure (
+                std::string ("Tumor"), std::string(), 2, 1);
+            rtss_ss->add_structure (
+                std::string ("Lung"), std::string(), 3, 2);
             break;
         default:
-            rtss_ss->add_structure (Pstring ("Foreground"),
-                Pstring(), 1, 0);
+            rtss_ss->add_structure (
+                std::string ("Foreground"), std::string(), 1, 0);
         }
     }
     if (parms->m_want_dose_img) {

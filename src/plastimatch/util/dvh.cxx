@@ -242,7 +242,7 @@ Dvh::run ()
     for (size_t sno = 0; sno < ss_list->num_structures; sno++) {
         Rtss_roi *curr_structure = ss_list->slist[sno];
         d_ptr->output_string += ",";
-        d_ptr->output_string += (const char*) curr_structure->name;
+        d_ptr->output_string += curr_structure->name.c_str();
     }
     d_ptr->output_string += "\n";
     for (plm_long bin = 0; bin < d_ptr->num_bins; bin++) {

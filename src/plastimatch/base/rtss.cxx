@@ -18,9 +18,10 @@
 #include "rtss.h"
 #include "rt_study_metadata.h"
 #include "slice_list.h"
+#include "string_util.h"
 
-static void
-assign_random_color (Pstring& color)
+static std::string
+assign_random_color ()
 {
     static int idx = 0;
     static const char* colors[] = {
@@ -49,10 +50,11 @@ assign_random_color (Pstring& color)
 	"255 200 255",
 	"255 255 200",
     };
-    color = colors[idx];
+    std::string color = std::string (colors[idx]);
     if (++idx > 23) {
 	idx = 0;
     }
+    return color;
 }
 
 #define SPACING_TOL 0.2    /* How close you need to be to be on the slice */
@@ -86,13 +88,13 @@ Rtss::clear (void)
     this->init ();
 }
 
-Pstring
+std::string
 Rtss::find_unused_structure_name (void)
 {
-    Pstring test_name;
+    std::string test_name;
     for (int n = 1; n < std::numeric_limits<int>::max(); ++n) {
-	test_name.format ("%s (%d)", "Unknown structure", n);
-	bool dup_found = 0;
+	bool dup_found = false;
+        test_name = string_format ("%s (%d)", "Unknown structure", n);
 	for (size_t i = 0; i < this->num_structures; ++i) {
 	    Rtss_roi* curr_structure = this->slist[i];
 	    if (test_name == curr_structure->name) {
@@ -111,8 +113,8 @@ Rtss::find_unused_structure_name (void)
 /* Add structure (if it doesn't already exist) */
 Rtss_roi*
 Rtss::add_structure (
-    const Pstring& structure_name, 
-    const Pstring& color, 
+    const std::string& structure_name, 
+    const std::string& color, 
     int structure_id,
     int bit)
 {
@@ -135,13 +137,13 @@ Rtss::add_structure (
     if (structure_name == "" || structure_name == "Unknown structure") {
 	new_structure->name = find_unused_structure_name ();
     }
-    new_structure->name.trim();
+    new_structure->name = trim (new_structure->name);
     new_structure->id = structure_id;
     new_structure->bit = bit;
-    if (color.not_empty()) {
+    if (color != "") {
 	new_structure->color = color;
     } else {
-	assign_random_color (new_structure->color);
+	new_structure->color = assign_random_color ();
     }
     new_structure->num_contours = 0;
     new_structure->pslist = 0;
@@ -215,9 +217,9 @@ Rtss::debug (void)
 	printf ("%u %d %s [%s] (%p) (%d contours)", 
 	    (unsigned int) i, 
 	    curr_structure->id, 
-	    (const char*) curr_structure->name, 
+	    curr_structure->name.c_str(), 
 	    (curr_structure->color.empty() 
-                ? "none" : (const char*) curr_structure->color), 
+                ? "none" : curr_structure->color.c_str()), 
 	    curr_structure->pslist, 
 	    (int) curr_structure->num_contours
 	);
@@ -243,17 +245,13 @@ Rtss::adjust_structure_names (void)
     for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
 	bool changed = false;
-	Pstring tmp = curr_structure->name;
+        std::string tmp = curr_structure->name;
 	for (int j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
 		changed = true;
 	    }
-	}
-	if (changed && !tmp.has_prefix ("Unknown")) {
-	    printf ("Substituted structure name (%s) to (%s)\n", 
-		(const char*) tmp, (const char*) curr_structure->name);
 	}
     }
 }

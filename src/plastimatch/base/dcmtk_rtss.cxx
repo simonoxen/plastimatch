@@ -102,7 +102,7 @@ Dcmtk_loader::rtss_load (void)
             orc = seq->getItem(i)->findAndGetString (DCM_ROIName, val);
             lprintf ("Adding structure (%d), %s\n", structure_id, val);
             d_ptr->cxt->add_structure (
-                Pstring (val), Pstring (), structure_id);
+                std::string (val), std::string(), structure_id);
         }
     }
 
@@ -362,7 +362,8 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
         ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
             d_ptr->rt_study_metadata->get_frame_of_reference_uid());
-        ssroi_item->putAndInsertString (DCM_ROIName, cxt->slist[i]->name);
+        ssroi_item->putAndInsertString (DCM_ROIName, 
+            cxt->slist[i]->name.c_str());
         ssroi_item->putAndInsertString (DCM_ROIGenerationAlgorithm, "");
     }
 
@@ -372,10 +373,9 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	Rtss_roi *curr_structure = cxt->slist[i];
         DcmItem *roic_item = 0;
-	Pstring tmp;
         dataset->findOrCreateSequenceItem (
             DCM_ROIContourSequence, roic_item, -2);
-        curr_structure->get_dcm_color_string (&tmp);
+        std::string tmp = curr_structure->get_dcm_color_string ();
         roic_item->putAndInsertString (DCM_ROIDisplayColor, tmp.c_str());
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_contour *curr_contour = curr_structure->pslist[j];
@@ -415,27 +415,26 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
                 "CLOSED_PLANAR");
 
             /* NumberOfContourPoints */
-            tmp.format ("%d", curr_contour->num_vertices);
-            c_item->putAndInsertString (DCM_NumberOfContourPoints, tmp);
+            tmp = string_format ("%d", curr_contour->num_vertices);
+            c_item->putAndInsertString (DCM_NumberOfContourPoints, tmp.c_str());
 
 	    /* ContourData */
-            tmp.format ("%.8g\\%.8g\\%.8g", 
+            tmp = string_format ("%.8g\\%.8g\\%.8g", 
                 curr_contour->x[0],
                 curr_contour->y[0],
                 curr_contour->z[0]);
 	    for (int k = 1; k < curr_contour->num_vertices; k++) {
-                Pstring tmp2;
-                tmp2.format ("\\%.8g\\%.8g\\%.8g",
+                std::string tmp2 = string_format ("\\%.8g\\%.8g\\%.8g",
 		    curr_contour->x[k],
 		    curr_contour->y[k],
 		    curr_contour->z[k]);
                 tmp += tmp2;
 	    }
-            c_item->putAndInsertString (DCM_ContourData, tmp);
+            c_item->putAndInsertString (DCM_ContourData, tmp.c_str());
         }
 
-        tmp.format ("%d", (int) curr_structure->id);
-        roic_item->putAndInsertString (DCM_ReferencedROINumber, tmp);
+        tmp = string_format ("%d", (int) curr_structure->id);
+        roic_item->putAndInsertString (DCM_ReferencedROINumber, tmp.c_str());
     }
 
     /* ----------------------------------------------------------------- */
@@ -458,13 +457,12 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 	/* ROIObservationLabel */
         if (curr_structure->name.length() <= 16) {
             rtroio_item->putAndInsertString (DCM_ROIObservationLabel, 
-                (const char*) curr_structure->name);
+                curr_structure->name.c_str());
         } else {
             /* VR is SH, max length 16 */
-            Pstring tmp_name = curr_structure->name;
-            tmp_name.trunc (16);
+            std::string tmp_name = curr_structure->name.substr (0, 16);
             rtroio_item->putAndInsertString (DCM_ROIObservationLabel, 
-                (const char*) tmp_name);
+                tmp_name.c_str());
         }
 	/* RTROIInterpretedType */
 	rtroio_item->putAndInsertString (DCM_RTROIInterpretedType, "");

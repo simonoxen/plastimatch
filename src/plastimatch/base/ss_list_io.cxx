@@ -51,7 +51,7 @@ ss_list_load (Rtss* cxt, const char* ss_list_fn)
         }
 
 	Rtss_roi *curr_structure = cxt->add_structure (
-	    Pstring (name), Pstring (color), struct_id);
+	    std::string (name), std::string (color), struct_id);
 	curr_structure->bit = bit;
 	struct_id ++;
     }
@@ -79,8 +79,8 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
 	    curr_structure->bit, 
 	    (curr_structure->color.empty() 
 		? "255\\0\\0"
-		: (const char*) curr_structure->color),
-	    (const char*) curr_structure->name);
+		: curr_structure->color.c_str()),
+	    curr_structure->name.c_str());
     }
     fclose (fp);
     printf ("Done.\n");
@@ -108,14 +108,13 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_roi *curr_structure;
-	Pstring adjusted_name;
-
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit >= 0) {
-	    curr_structure->structure_rgb (&r, &g, &b);
-	    Rtss_roi::adjust_name (&adjusted_name, &curr_structure->name);
+	    curr_structure->get_rgb (&r, &g, &b);
+            std::string adjusted_name = Rtss_roi::adjust_name (
+                curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
-		curr_structure->bit + 1, (const char*) adjusted_name, r, g, b);
+		curr_structure->bit + 1, adjusted_name.c_str(), r, g, b);
 	    color_no = curr_structure->bit + 1;
 	}
     }
@@ -123,14 +122,14 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     for (size_t i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Rtss_roi *curr_structure;
-	Pstring adjusted_name;
 
 	curr_structure = cxt->slist[i];
 	if (curr_structure->bit == -1) {
-	    curr_structure->structure_rgb (&r, &g, &b);
-	    Rtss_roi::adjust_name (&adjusted_name, &curr_structure->name);
+	    curr_structure->get_rgb (&r, &g, &b);
+            std::string adjusted_name = Rtss_roi::adjust_name (
+                curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
-		color_no + 1, (const char*) adjusted_name, r, g, b);
+		color_no + 1, adjusted_name.c_str(), r, g, b);
 	    color_no ++;
 	}
     }

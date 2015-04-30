@@ -100,8 +100,8 @@ add_cms_contournames (Rtss *rtss, const char *filename)
 	}
 
 	/* Add structure */
-	rtss->add_structure (Pstring ((const char*) line1->data), 
-	    Pstring(), structure_id);
+	rtss->add_structure (std::string ((const char*) line1->data), 
+	    "", structure_id);
 
 	/* Skip extra lines */
 	for (int i = 0; i < skip_lines; i++) {
@@ -342,7 +342,7 @@ xio_structures_save (
 	/* Class 0 is "patient", class 1 is "Int" */
 	int structure_class = (i == 0) ? 0 : 1;
 	/* Name */
-	fprintf (fp, "%s\n", (const char*) curr_structure->name);
+	fprintf (fp, "%s\n", curr_structure->name.c_str());
 	/* Structure no, density, ??, class [, date] */
 	fprintf (fp, "%lu,1.000000,0,%d%s\n", 
 	    (unsigned long) (i+1), structure_class, 

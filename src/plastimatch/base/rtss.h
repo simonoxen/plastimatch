@@ -42,8 +42,8 @@ public:
     void init (void);
     void clear (void);
     Rtss_roi* add_structure (
-	const Pstring& structure_name, 
-	const Pstring& color, 
+        const std::string& structure_name, 
+        const std::string& color, 
 	int structure_id,
         int bit = -1);
     void delete_structure (int index);
@@ -53,14 +53,12 @@ public:
     void debug (void);
     void adjust_structure_names (void);
     void prune_empty (void);
-    static 
-    Rtss* clone_empty (Rtss* cxt_out, 
-	Rtss* cxt_in);
-//    void find_default_geometry (Plm_image_header *pih);
+    static Rtss* clone_empty (Rtss* cxt_out, 
+        Rtss* cxt_in);
     void find_rasterization_geometry (float offset[3], 
 	float spacing[3], plm_long dims[3], Direction_cosines& dc);
     void find_rasterization_geometry (Plm_image_header *pih);
-    Pstring find_unused_structure_name (void);
+    std::string find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);
     void apply_slice_index (const Rt_study_metadata::Pointer& rsm);
     void apply_slice_list (const Slice_list *slice_list);

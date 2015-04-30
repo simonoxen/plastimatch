@@ -284,7 +284,7 @@ Rasterizer::current_name (
     if (this->curr_struct_no < cxt->num_structures + 1) {
 	Rtss_roi *curr_structure;
 	curr_structure = cxt->slist[this->curr_struct_no-1];
-	return curr_structure->name;
+	return curr_structure->name.c_str();
     } else {
 	return "";
     }
