@@ -15,7 +15,6 @@
 #include "itk_image.h"
 #include "path_util.h"
 #include "plm_file_format.h"
-#include "pstring.h"
 #include "string_util.h"
 #include "xio_dir.h"
 
@@ -130,12 +129,6 @@ plm_file_format_deduce (const char* path)
     }
 
     return PLM_FILE_FMT_IMG;
-}
-
-Plm_file_format
-plm_file_format_deduce (const Pstring& path)
-{
-    return plm_file_format_deduce ((const char*) path);
 }
 
 Plm_file_format

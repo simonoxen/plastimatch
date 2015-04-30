@@ -72,7 +72,9 @@ public:
     void save_fcsv (const char *fn);
     void save_fcsv (const std::string& fn);
     void save_txt (const char *fn);
-    void set_ras (const Pstring& p);
+
+    /* Insert a list of points of the form "x,y,z;x,y,z;..." */
+    void insert_ras (const std::string& p);
 
     /* Insert single points */
     void insert_lps (const std::string& label, float x, float y, float z);

@@ -13,7 +13,6 @@
 #include "plm_math.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "string_util.h"
 
 template<class T>
@@ -123,9 +122,9 @@ Pointset<T>::load_txt (const char *fn)
 
 template<class T>
 void
-Pointset<T>::set_ras (const Pstring& p)
+Pointset<T>::insert_ras (const std::string& p)
 {
-    int loc = 0;
+    size_t loc = 0;
     while (1) {
         int rc;
         float f1, f2, f3;
@@ -134,11 +133,11 @@ Pointset<T>::set_ras (const Pstring& p)
             break;
         }
         this->insert_ras ("", f1, f2, f3);
-        rc = p.findchr (';', loc);
-        if (rc == BSTR_ERR) {
+        loc = p.find (';', loc);
+        if (loc == std::string::npos) {
             break;
         }
-        loc = rc + 1;
+        loc ++;  /* Skip semicolon */
     }
 }
 

@@ -45,6 +45,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-a.txt"
   "plm-bsp-landmark-b.txt"
   "plm-bsp-landmark-c.txt"
+  "plm-bsp-landmark-d.txt"
   "plm-bsp-double.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
@@ -2819,6 +2820,7 @@ set_tests_properties (plm-bsp-regularize-numeric-check PROPERTIES
 ##   plm-bsp-landmark-a
 ##   plm-bsp-landmark-b
 ##   plm-bsp-landmark-c
+##   plm-bsp-landmark-d         Same as "c", but landmarks within file
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bsp-landmark-a"
@@ -2826,6 +2828,7 @@ plm_add_test (
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-a.txt"
   )
 set_tests_properties (plm-bsp-landmark-a PROPERTIES DEPENDS "rect-2;sphere-2")
+
 plm_add_test (
   "plm-bsp-landmark-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2848,6 +2851,7 @@ set_tests_properties (plm-bsp-landmark-b-stats PROPERTIES
     DEPENDS plm-bsp-landmark-b)
 set_tests_properties (plm-bsp-landmark-b-check PROPERTIES 
     DEPENDS plm-bsp-landmark-b-stats)
+
 plm_add_test (
   "plm-bsp-landmark-c"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2870,6 +2874,29 @@ set_tests_properties (plm-bsp-landmark-c-stats PROPERTIES
     DEPENDS plm-bsp-landmark-c)
 set_tests_properties (plm-bsp-landmark-c-check PROPERTIES 
     DEPENDS plm-bsp-landmark-c-stats)
+
+plm_add_test (
+  "plm-bsp-landmark-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-d.txt"
+  )
+plm_add_test (
+  "plm-bsp-landmark-d-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-d-img.mha"
+  )
+plmtest_check_interval (
+  "plm-bsp-landmark-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-991.5"
+  "-991.0"
+  )
+set_tests_properties (plm-bsp-landmark-d PROPERTIES DEPENDS "rect-15;rect-16")
+set_tests_properties (plm-bsp-landmark-d-stats PROPERTIES 
+    DEPENDS plm-bsp-landmark-d)
+set_tests_properties (plm-bsp-landmark-d-check PROPERTIES 
+    DEPENDS plm-bsp-landmark-d-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 5)

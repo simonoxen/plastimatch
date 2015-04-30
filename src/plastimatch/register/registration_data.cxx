@@ -106,8 +106,8 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     {
         fixed_landmarks = new Labeled_pointset;
         moving_landmarks = new Labeled_pointset;
-        fixed_landmarks->set_ras (shared->fixed_landmarks_list.c_str());
-        moving_landmarks->set_ras (shared->moving_landmarks_list.c_str());
+        fixed_landmarks->insert_ras (shared->fixed_landmarks_list.c_str());
+        moving_landmarks->insert_ras (shared->moving_landmarks_list.c_str());
     }
 }
 
