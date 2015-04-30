@@ -316,7 +316,7 @@ itk_dicom_save (
     ShortImageType::IndexType start = region.GetIndex();
     ShortImageType::SizeType  size  = region.GetSize();
     std::string format = dir_name;
-    format += "/image%03d.dcm";
+    format += "/image%04d.dcm";
     namesGenerator->SetSeriesFormat (format.c_str());
     namesGenerator->SetStartIndex (start[2]);
     namesGenerator->SetEndIndex (start[2] + size[2] - 1);
