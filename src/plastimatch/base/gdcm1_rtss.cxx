@@ -344,12 +344,12 @@ gdcm_rtss_save (
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
-    printf ("Hello from gdcm_rtss_save\n");
+    printf ("Hello from gdcm_rtss_save (%s)\n", rtss_fn);
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.
        Therefore we have to write using Document::WriteContent() */
-    make_directory_recursive (rtss_fn);
+    make_parent_directories (rtss_fn);
     std::ofstream *fp;
     fp = new std::ofstream (rtss_fn, std::ios::out | std::ios::binary);
     if (*fp == NULL) {
@@ -545,7 +545,7 @@ gdcm_rtss_save (
             c_seq->AddSQItem (c_item, j+1);
 
             /* ContourImageSequence */
-            if (curr_contour->ct_slice_uid.not_empty()) {
+            if (curr_contour->ct_slice_uid != "") {
                 gdcm::SeqEntry *ci_seq 
                     = c_item->InsertSeqEntry (0x3006, 0x0016);
                 gdcm::SQItem *ci_item 
@@ -556,7 +556,7 @@ gdcm_rtss_save (
                     0x0008, 0x1150);
                 /* ReferencedSOPInstanceUID */
                 ci_item->InsertValEntry (
-                    (const char*) curr_contour->ct_slice_uid,
+                    curr_contour->ct_slice_uid.c_str(),
                     0x0008, 0x1155);
             }
 

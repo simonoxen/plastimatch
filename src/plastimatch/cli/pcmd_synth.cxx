@@ -109,7 +109,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     if (parms->output_dicom.not_empty()) {
         rtds.get_rtss()->convert_ss_img_to_cxt ();
-        rtds.save_dicom ((const char*) parms->output_dicom,
+        rtds.save_dicom (parms->output_dicom.c_str(),
             parms->dicom_with_uids);
     }
 

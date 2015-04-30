@@ -400,7 +400,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
                 DCM_ContourSequence, c_item, -2);
 
 	    /* ContourImageSequence */
-	    if (curr_contour->ct_slice_uid.not_empty()) {
+	    if (curr_contour->ct_slice_uid != "") {
                 DcmItem *ci_item = 0;
                 c_item->findOrCreateSequenceItem (
                     DCM_ContourImageSequence, ci_item, -2);

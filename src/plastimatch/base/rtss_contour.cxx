@@ -2,13 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <algorithm>
 #include <stdio.h>
+
 #include "logfile.h"
 #include "plm_math.h"
 #include "rtss_contour.h"
-#include <algorithm>
-
-#include <algorithm>
 
 Rtss_contour::Rtss_contour ()
 {

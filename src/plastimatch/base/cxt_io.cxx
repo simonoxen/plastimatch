@@ -350,7 +350,7 @@ cxt_save (
 	    if (curr_polyline->ct_slice_uid.empty()) {
 		fprintf (fp, "|");
 	    } else {
-		fprintf (fp, "%s|", (const char*) curr_polyline->ct_slice_uid);
+		fprintf (fp, "%s|", curr_polyline->ct_slice_uid.c_str());
 	    }
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
 		if (k > 0) {

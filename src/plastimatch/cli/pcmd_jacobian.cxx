@@ -3,19 +3,19 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include <string>
 #include "itk_image_load.h"
 #include "itk_image_type.h"
 #include "pcmd_jacobian.h"
 #include "plm_clp.h"
 #include "plm_image.h"
-#include "pstring.h"
 #include "vf_jacobian.h"
 
 class Jacobian_parms {
 public:
-    Pstring input_fn;
-    Pstring outputimg_fn;
-    Pstring outputstats_fn;
+    std::string input_fn;
+    std::string outputimg_fn;
+    std::string outputstats_fn;
 public:
     Jacobian_parms () {
 	outputimg_fn = " ";
@@ -30,7 +30,8 @@ jacobian_main (Jacobian_parms* parms)
     FloatImageType::Pointer jacimage;
     std::cout << "file name: " << parms->input_fn;
     //xform_load (&vol, (const char*) parms->input_fn);
-    DeformationFieldType::Pointer vol = itk_image_load_float_field ((const char*) parms->input_fn);
+    DeformationFieldType::Pointer vol = itk_image_load_float_field (
+        parms->input_fn);
     std::cout << "...loaded xf!" << std::endl;
 
     /* Make jacobian */
@@ -43,11 +44,7 @@ jacobian_main (Jacobian_parms* parms)
     Plm_image img;
     img.init();
     img.set_itk( jacimage);
-//     img.convert_to_itk();
-//     img.
     img.save_image(parms->outputimg_fn);
-//     img.convert_and_save(parms->outputimg_fn,PLM_IMG_TYPE_ITK_FLOAT);
-
 }
 
 static void

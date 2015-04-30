@@ -5,12 +5,12 @@
 #define _rtss_contour_h_
 
 #include "plmbase_config.h"
-#include "pstring.h"
+#include <string>
 
 class PLMBASE_API Rtss_contour {
 public:
     int slice_no;           /* Can be "-1" */
-    Pstring ct_slice_uid;
+    std::string ct_slice_uid;
     int num_vertices;
     float* x;
     float* y;
