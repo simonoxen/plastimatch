@@ -243,7 +243,7 @@ Gdcm_series::digest_files (void)
 void
 Gdcm_series::get_slice_info (
     int *slice_no,                  /* Output */
-    Pstring *ct_slice_uid,         /* Output */
+    std::string *ct_slice_uid,      /* Output */
     float z                         /* Input */
 )
 {
@@ -263,9 +263,7 @@ Gdcm_series::get_slice_info (
 	print_and_exit ("Error finding slice %d in volume\n", *slice_no);
     }
     
-    std::string slice_uid = file->GetEntryValue (0x0008, 0x0018);
-
-    (*ct_slice_uid) = slice_uid.c_str();
+    *ct_slice_uid = file->GetEntryValue (0x0008, 0x0018);
 }
 
 void

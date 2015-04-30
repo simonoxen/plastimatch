@@ -10,7 +10,6 @@
 #include <list>
 #include <vector>
 #include "metadata.h"
-#include "pstring.h"
 
 class Rt_study_metadata;
 
@@ -29,7 +28,7 @@ public:
 
     void load (const char *dicom_dir);
     void digest_files (void);
-    void get_slice_info (int *slice_no, Pstring *ct_slice_uid, float z);
+    void get_slice_info (int *slice_no, std::string *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
     void get_slice_uids (Rt_study_metadata *rsm);
     std::string get_patient_position ();

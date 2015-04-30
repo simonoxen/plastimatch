@@ -10,7 +10,6 @@
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_int.h"
-#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "volume.h"

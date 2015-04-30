@@ -173,8 +173,7 @@ gdcm_rtss_load (
 	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
 	    continue;
 	}
-	cxt->add_structure (Pstring (roi_name.c_str()), 
-	    Pstring (), structure_id);
+	cxt->add_structure (roi_name, std::string(), structure_id);
     }
 
     /* ROIContourSequence */
@@ -499,7 +498,7 @@ gdcm_rtss_save (
             rsm->get_frame_of_reference_uid(), 0x3006, 0x0024);
 	/* ROIName */
 	ssroi_item->InsertValEntry (
-	    (const char*) cxt->slist[i]->name, 0x3006, 0x0026);
+	    cxt->slist[i]->name.c_str(), 0x3006, 0x0026);
 	/* ROIGenerationAlgorithm */
 	ssroi_item->InsertValEntry ("", 0x3006, 0x0036);
     }
@@ -517,9 +516,9 @@ gdcm_rtss_save (
 	roic_seq->AddSQItem (roic_item, i+1);
 	
 	/* ROIDisplayColor */
-	Pstring dcm_color;
-	curr_structure->get_dcm_color_string (&dcm_color);
-	roic_item->InsertValEntry ((const char*) dcm_color, 0x3006, 0x002a);
+        std::string dcm_color;
+	dcm_color = curr_structure->get_dcm_color_string ();
+	roic_item->InsertValEntry (dcm_color.c_str(), 0x3006, 0x002a);
 
 	/* ContourSequence */
 	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
@@ -609,13 +608,12 @@ gdcm_rtss_save (
 	/* ROIObservationLabel */
         if (curr_structure->name.length() <= 16) {
             rtroio_item->InsertValEntry (
-                (const char*) curr_structure->name, 0x3006, 0x0085);
+                curr_structure->name.c_str(), 0x3006, 0x0085);
         } else {
             /* VR is SH, max length 16 */
-            Pstring tmp_name = curr_structure->name;
-            tmp_name.trunc (16);
+            std::string tmp_name = curr_structure->name.substr (0, 16);
             rtroio_item->InsertValEntry (
-                (const char*) tmp_name, 0x3006, 0x0085);
+                tmp_name.c_str(), 0x3006, 0x0085);
         }
 	/* RTROIInterpretedType */
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a4);

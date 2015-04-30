@@ -11,7 +11,6 @@
 #include "rt_study_metadata.h"
 #include "plm_image.h"
 #include "plm_int.h"
-#include "pstring.h"
 
 class DcmTagKey;
 

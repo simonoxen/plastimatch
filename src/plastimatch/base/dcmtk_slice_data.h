@@ -5,15 +5,15 @@
 #define _dcmtk_slice_data_h_
 
 #include "plmbase_config.h"
+#include <string>
 
 #include "plm_int.h"
-#include "pstring.h"
 #include "volume.h"
 
 class Dcmtk_slice_data
 {
 public:
-    Pstring fn;
+    std::string fn;
     Volume::Pointer vol;
 
     size_t slice_size;
@@ -24,10 +24,10 @@ public:
     float slope;
 
     char slice_uid[100];
-    Pstring ipp;
-    Pstring iop;
-    Pstring sloc;
-    Pstring sthk;
+    std::string ipp;
+    std::string iop;
+    std::string sloc;
+    std::string sthk;
     int instance_no;
 };
 

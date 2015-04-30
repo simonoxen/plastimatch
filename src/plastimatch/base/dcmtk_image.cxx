@@ -458,8 +458,9 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     //dataset->putAndInsertString (DCM_InstanceNumber, "0");
     /* DCM_PatientOrientation seems to be not required.  */
     // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
-    dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp);
-    dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop);
+    dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp.c_str());
+    dataset->putAndInsertString (DCM_ImageOrientationPatient, 
+        dsd->iop.c_str());
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
         drs->get_frame_of_reference_uid());
     /* XVI 4.5 requires a DCM_PositionReferenceIndicator */
@@ -515,7 +516,7 @@ Dcmtk_rt_study::save_image (
     dsd.slice_size = dsd.vol->dim[0] * dsd.vol->dim[1];
     dsd.slice_int16 = new int16_t[dsd.slice_size];
     float *dc = dsd.vol->get_direction_matrix();
-    dsd.iop.format ("%f\\%f\\%f\\%f\\%f\\%f",
+    dsd.iop = string_format ("%f\\%f\\%f\\%f\\%f\\%f",
         dc[0], dc[3], dc[6], dc[1], dc[4], dc[7]);
 
     Plm_image_header pih (dsd.vol.get());
@@ -561,10 +562,10 @@ Dcmtk_rt_study::save_image (
         /* GCS FIX #2:  This is possibly correct.  Not 100% sure. */
         float z_loc = dsd.vol->origin[2] + dc[8] * k * dsd.vol->spacing[2];
         dsd.instance_no = k;
-        dsd.sthk.format ("%f", dsd.vol->spacing[2]);
-        dsd.sloc.format ("%f", z_loc);
+        dsd.sthk = string_format ("%f", dsd.vol->spacing[2]);
+        dsd.sloc = string_format ("%f", z_loc);
         /* GCS FIX #2:  "Ditto" */
-        dsd.ipp.format ("%f\\%f\\%f", 
+        dsd.ipp = string_format ("%f\\%f\\%f", 
             dsd.vol->origin[0] + dc[2] * k * dsd.vol->spacing[2],
             dsd.vol->origin[1] + dc[5] * k * dsd.vol->spacing[2],
             dsd.vol->origin[2] + dc[8] * k * dsd.vol->spacing[2]);
@@ -574,10 +575,10 @@ Dcmtk_rt_study::save_image (
 
         /* Format filename and prepare output directory */
         if (d_ptr->filenames_with_uid) {
-            dsd.fn.format ("%s/image%04d_%s.dcm", dicom_dir, (int) k,
+            dsd.fn = string_format ("%s/image%04d_%s.dcm", dicom_dir, (int) k,
                 dsd.slice_uid);
         } else {
-            dsd.fn.format ("%s/image%04d.dcm", dicom_dir, (int) k);
+            dsd.fn = string_format ("%s/image%04d.dcm", dicom_dir, (int) k);
         }
         make_parent_directories (dsd.fn);
 

@@ -12,6 +12,7 @@ Features
 Backward incompatible changes
 *  Remove short options "-F"
 *  DRR/FDK uses IEC coordinates
+*  GDCM becomes deprecated
 
 Documentation
 *  Registration tutorial based on NA-MIC case library
