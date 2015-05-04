@@ -29,7 +29,7 @@ if (${pristine}) {
     $build_dir = $ENV{HOME} . "/build/plastimatch-pristine";
 } else {
     $src_dir = $ENV{HOME} . "/work/plastimatch";
-    $build_dir = $ENV{HOME} . "/build/plastimatch-3.20.1";
+    $build_dir = $ENV{HOME} . "/build/plastimatch";
 }
 
 if ($run_cmake) {
