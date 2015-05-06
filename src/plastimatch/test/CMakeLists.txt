@@ -24,6 +24,9 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (cpp_eps_test cpp_eps_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+    plm_add_executable (cpp_floating_point_test cpp_floating_point_test.cxx
+	"" "" 
+	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
     plm_add_executable (cpp_limits_test cpp_limits_test.cxx
 	"" "" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
