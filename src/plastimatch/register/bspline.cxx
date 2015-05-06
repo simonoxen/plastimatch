@@ -207,7 +207,7 @@ bspline_save_debug_state (
         if (parms->metric[0] == BMET_MI) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
-            bst->mi_hist->dump_hist (bst->it, fn);
+            bst->mi_hist->dump_hist (bst->feval, fn);
         }
     }
 }
