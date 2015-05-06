@@ -232,10 +232,10 @@ synth_gauss (
     const Synthetic_mha_parms *parms
 )
 {
-    float f = 0;
+    double f = 0;
     for (int d = 0; d < 3; d++) {
-        float f1 = phys[d] - parms->gauss_center[d];
-        f1 = f1 / parms->gauss_std[d];
+        double f1 = phys[d] - (double) parms->gauss_center[d];
+        f1 = f1 / (double) parms->gauss_std[d];
         f += f1 * f1;
     }
     f = exp (-0.5 * f);            /* f \in (0,1] */
