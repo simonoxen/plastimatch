@@ -987,57 +987,57 @@ Rpl_volume::compute_proj_wed_volume (
     Volume *proj_wed_vol, float background)
 {
 
-  //A few abbreviations
-  Proj_volume *proj_vol = d_ptr->proj_vol;
-  float *proj_wed_vol_img = (float*) proj_wed_vol->img;
+    //A few abbreviations
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    float *proj_wed_vol_img = (float*) proj_wed_vol->img;
 
-  //Get some parameters from the proj volume, calculate src to isocenter distance
-  const double *src = proj_vol->get_src();
-  const double *iso = proj_vol->get_iso();
-  const double sid_length = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
-  double src_iso_vec[3];  
-  vec3_sub3(src_iso_vec,src,iso);
-  const double src_iso_distance = vec3_len(src_iso_vec);
-  const double ap_iso_distance = src_iso_distance - sid_length;
+    //Get some parameters from the proj volume, calculate src to isocenter distance
+    const double *src = proj_vol->get_src();
+    const double *iso = proj_vol->get_iso();
+    const double sid_length = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
+    double src_iso_vec[3];  
+    vec3_sub3(src_iso_vec,src,iso);
+    const double src_iso_distance = vec3_len(src_iso_vec);
+    const double ap_iso_distance = src_iso_distance - sid_length;
 
-  /* Subtract off standoff distance */
-  //This is the perpendicular "base" distance that we calculate all rgdepths from.
-  double base_rg_dist = ap_iso_distance - d_ptr->front_clipping_dist;
+    /* Subtract off standoff distance */
+    //This is the perpendicular "base" distance that we calculate all rgdepths from.
+    double base_rg_dist = ap_iso_distance - d_ptr->front_clipping_dist;
 
-  //This is the perpendicular "base" distance that we calculate how much
-  //each geometric distance should increase, due to divergence.
-  const double base_dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
+    //This is the perpendicular "base" distance that we calculate how much
+    //each geometric distance should increase, due to divergence.
+    const double base_dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
   
-  const int *ires = proj_vol->get_image_dim();
+    const int *ires = proj_vol->get_image_dim();
 
-  int ap_ij[2]; //ray index of rvol
-  plm_long ap_idx = 0;  //ray number
-  Ray_data *ray_data;
-  double ray_ap[3]; //vector from src to ray intersection with ap plane
-  double ray_ap_length; //length of vector from src to ray intersection with ap plane
-  double rglength; //length that we insert into get_rgdepth for each ray
+    int ap_ij[2]; //ray index of rvol
+    plm_long ap_idx = 0;  //ray number
+    Ray_data *ray_data;
+    double ray_ap[3]; //vector from src to ray intersection with ap plane
+    double ray_ap_length; //length of vector from src to ray intersection with ap plane
+    double rglength; //length that we insert into get_rgdepth for each ray
 
-  for (ap_ij[1] = 0; ap_ij[1] < ires[1]; ap_ij[1]++) {
-    for (ap_ij[0] = 0; ap_ij[0] < ires[0]; ap_ij[0]++) {
+    for (ap_ij[1] = 0; ap_ij[1] < ires[1]; ap_ij[1]++) {
+        for (ap_ij[0] = 0; ap_ij[0] < ires[0]; ap_ij[0]++) {
 
-      /* Ray number */
-      ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
-      ray_data = &d_ptr->ray_data[ap_idx];
+            /* Ray number */
+            ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
+            ray_data = &d_ptr->ray_data[ap_idx];
 
-      /* Set each ray to "background", defined in wed_main (default 0) */
-      proj_wed_vol_img[ap_idx] = background;
+            /* Set each ray to "background", defined in wed_main (default 0) */
+            proj_wed_vol_img[ap_idx] = background;
 
-      /* Coordinate of ray intersection with aperture plane */
-      double *ap_xyz = ray_data->p2;
-      vec3_sub3 (ray_ap, ap_xyz, src);
-      ray_ap_length = vec3_len(ray_ap);
+            /* Coordinate of ray intersection with aperture plane */
+            double *ap_xyz = ray_data->p2;
+            vec3_sub3 (ray_ap, ap_xyz, src);
+            ray_ap_length = vec3_len(ray_ap);
 
-      rglength = base_rg_dist*(ray_ap_length/base_dist);
+            rglength = base_rg_dist*(ray_ap_length/base_dist);
 
-      proj_wed_vol_img[ap_idx] = (float) (this->get_rgdepth(ap_ij,rglength));
+            proj_wed_vol_img[ap_idx] = (float) (this->get_rgdepth(ap_ij,rglength));
       
+        }
     }
-  }
 }
 
 void 
@@ -1045,7 +1045,7 @@ Rpl_volume::compute_wed_volume (
     Volume *wed_vol, Volume *in_vol, float background)
 {
 
-  /* A couple of abbreviations */
+    /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     Volume *rvol = proj_vol->get_vol();
     float *rvol_img = (float*) rvol->img;
@@ -1064,8 +1064,8 @@ Rpl_volume::compute_wed_volume (
 
             bool debug = false;
             if (ap_idx == (ires[1]/2) * ires[0] + (ires[0] / 2)) {
-	      //                printf ("DEBUGGING %d %d\n", ires[1], ires[0]);
-	      //                debug = true;
+                //                printf ("DEBUGGING %d %d\n", ires[1], ires[0]);
+                //                debug = true;
             }
 #if defined (commentout)
 #endif
@@ -1076,10 +1076,10 @@ Rpl_volume::compute_wed_volume (
 	    //Set the default to background, if ray misses volume
 	    //ires[2] - is this meaningless?
             if (!ray_data->intersects_volume) {
-	      for (wijk[2] = 0; wijk[2] < ires[2]; wijk[2]++) {
-                plm_long widx = volume_index (rvol->dim, wijk);
-		wed_vol_img[widx] = background;
-	      }
+                for (wijk[2] = 0; wijk[2] < ires[2]; wijk[2]++) {
+                    plm_long widx = volume_index (rvol->dim, wijk);
+                    wed_vol_img[widx] = background;
+                }
                 continue;
             }
 
@@ -1092,8 +1092,8 @@ Rpl_volume::compute_wed_volume (
 	    double ray_end[3];
 	    
 	    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2)) {
-	      printf("Error in ray clipping, exiting...\n");
-	      return;
+                printf("Error in ray clipping, exiting...\n");
+                return;
 	    }
 	    //	    volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2);
 
@@ -1163,33 +1163,33 @@ Rpl_volume::compute_wed_volume (
 			
 			//OLD
 			/*
-                        plm_long in_ijk[3];
-                        in_ijk[2] = ROUND_PLM_LONG(
-                            (xyz[2] - in_vol->origin[2]) / in_vol->spacing[2]);
-                        in_ijk[1] = ROUND_PLM_LONG(
-                            (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1]);
-                        in_ijk[0] = ROUND_PLM_LONG(
-                            (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0]);
+                          plm_long in_ijk[3];
+                          in_ijk[2] = ROUND_PLM_LONG(
+                          (xyz[2] - in_vol->origin[2]) / in_vol->spacing[2]);
+                          in_ijk[1] = ROUND_PLM_LONG(
+                          (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1]);
+                          in_ijk[0] = ROUND_PLM_LONG(
+                          (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0]);
 
-                        if (debug) {
-                            printf ("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
-                            printf ("%d %d %d\n", (int) in_ijk[0], 
-                                (int) in_ijk[1], (int) in_ijk[2]);
-                        }
+                          if (debug) {
+                          printf ("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
+                          printf ("%d %d %d\n", (int) in_ijk[0], 
+                          (int) in_ijk[1], (int) in_ijk[2]);
+                          }
 
 
-                        if (in_ijk[2] < 0 || in_ijk[2] >= in_vol->dim[2])
-                            break;
-                        if (in_ijk[1] < 0 || in_ijk[1] >= in_vol->dim[1])
-                            break;
-                        if (in_ijk[0] < 0 || in_ijk[0] >= in_vol->dim[0])
-                            break;
+                          if (in_ijk[2] < 0 || in_ijk[2] >= in_vol->dim[2])
+                          break;
+                          if (in_ijk[1] < 0 || in_ijk[1] >= in_vol->dim[1])
+                          break;
+                          if (in_ijk[0] < 0 || in_ijk[0] >= in_vol->dim[0])
+                          break;
 
-                        plm_long in_idx = volume_index(in_vol->dim, in_ijk);
+                          plm_long in_idx = volume_index(in_vol->dim, in_ijk);
 
-			float value = in_vol_img[in_idx];
-			//		value = in_vol_img[in_idx];
-			*/
+                          float value = in_vol_img[in_idx];
+                          //		value = in_vol_img[in_idx];
+                          */
 
 
 			/* Write value to output image */
@@ -1373,8 +1373,8 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     vec3_scale3(adj_ray_coord,ray_adj[i]->ray,ray_adj_len);
 
 		    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
-		      printf("Error in ray clipping, exiting...\n");
-		      return;
+                        printf("Error in ray clipping, exiting...\n");
+                        return;
 		    }
 
                     vec3_add2(adj_ray_coord,src);
@@ -1801,70 +1801,70 @@ float compute_PrSTPR_from_HU(float CT_HU)
 float 
 compute_PrSTPR_Schneider_weq_from_HU (float CT_HU) // From Schneider's paper: Phys. Med. Biol.41 (1996) 111–124
 {
-	if (CT_HU <= -1000)
-	{
-		return 0.00106;
-	}
-	else if (CT_HU > -1000 && CT_HU <= 0)
-	{
-		return (1 - 0.00106) / 1000 * CT_HU + 1;
-	}
-	else if (CT_HU > 0 && CT_HU <= 41.46)
-	{
-		return .001174 * CT_HU + 1;
-	}
-	else
-	{
-		return .0005011 * CT_HU + 1.0279;
-	}
+    if (CT_HU <= -1000)
+    {
+        return 0.00106;
+    }
+    else if (CT_HU > -1000 && CT_HU <= 0)
+    {
+        return (1 - 0.00106) / 1000 * CT_HU + 1;
+    }
+    else if (CT_HU > 0 && CT_HU <= 41.46)
+    {
+        return .001174 * CT_HU + 1;
+    }
+    else
+    {
+        return .0005011 * CT_HU + 1.0279;
+    }
 }
 
 float
 compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU) //YKP, Linear interpolation
 {
-  double minHU = -1000.0;
-  double maxHU = 3000.0;
+    double minHU = -1000.0;
+    double maxHU = 3000.0;
 
-  if (CT_HU <= minHU)
+    if (CT_HU <= minHU)
 	CT_HU = minHU;
-  else if (CT_HU >= maxHU)
+    else if (CT_HU >= maxHU)
 	CT_HU = maxHU;
 
-  double CT_HU1 = minHU;
-  double CT_HU2 = minHU;
-  double RSP1 = 0;
-  double RSP2 = 0;
+    double CT_HU1 = minHU;
+    double CT_HU2 = minHU;
+    double RSP1 = 0;
+    double RSP2 = 0;
 
-  double interpolated_RSP = 0.0;
+    double interpolated_RSP = 0.0;
 
-  int i=0;
+    int i=0;
 
-  if (CT_HU >minHU)
-  {
+    if (CT_HU >minHU)
+    {
 	while (CT_HU >= CT_HU1)
 	{
-	  CT_HU1 = lookup_PrSTPR_XiO_MGH[i][0];
-	  RSP1 = lookup_PrSTPR_XiO_MGH[i][1];
+            CT_HU1 = lookup_PrSTPR_XiO_MGH[i][0];
+            RSP1 = lookup_PrSTPR_XiO_MGH[i][1];
 
-	  if (CT_HU >= CT_HU1)
-	  {
+            if (CT_HU >= CT_HU1)
+            {
 		CT_HU2 = CT_HU1;
 		RSP2 = RSP1;
-	  }
-	  i++;
+            }
+            i++;
 	}
 
 	if ((CT_HU1-CT_HU2) == 0)
-	  interpolated_RSP = 0.0;
+            interpolated_RSP = 0.0;
 	else
-	  interpolated_RSP = (RSP2+(CT_HU-CT_HU2)*(RSP1-RSP2)/(CT_HU1-CT_HU2));	
-  }
-  else
-  {
+            interpolated_RSP = (RSP2+(CT_HU-CT_HU2)*(RSP1-RSP2)/(CT_HU1-CT_HU2));	
+    }
+    else
+    {
 	interpolated_RSP = 0.0;
-  }
+    }
 
-  return interpolated_RSP;
+    return interpolated_RSP;
 }
 
 float compute_PrWER_from_HU(float CT_HU)
@@ -2166,7 +2166,7 @@ rpl_ray_trace_callback_RSP (
     int ap_area = cd->ires[0] * cd->ires[1];
     size_t step_num = vox_index + cd->step_offset;
 
-	cd->accum += vox_len * compute_PrSTRP_XiO_MGH_weq_from_HU (vox_value); //vox_value = CT_HU
+    cd->accum += vox_len * compute_PrSTRP_XiO_MGH_weq_from_HU (vox_value); //vox_value = CT_HU
 
 #if VERBOSE
     if (global_debug) {
@@ -2197,10 +2197,10 @@ rpl_ray_trace_callback_RSP (
 //col0 = HU, col1 = Relative stopping power
 //Table: XiO, ctedproton 2007 provided by Yoost
 extern const double lookup_PrSTPR_XiO_MGH[][2] ={
-  -1000.0,  0.01,
-  0.0,  1.0,
-  40.0, 1.04,
-  1000.0,	1.52,
-  2000.0,	2.02,
-  3000.0,	2.55,
+    -1000.0,    0.01,
+    0.0,        1.0,
+    40.0,       1.04,
+    1000.0,     1.52,
+    2000.0,     2.02,
+    3000.0,     2.55,
 };
