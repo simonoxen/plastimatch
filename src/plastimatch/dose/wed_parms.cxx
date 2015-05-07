@@ -81,19 +81,18 @@ print_usage (void)
 int
 Wed_Parms::get_group_lines(char* groupfile)
 {
-  std::string line;
-  std::ifstream text(groupfile);
-  int numlines = 0;
-  if (text.is_open())  {
-    while (text.good()) {
-      getline(text,line);	    
-      if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
-	numlines++;
-      }
+    std::string line;
+    std::ifstream text(groupfile);
+    int numlines = 0;
+    if (text.is_open())  {
+        while (text.good()) {
+            getline(text,line);	    
+            if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
+                numlines++;
+            }
+        }
     }
-  }
-  return numlines;
-
+    return numlines;
 }
 
 void
@@ -444,28 +443,28 @@ Wed_Parms::parse_args (int argc, char** argv)
         if (argv[i][0] != '-') break;
 
         if (!strcmp (argv[i], "--debug")) {
-	  this->debug = 1;
+            this->debug = 1;
         }
 	if (!strcmp (argv[i], "--group")) {
-	  if (!argv[i+1])  { //group needs an argument
-	    print_usage ();
-            return false;
-	  }
-	  else {
-	    this->group = get_group_lines(argv[i+1]);
-	    return true;
-	  }
+            if (!argv[i+1])  { //group needs an argument
+                print_usage ();
+                return false;
+            }
+            else {
+                this->group = get_group_lines(argv[i+1]);
+                return true;
+            }
         }
 	if (!strcmp (argv[i], "--dew")) {
-	  this->mode = 1;
+            this->mode = 1;
         }
 
 	else if (!strcmp (argv[i], "--segdepth")) {
-	  this->mode = 2;
+            this->mode = 2;
         }
 
-	else if (!strcmp (argv[i], "--projwed")) {
-	  this->mode = 3;
+        else if (!strcmp (argv[i], "--projwed")) {
+            this->mode = 3;
         }
 
         else {
@@ -503,46 +502,46 @@ Wed_Parms::parse_args (int argc, char** argv)
 
     //Input "dose" always required
     if ((this->mode==0)||(this->mode==1))  {
-      if (this->input_dose_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Input dose not specified in configuration file!\n");
-        return false;
-      }
+        if (this->input_dose_fn[0] == '\0') {
+            fprintf (stderr, "\n** ERROR: Input dose not specified in configuration file!\n");
+            return false;
+        }
     }
 
     //For wed mode, patient wed name is required.
     if (this->mode==0)  {
-      if (this->output_ct_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
-        return false;
-      }
+        if (this->output_ct_fn[0] == '\0') {
+            fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
+            return false;
+        }
     }
 
     //For wed or dew mode, output dose name required.
     if ((this->mode==0)||(this->mode==1))  {
 	if (this->output_dose_fn[0] == '\0') {
-	  fprintf (stderr, "\n** ERROR: Output file for dose volume not specified in configuration file!\n");
-	  return false;
+            fprintf (stderr, "\n** ERROR: Output file for dose volume not specified in configuration file!\n");
+            return false;
 	}
     }
 
-   //For depth/segmentation  mode, aperture and depth volumes required.
+    //For depth/segmentation  mode, aperture and depth volumes required.
     if (this->mode==2)  {
-      if (this->output_depth_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output file for depths not specified in configuration file!\n");
-        return false;
-      }
-      if (this->output_ap_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output file for aperture not specified in configuration file!\n");
-        return false;
-      }
+        if (this->output_depth_fn[0] == '\0') {
+            fprintf (stderr, "\n** ERROR: Output file for depths not specified in configuration file!\n");
+            return false;
+        }
+        if (this->output_ap_fn[0] == '\0') {
+            fprintf (stderr, "\n** ERROR: Output file for aperture not specified in configuration file!\n");
+            return false;
+        }
     }
 
-  //For projection wed mode, proj_wed output volume is required.
+    //For projection wed mode, proj_wed output volume is required.
     if (this->mode==3)  {
-      if (this->output_proj_wed_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Output file for projection wed not specified in configuration file!\n");
-        return false;
-      }
+        if (this->output_proj_wed_fn[0] == '\0') {
+            fprintf (stderr, "\n** ERROR: Output file for projection wed not specified in configuration file!\n");
+            return false;
+        }
     }
 
     return true;
