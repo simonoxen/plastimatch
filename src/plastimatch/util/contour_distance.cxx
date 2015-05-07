@@ -7,7 +7,12 @@
 #include <string.h>
 #include <math.h>
 #include "itkImage.h"
+
+#if PLM_CONFIG_USE_PATCHED_ITK
 #include "plm_ContourMeanDistanceImageFilter.h"
+#else
+#include "itkContourMeanDistanceImageFilter.h"
+#endif
 
 #include "contour_distance.h"
 #include "itk_image_load.h"
@@ -63,10 +68,16 @@ Contour_distance::set_compare_image (
 void 
 Contour_distance::run ()
 {
+#if PLM_CONFIG_USE_PATCHED_ITK
     typedef itk::plm_ContourMeanDistanceImageFilter< 
         UCharImageType, UCharImageType
         > ContourMeanDistanceImageFilterType;
- 
+#else
+    typedef itk::ContourMeanDistanceImageFilter< 
+        UCharImageType, UCharImageType
+        > ContourMeanDistanceImageFilterType;
+#endif
+
     ContourMeanDistanceImageFilterType::Pointer 
         cmd_filter = ContourMeanDistanceImageFilterType::New();
     cmd_filter->SetInput1 (d_ptr->ref_image);

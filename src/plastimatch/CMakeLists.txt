@@ -20,6 +20,8 @@ option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers"
 option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registration algorithm" ON)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
+option (PLM_CONFIG_PREFER_PATCHED_ITK
+  "Prefer to use the patched version of certain ITK files" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Figure out if we should use gdcm or dcmtk
@@ -50,12 +52,21 @@ if (GDCM_VERSION_2 AND NOT PLM_DCM_USE_DCMTK)
   message (WARNING "Plastimatch will be built with GDCM 2.X.  This means DICOM-RT functions are disabled; if possible, please use DCMTK or GDCM 1.X instead.")
 endif ()
 
+
+##-----------------------------------------------------------------------------
+##  Figure out if we should patch itk
+##-----------------------------------------------------------------------------
+set (PLM_CONFIG_USE_PATCHED_ITK 0)
+if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
+    set (PLM_CONFIG_USE_PATCHED_ITK 1)
+endif ()
+
+
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-# JAS 2012.04.25 !!!!!!!!!!! TEMPORARY !!!!!!!!!!!!!!!!!!!!!!
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/clp)
@@ -73,9 +84,8 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/DiffeomorphicDemons)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
@@ -86,6 +96,10 @@ include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
+
+if (${PLM_CONFIG_USE_PATCHED_ITK})
+    include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
+endif ()
 
 if (CUDA_FOUND)
   include_directories (AFTER ${CUDA_INCLUDE_DIRS})

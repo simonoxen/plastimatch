@@ -53,12 +53,18 @@ class Hausdorff_distance_private;
  *   \vec{d}_{H,\mathrm{avg}}(X,Y) = \frac{1}{|X|} \sum_{x \in X} \min_{y \in Y} d (x,y)
  * \f]
  * 
- * The (undirected) average Hausdorff measure is the average, 
- * rather than the sum, 
+ * The (undirected) average Hausdorff measure is the average 
  * of the two directed average Hausdorff measures:
  * 
  * \f[
  *   d_{H,\mathrm{avg}}(X,Y) = \frac{\vec{d}_{H,\mathrm{avg}}(X,Y) + \vec{d}_{H,\mathrm{avg}}(Y,X)}{2}
+ * \f]
+ * 
+ * The (undirected) max average Hausdorff measure is the maximum 
+ * of the two directed average Hausdorff measures:
+ * 
+ * \f[
+ *   d_{H,\mathrm{m-avg}}(X,Y) = \max \left\{ \vec{d}_{H,\mathrm{avg}}(X,Y) , \vec{d}_{H,\mathrm{avg}}(Y,X) \right\}
  * \f]
  * 
  * The directed percent Hausdorff measure, for a percentile \f$r\f$, 
@@ -120,9 +126,6 @@ public:
     ///@{
     /*! \brief Compute hausdorff distances */
     void run ();
-    /*! \brief Compute hausdorff distances (obsolete version, doesn't 
-      compute 95% Hausdorff) */
-    void run_obsolete ();
     ///@}
 
     /*! \name Outputs */
@@ -131,12 +134,16 @@ public:
     float get_hausdorff ();
     /*! \brief Return the average Hausdorff distance */
     float get_average_hausdorff ();
+    /*! \brief Return the max average Hausdorff distance */
+    float get_max_average_hausdorff ();
     /*! \brief Return the percent Hausdorff distance */
     float get_percent_hausdorff ();
     /*! \brief Return the boundary Hausdorff distance */
     float get_boundary_hausdorff ();
     /*! \brief Return the average boundary Hausdorff distance */
     float get_average_boundary_hausdorff ();
+    /*! \brief Return the max average boundary Hausdorff distance */
+    float get_max_average_boundary_hausdorff ();
     /*! \brief Return the percent boundary Hausdorff distance */
     float get_percent_boundary_hausdorff ();
     /*! \brief Display debugging information to stdout */

@@ -7,7 +7,6 @@
 #include <string.h>
 #include <math.h>
 #include "itkImage.h"
-#include "plm_HausdorffDistanceImageFilter.h"
 #include "wirth.h"
 
 #include "distance_map.h"
@@ -31,18 +30,22 @@ public:
 public:
     void clear_statistics () {
         hausdorff_distance = 0.f;
-        avg_hausdorff_distance = 0.f;
+        avg_avg_hausdorff_distance = 0.f;
+        max_avg_hausdorff_distance = 0.f;
         pct_hausdorff_distance = 0.f;
         boundary_hausdorff_distance = 0.f;
-        avg_boundary_hausdorff_distance = 0.f;
+        avg_avg_boundary_hausdorff_distance = 0.f;
+        max_avg_boundary_hausdorff_distance = 0.f;
         pct_boundary_hausdorff_distance = 0.f;
     }
 public:
     float hausdorff_distance;
-    float avg_hausdorff_distance;
+    float avg_avg_hausdorff_distance;
+    float max_avg_hausdorff_distance;
     float pct_hausdorff_distance;
     float boundary_hausdorff_distance;
-    float avg_boundary_hausdorff_distance;
+    float avg_avg_boundary_hausdorff_distance;
+    float max_avg_boundary_hausdorff_distance;
     float pct_boundary_hausdorff_distance;
     float pct_hausdorff_distance_fraction;
 
@@ -213,12 +216,17 @@ Hausdorff_distance::run_internal (
         d_ptr->boundary_hausdorff_distance = max_bh_distance;
     }
     if (num_h_vox > 0) {
-        d_ptr->avg_hausdorff_distance += 0.5 * (sum_h_distance / num_h_vox);
+        float ahd = sum_h_distance / num_h_vox;
+        d_ptr->avg_avg_hausdorff_distance += 0.5 * ahd;
+        d_ptr->max_avg_hausdorff_distance = std::max (
+            d_ptr->max_avg_hausdorff_distance, ahd);
         d_ptr->pct_hausdorff_distance += 0.5 * h_pct;
     }
     if (num_bh_vox > 0) {
-        d_ptr->avg_boundary_hausdorff_distance 
-            += 0.5 * (sum_bh_distance / num_bh_vox);
+        float abhd = sum_bh_distance / num_bh_vox;
+        d_ptr->avg_avg_boundary_hausdorff_distance += 0.5 * abhd;
+        d_ptr->max_avg_boundary_hausdorff_distance = std::max (
+            d_ptr->max_avg_boundary_hausdorff_distance, abhd);
         d_ptr->pct_boundary_hausdorff_distance += 0.5 * bh_pct;
     }
 
@@ -240,29 +248,6 @@ Hausdorff_distance::run ()
     this->run_internal (d_ptr->cmp_image, d_ptr->ref_image);
 }
 
-void 
-Hausdorff_distance::run_obsolete ()
-{
-    typedef unsigned char T;
-    typedef itk::plm_HausdorffDistanceImageFilter< 
-	itk::Image<T,3>, itk::Image<T,3> > Hausdorff_filter;
-    Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
-
-    h_filter->SetInput1 (d_ptr->ref_image);
-    h_filter->SetInput2 (d_ptr->cmp_image);
-    h_filter->SetUseImageSpacing (true);
-    try {
-        h_filter->Update ();
-    } catch (itk::ExceptionObject &err) {
-	std::cout << "ITK Exception: " << err << std::endl;
-        return;
-    }
-    d_ptr->hausdorff_distance 
-        = h_filter->GetHausdorffDistance ();
-    d_ptr->avg_hausdorff_distance 
-        = h_filter->GetAverageHausdorffDistance ();
-}
-
 float 
 Hausdorff_distance::get_hausdorff ()
 {
@@ -272,7 +257,13 @@ Hausdorff_distance::get_hausdorff ()
 float 
 Hausdorff_distance::get_average_hausdorff ()
 {
-    return d_ptr->avg_hausdorff_distance;
+    return d_ptr->avg_avg_hausdorff_distance;
+}
+
+float 
+Hausdorff_distance::get_max_average_hausdorff ()
+{
+    return d_ptr->max_avg_hausdorff_distance;
 }
 
 float 
@@ -290,7 +281,13 @@ Hausdorff_distance::get_boundary_hausdorff ()
 float 
 Hausdorff_distance::get_average_boundary_hausdorff ()
 {
-    return d_ptr->avg_boundary_hausdorff_distance;
+    return d_ptr->avg_avg_boundary_hausdorff_distance;
+}
+
+float 
+Hausdorff_distance::get_max_average_boundary_hausdorff ()
+{
+    return d_ptr->max_avg_boundary_hausdorff_distance;
 }
 
 float 
