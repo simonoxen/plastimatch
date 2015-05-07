@@ -502,13 +502,13 @@ Rt_study::get_image ()
 void 
 Rt_study::set_image (ShortImageType::Pointer& itk_image)
 {
-    d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
+    d_ptr->m_img = Plm_image::New (itk_image);
 }
 
 void 
 Rt_study::set_image (FloatImageType::Pointer& itk_image)
 {
-    d_ptr->m_img = Plm_image::New (new Plm_image(itk_image));
+    d_ptr->m_img = Plm_image::New (itk_image);
 }
 
 void 

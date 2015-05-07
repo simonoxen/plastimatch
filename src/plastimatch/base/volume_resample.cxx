@@ -38,8 +38,8 @@ volume_resample_float_nn (
     float val;
     float default_val = 0.0f;
 
-    vol_out = Volume::New(new Volume (
-            dim, origin, spacing, vol_in->direction_cosines, PT_FLOAT, 1));
+    vol_out = Volume::New(
+        dim, origin, spacing, vol_in->direction_cosines, PT_FLOAT, 1);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -84,8 +84,8 @@ volume_resample_float_li (
     float default_val = 0.0f;
     float ijk[3];
 
-    vol_out = Volume::New (new Volume (
-            dim, origin, spacing, vol_in->direction_cosines, PT_FLOAT, 1));
+    vol_out = Volume::New (
+        dim, origin, spacing, vol_in->direction_cosines, PT_FLOAT, 1);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -149,9 +149,8 @@ volume_resample_vf_float_interleaved (
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = Volume::New (new Volume (
-            dim, origin, spacing, vol_in->direction_cosines, 
-            PT_VF_FLOAT_INTERLEAVED, 3));
+    vol_out = Volume::New (dim, origin, spacing, vol_in->direction_cosines, 
+        PT_VF_FLOAT_INTERLEAVED, 3);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -193,9 +192,8 @@ volume_resample_vf_float_planar (
     Volume::Pointer vol_out;
     float **in_img, **out_img;
 
-    vol_out = Volume::New( new Volume (
-            dim, origin, spacing, vol_in->direction_cosines, 
-            PT_VF_FLOAT_PLANAR, 3));
+    vol_out = Volume::New (dim, origin, spacing, vol_in->direction_cosines, 
+        PT_VF_FLOAT_PLANAR, 3);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 

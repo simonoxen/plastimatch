@@ -221,8 +221,8 @@ Aperture::allocate_aperture_images ()
     Volume *ap_vol = new Volume (dim, origin, spacing, NULL, PT_UCHAR, 1);
     Volume *rc_vol = new Volume (dim, origin, spacing, NULL, PT_FLOAT, 1);
 
-    d_ptr->aperture_image = Plm_image::New (new Plm_image (ap_vol));
-    d_ptr->range_compensator_image = Plm_image::New (new Plm_image (rc_vol));
+    d_ptr->aperture_image = Plm_image::New (ap_vol);
+    d_ptr->range_compensator_image = Plm_image::New (rc_vol);
 }
 
 bool
@@ -246,7 +246,7 @@ Aperture::get_aperture_volume ()
 void 
 Aperture::set_aperture_image (const char *ap_filename)
 {
-    d_ptr->aperture_image = Plm_image::New (new Plm_image(ap_filename));
+    d_ptr->aperture_image = Plm_image::New (ap_filename);
 }
 
 void
@@ -276,8 +276,7 @@ Aperture::get_range_compensator_volume ()
 void 
 Aperture::set_range_compensator_image (const char *rc_filename)
 {
-    d_ptr->range_compensator_image 
-        = Plm_image::New (new Plm_image(rc_filename));
+    d_ptr->range_compensator_image = Plm_image::New (rc_filename);
 }
 
 void
