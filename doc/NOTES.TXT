@@ -1,3 +1,16 @@
+******************************************************************************
+Proj_volume, Rpl_volume, and dose calculation
+2015-05-06
+
+1. Proj_volume is defined in documentation with a projective geometry.
+   It is not an spherical geometry.
+
+2. 
+
+
+******************************************************************************
+Older stuff
+
 ***** Metadata hookup *****
 
 Current status:
