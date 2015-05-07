@@ -327,12 +327,14 @@ if (NOT PLM_DCM_USE_DCMTK AND NOT GDCM_VERSION_1)
     )
 endif ()
 
-## Specfun is removed from debian build
+## Dose calculation not yet supported on debian
 if (PLM_CONFIG_DEBIAN_BUILD)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
-    "bragg-curve"
-    "bragg-curve-check"
+    "proton-dose-1"
+    "proton-dose-2"
+    "proton-dose-3"
+    "proton-dose-4"
     )
 endif ()
 
