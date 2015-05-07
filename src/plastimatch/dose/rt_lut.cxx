@@ -75,59 +75,59 @@ double getstop (double energy)
 
 double get_dose_max(double E0)
 {
-	if (E0 < 0 || E0 > 255)
-	{
-		return 1;
-	}
+    if (E0 < 0 || E0 > 255)
+    {
+        return 1;
+    }
 
-	int E0_floor = floor(E0);
-	double rest = E0 - (double) E0_floor;
+    int E0_floor = floor(E0);
+    double rest = E0 - (double) E0_floor;
 		
-	return lookup_proton_dose_max_bragg[E0_floor][0] + rest * (lookup_proton_dose_max_bragg[E0_floor+1][0]-lookup_proton_dose_max_bragg[E0_floor][0]);
+    return lookup_proton_dose_max_bragg[E0_floor][0] + rest * (lookup_proton_dose_max_bragg[E0_floor+1][0]-lookup_proton_dose_max_bragg[E0_floor][0]);
 }
 
 int get_depth_max(double E0)
 {
-	int E0_floor = floorf(E0); 
-	if (E0 < 0)
-	{
-		return 0;
-	}
-	else if (E0 >255)
-	{
-		return 40000;
-	}
-	else
-	{
-		return lookup_proton_dose_max_bragg[E0_floor][1];
-	}
+    int E0_floor = floorf(E0); 
+    if (E0 < 0)
+    {
+        return 0;
+    }
+    else if (E0 >255)
+    {
+        return 40000;
+    }
+    else
+    {
+        return lookup_proton_dose_max_bragg[E0_floor][1];
+    }
 
+}
+
+double compute_X0_from_HU(double CT_HU)
+{
+    if (CT_HU <= -1000)
+    {
+        return 30390;
+    }
+    else if (CT_HU > -1000 && CT_HU< 0)
+    {
+        return exp(3.7271E-06 * CT_HU * CT_HU -3.009E-03 * CT_HU + 3.5857);
+    }
+    else if (CT_HU >= 0 && CT_HU < 55)
+    {
+        return -0.0284 * CT_HU + 36.08;
+    }
+    else
+    {
+        return 9.8027E-06 * CT_HU * CT_HU -.028939 * CT_HU + 36.08;
+    }
 }
 
 /* Make GCC compiler less whiny */
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 2)
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #endif
-
-double compute_X0_from_HU(double CT_HU)
-{
-    if (CT_HU <= -1000)
-	{
-		return 30390;
-	}
-	else if (CT_HU > -1000 && CT_HU< 0)
-	{
-		return exp(3.7271E-06 * CT_HU * CT_HU -3.009E-03 * CT_HU + 3.5857);
-	}
-	else if (CT_HU >= 0 && CT_HU < 55)
-	{
-		return -0.0284 * CT_HU + 36.08;
-	}
-	else
-	{
-		return 9.8027E-06 * CT_HU * CT_HU -.028939 * CT_HU + 36.08;
-	}
-}
 
 /* This table has 111 entries */
 const double lookup_proton_range_water[][2] ={

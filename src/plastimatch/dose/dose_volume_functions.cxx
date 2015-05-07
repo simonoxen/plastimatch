@@ -14,14 +14,14 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
     float ap_ul_pixel[3]; // coordinates in the BEV (rpl_volume) volume
     float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
     float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
-	plm_long dim[3] = {0,0,0};
-	float origin[3] = {0,0,0};
-	float spacing[3] = {0,0,0};
-	plm_long npix = 0;
-	const float dc[9] = {
-		dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
-		dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
-		dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
+    plm_long dim[3] = {0,0,0};
+    float origin[3] = {0,0,0};
+    float spacing[3] = {0,0,0};
+    plm_long npix = 0;
+    const float dc[9] = {
+        dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
+        dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
+        dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
 
     float sigma_margins = 3 * *sigma_max;
     double back_clip_useful = volume->compute_farthest_penetrating_ray_on_nrm(range) +5; // after this the volume will be void, the particules will not go farther + 2mm of margins
@@ -57,7 +57,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
 
     npix = dim[0]*dim[1]*dim[2];
 
-	dose_volume->create(dim, origin, spacing, dc, PT_FLOAT,1);
+    dose_volume->create(dim, origin, spacing, dc, PT_FLOAT,1);
 }
 
 void
@@ -69,7 +69,7 @@ calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinate
     double vec_antibug_prt[3] = {0.0,0.0,0.0};
 
     int dim[3] = {rpl_volume->get_vol()->dim[0],rpl_volume->get_vol()->dim[1],rpl_volume->get_vol()->dim[2]};
-	int idx2d = 0;   
+    int idx2d = 0;   
     int idx3d = 0;
 
     for (int i = 0; i < rpl_volume->get_vol()->dim[0];i++){
