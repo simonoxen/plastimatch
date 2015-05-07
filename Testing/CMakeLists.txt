@@ -2483,8 +2483,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mi-c-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-177.0"
-  "-176.0"
+  "-114.0"
+  "-113.0"
   )
 set_property (TEST plm-bsp-mi-c APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mi-c APPEND PROPERTY DEPENDS gauss-3)
@@ -2506,8 +2506,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mi-k-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-k-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-177.0"
-  "-176.0"
+  "-114.0"
+  "-113.0"
   )
 set_property (TEST plm-bsp-mi-k APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mi-k APPEND PROPERTY DEPENDS gauss-3)

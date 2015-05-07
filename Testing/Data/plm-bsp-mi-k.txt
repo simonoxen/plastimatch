@@ -13,7 +13,10 @@ impl=plastimatch
 threading=single
 alg_flavor=k
 metric=mi
-max_its=20
+# Floating point rounding differences cause this test case to 
+# diverge beyond about 10 function evaluations
+#max_its=20
+max_its=10
 grad_tol=0.1
 grid_spac=10 10 10
 res=2 2 2
