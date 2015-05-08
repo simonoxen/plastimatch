@@ -4,6 +4,7 @@
 #include "plmbase_config.h"
 #include <algorithm>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "logfile.h"
 #include "plm_math.h"
