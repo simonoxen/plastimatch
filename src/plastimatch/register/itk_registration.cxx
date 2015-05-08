@@ -13,7 +13,11 @@
 #include "itkNormalizedMutualInformationHistogramImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+#if PLM_CONFIG_USE_PATCHED_ITK
 #include "plm_OptMattesMutualInformationImageToImageMetric.h"
+#else
+#include "itkOptMattesMutualInformationImageToImageMetric.h"
+#endif
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
 #include "itkMattesMutualInformationImageToImageMetric.h"
@@ -45,8 +49,13 @@ typedef itk::NormalizedMutualInformationHistogramImageToImageMetric <
 /* modified Mattes mutual information class only available when 
    using ITK_USE_OPTIMIZED_REGISTRATION_METHODS */
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+#if PLM_CONFIG_USE_PATCHED_ITK
 typedef itk::plm_MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
+#else
+typedef itk::MattesMutualInformationImageToImageMetric <
+    FloatImageType, FloatImageType > MattesMIMetricType;
+#endif
 #else
 typedef itk::MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
