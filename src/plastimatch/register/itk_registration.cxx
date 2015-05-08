@@ -12,12 +12,12 @@
 #include "itkMutualInformationImageToImageMetric.h"
 #include "itkNormalizedMutualInformationHistogramImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
-#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
-#if PLM_CONFIG_USE_PATCHED_ITK
+#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)    \
+    && defined (PLM_CONFIG_USE_PATCHED_ITK)
 #include "plm_OptMattesMutualInformationImageToImageMetric.h"
-#else
+#include "itkOptMeanSquaresImageToImageMetric.h"
+#elif defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 #include "itkOptMattesMutualInformationImageToImageMetric.h"
-#endif
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
 #include "itkMattesMutualInformationImageToImageMetric.h"
@@ -46,16 +46,10 @@ typedef itk::MutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MIMetricType;
 typedef itk::NormalizedMutualInformationHistogramImageToImageMetric <
     FloatImageType, FloatImageType > NMIMetricType;
-/* modified Mattes mutual information class only available when 
-   using ITK_USE_OPTIMIZED_REGISTRATION_METHODS */
-#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
-#if PLM_CONFIG_USE_PATCHED_ITK
+#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)    \
+    && defined (PLM_CONFIG_USE_PATCHED_ITK)
 typedef itk::plm_MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
-#else
-typedef itk::MattesMutualInformationImageToImageMetric <
-    FloatImageType, FloatImageType > MattesMIMetricType;
-#endif
 #else
 typedef itk::MattesMutualInformationImageToImageMetric <
     FloatImageType, FloatImageType > MattesMIMetricType;
@@ -245,7 +239,8 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         metric->SetNumberOfSpatialSamples (
             this->compute_num_samples (fixed_ss));
 
-#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)    \
+    && defined (PLM_CONFIG_USE_PATCHED_ITK)
         /* Setting maxVal and minVal for MI calculation 
            (default==0 --> minVal and maxVal will be calculated from 
            images) */
@@ -273,7 +268,9 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 
         /* Apparently sampling is not implemented in ITK 3 
            unless optimized registration methods are specified. */
-#if defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) || (ITK_VERSION_MAJOR >= 4)
+#if ITK_VERSION_MAJOR >= 4                                        \
+    || (defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)          \
+        && defined (PLM_CONFIG_USE_PATCHED_ITK))
         metric->SetNumberOfSpatialSamples (
             this->compute_num_samples (fixed_ss));
 #endif
