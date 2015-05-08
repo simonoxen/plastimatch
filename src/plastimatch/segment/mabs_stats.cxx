@@ -98,10 +98,10 @@ Mabs_stats::compute_statistics (
         (int) dice.get_false_negatives(),
         hd.get_hausdorff(),
         hd.get_percent_hausdorff(),
-        hd.get_average_hausdorff(),
+        hd.get_avg_average_hausdorff(),
         hd.get_boundary_hausdorff(),
         hd.get_percent_boundary_hausdorff(),
-        hd.get_average_boundary_hausdorff()
+        hd.get_avg_average_boundary_hausdorff()
     );
 
     return stats_string;

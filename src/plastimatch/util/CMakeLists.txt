@@ -16,8 +16,7 @@ include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/devillard)
 ##-----------------------------------------------------------------------------
 set (PLMUTIL_LIBRARY_SRC
   bspline_correspond.cxx
-  contour_distance.cxx contour_distance.h 
-  dice_statistics.cxx
+  dice_statistics.cxx dice_statistics.h 
   dicom_sro_save.cxx
   distance_map.cxx
   diff.cxx

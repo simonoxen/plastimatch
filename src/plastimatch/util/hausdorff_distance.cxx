@@ -255,7 +255,7 @@ Hausdorff_distance::get_hausdorff ()
 }
 
 float 
-Hausdorff_distance::get_average_hausdorff ()
+Hausdorff_distance::get_avg_average_hausdorff ()
 {
     return d_ptr->avg_avg_hausdorff_distance;
 }
@@ -279,7 +279,7 @@ Hausdorff_distance::get_boundary_hausdorff ()
 }
 
 float 
-Hausdorff_distance::get_average_boundary_hausdorff ()
+Hausdorff_distance::get_avg_average_boundary_hausdorff ()
 {
     return d_ptr->avg_avg_boundary_hausdorff_distance;
 }
@@ -301,17 +301,21 @@ Hausdorff_distance::debug ()
 {
     lprintf (
 	"Hausdorff distance = %f\n"
-	"Average Hausdorff distance = %f\n"
+	"Avg average Hausdorff distance = %f\n"
+	"Max average Hausdorff distance = %f\n"
 	"Percent (%.2f) Hausdorff distance = %f\n"
 	"Hausdorff distance (boundary) = %f\n"
-	"Average Hausdorff distance (boundary) = %f\n"
+	"Avg average Hausdorff distance (boundary) = %f\n"
+	"Max average Hausdorff distance (boundary) = %f\n"
 	"Percent (%.2f) Hausdorff distance (boundary) = %f\n",
 	this->get_hausdorff (),
-	this->get_average_hausdorff (),
+	this->get_avg_average_hausdorff (),
+	this->get_max_average_hausdorff (),
         d_ptr->pct_hausdorff_distance_fraction,
 	this->get_percent_hausdorff (),
 	this->get_boundary_hausdorff (),
-	this->get_average_boundary_hausdorff (),
+	this->get_avg_average_boundary_hausdorff (),
+	this->get_max_average_boundary_hausdorff (),
         d_ptr->pct_hausdorff_distance_fraction,
 	this->get_percent_boundary_hausdorff ()
     );

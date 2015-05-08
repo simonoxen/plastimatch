@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
-#include "contour_distance.h"
 #include "dice_statistics.h"
 #include "hausdorff_distance.h"
 #include "itk_image_load.h"
@@ -17,7 +16,6 @@ public:
     bool commands_were_requested;
     bool have_dice_option;
     bool have_hausdorff_option;
-    bool have_contour_dist_option;
     Pstring reference_image_fn;
     Pstring test_image_fn;
 public:
@@ -25,7 +23,6 @@ public:
         commands_were_requested = false;
         have_dice_option = false;
         have_hausdorff_option = false;
-        have_contour_dist_option = false;
     }
 };
 
@@ -66,14 +63,12 @@ parse_fn (
 
     /* Commands to execute */
     parser->add_long_option ("", "all", 
-        "Compute Dice, Hausdorff, and contour mean distance (equivalent"
-        " to --dice --hausdorff --contour-mean)", 0);
+        "Compute both Dice and Hausdorff distances (equivalent"
+        " to --dice --hausdorff)", 0);
     parser->add_long_option ("", "dice", 
         "Compute Dice coefficient (default)", 0);
-    parser->add_long_option ("", "contour-mean", 
-        "Compute contour mean distance", 0);
     parser->add_long_option ("", "hausdorff", 
-        "Compute Hausdorff distance and average Hausdorff distance", 0);
+        "Compute Hausdorff distances (max, average, boundary, etc.)", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -89,15 +84,10 @@ parse_fn (
         parms->commands_were_requested = true;
         parms->have_hausdorff_option = true;
     }
-    if (parser->option("contour-mean")) {
-        parms->commands_were_requested = true;
-        parms->have_contour_dist_option = true;
-    }
     if (parser->option("all")) {
         parms->commands_were_requested = true;
         parms->have_dice_option = true;
         parms->have_hausdorff_option = true;
-        parms->have_contour_dist_option = true;
     }
     if (!parms->commands_were_requested) {
         parms->have_dice_option = true;
@@ -140,8 +130,5 @@ do_command_dice (int argc, char *argv[])
     }
     if (parms.have_hausdorff_option) {
         do_hausdorff (image_1, image_2);
-    }
-    if (parms.have_contour_dist_option) {
-        do_contour_mean_distance (image_1, image_2);
     }
 }

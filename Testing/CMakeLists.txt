@@ -1995,7 +1995,7 @@ plmtest_check_interval ("plm-dice-c-check-1"
   )
 plmtest_check_interval ("plm-dice-c-check-2"
   "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
-  "^Average Hausdorff distance = *([-0-9.]*)"
+  "^Avg average Hausdorff distance = *([-0-9.]*)"
   "3.40"
   "3.41"
   )
