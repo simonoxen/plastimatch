@@ -172,63 +172,6 @@ Dice_statistics::run ()
         d_ptr->cmp_cog[1] = cy / d_ptr->cmp_num_vox;
         d_ptr->cmp_cog[2] = cz / d_ptr->cmp_num_vox;
     }
-
-#if defined (commentout)
-    plm_long dim[3];
-    float origin[3];
-    float spacing[3];
-    get_image_header (dim, origin, spacing, d_ptr->ref_image);
-
-    /* Loop through images, gathering Dice */
-    itk::ImageRegionIteratorWithIndex<UCharImageType> it (
-        d_ptr->ref_image, d_ptr->ref_image->GetLargestPossibleRegion());
-    while (!it.IsAtEnd())
-    {
-        UCharImageType::IndexType k;
-        k = it.GetIndex();
-        if (d_ptr->ref_image->GetPixel(k)) {
-            d_ptr->ref_size++;
-            if (d_ptr->cmp_image->GetPixel(k)) {
-                d_ptr->TP++;
-            } else {
-                d_ptr->FN++;
-            }
-        } else {
-            if (d_ptr->cmp_image->GetPixel(k))
-                d_ptr->FP++;
-            else
-                d_ptr->TN++;
-        }
-        if (d_ptr->cmp_image->GetPixel(k)) {
-            d_ptr->cmp_size++;
-        }
-        ++it;
-    }
-
-    /* Do the extra moment stuff */
-    typedef itk::ImageMomentsCalculator<UCharImageType> MomentCalculatorType;
-    MomentCalculatorType::Pointer moment = MomentCalculatorType::New();
-
-    try {
-        moment->SetImage (d_ptr->ref_image);
-        moment->Compute ();
-        d_ptr->ref_cog = moment->GetCenterOfGravity ();
-        d_ptr->ref_vol = moment->GetTotalMass ();
-    } catch (itk::ExceptionObject &) {
-        d_ptr->ref_cog[0] = d_ptr->ref_cog[1] = d_ptr->ref_cog[2] = 0.f;
-        d_ptr->ref_vol = 0.f;
-    }
-
-    try {
-        moment->SetImage (d_ptr->cmp_image);
-        moment->Compute ();
-        d_ptr->cmp_cog = moment->GetCenterOfGravity ();
-        d_ptr->cmp_vol = moment->GetTotalMass ();
-    } catch (itk::ExceptionObject &) {
-        d_ptr->cmp_cog[0] = d_ptr->cmp_cog[1] = d_ptr->cmp_cog[2] = 0.f;
-        d_ptr->cmp_vol = 0.f;
-    }
-#endif
 }
 
 float
