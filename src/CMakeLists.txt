@@ -21,7 +21,7 @@ set (PLASTIMATCH_LIBS
   ${ITK_LIBRARIES}
   devillard
   nkidecompress
-  lua
+#  lua
   ${MATH_LIB}
   )
 
