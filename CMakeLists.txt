@@ -457,9 +457,9 @@ endif ()
 ##  LUA 5.1.4
 ##-----------------------------------------------------------------------------
 # We can't use debian's lua 5.1 because it doesn't contain lobject.h
-add_subdirectory (libs/lua-5.1.4)
-set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
-link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
+#add_subdirectory (libs/lua-5.1.4)
+#set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
+#link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
 
 # for history, etc in plastimatch tty mode
 find_package (Readline)
@@ -658,6 +658,7 @@ if (ITK_FOUND)
   endif ()
 endif ()
 message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
+
 ##-----------------------------------------------------------------------------
 ##  GDCM
 ##-----------------------------------------------------------------------------

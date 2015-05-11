@@ -55,7 +55,7 @@ build under debian in step 3.
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch/trunk
-     dch -v 1.5.4+dfsg0-1
+     dch -v 1.5.4+dfsg-1
 
 #. Run rebundle.pl until satisfied::
 
