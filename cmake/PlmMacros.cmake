@@ -34,6 +34,8 @@ macro (PLM_ADD_LIBRARY
     set_target_properties(${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
+  set_target_properties(${TARGET_NAME} 
+      PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
 
 # The bstrlib and f2c library are static because they aren't 
