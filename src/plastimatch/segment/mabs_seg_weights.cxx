@@ -41,6 +41,6 @@ Mabs_seg_weights_list::find (
         }
     }
     lprintf ("MSW search complete.\n");
-    msw_it->print();
+    msw->print();
     return msw;
 }
