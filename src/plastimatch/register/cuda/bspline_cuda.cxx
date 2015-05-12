@@ -145,15 +145,15 @@ bspline_find_correspondence
  )
 {
     mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->spacing[0];
+    mijk[0] = (mxyz[0] - moving->origin[0]) / moving->spacing[0];
     if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
 
     mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->spacing[1];
+    mijk[1] = (mxyz[1] - moving->origin[1]) / moving->spacing[1];
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
 
     mxyz[2] = fxyz[2] + dxyz[2];
-    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->spacing[2];
+    mijk[2] = (mxyz[2] - moving->origin[2]) / moving->spacing[2];
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
     return 1;
