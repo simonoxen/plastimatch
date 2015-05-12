@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #endif
@@ -145,7 +145,7 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
     d_ptr->m_rtss.reset ();
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
-#elif GDCM_VERSION_1
+#elif PLM_DCM_USE_GDCM1
     d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_gdcm_rtss (dicom_path, d_ptr->m_drs.get());
 #else
@@ -158,7 +158,7 @@ Rt_study::load_dicom_dose (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
-#elif GDCM_VERSION_1
+#elif PLM_DCM_USE_GDCM1
     d_ptr->m_dose.reset (gdcm1_dose_load (0, dicom_path));
 #else
     /* Do nothing */

@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include "metadata.h"
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 
 class Metadata;
 namespace gdcm { class File; };
@@ -34,5 +34,5 @@ set_gdcm_file_from_metadata (
 char*
 gdcm_uid (char *uid, const char *uid_root);
 
-#endif /* GDCM_VERSION_1 */
+#endif
 #endif

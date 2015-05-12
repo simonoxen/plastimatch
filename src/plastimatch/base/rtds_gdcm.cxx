@@ -6,7 +6,7 @@
 #include <sstream>
 #include <stdlib.h>
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 #include "gdcm1_dose.h"
 #include "gdcm1_series.h"
 #endif
@@ -23,7 +23,7 @@ Rt_study::load_gdcm (const char *dicom_dir)
 	return;
     }
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
     Gdcm_series *gdcm_series = new Gdcm_series;
     gdcm_series->load (dicom_dir);
     gdcm_series->digest_files ();
@@ -44,7 +44,7 @@ Rt_study::load_gdcm (const char *dicom_dir)
        handle things like MR. */
     d_ptr->m_img = Plm_image::New (new Plm_image(dicom_dir));
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
     /* Use native reader to set meta */
     gdcm_series->get_metadata (this->get_metadata ());
     delete gdcm_series;
@@ -58,7 +58,7 @@ Rt_study::save_gdcm (const char *output_dir)
 	printf ("Rt_study::save_dicom: save_short_dicom()\n");
 	d_ptr->m_img->save_short_dicom (output_dir, d_ptr->m_drs.get());
     }
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
     if (d_ptr->m_rtss) {
 	printf ("Rt_study::save_dicom: save_gdcm_rtss()\n");
 	d_ptr->m_rtss->save_gdcm_rtss (output_dir, d_ptr->m_drs);

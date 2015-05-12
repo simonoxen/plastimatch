@@ -47,8 +47,6 @@
 #cmakedefine DLIB_FOUND 1
 #cmakedefine FFTW_FOUND 1
 #cmakedefine GDCM_FOUND 1
-#cmakedefine GDCM_VERSION_1 1
-#cmakedefine GDCM_VERSION_2 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1
@@ -63,7 +61,6 @@
 #cmakedefine PLM_CONFIG_USE_SS_IMAGE_VEC 1
 #cmakedefine PLM_CONFIG_ALT_DCOS 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
-#cmakedefine PLM_CONFIG_PREFER_DCMTK 1
 
 /* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
@@ -71,8 +68,10 @@
 /* Did we find fortran? -- always true now. */
 #define FORTRAN_FOUND 1
 
-/* Dicom attributes */
+/* Dicom attributes.  One and only one of these will be true. */
 #cmakedefine PLM_DCM_USE_DCMTK 1
+#cmakedefine PLM_DCM_USE_GDCM1 1
+#cmakedefine PLM_DCM_USE_GDCM2 1
 
 /* ITK attributes */
 #cmakedefine ITK_FOUND 1

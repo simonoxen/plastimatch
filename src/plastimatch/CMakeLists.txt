@@ -12,8 +12,6 @@ project (src_plastimatch)
 # Plastimatch software configuration options
 option (PLM_CONFIG_ALT_DCOS "Use alternative direction cosines rules" OFF)
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
-option (PLM_CONFIG_PREFER_DCMTK 
-  "Use DCMTK instead of GDCM for DICOM operations" OFF)
 option (PLM_CONFIG_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VEC images (in development)" ON)
 option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers" OFF)
@@ -24,32 +22,13 @@ option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
 
 ##-----------------------------------------------------------------------------
-##  Figure out if we should use gdcm or dcmtk
+##  Give a warning for obsolete dicom libraries
 ##-----------------------------------------------------------------------------
-set (PLM_DCM_USE_DCMTK 0)
-if (PLM_CONFIG_DEBIAN_BUILD)
-  set (PLM_CONFIG_DISABLE_DCMTK FALSE)
-  set (PLM_CONFIG_PREFER_DCMTK TRUE)
-endif ()
-if (PLM_CONFIG_DISABLE_DCMTK)
-  set (DCMTK_FOUND FALSE)
-endif ()
-if (DCMTK_FOUND)
-  if (PLM_CONFIG_PREFER_DCMTK)
-    # User requested dcmtk
-    set (PLM_DCM_USE_DCMTK 1)
-  elseif (GDCM_VERSION_2)
-    # Gdcm 2.x
-    set (PLM_DCM_USE_DCMTK 1)
-  else ()
-    # Gdcm 1.x
-    set (PLM_DCM_USE_DCMTK 0)
-  endif ()
-endif ()
-
 # If the user only has gdcm 2.x, give a warning
-if (GDCM_VERSION_2 AND NOT PLM_DCM_USE_DCMTK)
-  message (WARNING "Plastimatch will be built with GDCM 2.X.  This means DICOM-RT functions are disabled; if possible, please use DCMTK or GDCM 1.X instead.")
+if (PLM_DCM_USE_GDCM2)
+    message (WARNING "Plastimatch is being built with GDCM 2.X.  DICOM-RT functions are disabled.")
+elseif (PLM_DCM_USE_GDCM1)
+    message (WARNING "Plastimatch is being built with GDCM 1.X.  Certain features of DICOM-RT are disabled.")
 endif ()
 
 

@@ -5,7 +5,7 @@
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 #include "gdcm1_dose.h"
 #include "gdcm1_rtss.h"
 #endif
@@ -336,7 +336,7 @@ Segmentation::load_cxt (const Pstring &input_fn, Rt_study_metadata *rsm)
 void
 Segmentation::load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm)
 {
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
     d_ptr->m_cxt = Rtss::New();
     gdcm_rtss_load (d_ptr->m_cxt.get(), rsm, input_fn);
 
@@ -448,7 +448,7 @@ Segmentation::save_gdcm_rtss (
 
     fn = string_format ("%s/%s", output_dir, "rtss.dcm");
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
     gdcm_rtss_save (d_ptr->m_cxt.get(), rsm, fn.c_str());
 #else
     /* GDCM 2 not implemented -- you're out of luck. */

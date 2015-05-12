@@ -128,7 +128,7 @@ set (PLMBASE_LIBRARY_SRC
   xpm.cxx
   )
 
-if (ITK_FOUND AND GDCM_VERSION_1)
+if (PLM_DCM_USE_GDCM1)
   set (PLMBASE_LIBRARY_SRC
     ${PLMBASE_LIBRARY_SRC}
     gdcm1_dose.cxx
@@ -141,14 +141,14 @@ if (ITK_FOUND AND GDCM_VERSION_1)
     )
 endif ()
 
-if (ITK_FOUND AND GDCM_VERSION_2)
+if (PLM_DCM_USE_GDCM2)
   set (PLMBASE_LIBRARY_SRC
     ${PLMBASE_LIBRARY_SRC}
     gdcm2_util.cxx
     )
 endif ()
 
-if (DCMTK_FOUND)
+if (PLM_DCM_USE_DCMTK)
   set (PLMBASE_LIBRARY_SRC
     ${PLMBASE_LIBRARY_SRC}
     dcmtk_file.cxx

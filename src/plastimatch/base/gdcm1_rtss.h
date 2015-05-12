@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include "rt_study_metadata.h"
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 
 class Metadata;
 class Rtss;
@@ -23,6 +23,6 @@ PLMBASE_API void gdcm_rtss_save (
     const Rt_study_metadata::Pointer& rsm, /* In: need to look at this too */
     const char *rtss_fn        /* Input: name of file to write to */
 );
-#endif /* GDCM_VERSION_1 */
 
+#endif
 #endif

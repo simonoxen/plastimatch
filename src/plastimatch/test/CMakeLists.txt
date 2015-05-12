@@ -72,13 +72,6 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 
-    # Test executable -- gdcm
-    if (ITK_FOUND AND GDCM_VERSION_1 AND NOT PLM_DCM_USE_DCMTK)
-	plm_add_executable (gdcm1_test gdcm1_test.cxx
-	    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-    endif ()
-
     # Test executables -- itk
     if (ITK_FOUND)
 	plm_add_executable (itk_test itk_test.cxx

@@ -10,7 +10,7 @@ class Metadata;
 class Plm_image;
 class Rt_study_metadata;
 
-#if GDCM_VERSION_1
+#if PLM_DCM_USE_GDCM1
 /* gdcm1_dose.cxx */
 PLMBASE_C_API bool gdcm1_dose_probe (const char *dose_fn);
 PLMBASE_C_API Plm_image* gdcm1_dose_load (
@@ -24,6 +24,6 @@ PLMBASE_C_API void gdcm1_dose_save (
 /* gdcm1_series.cxx */
 PLMBASE_C_API void gdcm1_series_test (char *dicom_dir);
 
-#endif /* GDCM_VERSION_1 */
+#endif
 
 #endif /* _gdcm1_dose_h_ */

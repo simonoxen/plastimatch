@@ -20,9 +20,6 @@ ITK_DIR:PATH=/home/gcs6/build/itk-3.20.1
 //Root of DCMTK install tree (optional).
 DCMTK_DIR:PATH=/PHShome/gcs6/build/install/dcmtk-3.6.0
 
-//Use DCMTK instead of GDCM for DICOM operations
-PLM_CONFIG_PREFER_DCMTK:BOOL=ON
-
 //Disable REG-2-3
 PLM_CONFIG_DISABLE_REG23:BOOL=ON
 

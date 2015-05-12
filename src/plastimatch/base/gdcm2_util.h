@@ -5,7 +5,8 @@
 #define _gdcm2_util_h_
 
 #include "plmbase_config.h"
-#if GDCM_VERSION_2
+
+#if PLM_DCM_USE_GDCM2
 
 #include <string>
 
@@ -34,5 +35,5 @@ set_gdcm_file_from_metadata (
 char*
 gdcm_uid (char *uid, const char *uid_root);
 
-#endif /* GDCM_VERSION_2 */
+#endif
 #endif

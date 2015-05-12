@@ -3,9 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 
-#if GDCM_VERSION_1
-#include "gdcm1_dose.h"
-#endif
 #include "file_util.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"

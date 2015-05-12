@@ -8,10 +8,10 @@
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_rtdose.h"
 #include "dcmtk_rtss.h"
-#elif GDCM_VERSION_1
+#elif PLM_DCM_USE_GDCM1
 #include "gdcm1_dose.h"
 #include "gdcm1_rtss.h"
-#else /* GDCM_VERSION_2 */
+#else
 /* Nothing */
 #endif
 #include "make_string.h"
@@ -22,9 +22,9 @@ dicom_probe_rtss (const char *rtss_fn)
 {
 #if PLM_DCM_USE_DCMTK
     return dcmtk_rtss_probe (rtss_fn);
-#elif GDCM_VERSION_1
+#elif PLM_DCM_USE_GDCM1
     return gdcm_rtss_probe (rtss_fn);
-#else /* GDCM_VERSION_2 */
+#else
     return false;
 #endif
 }
@@ -35,9 +35,9 @@ dicom_probe_dose (const char *fn)
 {
 #if PLM_DCM_USE_DCMTK
     return dcmtk_dose_probe (fn);
-#elif GDCM_VERSION_1
+#elif PLM_DCM_USE_GDCM1
     return gdcm1_dose_probe (fn);
-#else /* GDCM_VERSION_2 */
+#else
     return false;
 #endif
 }
