@@ -56,13 +56,20 @@ endforeach ()
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMSYS_LIBRARY_DEPENDENCIES 
-  bstrlib
-  )
-if (LIBDL_FOUND)
-  set (PLMSYS_LIBRARY_DEPENDENCIES
-    ${PLMSYS_LIBRARY_DEPENDENCIES}
-    dl
+    bstrlib
     )
+if (LIBDL_FOUND)
+    set (PLMSYS_LIBRARY_DEPENDENCIES
+	${PLMSYS_LIBRARY_DEPENDENCIES}
+	dl
+	)
+endif ()
+if (CYGWIN OR NOT WIN32)
+    find_library (pthreadlib pthread)
+    set (PLMSYS_LIBRARY_DEPENDENCIES
+	${PLMSYS_LIBRARY_DEPENDENCIES}
+	${pthreadlib}
+	)
 endif ()
 
 ##-----------------------------------------------------------------------------
