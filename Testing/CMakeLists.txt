@@ -2120,14 +2120,14 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-a.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-14.mha"
   )
-set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-12;rect-14")
+set_tests_properties (plm-gamma-a PROPERTIES DEPENDS "rect-12;rect-14")
 
 plm_add_test (
   "plm-gamma-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-b.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-13.mha"
   )
-set_tests_properties (plm-mask-a PROPERTIES DEPENDS "rect-12;rect-13")
+set_tests_properties (plm-gamma-b PROPERTIES DEPENDS "rect-12;rect-13")
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage
