@@ -1,5 +1,8 @@
-Version 1.6.1 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.6.2 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.6.1 (build 5068)
+Wed May 13 13:26:55 EDT 2015
 * Remove dependency on patched ITK library
 * Implement max avg Hausdorff statistic
 * Workaround for regression test failures on i386
