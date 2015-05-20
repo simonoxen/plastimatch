@@ -74,7 +74,7 @@ public:
       the dose difference tolerance is treated as a 
       fraction of the reference dose.  Otherwise it is treated as a
       fraction of the maximum dose in the reference volume.
-	  With local-gamma option, it is treated as a fraction of the local dose in the reference image
+      With local-gamma option, it is treated as a fraction of the local dose in the reference image
       To use a 3% dose tolerance, you would set this value to 0.03.  */
     void set_dose_difference_tolerance (float dose_tol);
     /*! \brief Set the reference dose (prescription dose).  
@@ -99,8 +99,12 @@ public:
     void set_analysis_threshold (float thresh);
     /*! \brief Set the maximum gamma computed by the class.  This is 
       used to speed up computation.  A typical value is 2 or 3.  */
-	/* */
+    /* */
     void set_gamma_max (float gamma_max);
+
+    /*! \brief Set a callback routine for reporting progress 
+     */
+    void set_progress_callback (void (*progress_callback)(float));
     ///@}
 
     /*! \name Execution */
@@ -130,26 +134,21 @@ public:
     /*! \brief Resample image_moving to image_reference */
     void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);
 
-	 /*! \brief Resample ref image with fixed spacing */
-	void resample_image_with_fixed_spacing (Plm_image *input_img, float spacing[3]);
+    /*! \brief Resample ref image with fixed spacing */
+    void resample_image_with_fixed_spacing (Plm_image *input_img, float spacing[3]);
 
-	std::string get_report_string();	
-	void set_report_string(std::string& report_str);
-
-	bool is_local_gamma();
-	void set_local_gamma(bool bLocalGamma);
-	bool is_compute_full_region();
-	void set_compute_full_region(bool b_compute_full_region);
-	float get_inherent_resample_mm();	
-	void set_inherent_resample_mm(float inherent_spacing_mm);
-	bool is_resample_nn();
-	void set_resample_nn(bool b_resample_nn);
-
-
-	bool is_interp_search();
-	void set_interp_search(bool b_interp_search);
-
-
+    std::string get_report_string();	
+    void set_report_string(std::string& report_str);
+    bool is_local_gamma();
+    void set_local_gamma(bool bLocalGamma);
+    bool is_compute_full_region();
+    void set_compute_full_region(bool b_compute_full_region);
+    float get_inherent_resample_mm();	
+    void set_inherent_resample_mm(float inherent_spacing_mm);
+    bool is_resample_nn();
+    void set_resample_nn(bool b_resample_nn);
+    bool is_interp_search();
+    void set_interp_search(bool b_interp_search);
 };
 
 #endif

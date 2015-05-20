@@ -424,6 +424,12 @@ Plm_image_header::get_image_center (float center[3]) const
     }
 }
 
+plm_long
+Plm_image_header::get_num_voxels (void) const
+{
+    return this->Size(0) * this->Size(1) * this->Size(2);
+}
+
 void 
 Plm_image_header::get_image_extent (float extent[3]) const
 {
@@ -433,24 +439,25 @@ Plm_image_header::get_image_extent (float extent[3]) const
     }
 }
 
-double 
-Plm_image_header::plm_round(double val, int digits)
-{
-	return floor(val * pow((double)10, digits) + 0.5) / pow((double)10, digits);
-}
-
-/* Return 1 if the two headers are the same. Added tolerance (5 digits) */
+/* Return true if the two headers are the same, within tolerance */
 bool
-Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2,int digits)
+Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2,
+    float threshold)
 {
     int d;
     for (d = 0; d < 3; d++) {
-    if (plm_round(pli1->m_origin[d],5) != plm_round(pli2->m_origin[d],5)) return 0;
-    if (plm_round(pli1->m_spacing[d],5) != plm_round(pli2->m_spacing[d],5)) return 0;
-    if (plm_round(pli1->Size(d),5) != plm_round(pli2->Size(d),5)) return 0;
+        if (fabs (pli1->m_origin[d] - pli2->m_origin[d]) > threshold) {
+           return false;
+        }
+        if (fabs (pli1->m_spacing[d] - pli2->m_spacing[d]) > threshold) {
+            return false;
+        }
+        if (pli1->Size(d) != pli2->Size(d)) {
+            return false;
+        }
     }
 
     /* GCS FIX: check direction cosines */
 
-    return 1;
+    return true;
 }

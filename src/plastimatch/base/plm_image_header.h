@@ -69,9 +69,11 @@ public:
     int Size (int d) const { return m_region.GetSize()[d]; }
     const SizeType& GetSize (void) const { return m_region.GetSize (); }
 public:
-    /*! \brief Return true if the two headers are the same. Tolerance can be specified via using digits (=number of digits used for rounding values) */
-    static bool compare (Plm_image_header *pli1, Plm_image_header *pli2,int digits=5);
-    static double plm_round(double val, int digits);
+    /*! \brief Return true if the two headers are the same. 
+      Tolerance on origin and spacing can be specified 
+      using the threshold parameter */
+    static bool compare (Plm_image_header *pli1, Plm_image_header *pli2, 
+        float threshold = 1e-5);
 
     int dim (int d) const { return m_region.GetSize()[d]; }
     float origin (int d) const { return m_origin[d]; }
@@ -161,6 +163,9 @@ public:
     FloatPoint3DType get_index (const FloatPoint3DType& pos) const;
     FloatPoint3DType get_position (const float index[3]) const;
     void get_image_center (float center[3]) const;
+
+    /*! \brief Get the number of voxels in the image */
+    plm_long get_num_voxels () const;
     /*! \brief Get the physical size of the image, from first voxel center
       to last voxel center.  Size is zero if only one voxel. */
     void get_image_extent (float extent[3]) const;
