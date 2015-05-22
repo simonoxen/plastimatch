@@ -73,34 +73,6 @@ inside_roi (float* xyz, const Volume* roi)
     return (int)m[i];
 }
 
-/* Find location and index of corresponding voxel in moving image.  
-   Return 1 if corresponding voxel lies within the moving image, 
-   return 0 if outside the moving image.  */
-int
-bspline_find_correspondence 
-(
- float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
- float *mijk,             /* Output: ijk indices in moving image (vox) */
- const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
- const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
- const Volume *moving     /* Input:  moving image */
- )
-{
-    mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = (mxyz[0] - moving->origin[0]) / moving->spacing[0];
-    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
-
-    mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = (mxyz[1] - moving->origin[1]) / moving->spacing[1];
-    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
-
-    mxyz[2] = fxyz[2] + dxyz[2];
-    mijk[2] = (mxyz[2] - moving->origin[2]) / moving->spacing[2];
-    if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
-
-    return 1;
-}
-
 /* Find location and index of corresponding voxel in moving image.
  * This version takes direction cosines into consideration
    Return 1 if corresponding voxel lies within the moving image, 
@@ -129,9 +101,7 @@ bspline_find_correspondence_dcos
     mijk[1] = PROJECT_Y (tmp, moving->proj);
     mijk[2] = PROJECT_Z (tmp, moving->proj);
 
-    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
-    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
-    if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
+    if (!moving->is_inside (mijk)) return 0;
 
     return 1;
 }
@@ -148,7 +118,7 @@ bspline_find_correspondence_dcos_roi
  const float *fxyz,         /* Input:  xyz coordinates in fixed image (mm) */
  const float *dxyz,         /* Input:  displacement from fixed to moving (mm) */
  const Volume *moving,      /* Input:  moving image */
- const Volume *moving_roi  /* Input:  moving image roi */
+ const Volume *moving_roi   /* Input:  moving image roi */
  )
 {
     float tmp[3];
@@ -165,9 +135,7 @@ bspline_find_correspondence_dcos_roi
     mijk[1] = PROJECT_Y (tmp, moving->proj);
     mijk[2] = PROJECT_Z (tmp, moving->proj);
 
-    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
-    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
-    if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
+    if (!moving->is_inside (mijk)) return 0;
 
     if (moving_roi) {
         return inside_roi (mxyz, moving_roi);

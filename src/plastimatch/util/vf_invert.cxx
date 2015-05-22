@@ -146,11 +146,10 @@ Vf_invert::run ()
 		};
 
 		mijk[2] = PROJECT_Z(mo_xyz,vf_inv->proj);
-		if (mijk[2] < -0.5 || mijk[2] > vf_inv->dim[2] - 0.5) continue;
 		mijk[1] = PROJECT_Y(mo_xyz,vf_inv->proj);
-		if (mijk[1] < -0.5 || mijk[1] > vf_inv->dim[1] - 0.5) continue;
 		mijk[0] = PROJECT_X(mo_xyz,vf_inv->proj);
-		if (mijk[0] < -0.5 || mijk[0] > vf_inv->dim[0] - 0.5) continue;
+
+                if (!vf_inv->is_inside (mijk)) continue;
 
                 mijk_r[2] = ROUND_PLM_LONG (mijk[2]);
                 mijk_r[1] = ROUND_PLM_LONG (mijk[1]);

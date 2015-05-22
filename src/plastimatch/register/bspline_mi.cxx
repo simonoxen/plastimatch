@@ -1209,7 +1209,7 @@ bspline_score_i_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -1377,7 +1377,7 @@ bspline_score_i_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -2061,7 +2061,7 @@ bspline_score_f_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -2203,7 +2203,7 @@ bspline_score_f_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -2381,7 +2381,7 @@ bspline_score_e_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -2532,7 +2532,7 @@ bspline_score_e_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;
@@ -2700,7 +2700,7 @@ bspline_score_d_mi (
                 bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                 /* Find correspondence in moving image */
-                rc = bspline_find_correspondence (
+                rc = bspline_find_correspondence_dcos (
                     mxyz, mijk,
                     fxyz, dxyz, moving
                 );
@@ -2829,7 +2829,7 @@ bspline_score_d_mi (
                     bspline_interp_pix_c (dxyz, bxf, pidx, q);
 
                     /* Find correspondence in moving image */
-                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                    rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                     /* If voxel is not inside moving image */
                     if (!rc) continue;

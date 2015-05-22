@@ -171,8 +171,12 @@ public:
     */
     float get_ijk_value (const float xyz[3]);
     void get_xyz_from_ijk (double xyz[3], const int ijk[3]);
-    void get_ijk_from_xyz (int ijk[3],const float xyz[3], bool* in);
-	void get_ijk_from_xyz (float ijk[3],const float xyz[3], bool* in);
+
+    void get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in);
+    void get_ijk_from_xyz (float ijk[3], const float xyz[3], bool* in);
+
+    /*! \brief Return true if continuous index ijk is inside volume */
+    bool is_inside (const float ijk[3]) const;
 
     /*! \brief In-place (destructive) scaling of the image according to the 
       supplied scale factor */

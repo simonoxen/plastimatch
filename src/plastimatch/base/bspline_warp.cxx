@@ -122,9 +122,7 @@ bspline_warp_dcos (
                 mijk[1] = PROJECT_Y (mxyz, moving->proj);
                 mijk[0] = PROJECT_X (mxyz, moving->proj);
 
-                if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) continue;
-                if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) continue;
-                if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) continue;
+                if (!moving->is_inside (mijk)) continue;
 
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 

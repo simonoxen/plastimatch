@@ -112,11 +112,10 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		plm_long mvf;
 
 		mijk[2] = PROJECT_Z(mo_xyz,vin->proj);
-		if (mijk[2] < -0.5 || mijk[2] > vin->dim[2] - 0.5) continue;
 		mijk[1] = PROJECT_Y(mo_xyz,vin->proj);
-		if (mijk[1] < -0.5 || mijk[1] > vin->dim[1] - 0.5) continue;
 		mijk[0] = PROJECT_X(mo_xyz,vin->proj);
-		if (mijk[0] < -0.5 || mijk[0] > vin->dim[0] - 0.5) continue;
+
+                if (!vin->is_inside (mijk)) continue;
 
 #if defined (commentout)
 		/* Nearest neighbor */

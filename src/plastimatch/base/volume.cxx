@@ -794,6 +794,7 @@ Volume::get_ijk_value (const float ijk[3])
     return val;
 }
 
+/* GCS FIX: These functions are incorrect, they ignore direction cosines */
 void 
 Volume::get_xyz_from_ijk (double xyz[3], const int ijk[3])
 {
@@ -833,6 +834,15 @@ Volume::get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in)
             return;
         }
     }
+}
+
+bool
+Volume::is_inside (const float ijk[3]) const
+{
+    if (ijk[0] <= -0.5 || ijk[0] >= this->dim[0] - 0.5) return false;
+    if (ijk[1] <= -0.5 || ijk[1] >= this->dim[1] - 0.5) return false;
+    if (ijk[2] <= -0.5 || ijk[2] >= this->dim[2] - 0.5) return false;
+    return true;
 }
 
 void

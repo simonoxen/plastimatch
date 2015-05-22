@@ -512,7 +512,7 @@ CPU_MI_Hist (Bspline_mi_hist_set *mi_hist,  // OUTPUT: Histograms
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 // Find correspondence in moving image
-                rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+                rc = bspline_find_correspondence_dcos (mxyz, mijk, fxyz, dxyz, moving);
 
                 // If voxel is not inside moving image
                 if (!rc) continue;
