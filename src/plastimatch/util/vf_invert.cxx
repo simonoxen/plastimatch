@@ -105,7 +105,7 @@ Vf_invert::run ()
 {
     /* Compute geometry of output volume */
     const Plm_image_header *pih = d_ptr->gchooser.get_geometry ();
-    Volume_header vh = pih->get_volume_header();
+    Volume_header vh (pih);
 
     /* Create mask volume */
     Volume *mask = new Volume (vh, PT_UCHAR, 1);

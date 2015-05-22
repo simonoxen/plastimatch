@@ -1369,7 +1369,7 @@ xform_itk_any_to_gpuit_vf (
     itk::Transform<double,3,3>* xf,
     const Plm_image_header* pih)
 {
-    Volume_header vh = pih->get_volume_header();
+    Volume_header vh (pih);
     Volume::Pointer vf_out = Volume::New (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     float* img = (float*) vf_out->img;
 
@@ -1401,7 +1401,7 @@ xform_gpuit_vf_to_gpuit_vf (
     const Plm_image_header *pih)
 {
     Volume::Pointer vf_out;
-    Volume_header vh = pih->get_volume_header();
+    Volume_header vh (pih);
     vf_out = volume_resample (vf_in, &vh);
     return vf_out;
 }
@@ -1412,7 +1412,7 @@ xform_gpuit_bsp_to_gpuit_vf (const Xform *xf_in, const Plm_image_header *pih)
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume::Pointer vf_out;
 
-    Volume_header vh = pih->get_volume_header ();
+    Volume_header vh (pih);
     vf_out = Volume::New (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     bspline_interpolate_vf (vf_out.get(), bxf);
     return vf_out;
@@ -1422,7 +1422,7 @@ Volume::Pointer
 xform_itk_vf_to_gpuit_vf (
     DeformationFieldType::Pointer itk_vf, const Plm_image_header *pih)
 {
-    Volume_header vh = pih->get_volume_header();
+    Volume_header vh (pih);
     Volume::Pointer vf_out = Volume::New (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;

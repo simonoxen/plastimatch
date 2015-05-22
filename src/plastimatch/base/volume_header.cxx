@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "bspline_xform.h"
+#include "plm_image_header.h"
 #include "plm_int.h"
 #include "volume_header.h"
 
@@ -55,6 +56,16 @@ Volume_header::Volume_header (
 {
     this->d_ptr = new Volume_header_private;
     this->set (vol->dim, vol->origin, vol->spacing, vol->direction_cosines);
+}
+
+Volume_header::Volume_header (
+    const Plm_image_header *pih)
+{
+    this->d_ptr = new Volume_header_private;
+    pih->get_dim (d_ptr->m_dim);
+    pih->get_origin (d_ptr->m_origin);
+    pih->get_spacing (d_ptr->m_spacing);
+    d_ptr->m_direction_cosines.set (pih->GetDirection());
 }
 
 Volume_header::~Volume_header ()

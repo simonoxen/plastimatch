@@ -305,17 +305,6 @@ Plm_image_header::get_volume_header (Volume_header *vh) const
     this->get_direction_cosines (vh->get_direction_cosines());
 }
 
-Volume_header
-Plm_image_header::get_volume_header () const
-{
-    Volume_header vh;
-    this->get_origin (vh.get_origin());
-    this->get_dim (vh.get_dim());
-    this->get_spacing (vh.get_spacing());
-    this->get_direction_cosines (vh.get_direction_cosines());
-    return vh;
-}
-
 void 
 Plm_image_header::get_origin (float origin[3]) const
 {

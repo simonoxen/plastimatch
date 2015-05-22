@@ -9,6 +9,7 @@
 #include "volume.h"
 
 class Bspline_xform;
+class Plm_image_header;
 class Volume;
 class Volume_header_private;
 
@@ -22,6 +23,7 @@ public:
     Volume_header (plm_long dim[3], float origin[3], float spacing[3],
         float direction_cosines[9]);
     Volume_header (const Volume::Pointer& vol);
+    Volume_header (const Plm_image_header *pih);
     ~Volume_header ();
 
 public:

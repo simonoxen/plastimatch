@@ -138,7 +138,6 @@ public:
         dest->m_direction = src->m_direction;
     }
 
-    Volume_header get_volume_header () const;
     void get_volume_header (Volume_header *vh) const;
     void get_origin (float origin[3]) const;
     void get_spacing (float spacing[3]) const;
