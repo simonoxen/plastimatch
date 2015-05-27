@@ -51,24 +51,23 @@ want to compile reg-2-3.
 C/C++ Compiler (required)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 You will need a C/C++ compiler.  If you are running 
-Windows, we recommend Microsoft Visual Studio (Express or Full, 
-2005 or 2008).  If you are running unix, we recommend gcc.
+Windows, we recommend Microsoft Visual Studio (Express or Full).
+Any version 2008 or higher should be fine.
 You can download the Microsoft Visual Studio Express compiler 
 from here:
 
   http://www.microsoft.com/Express/
 
-Microsoft Visual Studio 2010 or 2012 are also fine, but you will not 
-be able to use CUDA.  
-
 On windows, you may also use the MinGW compiler.
+However, ITK does not support cygwin.
+
+On unix systems, either g++ or clang should be fine.
+For ITK 3.20, only g++ is supported.  
+The clang compiler will work for newer versions of ITK.
 
 On OSX, you need the Xcode package, and you must also install the 
-command line tools.  For ITK 3.20.1, only g++ is 
-supported.  The clang compiler may work for newer versions of ITK, 
-but this is not well tested.  
-
-To invoke cmake using g++ instead of clang, do something like 
+command line tools.  
+If you wish to use g++ instead of clang, do something like 
 the following:
 
   CC=/usr/bin/gcc CXX=/usr/bin/g++ ccmake /path/to/plastimatch/
