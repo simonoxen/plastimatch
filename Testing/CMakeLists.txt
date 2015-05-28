@@ -2118,16 +2118,42 @@ set_tests_properties (plm-mask-a-check PROPERTIES DEPENDS plm-mask-a-stats)
 plm_add_test (
   "plm-gamma-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-a.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-14.mha"
+  "gamma;--compute-full-region;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-a.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-14.mha"
+  )
+plm_add_test (
+  "plm-gamma-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-gamma-a.mha"
+  )
+plmtest_check_interval ("plm-gamma-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-gamma-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.023"
+  "0.024"
   )
 set_tests_properties (plm-gamma-a PROPERTIES DEPENDS "rect-12;rect-14")
+set_tests_properties (plm-gamma-a-stats PROPERTIES DEPENDS plm-gamma-a)
+set_tests_properties (plm-gamma-a-check PROPERTIES DEPENDS plm-gamma-a-stats)
 
 plm_add_test (
   "plm-gamma-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-b.mha;${PLM_BUILD_TESTING_DIR}/rect-12.mha;${PLM_BUILD_TESTING_DIR}/rect-13.mha"
   )
+plm_add_test (
+  "plm-gamma-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-gamma-b.mha"
+  )
+plmtest_check_interval ("plm-gamma-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-gamma-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.245"
+  "0.255"
+  )
 set_tests_properties (plm-gamma-b PROPERTIES DEPENDS "rect-12;rect-13")
+set_tests_properties (plm-gamma-b-stats PROPERTIES DEPENDS plm-gamma-b)
+set_tests_properties (plm-gamma-b-check PROPERTIES DEPENDS plm-gamma-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage
