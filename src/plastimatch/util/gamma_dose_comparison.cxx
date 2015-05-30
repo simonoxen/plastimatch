@@ -758,14 +758,14 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             arr_gamma_histo[idx_histo]++;
         }
 
-        if (progress_callback && voxels_processed % 100 == 0) {
+        if (progress_callback && voxels_processed % 1000 == 0) {
             progress_callback (
                 (float) voxels_processed / (float) total_voxels);
         }
     }
 
     /* One last time, just to be sure */
-    if (progress_callback && voxels_processed % 100 == 0) {
+    if (progress_callback && voxels_processed % 1000 == 0) {
         progress_callback (
             (float) voxels_processed / (float) total_voxels);
     }
