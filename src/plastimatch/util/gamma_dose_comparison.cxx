@@ -765,7 +765,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     }
 
     /* One last time, just to be sure */
-    if (progress_callback && voxels_processed % 1000 == 0) {
+    if (progress_callback) {
         progress_callback (
             (float) voxels_processed / (float) total_voxels);
     }
