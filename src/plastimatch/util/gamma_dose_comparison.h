@@ -58,6 +58,7 @@ public:
     /*! \brief Set the mask image.  The image will be loaded
       from the specified filename. */
     void set_mask_image (const char* image_fn);
+    void set_mask_image (const std::string& image_fn);
     /*! \brief Set the mask image as a Plm image. */
     void set_mask_image (Plm_image* image);
     /*! \brief Set the mask image as an ITK image. */

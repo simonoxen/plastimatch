@@ -11,10 +11,12 @@
 
 #include "gamma_dose_comparison.h"
 #include "itk_resample.h"
+#include "itk_threshold.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
+#include "string_util.h"
 
 //21 = 20 +1, to make a room for >2.0 histogram
 #define MAX_NUM_HISTOGRAM_BIN 21
@@ -53,12 +55,14 @@ public:
         analysis_thresh = 0.f;
         analysis_num_vox = 0;
         analysis_num_pass = 0;
-		
+
         str_gamma_report ="";
         b_local_gamma = false;
         b_compute_full_region = false;
         f_inherent_resample_mm = -1.0;
-        voxels_processed = 0;
+
+        voxels_in_mask = 0;
+        voxels_in_image = 0;
 
         b_resample_nn = false;				
         b_interp_search = false;
@@ -105,12 +109,15 @@ public:
     plm_long analysis_num_vox;
     plm_long analysis_num_pass;
 
+
     /*extended features by YK*/
     std::string str_gamma_report; //used option information, gamma histogram
     bool b_local_gamma;
     bool b_compute_full_region;
     float f_inherent_resample_mm;
-    plm_long voxels_processed; //dim[0]*dim[1]*dim[2] //this is just for report
+
+    plm_long voxels_in_mask;
+    plm_long voxels_in_image;
 
     bool b_resample_nn;
 
@@ -173,6 +180,12 @@ Gamma_dose_comparison::set_compare_image (
     const FloatImageType::Pointer image)
 {
     d_ptr->img_in2 = new Plm_image (image);
+}
+
+void 
+Gamma_dose_comparison::set_mask_image (const std::string& image_fn)
+{
+    d_ptr->img_mask = new Plm_image (image_fn);
 }
 
 void 
@@ -255,7 +268,8 @@ Gamma_dose_comparison::run ()
     d_ptr->have_gamma_image = true;
 
     //Edited by YK
-    //if the reference image is too sparse, resample it with smaller spacing. (e.g. 1 mm)
+    // if the reference image is too sparse, resample it with smaller 
+    // spacing. (e.g. 1 mm)
     if (d_ptr->f_inherent_resample_mm > 0.0){		
         float spacing[3];
         spacing[0] = d_ptr->f_inherent_resample_mm;
@@ -264,14 +278,19 @@ Gamma_dose_comparison::run ()
         resample_image_with_fixed_spacing(d_ptr->img_in1, spacing);
     }	
 
-    // Threshold mask image to have values 1 and 0 and resample it to reference
+    // Resample mask 
     if (d_ptr->img_mask) {
+        // Set values to either 1 or 0
         d_ptr->do_mask_threshold ();
-        resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);		
+        // Resample as float
+        resample_image_to_reference (d_ptr->img_in1, d_ptr->img_mask);
+        // Threshold float image at value of 0.5
+        d_ptr->img_mask->set_itk (
+            itk_threshold_above (d_ptr->img_mask->itk_float(), 0.5));
     }
 
-    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);	
-    lprintf("Gamma calculation is under progress...\n");	
+    resample_image_to_reference (d_ptr->img_in1, d_ptr->img_in2);
+    lprintf("Gamma calculation is under progress...\n");
 
     //YKdebug
     //d_ptr->img_in1->save_image("<image1_path>");
@@ -349,7 +368,7 @@ Gamma_dose_comparison::resample_image_to_reference (
     Plm_image_header pih;
     pih.set_from_plm_image (image_reference);
 
-    itk::Image<float, 3>::Pointer resampledMovingImage = resample_image(
+    itk::Image<float, 3>::Pointer resampledMovingImage = resample_image (
         image_moving->itk_float(),
         &pih,
         0.f,
@@ -553,8 +572,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
     int idx_histo = 0;
     int num_histo_bin = MAX_NUM_HISTOGRAM_BIN-1; //last slot is reserved for > max_gamma cases	
-    voxels_processed = 0;
-    plm_long total_voxels = pih.get_num_voxels ();
+    plm_long voxels_processed = 0;
+
+    voxels_in_image = pih.get_num_voxels ();
+    voxels_in_mask = 0;
 
     //For interp-search option
     //Convert all the components to scaled ones
@@ -581,13 +602,15 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
         if (mask_img) {
             unsigned char mask_value = mask_img_iterator.Get();
             ++mask_img_iterator;
-            //if mask value is less than 0.5, gamma value is 0.0 (passed)
-            if (mask_value < 0.5) {
-                gamma_img_iterator.Set (NoProcessGammaValue);//YK: is 0.0 Safe? how about -1.0?
+            // if voxel not inside mask, gamma value is 0.0 (passed)
+            if (mask_value == 0) {
+                //YK: is 0.0 Safe? how about -1.0?
+                gamma_img_iterator.Set (NoProcessGammaValue);
                 ++gamma_img_iterator;
                 continue;
             }
-        }	
+        }
+        voxels_in_mask ++;
 
         //calculate gamma for this voxel of input image
         level1 = itk_1_iterator.Get();
@@ -672,7 +695,6 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
             FloatIteratorType sub2_iterator(itk_2, sub2set_of_img2);
 
-
             //scaling to go to the gamma calculation space. all components (x,y,z,d) are now in sampe weighting / space
             gamma_comp_r1[0] = k1[0] * sqrt(f0);
             gamma_comp_r1[1] = k1[1] * sqrt(f1);
@@ -682,7 +704,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             gamma_comp_r2[0] = k2[0] * sqrt(f0);
             gamma_comp_r2[1] = k2[1] * sqrt(f1);
             gamma_comp_r2[2] = k2[2] * sqrt(f2);
-            gamma_comp_r2[3] = level2 / ref_dose_general * sqrt(f3);			
+            gamma_comp_r2[3] = level2 / ref_dose_general * sqrt(f3);
 
             //maximum 3x3x3 iterations
             for (sub2_iterator.GoToBegin();
@@ -724,7 +746,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
                         (gamma_comp_r1[3] - gamma_comp_rn[3])*(gamma_comp_r1[3] - gamma_comp_rn[3]);
                     // in this subregion, only minimum value is take.
                     if (gg < gamma) gamma = gg;
-                }//only scalar_t is in btw. 0 and 1 (interpolation)									
+                }//only scalar_t is in btw. 0 and 1 (interpolation)
             }// end of sub2_iteration for interp-search
         }
         gamma = sqrt(gamma);
@@ -760,18 +782,16 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 
         if (progress_callback && voxels_processed % 1000 == 0) {
             progress_callback (
-                (float) voxels_processed / (float) total_voxels);
+                (float) voxels_processed / (float) this->voxels_in_image);
         }
     }
 
     /* One last time, just to be sure */
     if (progress_callback) {
-        progress_callback (
-            (float) voxels_processed / (float) total_voxels);
+        progress_callback (1.0);
     }
 
     this->gamma_image->set_itk (gamma_img);	
-	
 }
 
 void 
@@ -843,11 +863,11 @@ Gamma_dose_comparison_private::do_mask_threshold ()
     UCharIteratorType mask_it (mask_img, 
         mask_img->GetLargestPossibleRegion());
 
-    /* Loop through mask image, threshold */
+    /* Loop through mask image, set to either 0 or 1 */
     for (mask_it.GoToBegin(); !mask_it.IsAtEnd(); ++mask_it)
     {
         unsigned char mask_val = mask_it.Get();
-        mask_it.Set( mask_val<1 ? 0 : 1 );
+        mask_it.Set (mask_val > 0 ? 1 : 0);
     }
 }
 
@@ -857,6 +877,7 @@ void Gamma_dose_comparison_private::compose_report()
 
     int iStrSize = 128;
     char itemStr[128];
+    std::string item;
 
     memset(itemStr, 0, iStrSize);
     sprintf(itemStr, "%s\t%d\n", "interp_search", this->b_interp_search);
@@ -902,8 +923,14 @@ void Gamma_dose_comparison_private::compose_report()
     sprintf( itemStr, "%s\t%3.2f\n","dose_max", this->dose_max);
     str_gamma_report= str_gamma_report+std::string(itemStr);
 	
+    str_gamma_report += string_format ("%s\t%d\n","voxels_in_mask", 
+        (int) this->voxels_in_mask);
+
+    str_gamma_report += string_format ("%s\t%d\n","number_of_total_voxels", 
+        (int) this->voxels_in_image);
+
     memset(itemStr, 0, iStrSize);	
-    sprintf( itemStr, "%s\t%d\n","number_of_total_voxels", (int) this->voxels_processed);
+    sprintf( itemStr, "%s\t%d\n","number_of_total_voxels", (int) this->voxels_in_image);
     str_gamma_report= str_gamma_report+std::string(itemStr);
 
     memset(itemStr, 0, iStrSize);	
