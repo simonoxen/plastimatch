@@ -42,6 +42,7 @@ class PLMSEGMENT_API Segment_body {
         m_fill_parms[5]= 50;
     }
     void do_segmentation ();
+	void do_segmentation_air_cavity();
     UCharImageType::Pointer threshold_patient (FloatImageType::Pointer i1);
     int find_patient_bottom (FloatImageType::Pointer i1);
     UCharImageType::Pointer fill_holes (UCharImageType::Pointer mask, int radius, int max_its);

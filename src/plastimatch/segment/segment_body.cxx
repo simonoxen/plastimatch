@@ -389,3 +389,114 @@ Segment_body::do_segmentation ()
     printf ("return\n");
     this->img_out->set_itk (i2);
 }
+
+
+void
+Segment_body::do_segmentation_air_cavity()//for air cavity filling in CT/CBCT images
+{
+	/* Convert input to float */
+	FloatImageType::Pointer i1 = this->img_in->itk_float();
+
+	/* Reduce resolution to at most 5 mm voxels */
+	if (m_fast) {
+		Plm_image_header pih;
+		bool need_resample = false;
+		ImageRegionType::SizeType itk_size;
+		pih.set_from_plm_image(this->img_in);
+		for (int d = 0; d < 3; d++) {
+			if (pih.m_spacing[d] < 5.0) {
+				itk_size[d] = (int)floor(pih.Size(d) * pih.m_spacing[d] / 5.0);
+				pih.m_origin[d] += (5.0 - pih.m_spacing[d]) / 2;
+				pih.m_spacing[d] = 5.0;
+				need_resample = true;
+			}
+			else {
+				itk_size[d] = pih.Size(d);
+			}
+		}
+		if (need_resample) {
+			printf("Resampling image\n");
+			pih.m_region.SetSize(itk_size);
+			i1 = resample_image(i1, &pih, -1000, 1);
+			if (m_debug) {
+				itk_image_save(i1, "0_resample.nrrd");
+			}
+		}
+	}
+
+	/* Allocate output image (i2) */
+	UCharImageType::Pointer i2 = UCharImageType::New();
+
+	/* Find patient */
+	int patient_bottom;
+	if (this->m_bot_given) {
+		patient_bottom = this->m_bot;
+	}
+	else {
+		printf("find_patient_bottom\n");
+		patient_bottom = find_patient_bottom(i1);
+	}
+
+	/* Threshold image */
+	printf("threshold\n");
+	i2 = this->threshold_patient(i1);
+
+	/* Zero out the couch */
+	//YKTEMP
+	/*  printf ("remove_couch\n");
+	remove_couch (i2, patient_bottom);
+	if (m_debug) {
+	itk_image_save (i2, "1_remove_couch.nrrd");
+	}*/
+
+	/* Erode and dilate */ //YKTEMP
+	printf("erode_and_dilate\n");
+	i2 = erode_and_dilate(i2);
+
+	/* Compute connected components */ //YKTEMP
+	//printf ("get_largest_connected_component\n");
+	//i2 = get_largest_connected_component (i2);
+
+	/* Invert the image *///YKTEMP
+	/*printf ("invert\n");
+	invert_image (i2);*/
+	if (m_debug) {
+		itk_image_save(i2, "2_largest_cc.nrrd");
+	}
+
+	/* Fill holes: Redo connected components on the (formerly) black parts *///YKTEMP
+	//printf ("get_largest_connected_component\n");
+	//i2 = get_largest_connected_component (i2);
+
+	if (m_debug) {
+		itk_image_save(i2, "3_re_invert.nrrd");
+	}
+
+	/* Fill holes */
+	/* PAOLO ZAFFINO 9-4-13
+	* Often the mask has some big holes inside (for example the structures that contain air).
+	* Try to fill that holes.
+	* This step can be very slow but anyway it seems to fix the issue. */
+	if (m_fill_holes) {
+		printf("fill holes \n");
+		printf("fill parameters: \n");
+		printf("radius1 = %d, radius2 = %d, radius3 = %d \n",
+			m_fill_parms[0], m_fill_parms[1], m_fill_parms[2]);
+		printf("iterations1 = %d, iterations2 = %d, iterations3 = %d \n",
+			m_fill_parms[3], m_fill_parms[4], m_fill_parms[5]);
+		i2 = fill_holes(i2, m_fill_parms[0], m_fill_parms[3]);
+		i2 = fill_holes(i2, m_fill_parms[1], m_fill_parms[4]);
+		i2 = fill_holes(i2, m_fill_parms[2], m_fill_parms[5]);
+		if (m_debug) {
+			itk_image_save(i2, "4_filled.nrrd");
+		}
+	}
+
+	/* Invert the image */
+	printf("invert\n");
+	invert_image(i2);
+
+	/* Return image to caller */
+	printf("return\n");
+	this->img_out->set_itk(i2);
+}
