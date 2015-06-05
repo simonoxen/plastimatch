@@ -32,6 +32,11 @@ if (PLMLIB_CONFIG_ENABLE_REGISTER)
     "@CMAKE_SOURCE_DIR@/src/plastimatch/register"
     "@CMAKE_SOURCE_DIR@/libs/liblbfgs-1.9/include")
 endif ()
+if (PLMLIB_CONFIG_ENABLE_SEGMENT)
+  set (PLASTIMATCH_INCLUDE_DIRS
+    ${PLASTIMATCH_INCLUDE_DIRS}
+    "@CMAKE_SOURCE_DIR@/src/plastimatch/segment")
+endif ()
   
 set (PLASTIMATCH_ITK_DIR
   "@ITK_DIR@")
