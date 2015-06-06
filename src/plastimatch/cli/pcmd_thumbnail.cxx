@@ -9,13 +9,12 @@
 #include "pcmd_thumbnail.h"
 #include "plm_clp.h"
 #include "plm_image.h"
-#include "pstring.h"
 #include "thumbnail.h"
 
 class Thumbnail_parms {
 public:
-    Pstring input_fn;
-    Pstring output_fn;
+    std::string input_fn;
+    std::string output_fn;
     int axis;
     int dim;
     float spacing;
@@ -38,8 +37,7 @@ thumbnail_main (Thumbnail_parms* parms)
     Plm_image::Pointer pli;
 
     /* Load image */
-    pli = plm_image_load ((const char*) parms->input_fn, 
-	PLM_IMG_TYPE_ITK_FLOAT);
+    pli = plm_image_load (parms->input_fn, PLM_IMG_TYPE_ITK_FLOAT);
 
     /* Make thumbnail */
     Thumbnail thumbnail;
@@ -65,7 +63,7 @@ thumbnail_main (Thumbnail_parms* parms)
     }
 
     /* Save the output file */
-    pli->save_image ((const char*) parms->output_fn);
+    pli->save_image (parms->output_fn);
 }
 
 static void

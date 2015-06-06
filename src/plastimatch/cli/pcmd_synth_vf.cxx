@@ -11,14 +11,13 @@
 #include "itk_image_save.h"
 #include "plm_clp.h"
 #include "plm_math.h"
-#include "pstring.h"
 #include "synthetic_vf.h"
 #include "volume_header.h"
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {
-    Pstring output_fn;
-    Pstring fixed_fn;
+    std::string output_fn;
+    std::string fixed_fn;
     Synthetic_vf_parms sv_parms;
 };
 
@@ -29,7 +28,7 @@ deduce_geometry (
 )
 {
     /* Try to guess the proper dimensions and spacing for output image */
-    if (parms->fixed_fn.not_empty ()) {
+    if (parms->fixed_fn != "") {
 	/* use the spacing of user-supplied fixed image */
 	printf ("Setting PIH from FIXED\n");
 	FloatImageType::Pointer fixed = itk_image_load_float (
@@ -147,7 +146,7 @@ parse_fn (
     Synthetic_vf_parms *sv_parms = &parms->sv_parms;
 
     /* Basic options */
-    parms->output_fn = parser->get_string("output").c_str();
+    parms->output_fn = parser->get_string("output");
 
     /* Patterns */
     if (parser->option("xf-zero")) {
@@ -165,7 +164,7 @@ parse_fn (
 
     /* Fixed */
     if (parser->option ("fixed")) {
-        parms->fixed_fn = parser->get_string("fixed").c_str();
+        parms->fixed_fn = parser->get_string("fixed");
     }
 
     /* Image size */

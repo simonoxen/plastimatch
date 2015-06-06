@@ -6,6 +6,12 @@
 #include "plm_image_type.h"
 
 Plm_image_type
+plm_image_type_parse (const std::string& string)
+{
+    return plm_image_type_parse (string.c_str());
+}
+
+Plm_image_type
 plm_image_type_parse (const char* string)
 {
     if (!strcmp (string,"auto")) {

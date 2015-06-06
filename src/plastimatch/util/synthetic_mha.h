@@ -43,7 +43,7 @@ public:
         NORMALIZATION_GABOR
     };
 public:
-    int output_type;
+    Plm_image_type output_type;
     Pattern_type pattern;
     Pstring fixed_fn;
     std::string input_fn;

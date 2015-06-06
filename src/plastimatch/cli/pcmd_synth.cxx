@@ -12,7 +12,6 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study.h"
 #include "string_util.h"
 #include "synthetic_mha.h"
@@ -20,11 +19,11 @@
 class Synthetic_mha_main_parms
 {
 public:
-    Pstring output_fn;
-    Pstring output_dose_img_fn;
-    Pstring output_ss_img_fn;
-    Pstring output_ss_list_fn;
-    Pstring output_dicom;
+    std::string output_fn;
+    std::string output_dose_img_fn;
+    std::string output_ss_img_fn;
+    std::string output_ss_list_fn;
+    std::string output_dicom;
     Synthetic_mha_parms sm_parms;
     bool dicom_with_uids;
     std::vector<std::string> m_metadata;
@@ -41,14 +40,14 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* Create image */
     Rt_study rtds;
-    if (parms->output_dicom.not_empty() 
-        || parms->output_ss_img_fn.not_empty()
-        || parms->output_ss_list_fn.not_empty())
+    if (parms->output_dicom != "" 
+        || parms->output_ss_img_fn != ""
+        || parms->output_ss_list_fn != "")
     {
         sm_parms->m_want_ss_img = true;
     }
-    if (parms->output_dicom.not_empty() 
-        || parms->output_dose_img_fn.not_empty())
+    if (parms->output_dicom != "" 
+        || parms->output_dose_img_fn != "")
     {
         sm_parms->m_want_dose_img = true;
     }
@@ -59,37 +58,12 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* Save to file */
     FloatImageType::Pointer img = rtds.get_image()->itk_float();
-    if (parms->output_fn.not_empty()) {
-        switch (sm_parms->output_type) {
-        case PLM_IMG_TYPE_ITK_UCHAR:
-            itk_image_save_uchar (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_SHORT:
-            itk_image_save_short (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_USHORT:
-            itk_image_save_ushort (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_LONG:
-            itk_image_save_int32 (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_ULONG:
-            itk_image_save_uint32 (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_FLOAT:
-            itk_image_save_float (img, (const char*) parms->output_fn);
-            break;
-        case PLM_IMG_TYPE_ITK_DOUBLE:
-            itk_image_save_double (img, (const char*) parms->output_fn);
-            break;
-        default:
-            print_and_exit ("Output type is not supported.\n");
-            break;
-        }
+    if (parms->output_fn != "") {
+        itk_image_save (img, parms->output_fn, sm_parms->output_type);
     }
 
     /* ss_img */
-    if (parms->output_ss_img_fn.not_empty()) {
+    if (parms->output_ss_img_fn != "") {
 #if (PLM_CONFIG_USE_SS_IMAGE_VEC)
         rtds.get_rtss()->convert_to_uchar_vec ();
 #endif
@@ -97,17 +71,17 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     }
 
     /* dose_img */
-    if (parms->output_dose_img_fn.not_empty()) {
+    if (parms->output_dose_img_fn != "") {
         rtds.save_dose (parms->output_dose_img_fn);
     }
 
     /* list of structure names */
-    if (parms->output_ss_list_fn.not_empty()) {
+    if (parms->output_ss_list_fn != "") {
         printf ("save_ss_img: save_ss_list\n");
         rtds.get_rtss()->save_ss_list (parms->output_ss_list_fn);
     }
 
-    if (parms->output_dicom.not_empty()) {
+    if (parms->output_dicom != "") {
         rtds.get_rtss()->convert_ss_img_to_cxt ();
         rtds.save_dicom (parms->output_dicom.c_str(),
             parms->dicom_with_uids);
@@ -276,13 +250,13 @@ parse_fn (
     Synthetic_mha_parms *sm_parms = &parms->sm_parms;
 
     /* Basic options */
-    parms->output_fn = parser->get_string("output").c_str();
-    parms->output_dicom = parser->get_string("output-dicom").c_str();
-    parms->output_dose_img_fn = parser->get_string("output-dose-img").c_str();
-    parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
-    parms->output_ss_list_fn = parser->get_string("output-ss-list").c_str();
+    parms->output_fn = parser->get_string("output");
+    parms->output_dicom = parser->get_string("output-dicom");
+    parms->output_dose_img_fn = parser->get_string("output-dose-img");
+    parms->output_ss_img_fn = parser->get_string("output-ss-img");
+    parms->output_ss_list_fn = parser->get_string("output-ss-list");
     sm_parms->output_type = plm_image_type_parse (
-        parser->get_string("output-type").c_str());
+        parser->get_string("output-type"));
     if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
         throw dlib::error ("Error, unknown output-type\n");
     }
@@ -340,7 +314,7 @@ parse_fn (
     }
 
     /* Input files */
-    sm_parms->fixed_fn = parser->get_string("fixed").c_str();
+    sm_parms->fixed_fn = parser->get_string("fixed");
     sm_parms->input_fn = parser->get_string("input");
 
     /* Image size */

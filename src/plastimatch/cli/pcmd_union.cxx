@@ -7,7 +7,6 @@
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_file_format.h"
-#include "pstring.h"
 #include "xform.h"
 
 class Union_parms {

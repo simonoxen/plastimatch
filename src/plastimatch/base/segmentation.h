@@ -54,13 +54,13 @@ public:
         const Rt_study_metadata::Pointer& rsm);
     void save_fcsv (const Rtss_roi *curr_structure, const Pstring& fn);
     void save_prefix_fcsv (const Pstring &output_prefix);
-    void save_ss_image (const Pstring &ss_img_fn);
+    void save_ss_image (const std::string& ss_img_fn);
     void save_labelmap (const Pstring &labelmap_fn);
     void save_prefix (const std::string& output_prefix, 
         const std::string& extension = "mha");
     void save_prefix (const char *output_prefix);
     void save_prefix (const Pstring &output_prefix);
-    void save_ss_list (const Pstring &ss_list_fn);
+    void save_ss_list (const std::string& ss_list_fn);
     void save_xio (
         const Rt_study_metadata::Pointer& rsm,
         Xio_ct_transform *xio_transform, Xio_version xio_version,

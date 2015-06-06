@@ -426,6 +426,14 @@ Rt_study::save_dicom_dose (const char *dicom_dir)
 }
 
 void
+Rt_study::save_dose (const std::string& fname)
+{
+    if (fname != "") {
+        d_ptr->m_dose->save_image (fname);
+    }
+}
+
+void
 Rt_study::save_dose (const char* fname)
 {
     if (d_ptr->m_dose) {

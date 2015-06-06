@@ -8,15 +8,15 @@
 
 class Rtss;
 
-PLMBASE_C_API Rtss* ss_list_load (
+PLMBASE_API Rtss* ss_list_load (
         Rtss* cxt,
         const char* ss_list_fn
 );
-PLMBASE_C_API void ss_list_save (
+PLMBASE_API void ss_list_save (
         Rtss* cxt,
         const char* cxt_fn
 );
-PLMBASE_C_API void ss_list_save_colormap (
+PLMBASE_API void ss_list_save_colormap (
         Rtss* cxt,
         const char* colormap_fn
 );

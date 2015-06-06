@@ -23,11 +23,49 @@
 #include "itk_image_cast.h"
 #include "itk_image_save.h"
 #include "logfile.h"
+#include "print_and_exit.h"
 #include "path_util.h"
 
 /* -----------------------------------------------------------------------
    Writing image files
    ----------------------------------------------------------------------- */
+void itk_image_save (const FloatImageType::Pointer& img_ptr, 
+    const std::string& fname, Plm_image_type image_type)
+{
+    itk_image_save (img_ptr, fname.c_str(), image_type);
+}
+
+void itk_image_save (const FloatImageType::Pointer& img_ptr, 
+    const char* fname, Plm_image_type image_type)
+{
+    switch (image_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        itk_image_save_uchar (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+        itk_image_save_short (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+        itk_image_save_ushort (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_LONG:
+        itk_image_save_int32 (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+        itk_image_save_uint32 (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        itk_image_save_float (img_ptr, fname);
+        break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        itk_image_save_double (img_ptr, fname);
+        break;
+    default:
+        print_and_exit ("Output type is not supported.\n");
+        break;
+    }
+}
+
 template<class T> 
 void
 itk_image_save (T image, const char* fname)

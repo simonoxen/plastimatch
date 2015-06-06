@@ -43,8 +43,8 @@ public:
     Pstring output_pointset_fn;
     std::string output_prefix;
     Pstring output_prefix_fcsv;
-    Pstring output_ss_img_fn;
-    Pstring output_ss_list_fn;
+    std::string output_ss_img_fn;
+    std::string output_ss_list_fn;
     Pstring output_vf_fn;
     Pstring output_xio_dirname;
 

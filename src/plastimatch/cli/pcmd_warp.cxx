@@ -10,7 +10,6 @@
 #include "plm_clp.h"
 #include "plm_file_format.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study.h"
 #include "rt_study_warp.h"
 #include "string_util.h"
@@ -218,8 +217,8 @@ parse_fn (
     parms->output_prefix = parser->get_string("output-prefix").c_str();
     parms->output_prefix_fcsv 
         = parser->get_string("output-prefix-fcsv").c_str();
-    parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
-    parms->output_ss_list_fn = parser->get_string("output-ss-list").c_str();
+    parms->output_ss_img_fn = parser->get_string("output-ss-img");
+    parms->output_ss_list_fn = parser->get_string("output-ss-list");
     parms->output_vf_fn = parser->get_string("output-vf").c_str();
     parms->output_xio_dirname = parser->get_string("output-xio").c_str();
     

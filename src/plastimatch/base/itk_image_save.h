@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include "itk_image_type.h"
+#include "plm_image_type.h"
 
 class Metadata;
 class Rt_study_metadata;
@@ -14,6 +15,10 @@ class Slice_index;
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
+void itk_image_save (const FloatImageType::Pointer& img_ptr, 
+    const std::string& fname, Plm_image_type image_type);
+void itk_image_save (const FloatImageType::Pointer& img_ptr, 
+    const char* fname, Plm_image_type image_type);
 template<class T> void itk_image_save (T img_ptr, const char* fname);
 template<class T> void itk_image_save (T img_ptr, const std::string& fname);
 template<class T> void itk_image_save_short_dicom (T image, const char* dir_name, Rt_study_metadata *);

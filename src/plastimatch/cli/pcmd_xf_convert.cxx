@@ -10,7 +10,6 @@
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study.h"
 #include "rt_study_metadata.h"
 #include "volume_header.h"
@@ -19,7 +18,7 @@
 
 class Xf_convert_parms {
 public:
-    Pstring input_fn;
+    std::string input_fn;
     std::string output_type;
     std::string output_fn;
     std::string output_dicom_dir;
@@ -243,7 +242,7 @@ parse_fn (
 
     /* Input files */
     parser->check_required ("input");
-    parms->input_fn = parser->get_string("input").c_str();
+    parms->input_fn = parser->get_string("input");
 
     /* Output files */
     if (parser->option ("output")) {

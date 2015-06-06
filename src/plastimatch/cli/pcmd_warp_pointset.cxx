@@ -7,7 +7,6 @@
 #include "itk_pointset.h"
 #include "pcmd_warp.h"
 #include "pointset.h"
-#include "pstring.h"
 #include "warp_parms.h"
 #include "xform.h"
 

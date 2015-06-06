@@ -493,7 +493,7 @@ Segmentation::save_prefix_fcsv (const Pstring &output_prefix)
 }
 
 void
-Segmentation::save_ss_image (const Pstring &ss_img_fn)
+Segmentation::save_ss_image (const std::string& ss_img_fn)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
@@ -510,7 +510,7 @@ Segmentation::save_ss_image (const Pstring &ss_img_fn)
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
-    d_ptr->m_ss_img->save_image ((const char*) ss_img_fn);
+    d_ptr->m_ss_img->save_image (ss_img_fn);
 }
 
 void
@@ -584,9 +584,9 @@ Segmentation::save_prefix (const char *output_prefix)
 }
 
 void
-Segmentation::save_ss_list (const Pstring &ss_list_fn)
+Segmentation::save_ss_list (const std::string& ss_list_fn)
 {
-    ss_list_save (d_ptr->m_cxt.get(), (const char*) ss_list_fn);
+    ss_list_save (d_ptr->m_cxt.get(), ss_list_fn.c_str());
 }
 
 void

@@ -7,7 +7,6 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "pstring.h"
 
 void
 do_command_thumbnail (int argc, char *argv[]);

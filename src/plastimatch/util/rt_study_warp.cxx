@@ -88,13 +88,13 @@ save_ss_img (
     }
 
     /* ss_img */
-    if (parms->output_ss_img_fn.not_empty()) {
+    if (parms->output_ss_img_fn != "") {
         lprintf ("save_ss_img: save_ss_image\n");
         seg->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* list of structure names */
-    if (parms->output_ss_list_fn.not_empty()) {
+    if (parms->output_ss_list_fn != "") {
         lprintf ("save_ss_img: save_ss_list\n");
         seg->save_ss_list (parms->output_ss_list_fn);
     }
@@ -156,7 +156,7 @@ warp_and_save_ss (
     /* GCS FIX: If there is an input m_ss_img, we still do this 
        because we might need the labelmap */
     if (parms->output_labelmap_fn.not_empty()
-        || parms->output_ss_img_fn.not_empty()
+        || parms->output_ss_img_fn != ""
         || parms->xf_in_fn.not_empty()
         || parms->output_prefix != "")
     {
