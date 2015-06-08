@@ -594,11 +594,11 @@ Segmentation::save_xio (
     const Rt_study_metadata::Pointer& rsm,
     Xio_ct_transform *xio_transform, 
     Xio_version xio_version, 
-    const Pstring &output_dir
+    const std::string &output_dir
 )
 {
     xio_structures_save (rsm, d_ptr->m_cxt.get(), xio_transform,
-        xio_version, (const char*) output_dir);
+        xio_version, output_dir.c_str());
 }
 
 UInt32ImageType::Pointer

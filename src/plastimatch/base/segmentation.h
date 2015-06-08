@@ -64,7 +64,7 @@ public:
     void save_xio (
         const Rt_study_metadata::Pointer& rsm,
         Xio_ct_transform *xio_transform, Xio_version xio_version,
-        const Pstring &output_dir);
+        const std::string& output_dir);
     UInt32ImageType::Pointer get_ss_img_uint32 (void);
     UCharVecImageType::Pointer get_ss_img_uchar_vec (void);
 

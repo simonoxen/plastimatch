@@ -9,44 +9,43 @@
 #include "direction_cosines.h"
 #include "plm_image_type.h"
 #include "plm_int.h"
-#include "pstring.h"
 #include "xio_studyset.h"
 
 class Warp_parms {
 public:
     /* Input files */
-    Pstring input_fn;
-    Pstring xf_in_fn;
-    Pstring referenced_dicom_dir;
-    Pstring input_cxt_fn;
-    Pstring input_prefix;
-    Pstring input_ss_img_fn;
-    Pstring input_ss_list_fn;
-    Pstring input_dose_img_fn;
-    Pstring input_dose_xio_fn;
-    Pstring input_dose_ast_fn;
-    Pstring input_dose_mc_fn;
-    Pstring fixed_img_fn;
+    std::string input_fn;
+    std::string xf_in_fn;
+    std::string referenced_dicom_dir;
+    std::string input_cxt_fn;
+    std::string input_prefix;
+    std::string input_ss_img_fn;
+    std::string input_ss_list_fn;
+    std::string input_dose_img_fn;
+    std::string input_dose_xio_fn;
+    std::string input_dose_ast_fn;
+    std::string input_dose_mc_fn;
+    std::string fixed_img_fn;
 
     /* Dij input files */
-    Pstring ctatts_in_fn;
-    Pstring dif_in_fn;
+    std::string ctatts_in_fn;
+    std::string dif_in_fn;
 
     /* Output files */
-    Pstring output_colormap_fn;
-    Pstring output_cxt_fn;
-    Pstring output_dicom;
-    Pstring output_dij_fn;
-    Pstring output_dose_img_fn;
-    Pstring output_img_fn;
-    Pstring output_labelmap_fn;
-    Pstring output_pointset_fn;
+    std::string output_colormap_fn;
+    std::string output_cxt_fn;
+    std::string output_dicom;
+    std::string output_dij_fn;
+    std::string output_dose_img_fn;
+    std::string output_img_fn;
+    std::string output_labelmap_fn;
+    std::string output_pointset_fn;
     std::string output_prefix;
-    Pstring output_prefix_fcsv;
+    std::string output_prefix_fcsv;
     std::string output_ss_img_fn;
     std::string output_ss_list_fn;
-    Pstring output_vf_fn;
-    Pstring output_xio_dirname;
+    std::string output_vf_fn;
+    std::string output_xio_dirname;
 
     /* Output options */
     Plm_image_type output_type;

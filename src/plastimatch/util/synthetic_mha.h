@@ -8,7 +8,6 @@
 #include <string>
 #include "direction_cosines.h"
 #include "plm_image_type.h"
-#include "pstring.h"
 
 class Rt_study;
 
@@ -45,7 +44,7 @@ public:
 public:
     Plm_image_type output_type;
     Pattern_type pattern;
-    Pstring fixed_fn;
+    std::string fixed_fn;
     std::string input_fn;
     int dim[3];
     float origin[3];

@@ -10,13 +10,6 @@
 #include "autolabel_ransac_est.h"
 #include "itk_point.h"
 #include "print_and_exit.h"
-#include "pstring.h"
-
-static bool
-bstring_not_empty (const CBString& cbstring)
-{
-    return cbstring.length() != 0;
-}
 
 void
 load_data (
@@ -24,18 +17,12 @@ load_data (
     const char* filename
 )
 {
-    FILE *fp;
-    fp = fopen (filename, "r");
-    if (!fp) {
-        print_and_exit ("Error opening file %s for read\n", filename);
-    }
-    CBStream bs ((bNread) fread, fp);
-
-    Pstring line;
+    std::istream is (filename);
+    std::string line;
     Autolabel_point datum;
-    while (bstring_not_empty (line = bs.readLine ('\n'))) {
+    while (std::getline (is, line)) {
         float x, y;
-        int rc = sscanf ((const char*) line, "%f %f", &x, &y);
+        int rc = sscanf (line.c_str(), "%f %f", &x, &y);
         if (rc != 2) {
             print_and_exit ("Error parsing file %s for read\n", filename);
         }

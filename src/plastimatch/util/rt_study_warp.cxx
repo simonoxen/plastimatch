@@ -12,13 +12,13 @@
 #include "plm_image_header.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study.h"
 #include "rt_study_metadata.h"
 #include "rt_study_warp.h"
 #include "rtss.h"
 #include "segmentation.h"
 #include "simplify_points.h"
+#include "string_util.h"
 #include "warp_parms.h"
 #include "volume.h"
 #include "xform.h"
@@ -28,42 +28,42 @@ static void
 load_input_files (Rt_study *rt_study, Plm_file_format file_type, 
     Warp_parms *parms)
 {
-    if (parms->input_fn.not_empty ()) {
+    if (parms->input_fn != "") {
         rt_study->load (parms->input_fn.c_str(), file_type);
     }
 
-    if (parms->input_cxt_fn.not_empty()) {
-        rt_study->load_cxt (parms->input_cxt_fn);
+    if (parms->input_cxt_fn != "") {
+        rt_study->load_cxt (parms->input_cxt_fn.c_str());
     }
 
-    if (parms->input_prefix.not_empty()) {
-        rt_study->load_prefix (parms->input_prefix);
+    if (parms->input_prefix != "") {
+        rt_study->load_prefix (parms->input_prefix.c_str());
     }
 
-    if (parms->input_ss_img_fn.not_empty()) {
+    if (parms->input_ss_img_fn != "") {
         if (!file_exists (parms->input_ss_img_fn)) {
             print_and_exit ("Error: cannot open file %s for read\n",
-                (const char*) parms->input_ss_img_fn);
+                parms->input_ss_img_fn.c_str());
         }
         rt_study->load_ss_img (
-            (const char*) parms->input_ss_img_fn, 
-            (const char*) parms->input_ss_list_fn);
+            parms->input_ss_img_fn.c_str(), 
+            parms->input_ss_list_fn.c_str());
     }
 
-    if (parms->input_dose_img_fn.not_empty()) {
-        rt_study->load_dose_img ((const char*) parms->input_dose_img_fn);
+    if (parms->input_dose_img_fn != "") {
+        rt_study->load_dose_img (parms->input_dose_img_fn.c_str());
     }
 
-    if (parms->input_dose_xio_fn.not_empty()) {
-        rt_study->load_dose_xio ((const char*) parms->input_dose_xio_fn);
+    if (parms->input_dose_xio_fn != "") {
+        rt_study->load_dose_xio (parms->input_dose_xio_fn.c_str());
     }
 
-    if (parms->input_dose_ast_fn.not_empty()) {
-        rt_study->load_dose_astroid ((const char*) parms->input_dose_ast_fn);
+    if (parms->input_dose_ast_fn != "") {
+        rt_study->load_dose_astroid (parms->input_dose_ast_fn.c_str());
     }
 
-    if (parms->input_dose_mc_fn.not_empty()) {
-        rt_study->load_dose_mc ((const char*) parms->input_dose_mc_fn);
+    if (parms->input_dose_mc_fn != "") {
+        rt_study->load_dose_mc (parms->input_dose_mc_fn.c_str());
     }
 
     if (!rt_study->have_image() && !rt_study->have_rtss() && !rt_study->have_dose()) {
@@ -82,9 +82,9 @@ save_ss_img (
     Segmentation::Pointer seg = rt_study->get_rtss();
 
     /* labelmap */
-    if (parms->output_labelmap_fn.not_empty()) {
+    if (parms->output_labelmap_fn != "") {
         lprintf ("save_ss_img: save_labelmap\n");
-        seg->save_labelmap (parms->output_labelmap_fn);
+        seg->save_labelmap (parms->output_labelmap_fn.c_str());
     }
 
     /* ss_img */
@@ -106,30 +106,30 @@ save_ss_img (
     }
 
     /* prefix fcsv files */
-    if (parms->output_prefix_fcsv.not_empty()) {
+    if (parms->output_prefix_fcsv != "") {
         lprintf ("save_ss_img: save_prefix_fcsv\n");
         lprintf ("save_ss_img: save_prefix_fcsv (%s)\n",
-            (const char*) parms->output_prefix_fcsv);
-        seg->save_prefix_fcsv (parms->output_prefix_fcsv);
+            parms->output_prefix_fcsv.c_str());
+        seg->save_prefix_fcsv (parms->output_prefix_fcsv.c_str());
     }
 
     /* 3D Slicer color table */
-    if (parms->output_colormap_fn.not_empty()) {
+    if (parms->output_colormap_fn != "") {
         lprintf ("save_ss_img: save_colormap\n");
-        seg->save_colormap (parms->output_colormap_fn);
+        seg->save_colormap (parms->output_colormap_fn.c_str());
     }
 
     /* cxt */
-    if (parms->output_cxt_fn.not_empty()) {
+    if (parms->output_cxt_fn != "") {
         lprintf ("save_ss_img: save_cxt\n");
         seg->save_cxt (rt_study->get_rt_study_metadata (),
-            parms->output_cxt_fn, false);
+            parms->output_cxt_fn.c_str(), false);
     }
 
     /* xio */
-    if (parms->output_xio_dirname.not_empty()) {
+    if (parms->output_xio_dirname != "") {
         lprintf ("save_ss_img: save_xio (dirname = %s)\n", 
-            (const char*) parms->output_xio_dirname);
+            parms->output_xio_dirname.c_str());
         seg->save_xio (
             rt_study->get_rt_study_metadata (),
             rt_study->get_xio_ct_transform (),
@@ -155,9 +155,9 @@ warp_and_save_ss (
        warp something, then we need to rasterize the volume */
     /* GCS FIX: If there is an input m_ss_img, we still do this 
        because we might need the labelmap */
-    if (parms->output_labelmap_fn.not_empty()
+    if (parms->output_labelmap_fn != ""
         || parms->output_ss_img_fn != ""
-        || parms->xf_in_fn.not_empty()
+        || parms->xf_in_fn != ""
         || parms->output_prefix != "")
     {
 
@@ -174,7 +174,7 @@ warp_and_save_ss (
         */
         Plm_image_header pih;
         Rtss *cxt = seg->get_structure_set_raw ();
-        if (parms->xf_in_fn.not_empty()) {
+        if (parms->xf_in_fn != "") {
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);
         } else {
@@ -182,12 +182,12 @@ warp_and_save_ss (
         }
         lprintf ("Warp_and_save_ss: seg->rasterize\n");
         seg->rasterize (&pih,
-            parms->output_labelmap_fn.not_empty(),
+            parms->output_labelmap_fn != "",
             parms->xor_contours);
     }
 
     /* Do the warp */
-    if (parms->xf_in_fn.not_empty()) {
+    if (parms->xf_in_fn != "") {
         lprintf ("Warp_and_save_ss: seg->warp\n");
         seg->warp (xf, pih, parms);
     }
@@ -195,7 +195,7 @@ warp_and_save_ss (
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
-    if (parms->xf_in_fn.not_empty()) {
+    if (parms->xf_in_fn != "") {
         lprintf ("Warp_and_save_ss: seg->cxt_re_extract\n");
         seg->cxt_re_extract ();
     }
@@ -220,9 +220,9 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     Plm_image_header pih;
 
     /* Load referenced DICOM directory */
-    if (parms->referenced_dicom_dir.not_empty()) {
+    if (parms->referenced_dicom_dir != "") {
         lprintf ("Loading RDD\n");
-        rt_study->load_rdd ((const char*) parms->referenced_dicom_dir);
+        rt_study->load_rdd (parms->referenced_dicom_dir.c_str());
         lprintf ("Loading RDD complete\n");
     }
 
@@ -237,14 +237,14 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     rt_study->set_study_metadata (parms->m_metadata);
 
     /* Load transform */
-    if (parms->xf_in_fn.not_empty()) {
-        lprintf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
-        xform = xform_load ((const char*) parms->xf_in_fn);
+    if (parms->xf_in_fn != "") {
+        lprintf ("Loading xform (%s)\n", parms->xf_in_fn.c_str());
+        xform = xform_load (parms->xf_in_fn);
     }
 
     /* Try to guess the proper dimensions and spacing for output image */
     Xform_type xform_type = xform->get_type ();
-    if (parms->fixed_img_fn.not_empty()) {
+    if (parms->fixed_img_fn != "") {
         /* use the spacing of user-supplied fixed image */
         lprintf ("Setting PIH from FIXED\n");
         FloatImageType::Pointer fixed = itk_image_load_float (
@@ -317,10 +317,10 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
 
     /* Warp the image and create vf */
     if (rt_study->have_image()
-        && parms->xf_in_fn.not_empty()
-        && (parms->output_img_fn.not_empty()
-            || parms->output_vf_fn.not_empty()
-            || parms->output_dicom.not_empty()))
+        && parms->xf_in_fn != ""
+        && (parms->output_img_fn != ""
+            || parms->output_vf_fn != ""
+            || parms->output_dicom != ""))
     {
         Plm_image::Pointer im_out = Plm_image::New();
         lprintf ("Rt_study_warp: Warping m_img\n");
@@ -330,20 +330,20 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output image */
-    if (parms->output_img_fn.not_empty() && rt_study->have_image()) {
+    if (parms->output_img_fn != "" && rt_study->have_image()) {
         lprintf ("Rt_study_warp: Saving m_img (%s)\n",
-            (const char*) parms->output_img_fn);
+            parms->output_img_fn.c_str());
         rt_study->get_image()->convert_and_save (
-            (const char*) parms->output_img_fn, 
+            parms->output_img_fn.c_str(), 
             parms->output_type);
     }
 
     /* Warp the dose image */
     if (rt_study->has_dose()
-        && parms->xf_in_fn.not_empty()
-        && (parms->output_dose_img_fn.not_empty()
-            || parms->output_xio_dirname.not_empty()
-            || parms->output_dicom.not_empty()))
+        && parms->xf_in_fn != ""
+        && (parms->output_dose_img_fn != ""
+            || parms->output_xio_dirname != ""
+            || parms->output_dicom != ""))
     {
         lprintf ("Rt_study_warp: Warping dose\n");
         Plm_image::Pointer im_out = Plm_image::New();
@@ -358,43 +358,37 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output dose image */
-    if (parms->output_dose_img_fn.not_empty() && rt_study->has_dose())
+    if (parms->output_dose_img_fn != "" && rt_study->has_dose())
     {
         lprintf ("Rt_study_warp: Saving dose image (%s)\n", 
-            (const char*) parms->output_dose_img_fn);
-#if defined (commentout)
-        rt_study->m_dose->convert_and_save (
-            (const char*) parms->output_dose_img_fn, 
-            parms->output_type);
-#endif
+            parms->output_dose_img_fn.c_str());
         rt_study->save_dose (
-            (const char*) parms->output_dose_img_fn, 
+            parms->output_dose_img_fn.c_str(), 
             parms->output_type);
     }
 
     /* Save output XiO dose */
-    if (parms->output_xio_dirname.not_empty()
+    if (parms->output_xio_dirname != ""
         && rt_study->get_xio_dose_filename() != ""
         && rt_study->has_dose())
     {
-        Pstring fn;
-
         lprintf ("Rt_study_warp: Saving xio dose.\n");
-        fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
+        std::string fn = string_format ("%s/%s", 
+            parms->output_xio_dirname.c_str(), "dose");
         xio_dose_save (
             rt_study->get_dose(),
             rt_study->get_metadata(), 
             rt_study->get_xio_ct_transform(),
-            (const char*) fn, 
+            fn.c_str(), 
             rt_study->get_xio_dose_filename().c_str());
     }
 
     /* Save output vector field */
-    if (parms->xf_in_fn.not_empty() 
-        && parms->output_vf_fn.not_empty())
+    if (parms->xf_in_fn != "" 
+        && parms->output_vf_fn != "")
     {
         lprintf ("Rt_study_warp: Saving vf.\n");
-        itk_image_save (vf, (const char*) parms->output_vf_fn);
+        itk_image_save (vf, parms->output_vf_fn.c_str());
     }
 
     /* Preprocess structure sets */
@@ -430,9 +424,9 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     warp_and_save_ss (rt_study, xform, &pih, parms);
 
     /* Save dicom */
-    if (parms->output_dicom.not_empty()) {
+    if (parms->output_dicom != "") {
         lprintf ("Rt_study_warp: Save dicom.\n");
-        rt_study->save_dicom ((const char*) parms->output_dicom,
+        rt_study->save_dicom (parms->output_dicom.c_str(),
             parms->dicom_with_uids);
     }
 }

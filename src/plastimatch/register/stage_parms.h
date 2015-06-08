@@ -15,7 +15,6 @@
 #include "plm_image_type.h"
 #include "plm_return_code.h"
 #include "process_parms.h"
-#include "pstring.h"
 #include "threading.h"
 
 enum Stage_transform_type {

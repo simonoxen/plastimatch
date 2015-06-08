@@ -12,7 +12,6 @@
 #include "bspline.h"    /* for enums */
 #include "plm_image_type.h"
 #include "plm_return_code.h"
-#include "pstring.h"
 #include "smart_pointer.h"
 #include "threading.h"
 

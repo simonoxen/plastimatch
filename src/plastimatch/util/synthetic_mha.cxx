@@ -574,7 +574,7 @@ synthetic_mha (
 
     } else {
         /* No input image specified */
-        if (parms->fixed_fn.not_empty()) {
+        if (parms->fixed_fn != "") {
             /* Get geometry from fixed image */
             Plm_image pi (parms->fixed_fn);
             Plm_image_header pih;

@@ -354,8 +354,8 @@ do_command_warp (int argc, char* argv[])
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     /* Dij matrices are a special case */
-    if (parms.output_dij_fn.not_empty()) {
-        if (parms.ctatts_in_fn.not_empty() && parms.dif_in_fn.not_empty())
+    if (parms.output_dij_fn != "") {
+        if (parms.ctatts_in_fn != "" && parms.dif_in_fn != "")
         {
             warp_dij_main (&parms);
             return;
@@ -365,7 +365,7 @@ do_command_warp (int argc, char* argv[])
     }
 
     /* What is the input file type? */
-    file_type = plm_file_format_deduce ((const char*) parms.input_fn);
+    file_type = plm_file_format_deduce (parms.input_fn.c_str());
 
     /* Pointsets are a special case */
     if (file_type == PLM_FILE_FMT_POINTSET) {

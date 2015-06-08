@@ -21,7 +21,7 @@ warp_pointset_main (Warp_parms* parms)
 
     //Raw_pointset *ps = pointset_load ((const char*) parms->input_fn);
     Unlabeled_pointset ps;
-    ps.load ((const char*) parms->input_fn);
+    ps.load (parms->input_fn.c_str());
 
     xform_load (&xf, parms->xf_in_fn);
 
@@ -42,14 +42,14 @@ warp_pointset_main (Warp_parms* parms)
 
     //itk_pointset_debug (itk_ps_out);
 
-    if (parms->output_pointset_fn.not_empty()) {
+    if (parms->output_pointset_fn != "") {
 	//Raw_pointset *ps_out = raw_pointset_from_itk_float_pointset (itk_ps_out);
 	//pointset_save (ps_out, (const char*) parms->output_pointset_fn);
 	//pointset_destroy (ps_out);
 
 	Unlabeled_pointset *ps_out =
 	    unlabeled_pointset_from_itk_float_pointset (itk_ps_out);
-	ps_out->save ((const char*) parms->output_pointset_fn);
+	ps_out->save (parms->output_pointset_fn.c_str());
 	delete ps_out;
     }
 }

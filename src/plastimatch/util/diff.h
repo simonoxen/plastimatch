@@ -5,13 +5,13 @@
 #define _diff_h_
 
 #include "plmutil_config.h"
-#include "pstring.h"
+#include <string>
 
 class PLMUTIL_API Diff_parms {
 public:
-    Pstring img_in_1_fn;
-    Pstring img_in_2_fn;
-    Pstring img_out_fn;
+    std::string img_in_1_fn;
+    std::string img_in_2_fn;
+    std::string img_out_fn;
 public:
     Diff_parms ();
 };

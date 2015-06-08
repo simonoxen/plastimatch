@@ -10,42 +10,6 @@
 #include "delayload_opencl.h"
 #include "opencl_util.h"
 #include "print_and_exit.h"
-#include "pstring.h"
-
-/* JAS 2012.04.26
- * Moved from file_util.cxx in order to keep
- * pstring.h out of the plmsys.h
- *
- * If we want the Plastimatch API to carry its
- * own strings (kinda like Qt's qstring), then
- * we can go back and do it more formally.
- *
- * opencl_load_program() is the only function
- * that uses this file loader, so just moving
- * this here.*/
-static Pstring*
-file_load (const char* filename)
-{
-    FILE *fp;
-    Pstring *buf;
-
-    fp = fopen (filename, "rb");
-    if (!fp) {
-	return 0;
-    }
-
-    /* Slurp the file into the buffer */
-    buf = new Pstring ();
-    buf->read ((bNread) fread, fp);
-    fclose (fp);
-
-    for (int i = 0; i < 20; i++) {
-	printf ("%c", (char) (*buf)[i]);
-    }
-    printf ("\n");
-
-    return buf;
-}
 
 void
 opencl_device_info (
@@ -566,15 +530,15 @@ opencl_load_programs (
 )
 {
     cl_int status;
-    Pstring *buf;
+    std::string buf;
     const char *buf_cstr;
     size_t len;
 
     /* Load the file contents into a string */
-    buf = file_load (filename);
+    buf = slurp_file (filename);
 
     /* Load and compile the programs */
-    buf_cstr = (const char*) (*buf);
+    buf_cstr = buf.c_str();
     len = (size_t) buf->length ();
     ocl_dev->programs = (cl_program*) malloc (
     ocl_dev->device_count * sizeof(cl_program));
@@ -619,9 +583,6 @@ opencl_load_programs (
             opencl_check_error (status, "Error calling clBuildProgram.");
         }
     }
-
-    /* Free the string with file contents */
-    delete buf;
 }
 
 void
