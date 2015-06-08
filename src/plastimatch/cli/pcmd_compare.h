@@ -7,12 +7,11 @@
 #include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "pstring.h"
 
 class Compare_parms {
 public:
-    Pstring img_in_1_fn;
-    Pstring img_in_2_fn;
+    std::string img_in_1_fn;
+    std::string img_in_2_fn;
 };
 
 void do_command_compare (int argc, char *argv[]);

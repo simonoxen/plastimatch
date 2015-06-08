@@ -127,7 +127,9 @@ public:
 
 PLMBASE_API Xform::Pointer xform_load (const std::string& fn);
 PLMBASE_API Xform::Pointer xform_load (const char* fn);
+PLMBASE_API void xform_load (Xform *xf, const std::string& fn);
 PLMBASE_API void xform_load (Xform *xf, const char* fn);
+PLMBASE_API void xform_save (Xform *xf, const std::string& fn);
 PLMBASE_API void xform_save (Xform *xf, const char* fn);
 PLMBASE_API void xform_itk_bsp_init_default (Xform *xf);
 PLMBASE_API void xform_itk_bsp_set_grid (Xform *xf,

@@ -204,6 +204,12 @@ parse_float3_string (const char* s)
     return float_list;
 }
 
+std::vector<float>
+parse_float3_string (const std::string& s)
+{
+    return parse_float3_string (s.c_str());
+}
+
 /* Parse a string of the form "3 0.2 1e-3" or "3,0.2,1e-3"*/
 std::vector<float>
 parse_float_string (const char* s)

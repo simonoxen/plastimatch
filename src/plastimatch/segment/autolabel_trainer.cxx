@@ -20,6 +20,7 @@
 #include "plm_image.h"
 #include "pointset.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 Autolabel_trainer::Autolabel_trainer ()
 {
@@ -257,29 +258,29 @@ void
 Autolabel_trainer::train ()
 {
     if (this->m_dt_tsv1) {
-        Pstring output_net_fn;
-        output_net_fn.format ("%s/tsv1.net", m_output_dir.c_str());
+        std::string output_net_fn = string_format (
+            "%s/tsv1.net", m_output_dir.c_str());
         m_dt_tsv1->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv1->train_krr ();
         m_dt_tsv1->save_net (output_net_fn);
     }
     if (this->m_dt_tsv2_x) {
-        Pstring output_net_fn;
-        output_net_fn.format ("%s/tsv2_x.net", m_output_dir.c_str());
+        std::string output_net_fn = string_format (
+            "%s/tsv2_x.net", m_output_dir.c_str());
         m_dt_tsv2_x->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv2_x->train_krr ();
         m_dt_tsv2_x->save_net (output_net_fn);
     }
     if (this->m_dt_tsv2_y) {
-        Pstring output_net_fn;
-        output_net_fn.format ("%s/tsv2_y.net", m_output_dir.c_str());
+        std::string output_net_fn = string_format (
+            "%s/tsv2_y.net", m_output_dir.c_str());
         m_dt_tsv2_y->set_krr_gamma (-9, -6, 0.5);
         m_dt_tsv2_y->train_krr ();
         m_dt_tsv2_y->save_net (output_net_fn);
     }
     if (this->m_dt_la1) {
-        Pstring output_net_fn;
-        output_net_fn.format ("%s/la1.net", m_output_dir.c_str());
+        std::string output_net_fn = string_format (
+            "%s/la1.net", m_output_dir.c_str());
         m_dt_la1->set_krr_gamma (-9, -6, 0.5);
         m_dt_la1->train_krr ();
         m_dt_la1->save_net (output_net_fn);
@@ -290,23 +291,23 @@ void
 Autolabel_trainer::save_csv ()
 {
     if (this->m_dt_tsv1) {
-        Pstring output_csv_fn;
-        output_csv_fn.format ("%s/tsv1.csv", m_output_dir.c_str());
+        std::string output_csv_fn = string_format (
+            "%s/tsv1.csv", m_output_dir.c_str());
         this->m_dt_tsv1->save_csv (output_csv_fn);
     }
     if (this->m_dt_tsv2_x) {
-        Pstring output_csv_fn;
-        output_csv_fn.format ("%s/tsv2_x.csv", m_output_dir.c_str());
+        std::string output_csv_fn = string_format (
+            "%s/tsv2_x.csv", m_output_dir.c_str());
         this->m_dt_tsv2_x->save_csv (output_csv_fn);
     }
     if (this->m_dt_tsv2_y) {
-        Pstring output_csv_fn;
-        output_csv_fn.format ("%s/tsv2_y.csv", m_output_dir.c_str());
+        std::string output_csv_fn = string_format (
+            "%s/tsv2_y.csv", m_output_dir.c_str());
         this->m_dt_tsv2_y->save_csv (output_csv_fn);
     }
     if (this->m_dt_la1) {
-        Pstring output_csv_fn;
-        output_csv_fn.format ("%s/la1.csv", m_output_dir.c_str());
+        std::string output_csv_fn = string_format (
+            "%s/la1.csv", m_output_dir.c_str());
         this->m_dt_la1->save_csv (output_csv_fn);
     }
 }
@@ -317,23 +318,23 @@ Autolabel_trainer::save_tsacc ()
 {
     /* Save the output files */
     if (this->m_dt_tsv1) {
-        Pstring output_tsacc_fn;
-        output_tsacc_fn.format ("%s/tsv1_tsacc.txt", m_output_dir.c_str());
+        std::string output_tsacc_fn = string_format (
+            "%s/tsv1_tsacc.txt", m_output_dir.c_str());
         this->m_dt_tsv1->save_tsacc (output_tsacc_fn);
     }
     if (this->m_dt_tsv2_x) {
-        Pstring output_tsacc_fn;
-        output_tsacc_fn.format ("%s/tsv2_x_tsacc.txt", m_output_dir.c_str());
+        std::string output_tsacc_fn = string_format (
+            "%s/tsv2_x_tsacc.txt", m_output_dir.c_str());
         this->m_dt_tsv2_x->save_tsacc (output_tsacc_fn);
     }
     if (this->m_dt_tsv2_y) {
-        Pstring output_tsacc_fn;
-        output_tsacc_fn.format ("%s/tsv2_y_tsacc.txt", m_output_dir.c_str());
+        std::string output_tsacc_fn = string_format (
+            "%s/tsv2_y_tsacc.txt", m_output_dir.c_str());
         this->m_dt_tsv2_y->save_tsacc (output_tsacc_fn);
     }
     if (this->m_dt_la1) {
-        Pstring output_tsacc_fn;
-        output_tsacc_fn.format ("%s/la1_tsacc.txt", m_output_dir.c_str());
+        std::string output_tsacc_fn = string_format (
+            "%s/la1_tsacc.txt", m_output_dir.c_str());
         this->m_dt_la1->save_tsacc (output_tsacc_fn);
     }
 }
@@ -343,9 +344,9 @@ autolabel_train (Autolabel_train_parms *parms)
 {
     Autolabel_trainer at;
 
-    at.set_input_dir ((const char*) parms->input_dir);
+    at.set_input_dir (parms->input_dir.c_str());
     at.m_output_dir = parms->output_dir;
-    at.set_task ((const char*) parms->task);
+    at.set_task (parms->task.c_str());
     at.load_inputs ();
     at.train ();
     at.save_csv ();

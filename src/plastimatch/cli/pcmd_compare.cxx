@@ -58,32 +58,32 @@ vf_compare (Compare_parms* parms)
     int d;
     Volume *vol1, *vol2;
 
-    vol1 = read_mha ((const char*) parms->img_in_1_fn);
+    vol1 = read_mha (parms->img_in_1_fn.c_str());
     if (!vol1) {
 	fprintf (stderr, 
 	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    (const char*) parms->img_in_1_fn);
+	    parms->img_in_1_fn);
 	exit (-1);
     }
     if (vol1->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
 	    "interleaved float vector field.\n", 
-	    (const char*) parms->img_in_1_fn);
+	    parms->img_in_1_fn);
 	fprintf (stderr, "Type = %d\n", vol1->pix_type);
 	exit (-1);
     }
 
-    vol2 = read_mha ((const char*) parms->img_in_2_fn);
+    vol2 = read_mha (parms->img_in_2_fn.c_str());
     if (!vol2) {
 	fprintf (stderr, 
 	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    (const char*) parms->img_in_2_fn);
+	    parms->img_in_2_fn);
 	exit (-1);
     }
     if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
 	    "interleaved float vector field.\n", 
-	    (const char*) parms->img_in_2_fn);
+	    parms->img_in_2_fn);
 	fprintf (stderr, "Type = %d\n", vol2->pix_type);
 	exit (-1);
     }
@@ -107,15 +107,15 @@ img_compare (Compare_parms* parms)
 {
     Plm_image::Pointer img1, img2;
 
-    img1 = plm_image_load_native ((const char*) parms->img_in_1_fn);
+    img1 = plm_image_load_native (parms->img_in_1_fn);
     if (!img1) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    (const char*) parms->img_in_1_fn);
+	    parms->img_in_1_fn);
     }
-    img2 = plm_image_load_native ((const char*) parms->img_in_2_fn);
+    img2 = plm_image_load_native (parms->img_in_2_fn);
     if (!img2) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    (const char*) parms->img_in_2_fn);
+	    parms->img_in_2_fn);
     }
 
     if (!Plm_image::compare_headers (img1, img2)) {
@@ -185,8 +185,8 @@ compare_main (Compare_parms* parms)
     Plm_file_format file_type_1, file_type_2;
 
     /* What is the input file type? */
-    file_type_1 = plm_file_format_deduce ((const char*) parms->img_in_1_fn);
-    file_type_2 = plm_file_format_deduce ((const char*) parms->img_in_2_fn);
+    file_type_1 = plm_file_format_deduce (parms->img_in_1_fn);
+    file_type_2 = plm_file_format_deduce (parms->img_in_2_fn);
 
     if (file_type_1 == PLM_FILE_FMT_VF 
 	&& file_type_2 == PLM_FILE_FMT_VF)

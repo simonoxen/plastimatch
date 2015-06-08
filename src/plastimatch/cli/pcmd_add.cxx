@@ -11,15 +11,14 @@
 #include "plm_file_format.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "xform.h"
 
 class Add_parms {
 public:
-    Pstring output_fn;
+    std::string output_fn;
     bool average;
     std::vector<float> weight_vector;
-    std::list<Pstring> input_fns;
+    std::list<std::string> input_fns;
 public:
     Add_parms () {
         average = false;
@@ -48,7 +47,7 @@ add_vf_main (Add_parms *parms)
     AddFilterType::Pointer addition = AddFilterType::New();
 
     /* Load the first input image */
-    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    std::list<std::string>::iterator it = parms->input_fns.begin();
     Xform sum;
     sum.load (*it);
     ++it;
@@ -99,7 +98,7 @@ add_vol_main (Add_parms *parms)
     AddFilterType::Pointer addition = AddFilterType::New();
 
     /* Load the first input image */
-    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    std::list<std::string>::iterator it = parms->input_fns.begin();
     Plm_image::Pointer sum = plm_image_load (*it, PLM_IMG_TYPE_ITK_FLOAT);
     ++it;
 
@@ -154,7 +153,7 @@ add_main (Add_parms *parms)
     }
     
     /* What is the input file type? */
-    std::list<Pstring>::iterator it = parms->input_fns.begin();
+    std::list<std::string>::iterator it = parms->input_fns.begin();
     Plm_file_format file_format = plm_file_format_deduce (*it);
 
     switch (file_format) {
@@ -222,7 +221,7 @@ parse_fn (
 
     /* Copy input filenames to parms struct */
     for (unsigned long i = 0; i < parser->number_of_arguments(); i++) {
-        parms->input_fns.push_back (Pstring((*parser)[i].c_str()));
+        parms->input_fns.push_back ((*parser)[i]);
     }
 
     /* Average */
@@ -231,7 +230,7 @@ parse_fn (
     }
 
     /* Output files */
-    parms->output_fn = parser->get_string("output").c_str();
+    parms->output_fn = parser->get_string("output");
     if (parser->option ("weight")) {
         parser->assign_float_vec (&parms->weight_vector, "weight");
     }

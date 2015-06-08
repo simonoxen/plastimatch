@@ -9,15 +9,14 @@
 #include "itk_resample.h"
 #include "plm_clp.h"
 #include "plm_image_header.h"
-#include "pstring.h"
 
 class Pcmd_dice_parms {
 public:
     bool commands_were_requested;
     bool have_dice_option;
     bool have_hausdorff_option;
-    Pstring reference_image_fn;
-    Pstring test_image_fn;
+    std::string reference_image_fn;
+    std::string test_image_fn;
 public:
     Pcmd_dice_parms () {
         commands_were_requested = false;
@@ -103,8 +102,8 @@ parse_fn (
     }
 
     /* Copy values into output struct */
-    parms->reference_image_fn = (*parser)[0].c_str();
-    parms->test_image_fn = (*parser)[1].c_str();
+    parms->reference_image_fn = (*parser)[0];
+    parms->test_image_fn = (*parser)[1];
 }
 
 void
@@ -115,9 +114,9 @@ do_command_dice (int argc, char *argv[])
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     UCharImageType::Pointer image_1 = itk_image_load_uchar (
-        parms.reference_image_fn.c_str(), 0);
+        parms.reference_image_fn, 0);
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
-        parms.test_image_fn.c_str(), 0);
+        parms.test_image_fn, 0);
 
     check_resolution (&image_1, &image_2);
 

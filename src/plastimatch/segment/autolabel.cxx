@@ -15,7 +15,7 @@
 #include "plm_image_header.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-#include "pstring.h"
+#include "string_util.h"
 
 /* ITK typedefs */
 typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
@@ -24,9 +24,9 @@ typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 static void
 load_dlib_network (
     dlib::decision_function< Dlib_trainer::Kernel_type > *dlib_network,
-    const Pstring& network_fn)
+    const std::string& network_fn)
 {
-    std::ifstream fin ((const char*) network_fn, std::ios::binary);
+    std::ifstream fin (network_fn, std::ios::binary);
     deserialize (*dlib_network, fin);
 }
 
@@ -34,10 +34,10 @@ static void
 autolabel_la1 (Autolabel_parms *parms)
 {
     FILE *fp;
-    Pstring network_fn;
+    std::string network_fn;
 
     /* Load network */
-    network_fn.format ("%s/la1.net", parms->network_dir.c_str());
+    network_fn = string_format ("%s/la1.net", parms->network_dir.c_str());
     dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
     load_dlib_network (&dlib_network, network_fn);
 
@@ -65,7 +65,6 @@ autolabel_la1 (Autolabel_parms *parms)
         Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
-        Pstring label;
         float this_score = dlib_network (d);
 
         /* Save the (debugging) output to a file */
@@ -85,10 +84,10 @@ static void
 autolabel_tsv1 (Autolabel_parms *parms)
 {
     FILE *fp;
-    Pstring network_fn;
+    std::string network_fn;
 
     /* Load network */
-    network_fn.format ("%s/tsv1.net", parms->network_dir.c_str());
+    network_fn = string_format ("%s/tsv1.net", parms->network_dir.c_str());
     dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network;
     load_dlib_network (&dlib_network, network_fn);
 
@@ -140,13 +139,13 @@ static void
 autolabel_tsv2 (Autolabel_parms *parms)
 {
     Labeled_pointset points;
-    Pstring network_fn;
+    std::string network_fn;
 
     /* Load x & y networks */
-    network_fn.format ("%s/tsv2_x.net", parms->network_dir.c_str());
+    network_fn = string_format ("%s/tsv2_x.net", parms->network_dir.c_str());
     dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network_x;
     load_dlib_network (&dlib_network_x, network_fn);
-    network_fn.format ("%s/tsv2_y.net", parms->network_dir.c_str());
+    network_fn = string_format ("%s/tsv2_y.net", parms->network_dir.c_str());
     dlib::decision_function< Dlib_trainer::Kernel_type > dlib_network_y;
     load_dlib_network (&dlib_network_y, network_fn);
 
@@ -163,8 +162,7 @@ autolabel_tsv2 (Autolabel_parms *parms)
         Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
-        Pstring label;
-        label.format ("P_%02d", i);
+        std::string label = string_format ("P_%02d", i);
         points.insert_lps (label.c_str(), 
             dlib_network_x (d), dlib_network_y (d), loc);
     }

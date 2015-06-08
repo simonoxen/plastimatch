@@ -7,7 +7,6 @@
 #include "plmsegment_config.h"
 #include <map>
 #include <stdio.h>
-#include "pstring.h"
 
 class Dlib_trainer;
 
@@ -18,7 +17,7 @@ class PLMSEGMENT_API Autolabel_trainer
     ~Autolabel_trainer ();
 
   public:
-    Pstring m_output_dir;
+    std::string m_output_dir;
     std::string m_input_dir;
     std::string m_task;
 
@@ -43,9 +42,9 @@ class PLMSEGMENT_API Autolabel_trainer
 
 class PLMSEGMENT_API Autolabel_train_parms {
 public:
-    Pstring input_dir;
-    Pstring output_dir;
-    Pstring task;
+    std::string input_dir;
+    std::string output_dir;
+    std::string task;
 };
 
 PLMSEGMENT_API void autolabel_train (Autolabel_train_parms *parms);

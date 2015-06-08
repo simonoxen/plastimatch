@@ -6,7 +6,6 @@
 
 #include "plmsegment_config.h"
 #include "dlib_trainer.h"
-#include "pstring.h"
 
 class Autolabel_task {
 public:

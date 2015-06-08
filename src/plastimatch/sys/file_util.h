@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include "sys/plm_int.h"
 
-PLMSYS_C_API int file_exists (const char *filename);
+PLMSYS_API int file_exists (const char *filename);
 PLMSYS_API int file_exists (const std::string& filename);
-PLMSYS_C_API uint64_t file_size (const char *filename);
-PLMSYS_C_API int is_directory (const char *dir);
+PLMSYS_API uint64_t file_size (const char *filename);
+PLMSYS_API int is_directory (const char *dir);
 PLMSYS_API int is_directory (const std::string& dir);
 PLMSYS_API void touch_file (const std::string& filename);
 PLMSYS_API void copy_file (const std::string& dst_fn, 
@@ -22,10 +22,11 @@ PLMSYS_API void make_directory (const std::string& dirname);
 PLMSYS_API void make_parent_directories (const char *dirname);
 PLMSYS_API void make_parent_directories (const std::string& dirname);
 PLMSYS_API void make_directory_recursive (const std::string& dirname);
-PLMSYS_C_API FILE* make_tempfile (void);
-PLMSYS_C_API char* plm_getcwd (char* s, int len);
-PLMSYS_C_API int plm_chdir (char* s);
-PLMSYS_C_API int plm_get_dir_list (const char*** f_list);
+PLMSYS_API FILE* make_tempfile (void);
+PLMSYS_API char* plm_getcwd (char* s, int len);
+PLMSYS_API int plm_chdir (char* s);
+PLMSYS_API int plm_get_dir_list (const char*** f_list);
 PLMSYS_API FILE* plm_fopen (const char *path, const char *mode);
+PLMSYS_API FILE* plm_fopen (const std::string& path, const char *mode);
 
 #endif

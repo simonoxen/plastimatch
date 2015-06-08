@@ -16,7 +16,6 @@
 #include "dlib_trainer.h"
 #include "file_util.h"
 #include "plm_math.h"
-#include "pstring.h"
 
 using namespace dlib;
 
@@ -126,12 +125,12 @@ option_range::get_next_value (float curr_value)
    training functions
    --------------------------------------------------------------------- */
 void
-Dlib_trainer::save_csv (const Pstring& out_csv_fn)
+Dlib_trainer::save_csv (const std::string& out_csv_fn)
 {
     /* Save the output file */
     printf ("Saving csv...\n");
     make_parent_directories (out_csv_fn);
-    FILE *fp = fopen (out_csv_fn, "w");
+    FILE *fp = plm_fopen (out_csv_fn, "w");
     std::vector<Dlib_trainer::Dense_sample_type>::iterator s_it
 	= this->m_samples.begin();
     std::vector<Dlib_trainer::Label_type>::iterator l_it
@@ -149,10 +148,10 @@ Dlib_trainer::save_csv (const Pstring& out_csv_fn)
 }
 
 void
-Dlib_trainer::save_net (const Pstring& out_net_fn)
+Dlib_trainer::save_net (const std::string& out_net_fn)
 {
     make_parent_directories (out_net_fn.c_str());
-    std::ofstream fout ((const char*) out_net_fn, std::ios::binary);
+    std::ofstream fout (out_net_fn.c_str(), std::ios::binary);
     serialize (m_krr_df, fout);
     fout.close();
 
@@ -164,9 +163,9 @@ Dlib_trainer::save_net (const Pstring& out_net_fn)
 }
 
 void
-Dlib_trainer::save_tsacc (const Pstring& out_net_fn)
+Dlib_trainer::save_tsacc (const std::string& out_net_fn)
 {
-    FILE *fp = fopen ((const char*) out_net_fn, "w");
+    FILE *fp = plm_fopen (out_net_fn, "w");
     for (unsigned int j = 0; j < m_samples.size(); j++) {
         fprintf (fp, "%g %g\n", m_labels[j], m_krr_df(m_samples[j]));
     }

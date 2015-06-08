@@ -10,28 +10,29 @@
 
 #include "itk_tps.h"
 #include "landmark_warp.h"
+#include "path_util.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "raw_pointset.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
+#include "string_util.h"
 #include "volume.h"
 #include "xform.h"
 
 class Landmark_warp_main_parms {
 public:
-    Pstring fixed_lm_fn;
-    Pstring moving_lm_fn;
-    Pstring input_vf_fn;
-    Pstring input_img_fn;
-    Pstring output_img_fn;
-    Pstring output_vf_fn;
-    Pstring output_lm_fn;
+    std::string fixed_lm_fn;
+    std::string moving_lm_fn;
+    std::string input_vf_fn;
+    std::string input_img_fn;
+    std::string output_img_fn;
+    std::string output_vf_fn;
+    std::string output_lm_fn;
 
-    Pstring fixed_img_fn;
+    std::string fixed_img_fn;
     bool have_dim;
     plm_long dim[3];
     bool have_origin;
@@ -41,7 +42,7 @@ public:
     bool have_direction_cosines;
     float direction_cosines[9];
 
-    Pstring algorithm;
+    std::string algorithm;
 
     Landmark_warp lw;
 
@@ -78,17 +79,18 @@ load_input_files (Landmark_warp_main_parms *parms)
     Landmark_warp *lw = &parms->lw;
 
     /* Load the pointsets */
-    lw->load_pointsets (parms->fixed_lm_fn, parms->moving_lm_fn);
+    lw->load_pointsets (parms->fixed_lm_fn.c_str(), 
+        parms->moving_lm_fn.c_str());
     if (!lw) {
 	print_and_exit ("Error, landmarks were not loaded successfully.\n");
     }
 
     /* Load the input image */
-    if (parms->input_img_fn.not_empty()) {
+    if (parms->input_img_fn != "") {
 	lw->m_input_img = plm_image_load_native (parms->input_img_fn);
 	if (!lw->m_input_img) {
 	    print_and_exit ("Error reading input image: %s\n", 
-		(const char*) parms->input_img_fn);
+		parms->input_img_fn.c_str());
 	}
 	/* Default geometry, if unknown, comes from moving image */
 	lw->m_pih.set_from_plm_image (lw->m_input_img);
@@ -102,11 +104,12 @@ load_input_files (Landmark_warp_main_parms *parms)
     if (!parms->have_dim || !parms->have_origin 
 	|| !parms->have_spacing || !parms->have_direction_cosines)
     {
-	if (parms->fixed_img_fn.not_empty()) {
-            Plm_image::Pointer pli = plm_image_load_native (parms->fixed_img_fn);
+	if (parms->fixed_img_fn != "") {
+            Plm_image::Pointer pli 
+                = plm_image_load_native (parms->fixed_img_fn);
 	    if (!pli) {
 		print_and_exit ("Error loading fixed image: %s\n",
-		    (const char*) parms->fixed_img_fn);
+		    parms->fixed_img_fn.c_str());
 	    }
 	    lw->m_pih.set_from_plm_image (pli);
 	}
@@ -131,37 +134,29 @@ save_output_files (Landmark_warp_main_parms *parms)
     Landmark_warp *lw = &parms->lw;
 
     /* GCS FIX: float output only, and no dicom. */
-    if (lw->m_warped_img && parms->output_img_fn.not_empty()) {
+    if (lw->m_warped_img && parms->output_img_fn != "") {
 	lw->m_warped_img->save_image (parms->output_img_fn);
     }
-    if (lw->m_vf && parms->output_vf_fn.not_empty()) {
-	xform_save (lw->m_vf, (const char*) parms->output_vf_fn);
+    if (lw->m_vf && parms->output_vf_fn != "") {
+	xform_save (lw->m_vf, parms->output_vf_fn);
     }
-    if (lw->m_vf && lw->m_warped_landmarks && parms->output_lm_fn.not_empty())
+    if (lw->m_vf && lw->m_warped_landmarks && parms->output_lm_fn != "")
     {
-	
 	if ( lw->num_clusters > 0 ) {
 	    // if clustering required, save each cluster to a separate fcsv
 	    for( int ii = 0; ii<lw->num_clusters; ii++) {
-		// remove .fcsv extension, insert cluster id, add back extension
-		char fn_out[1024], clust_name[1024];
-		strcpy(fn_out, parms->output_lm_fn );
-		char *ext_pos = strstr(fn_out, ".fcsv");
-		fn_out[ext_pos-fn_out]=0;
-		sprintf(clust_name, "_cl_%d", ii);	
-		strcat(fn_out, clust_name);
-		strcat(fn_out, ".fcsv");		
-		
-		//pointset_save_fcsv_by_cluster(lw->m_warped_landmarks, 
-		//	lw->cluster_id, ii,  fn_out);
+                std::string fn_base = strip_extension (parms->output_lm_fn);
+                std::string fn_out = string_format ("%s_cl_%d.fcsv",
+                    fn_base.c_str(), ii);
 		
 		//write FIXED landmarks to check for clustering issues
 		pointset_save_fcsv_by_cluster(lw->m_fixed_landmarks, 
-                    lw->cluster_id, ii,  fn_out);
+                    lw->cluster_id, ii, fn_out.c_str());
             }
         }
         else {
-            pointset_save (lw->m_warped_landmarks, parms->output_lm_fn);
+            pointset_save (lw->m_warped_landmarks, 
+                parms->output_lm_fn.c_str());
         }
     }
 }
@@ -183,7 +178,7 @@ do_landmark_warp (Landmark_warp_main_parms *parms)
 	do_landmark_warp_wendland (lw);
     }
 
-    if (parms->output_lm_fn.not_empty()) {
+    if (parms->output_lm_fn != "") {
 	lw->m_warped_landmarks = pointset_create ();
 	calculate_warped_landmarks (lw);
     }
@@ -261,13 +256,13 @@ parse_fn (
     parser->check_required ("moving-landmarks");
 
     /* Copy values into output struct */
-    parms->fixed_lm_fn = parser->get_string("fixed-landmarks").c_str();
-    parms->moving_lm_fn = parser->get_string("moving-landmarks").c_str();
-    parms->input_vf_fn = parser->get_string("input-vf").c_str();
-    parms->input_img_fn = parser->get_string("input-image").c_str();
-    parms->output_img_fn = parser->get_string("output-image").c_str();
-    parms->output_vf_fn = parser->get_string("output-vf").c_str();
-    parms->output_lm_fn = parser->get_string("output-landmarks").c_str();
+    parms->fixed_lm_fn = parser->get_string("fixed-landmarks");
+    parms->moving_lm_fn = parser->get_string("moving-landmarks");
+    parms->input_vf_fn = parser->get_string("input-vf");
+    parms->input_img_fn = parser->get_string("input-image");
+    parms->output_img_fn = parser->get_string("output-image");
+    parms->output_vf_fn = parser->get_string("output-vf");
+    parms->output_lm_fn = parser->get_string("output-landmarks");
 
     if (parser->option ("origin")) {
 	parms->have_origin = 1;
@@ -281,9 +276,9 @@ parse_fn (
 	parms->have_dim = 1;
 	parser->assign_plm_long_13 (parms->dim, "dim");
     }
-    parms->fixed_img_fn = parser->get_string("fixed").c_str();
+    parms->fixed_img_fn = parser->get_string("fixed");
 
-    parms->algorithm = parser->get_string("algorithm").c_str();
+    parms->algorithm = parser->get_string("algorithm");
     lw->rbf_radius = parser->get_float("radius");
     lw->young_modulus = parser->get_float("stiffness");
     lw->default_val = parser->get_float("default-value");

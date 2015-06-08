@@ -7,7 +7,6 @@
 #include "autolabel.h"
 #include "autolabel_parms.h"
 #include "plm_clp.h"
-#include "pstring.h"
 
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])

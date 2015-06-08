@@ -21,3 +21,9 @@ itk_image_load_uchar (const char* fname, Plm_image_type* original_type)
     //return img;
     return itk_image_load_postprocess (img);
 }
+
+UCharImageType::Pointer
+itk_image_load_uchar (const std::string& fname, Plm_image_type* original_type)
+{
+    return itk_image_load_uchar (fname.c_str(), original_type);
+}

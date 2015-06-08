@@ -13,6 +13,7 @@
    ----------------------------------------------------------------------- */
 PLMBASE_API CharImageType::Pointer itk_image_load_char (const char* fname, Plm_image_type* original_type);
 PLMBASE_API UCharImageType::Pointer itk_image_load_uchar (const char* fname, Plm_image_type* original_type);
+PLMBASE_API UCharImageType::Pointer itk_image_load_uchar (const std::string& fname, Plm_image_type* original_type);
 PLMBASE_API ShortImageType::Pointer itk_image_load_short (const char* fname, Plm_image_type* original_type);
 PLMBASE_API UShortImageType::Pointer itk_image_load_ushort (const char* fname, Plm_image_type* original_type);
 PLMBASE_API Int32ImageType::Pointer itk_image_load_int32 (const char* fname, Plm_image_type* original_type);

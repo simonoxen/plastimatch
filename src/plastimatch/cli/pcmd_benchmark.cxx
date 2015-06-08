@@ -6,12 +6,11 @@
 
 #include "pcmd_benchmark.h"
 #include "plm_clp.h"
-#include "pstring.h"
 
 class Benchmark_parms {
 public:
-    Pstring output_fn;
-    Pstring input_fn;
+    std::string output_fn;
+    std::string input_fn;
 };
 
 static void
@@ -59,10 +58,10 @@ parse_fn (
     }
 
     /* Copy input filenames to parms struct */
-    parms->input_fn = (*parser)[0].c_str();
+    parms->input_fn = (*parser)[0];
 
     /* Output files */
-    parms->output_fn = parser->get_string("output").c_str();
+    parms->output_fn = parser->get_string("output");
 }
 
 void

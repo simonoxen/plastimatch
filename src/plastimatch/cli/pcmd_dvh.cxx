@@ -6,14 +6,13 @@
 #include "dvh.h"
 #include "pcmd_dvh.h"
 #include "plm_clp.h"
-#include "pstring.h"
 
 class Dvh_parms_pcmd {
 public:
-    Pstring input_ss_img_fn;
-    Pstring input_ss_list_fn;
-    Pstring input_dose_fn;
-    Pstring output_csv_fn;
+    std::string input_ss_img_fn;
+    std::string input_ss_list_fn;
+    std::string input_dose_fn;
+    std::string output_csv_fn;
     Dvh::Dvh_units dose_units;
     Dvh::Dvh_normalization normalization;
     Dvh::Histogram_type histogram_type;
@@ -103,12 +102,12 @@ parse_fn (
     }
 
     /* Copy values into output struct */
-    parms->input_ss_img_fn = parser->get_string("input-ss-img").c_str();
+    parms->input_ss_img_fn = parser->get_string("input-ss-img");
     if (parser->have_option ("input-ss-list")) {
-        parms->input_ss_list_fn = parser->get_string("input-ss-list").c_str();
+        parms->input_ss_list_fn = parser->get_string("input-ss-list");
     }
-    parms->input_dose_fn = parser->get_string("input-dose").c_str();
-    parms->output_csv_fn = parser->get_string("output-csv").c_str();
+    parms->input_dose_fn = parser->get_string("input-dose");
+    parms->output_csv_fn = parser->get_string("output-csv");
     if (parser->have_option ("dose-units")) {
         if (parser->get_string("dose-units") == "cGy" 
             || parser->get_string("dose-units") == "cgy")
@@ -141,10 +140,10 @@ do_command_dvh (int argc, char *argv[])
 
     Dvh dvh;
     dvh.set_structure_set_image (
-        (const char*) parms.input_ss_img_fn, 
-        (const char*) parms.input_ss_list_fn);
+        parms.input_ss_img_fn.c_str(), 
+        parms.input_ss_list_fn.c_str());
     dvh.set_dose_image (
-        (const char*) parms.input_dose_fn);
+        parms.input_dose_fn.c_str());
     dvh.set_dose_units (parms.dose_units);
     dvh.set_dvh_parameters (
         parms.normalization,
@@ -154,5 +153,5 @@ do_command_dvh (int argc, char *argv[])
 
     dvh.run ();
 
-    dvh.save_csv ((const char*) parms.output_csv_fn);
+    dvh.save_csv (parms.output_csv_fn.c_str());
 }

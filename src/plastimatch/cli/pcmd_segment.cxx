@@ -7,14 +7,13 @@
 #include "pcmd_segment.h"
 #include "plm_clp.h"
 #include "plm_image.h"
-#include "pstring.h"
 #include "segment_body.h"
 
 class Segment_parms {
 public:
-    Pstring input_fn;
-    Pstring output_fn;
-    Pstring output_dicom;
+    std::string input_fn;
+    std::string output_fn;
+    std::string output_dicom;
 
     Segment_body sb;
 };
@@ -93,11 +92,11 @@ parse_fn (
     Segment_body *sb = &parms->sb;
 
     /* Copy values into output struct */
-    parms->output_fn = parser->get_string("output-img").c_str();
+    parms->output_fn = parser->get_string("output-img");
 #if defined (commentout)
-    parms->output_dicom = parser->get_string("output-dicom").c_str();
+    parms->output_dicom = parser->get_string("output-dicom");
 #endif
-    parms->input_fn = parser->get_string("input").c_str();
+    parms->input_fn = parser->get_string("input");
     if (parser->option ("lower-threshold")) {
 	sb->m_lower_threshold = parser->get_float("lower-threshold");
     }

@@ -8,8 +8,6 @@
 #include <vector>
 #include "dlib/svm.h"
 
-class Pstring;
-
 class PLMSEGMENT_API Dlib_trainer
 {
   public:
@@ -43,9 +41,9 @@ class PLMSEGMENT_API Dlib_trainer
     dlib::decision_function<Kernel_type> m_krr_df;
 
   public:
-    void save_csv (const Pstring& out_csv_fn);
-    void save_net (const Pstring& out_net_fn);
-    void save_tsacc (const Pstring& out_net_fn);
+    void save_csv (const std::string& out_csv_fn);
+    void save_net (const std::string& out_net_fn);
+    void save_tsacc (const std::string& out_net_fn);
     void set_krr_gamma (
 	double gamma_min, double gamma_max, double gamma_step);
     void train_krr (void);

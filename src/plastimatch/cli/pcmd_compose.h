@@ -8,13 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_image_type.h"
-#include "pstring.h"
 
 class Compose_parms {
 public:
-    Pstring xf_in_1_fn;
-    Pstring xf_in_2_fn;
-    Pstring xf_out_fn;
+    std::string xf_in_1_fn;
+    std::string xf_in_2_fn;
+    std::string xf_out_fn;
     bool negate_mask;
     float mask_value;
     bool output_dicom;

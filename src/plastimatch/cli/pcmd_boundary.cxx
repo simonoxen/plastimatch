@@ -8,12 +8,11 @@
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "plm_clp.h"
-#include "pstring.h"
 
 class Boundary_parms {
 public:
-    Pstring output_fn;
-    Pstring input_fn;
+    std::string output_fn;
+    std::string input_fn;
 };
 
 static void
@@ -61,10 +60,10 @@ parse_fn (
     }
 
     /* Copy input filenames to parms struct */
-    parms->input_fn = (*parser)[0].c_str();
+    parms->input_fn = (*parser)[0];
 
     /* Output files */
-    parms->output_fn = parser->get_string("output").c_str();
+    parms->output_fn = parser->get_string("output");
 }
 
 void
@@ -76,7 +75,7 @@ do_command_boundary (int argc, char *argv[])
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     UCharImageType::Pointer input_image = itk_image_load_uchar (
-        parms.input_fn.c_str(), 0);
+        parms.input_fn, 0);
     UCharImageType::Pointer output_image = do_image_boundary (input_image);
-    itk_image_save (output_image, parms.output_fn.c_str());
+    itk_image_save (output_image, parms.output_fn);
 }

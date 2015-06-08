@@ -170,6 +170,12 @@ plm_fopen (const char *path, const char *mode)
 }
 
 FILE*
+plm_fopen (const std::string& path, const char *mode)
+{
+    return plm_fopen (path.c_str(), mode);
+}
+
+FILE*
 make_tempfile (void)
 {
 # if defined (_WIN32)

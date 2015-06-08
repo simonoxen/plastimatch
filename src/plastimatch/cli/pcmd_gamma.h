@@ -7,7 +7,6 @@
 #include "plmcli_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "pstring.h"
 #include "plm_image_type.h"
 
 class Gamma_parms {

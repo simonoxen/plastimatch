@@ -355,6 +355,12 @@ xform_load (Xform *xf, const char* fn)
     xf->load (fn);
 }
 
+void
+xform_load (Xform *xf, const std::string& fn)
+{
+    xf->load (fn);
+}
+
 Xform::Pointer xform_load (const char* fn)
 {
     Xform::Pointer xf = Xform::New ();
@@ -539,6 +545,12 @@ void
 xform_save (Xform *xf, const char* fn)
 {
     xf->save (fn);
+}
+
+void
+xform_save (Xform *xf, const std::string& fn)
+{
+    xf->save (fn.c_str());
 }
 
 /* -----------------------------------------------------------------------

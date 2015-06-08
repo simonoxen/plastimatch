@@ -10,13 +10,12 @@
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 
 class Mask_parms {
 public:
-    Pstring input_fn;
-    Pstring output_fn;
-    Pstring mask_fn;
+    std::string input_fn;
+    std::string output_fn;
+    std::string mask_fn;
     enum Mask_operation mask_operation;
     float mask_value;
     bool output_dicom;
@@ -34,10 +33,10 @@ static void
 mask_main (Mask_parms* parms)
 {
     Plm_image::Pointer img
-        = plm_image_load_native ((const char*) parms->input_fn);
+        = plm_image_load_native (parms->input_fn);
     if (!img) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    (const char*) parms->input_fn);
+	    parms->input_fn);
     }
 
     UCharImageType::Pointer mask = itk_image_load_uchar (parms->mask_fn, 0);
@@ -70,12 +69,12 @@ mask_main (Mask_parms* parms)
     }
 
     if (parms->output_dicom) {
-	img->save_short_dicom ((const char*) parms->output_fn, 0);
+	img->save_short_dicom (parms->output_fn, 0);
     } else {
 	if (parms->output_type) {
 	    img->convert (parms->output_type);
 	}
-	img->save_image ((const char*) parms->output_fn);
+	img->save_image (parms->output_fn);
     }
 }
 
@@ -131,9 +130,9 @@ parse_fn (
     parser->check_required ("output");
 
     /* Input files */
-    parms->input_fn = parser->get_string("input").c_str();
-    parms->output_fn = parser->get_string("output").c_str();
-    parms->mask_fn = parser->get_string("mask").c_str();
+    parms->input_fn = parser->get_string("input");
+    parms->output_fn = parser->get_string("output");
+    parms->mask_fn = parser->get_string("mask");
 
     /* Output options */
     if (parser->option("output-format")) {

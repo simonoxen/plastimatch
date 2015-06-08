@@ -9,18 +9,16 @@
 
 #include "itk_image_load.h"
 #include "itk_image_type.h"
-#include "pstring.h"
 #include "pcmd_probe.h"
 #include "plm_clp.h"
 #include "plm_file_format.h"
-#include "pstring.h"
 #include "string_util.h"
 
 class Probe_parms {
 public:
-    Pstring input_fn;
-    Pstring index_string;
-    Pstring location_string;
+    std::string input_fn;
+    std::string index_string;
+    std::string location_string;
 
 public:
     Probe_parms () {
@@ -31,7 +29,7 @@ static void
 probe_img_main (Probe_parms *parms)
 {
     FloatImageType::Pointer img = itk_image_load_float (
-	(const char*) parms->input_fn, 0);
+	parms->input_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     
     typedef itk::LinearInterpolateImageFunction < FloatImageType, 
@@ -40,7 +38,7 @@ probe_img_main (Probe_parms *parms)
     interpolator->SetInputImage (img);
 
     std::vector<float> index_list = parse_float3_string (
-	(const char*) parms->index_string);
+	parms->index_string);
     for (unsigned int i = 0; i < index_list.size() / 3; i++) {
 	itk::ContinuousIndex<float, 3> cindex;
 	cindex[0] = index_list[i*3+0];
@@ -65,7 +63,7 @@ probe_img_main (Probe_parms *parms)
     }
 
     std::vector<float> location_list = parse_float3_string (
-	(const char*) parms->location_string);
+	parms->location_string);
     for (unsigned int i = 0; i < location_list.size() / 3; i++) {
 	FloatPoint3DType point;
 	point[0] = location_list[i*3+0];
@@ -95,7 +93,7 @@ static void
 probe_vf_main (Probe_parms *parms)
 {
     DeformationFieldType::Pointer img = itk_image_load_float_field (
-	(const char*) parms->input_fn);
+	parms->input_fn);
     DeformationFieldType::RegionType rg = img->GetLargestPossibleRegion ();
     
     typedef itk::VectorLinearInterpolateImageFunction < DeformationFieldType, 
@@ -104,7 +102,7 @@ probe_vf_main (Probe_parms *parms)
     interpolator->SetInputImage (img);
 
     std::vector<float> index_list = parse_float3_string (
-	(const char*) parms->index_string);
+	parms->index_string);
     for (unsigned int i = 0; i < index_list.size() / 3; i++) {
 	itk::ContinuousIndex<float, 3> cindex;
 	cindex[0] = index_list[i*3+0];
@@ -130,7 +128,7 @@ probe_vf_main (Probe_parms *parms)
     }
 
     std::vector<float> location_list = parse_float3_string (
-	(const char*) parms->location_string);
+	parms->location_string);
     for (unsigned int i = 0; i < location_list.size() / 3; i++) {
 	FloatPoint3DType point;
 	point[0] = location_list[i*3+0];
@@ -160,7 +158,7 @@ probe_vf_main (Probe_parms *parms)
 static void
 do_probe (Probe_parms *parms)
 {
-    switch (plm_file_format_deduce ((const char*) parms->input_fn)) {
+    switch (plm_file_format_deduce (parms->input_fn)) {
     case PLM_FILE_FMT_VF:
 	probe_vf_main (parms);
 	break;
@@ -220,9 +218,9 @@ parse_fn (
     }
 
     /* Copy values into output struct */
-    parms->input_fn = (*parser)[0].c_str();
-    parms->index_string = parser->get_string("index").c_str();
-    parms->location_string = parser->get_string("location").c_str();
+    parms->input_fn = (*parser)[0];
+    parms->index_string = parser->get_string("index");
+    parms->location_string = parser->get_string("location");
 }
 
 void

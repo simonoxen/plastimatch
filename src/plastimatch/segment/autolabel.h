@@ -5,7 +5,6 @@
 #define _autolabel_h_
 
 #include "plmsegment_config.h"
-#include "pstring.h"
 
 class Autolabel_parms;
 
