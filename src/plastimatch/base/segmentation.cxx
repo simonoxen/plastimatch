@@ -23,7 +23,6 @@
 #include "plm_warp.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rasterizer.h"
 #include "rt_study.h"
 #include "rt_study_metadata.h"
@@ -56,16 +55,15 @@ public:
     }
 };
 
-static void
+static std::string
 compose_prefix_fn (
-    Pstring *fn, 
-    const Pstring &output_prefix, 
+    const std::string& output_prefix, 
     const std::string& structure_name,
     const char* extension
 )
 {
-    fn->format ("%s/%s.%s", 
-        (const char*) output_prefix, 
+    return string_format ("%s/%s.%s", 
+        output_prefix.c_str(), 
         structure_name.c_str(), 
         extension);
 }
@@ -119,21 +117,20 @@ Segmentation::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Segmentation::load_prefix (const char *prefix_dir)
+Segmentation::load_prefix (const std::string& prefix_dir)
 {
-    Pstring pd = prefix_dir;
-    this->load_prefix (pd);
+    this->load_prefix (prefix_dir.c_str());
 }
 
 void
-Segmentation::load_prefix (const Pstring &prefix_dir)
+Segmentation::load_prefix (const char *prefix_dir)
 {
     /* Clear out any existing structures */
     this->clear ();
 
     /* Load the list of files in the directory */
     Dir_list dl;
-    dl.load (prefix_dir.c_str());
+    dl.load (prefix_dir);
 
     /* Make a quick pass through the directory to find the number of 
        files.  This is used to size the ss_img. */
@@ -171,9 +168,8 @@ Segmentation::load_prefix (const Pstring &prefix_dir)
         lprintf ("Loading structure: %s\n", structure_name);
 
         /* Load the file */
-        Pstring input_fn;
-        input_fn.format ("%s/%s", prefix_dir.c_str(), entry);
-        Plm_image img (input_fn.c_str(), PLM_IMG_TYPE_ITK_UCHAR);
+        std::string input_fn = string_format ("%s/%s", prefix_dir, entry);
+        Plm_image img (input_fn, PLM_IMG_TYPE_ITK_UCHAR);
         Plm_image_header pih (img);
 
         if (first) {
@@ -324,10 +320,10 @@ Segmentation::add_structure (
 }
 
 void
-Segmentation::load_cxt (const Pstring &input_fn, Rt_study_metadata *rsm)
+Segmentation::load_cxt (const std::string& input_fn, Rt_study_metadata *rsm)
 {
     d_ptr->m_cxt = Rtss::New();
-    cxt_load (d_ptr->m_cxt.get(), rsm, (const char*) input_fn);
+    cxt_load (d_ptr->m_cxt.get(), rsm, input_fn.c_str());
 
     d_ptr->m_rtss_valid = true;
     d_ptr->m_ss_img_valid = false;
@@ -410,19 +406,19 @@ Segmentation::get_structure_image (int index)
 }
 
 void
-Segmentation::save_colormap (const Pstring &colormap_fn)
+Segmentation::save_colormap (const std::string& colormap_fn)
 {
-    ss_list_save_colormap (d_ptr->m_cxt.get(), (const char*) colormap_fn);
+    ss_list_save_colormap (d_ptr->m_cxt.get(), colormap_fn.c_str());
 }
 
 void
 Segmentation::save_cxt (
     const Rt_study_metadata::Pointer& rsm, 
-    const Pstring &cxt_fn, 
+    const std::string& cxt_fn, 
     bool prune_empty
 )
 {
-    cxt_save (d_ptr->m_cxt.get(), rsm, (const char*) cxt_fn, prune_empty);
+    cxt_save (d_ptr->m_cxt.get(), rsm, cxt_fn.c_str(), prune_empty);
 }
 
 void
@@ -458,7 +454,7 @@ Segmentation::save_gdcm_rtss (
 void
 Segmentation::save_fcsv (
     const Rtss_roi *curr_structure, 
-    const Pstring& fn
+    const std::string& fn
 )
 {
     Labeled_pointset pointset;
@@ -471,11 +467,11 @@ Segmentation::save_fcsv (
         }
     }
 
-    pointset.save_fcsv ((const char*) fn);
+    pointset.save_fcsv (fn);
 }
 
 void
-Segmentation::save_prefix_fcsv (const Pstring &output_prefix)
+Segmentation::save_prefix_fcsv (const std::string& output_prefix)
 {
     if (!d_ptr->m_cxt) {
         print_and_exit (
@@ -484,10 +480,10 @@ Segmentation::save_prefix_fcsv (const Pstring &output_prefix)
 
     for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
     {
-        Pstring fn;
         Rtss_roi *curr_structure = d_ptr->m_cxt->slist[i];
 
-        compose_prefix_fn (&fn, output_prefix, curr_structure->name, "fcsv");
+        std::string fn = 
+            compose_prefix_fn (output_prefix, curr_structure->name, "fcsv");
         save_fcsv (curr_structure, fn);
     }
 }
@@ -514,9 +510,9 @@ Segmentation::save_ss_image (const std::string& ss_img_fn)
 }
 
 void
-Segmentation::save_labelmap (const Pstring &labelmap_fn)
+Segmentation::save_labelmap (const std::string& labelmap_fn)
 {
-    d_ptr->m_labelmap->save_image ((const char*) labelmap_fn);
+    d_ptr->m_labelmap->save_image (labelmap_fn);
 }
 
 void
@@ -549,38 +545,10 @@ Segmentation::save_prefix (const std::string &output_prefix,
     }
 }
 
-/* GCS FIX: This is obsolete, and should invoke the above function */
-void
-Segmentation::save_prefix (const Pstring &output_prefix)
-{
-    if (!d_ptr->m_ss_img) {
-        return;
-    }
-
-    if (!d_ptr->m_cxt) {
-        printf ("WTF???\n");
-    }
-
-    for (size_t i = 0; i < d_ptr->m_cxt->num_structures; i++)
-    {
-        Pstring fn;
-        Rtss_roi *curr_structure = d_ptr->m_cxt->slist[i];
-        int bit = curr_structure->bit;
-
-        if (bit == -1) continue;
-        UCharImageType::Pointer prefix_img 
-            = ss_img_extract_bit (d_ptr->m_ss_img, bit);
-
-        compose_prefix_fn (&fn, output_prefix, curr_structure->name, "mha");
-        itk_image_save (prefix_img, (const char*) fn);
-    }
-}
-
 void
 Segmentation::save_prefix (const char *output_prefix)
 {
-    Pstring op = output_prefix;
-    this->save_prefix (op);
+    this->save_prefix (std::string (output_prefix));
 }
 
 void

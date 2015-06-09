@@ -6,7 +6,6 @@
 
 #include "plmbase_config.h"
 #include <vector>
-#include "pstring.h"
 
 class Xio_patient;
 struct Xio_studyset_dir;
@@ -17,7 +16,7 @@ struct Xio_plan_dir;
    contains multiple patients */
 class PLMBASE_API Xio_dir {
 public:
-    Pstring path;
+    std::string path;
     std::vector<Xio_patient*> patient_dir;
 public:
     Xio_dir (const char *input_dir);

@@ -11,7 +11,6 @@
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
-#include "bstrlib.h"
 
 #include "xio_dir.h"
 #include "xio_patient.h"

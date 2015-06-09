@@ -24,7 +24,6 @@
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "string_util.h"
 #include "volume.h"
 #include "volume_header.h"
@@ -338,12 +337,6 @@ Xform::load (const char* fn)
 }
 
 void
-Xform::load (const Pstring& fn)
-{
-    this->load ((const char*) fn);
-}
-
-void
 Xform::load (const std::string& fn)
 {
     this->load (fn.c_str());
@@ -527,12 +520,6 @@ Xform::save (const char* fn)
         print_and_exit ("Unhandled case trying to save transform\n");
         break;
     }
-}
-
-void
-Xform::save (const Pstring& fn)
-{
-    this->save ((const char*) fn);
 }
 
 void

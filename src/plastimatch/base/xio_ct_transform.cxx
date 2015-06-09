@@ -13,7 +13,6 @@
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
-#include "bstrlib.h"
 
 #include "metadata.h"
 #include "plm_endian.h"

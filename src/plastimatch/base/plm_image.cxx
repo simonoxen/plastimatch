@@ -28,7 +28,6 @@
 #include "plm_image_type.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "string_util.h"
 #include "volume.h"
 
@@ -38,11 +37,6 @@ Plm_image::Plm_image () {
 Plm_image::Plm_image (const char* fname) {
     this->init ();
     this->load_native (fname);
-}
-Plm_image::Plm_image (const Pstring& fname)
-{
-    this->init ();
-    this->load_native (fname.c_str());
 }
 Plm_image::Plm_image (const std::string& fname)
 {
@@ -529,12 +523,6 @@ Plm_image::save_image (const char* fname)
 	    " (type = %s)\n", plm_image_type_string (this->m_type));
 	break;
     }
-}
-
-void
-Plm_image::save_image (const Pstring& fname)
-{
-    this->save_image (fname.c_str());
 }
 
 void

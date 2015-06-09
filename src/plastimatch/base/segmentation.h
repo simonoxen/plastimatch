@@ -8,7 +8,6 @@
 
 #include "itk_image_type.h"
 #include "metadata.h"
-#include "pstring.h"
 #include "rtss.h"
 #include "xform.h"
 #include "xio_studyset.h"  /* enum Xio_version */
@@ -34,9 +33,9 @@ public:
 
     void clear ();
     void load (const char *ss_img, const char *ss_list);
-    void load_cxt (const Pstring &input_fn, Rt_study_metadata *rsm);
+    void load_cxt (const std::string& input_fn, Rt_study_metadata *rsm);
     void load_prefix (const char *prefix_dir);
-    void load_prefix (const Pstring &prefix_dir);
+    void load_prefix (const std::string& prefix_dir);
     void load_xio (const Xio_studyset& xio_studyset);
     void load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm);
 
@@ -47,19 +46,18 @@ public:
 
     UCharImageType::Pointer get_structure_image (int index);
 
-    void save_colormap (const Pstring &colormap_fn);
+    void save_colormap (const std::string& colormap_fn);
     void save_cxt (const Rt_study_metadata::Pointer& rsm, 
-        const Pstring &cxt_fn, bool prune_empty);
+        const std::string& cxt_fn, bool prune_empty);
     void save_gdcm_rtss (const char *output_dir, 
         const Rt_study_metadata::Pointer& rsm);
-    void save_fcsv (const Rtss_roi *curr_structure, const Pstring& fn);
-    void save_prefix_fcsv (const Pstring &output_prefix);
+    void save_fcsv (const Rtss_roi *curr_structure, const std::string& fn);
+    void save_prefix_fcsv (const std::string& output_prefix);
     void save_ss_image (const std::string& ss_img_fn);
-    void save_labelmap (const Pstring &labelmap_fn);
+    void save_labelmap (const std::string& labelmap_fn);
     void save_prefix (const std::string& output_prefix, 
         const std::string& extension = "mha");
     void save_prefix (const char *output_prefix);
-    void save_prefix (const Pstring &output_prefix);
     void save_ss_list (const std::string& ss_list_fn);
     void save_xio (
         const Rt_study_metadata::Pointer& rsm,

@@ -12,13 +12,11 @@
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
-#include "bstrlib.h"
 
 #include "file_util.h"
 #include "metadata.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"
@@ -31,64 +29,52 @@
 static void
 add_cms_contournames (Rtss *rtss, const char *filename)
 {
-    FILE *fp;
-    struct bStream * bs;
-    bstring version = bfromcstr ("");
-    bstring line1 = bfromcstr ("");
-    bstring line2 = bfromcstr ("");
-    int skip_lines = 2;
-
-    fp = fopen (filename, "r");
-    if (!fp) {
-	print_and_exit ("Error opening file %s for read\n", filename);
+    /* Open file */
+    std::ifstream ifs (filename, std::ifstream::in);
+    if (ifs.fail()) {
+        print_and_exit ("Error opening file %s for read\n", filename);
     }
 
-    bs = bsopen ((bNread) fread, fp);
+    int skip_lines = 2;
 
     /* Read version number */
-    bsreadln (version, bs, '\n');
-    btrimws (version);
-    if (!strcmp ((const char*) version->data, "00061027")) {
+    std::string line;
+    getline (ifs, line);
+    int rc, xio_version;
+    rc = sscanf (line.c_str(), "%x", &xio_version);
+    if (xio_version == 0x00061027) {
 	printf ("Version 00061027 found.\n");
 	skip_lines = 5;
     }
 
     /* Skip line */
-    bsreadln (line1, bs, '\n');
+    getline (ifs, line);
 
-    while (1)
-    {
-	int rc, structure_id;
+    while (getline (ifs, line)) {
+	int rc;
 
 	/* Get structure name */
-	rc = bsreadln (line1, bs, '\n');
-	if (rc == BSTR_ERR) {
-	    break;
-	}
-	btrimws (line1);
+        std::string structure_name = string_trim (line);
 
 	/* Get structure number */
-	rc = bsreadln (line2, bs, '\n');
-	if (rc == BSTR_ERR) {
-	    break;
-	}
-	btrimws (line2);
-	rc = sscanf ((char*) line2->data, "%d,", &structure_id);
+        getline (ifs, line);
+        int structure_id;
+	rc = sscanf (line.c_str(), "%d,", &structure_id);
 
 	if (rc != 1) {
-	    if (!strcmp ((const char*) version->data, "00061027")) {
+	    if (xio_version == 0x00061027) {
 		/* This XiO version seems to write corrupted contourfiles 
 		   when editing files created with previous versions. 
 		   We'll assume that everything went ok.  */
 		break;
 	    }
-	    /* GCS 2010-12-27: It's not just that version which does this.
+	    /* GCS 2010-12-27: It's not only that version which does this.
 	       What happens it that XiO leaves garbage at the end of the 
 	       file.  The better way to handle this is probably to count 
 	       the number of structures and then stop. */
 #if defined (commentout)
 	    print_and_exit ("Error parsing contournames: "
-			    "contour id not found (%s)\n", line2->data);
+                "contour id not found (%s)\n", line2->data);
 #endif
 	}
 
@@ -100,20 +86,13 @@ add_cms_contournames (Rtss *rtss, const char *filename)
 	}
 
 	/* Add structure */
-	rtss->add_structure (std::string ((const char*) line1->data), 
-	    "", structure_id);
+	rtss->add_structure (structure_name, "", structure_id);
 
 	/* Skip extra lines */
 	for (int i = 0; i < skip_lines; i++) {
-	    bsreadln (line1, bs, '\n');
+            getline (ifs, line);
 	}
     }
-
-    bdestroy (version);
-    bdestroy (line1);
-    bdestroy (line2);
-    bsclose (bs);
-    fclose (fp);
 }
 
 static void

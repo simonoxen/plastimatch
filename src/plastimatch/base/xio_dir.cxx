@@ -11,7 +11,6 @@
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
-#include "bstrlib.h"
 
 #include "file_util.h"
 #include "path_util.h"
@@ -176,11 +175,11 @@ Xio_dir::~Xio_dir ()
 void
 Xio_dir::analyze ()
 {
-    if (!is_directory ((const char*) this->path)) {
+    if (!is_directory (this->path)) {
 	return;
     }
 
-    this->analyze_recursive (std::string ((const char*) this->path));
+    this->analyze_recursive (this->path);
 }
 
 int

@@ -12,7 +12,6 @@
 #include "metadata.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
-#include "pstring.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
 #include "rtss_contour.h"

@@ -37,7 +37,6 @@ set (PLMSYS_LIBRARY_SRC
   plm_timer.cxx plm_timer.h
   plm_version.h 
   print_and_exit.cxx print_and_exit.h
-  pstring.h
   string_util.cxx string_util.h
   )
 

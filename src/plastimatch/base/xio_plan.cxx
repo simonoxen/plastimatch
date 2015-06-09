@@ -3,11 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 #include <fstream>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bstrlib.h"
-#include "bstrwrap.h"
 
 #include "print_and_exit.h"
 #include "xio_plan.h"

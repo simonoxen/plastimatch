@@ -7,7 +7,6 @@
 #include "plmbase_config.h"
 #include <list>
 #include <string>
-#include "pstring.h"
 
 /* This class represents a toplevel patient directory */
 class PLMBASE_API Xio_patient {
@@ -15,8 +14,8 @@ public:
     Xio_patient (const char* path);
     ~Xio_patient ();
 public:
-    Pstring m_path;
-    Pstring m_demographic_fn;
+    std::string m_path;
+    std::string m_demographic_fn;
     std::list< std::string > studyset_dirs;
     std::list< std::string > plan_dirs;
 public:

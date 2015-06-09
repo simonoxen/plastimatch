@@ -2,37 +2,36 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <fstream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "bstrlib.h"
 
 #include "print_and_exit.h"
+#include "string_util.h"
 #include "xio_demographic.h"
 
 Xio_demographic::Xio_demographic (const char *filename)
 {
-    FILE *fp;
-    fp = fopen (filename, "r");
-    if (!fp) {
-	print_and_exit ("Error opening file %s for read\n", filename);
+    std::ifstream ifs (filename);
+    if (ifs.fail()) {
+        print_and_exit ("Error opening file %s for read\n", filename);
     }
-    CBStream bs ((bNread) fread, fp);
 
     /* version string 
        00011017 - pxio version 4.2 */
-    CBString version = bs.readLine ('\n');
+    std::string version;
+    getline (ifs, version);
 
     /* date (for what?) */
-    CBString date = bs.readLine ('\n');
+    std::string date;
+    getline (ifs, date);
 
     /* important stuff here */
-    m_patient_name = bs.readLine ('\n');
-    m_patient_name.rtrim();
-    m_patient_id = bs.readLine ('\n');
-    m_patient_id.rtrim();
-
-    fclose (fp);
+    getline (ifs, m_patient_name);
+    m_patient_name = string_trim (m_patient_name);
+    getline (ifs, m_patient_id);
+    m_patient_id = string_trim (m_patient_id);
 }
 
 Xio_demographic::~Xio_demographic ()

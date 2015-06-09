@@ -13,7 +13,6 @@
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
-#include "bstrlib.h"
 
 #include "metadata.h"
 #include "plm_endian.h"
@@ -36,90 +35,80 @@ struct xio_ct_header {
 static void
 xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 {
-    FILE *fp;
-    struct bStream * bs;
-    bstring line1 = bfromcstr ("");
-    int rc;
-
-    fp = fopen (filename, "r");
-    if (!fp) {
-	print_and_exit ("Error opening file %s for read\n", filename);
+    /* Open file */
+    std::ifstream ifs (filename, std::ifstream::in);
+    if (ifs.fail()) {
+        print_and_exit ("Error opening file %s for read\n", filename);
     }
 
-    bs = bsopen ((bNread) fread, fp);
-
     /* Get version */
-    bsreadln (line1, bs, '\n');
-    int xio_ct_version;
-    rc = sscanf ((const char*) line1, "%x", &xio_ct_version);
+    std::string line;
+    getline (ifs, line);
+    int rc, xio_ct_version;
+    rc = sscanf (line.c_str(), "%x", &xio_ct_version);
     if (rc != 1) {
 	/* Couldn't parse version string -- default to oldest format. */
 	xio_ct_version = 0x00071015;
     }
 
-    /* Skip 5 lines */
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
+    /* Skip lines */
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
 
     /* Get slice location */
-    rc = bsreadln (line1, bs, '\n');
-    if (rc == BSTR_ERR) {
-	print_and_exit ("Error reading slice location\n", line1->data);
+    if (!getline (ifs, line)) {
+	print_and_exit ("Error reading slice location\n");
     }
-    rc = sscanf ((char*) line1->data, "%g", &xch->z_loc);
+    rc = sscanf (line.c_str(), "%g", &xch->z_loc);
     if (rc != 1) {
-	print_and_exit ("Error parsing slice location (%s)\n", line1->data);
+	print_and_exit ("Error parsing slice location (%s)\n", line.c_str());
     }
 
     /* Skip 3 lines */
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
 
     /* Get slice width, height */
-    rc = bsreadln (line1, bs, '\n');
-    if (rc == BSTR_ERR) {
-	print_and_exit ("Error reading image resolution\n", line1->data);
+    if (!getline (ifs, line)) {
+	print_and_exit ("Error reading slice width, height");
     }
-    rc = sscanf ((char*) line1->data, "%g,%g", &xch->slice_size[0], 
+    rc = sscanf (line.c_str(), "%g,%g", &xch->slice_size[0], 
 	&xch->slice_size[1]);
     if (rc != 2) {
-	print_and_exit ("Error parsing slice width (%s)\n", line1->data);
+	print_and_exit ("Error parsing slice width (%s)\n", line.c_str());
     }
 
     /* Get image resolution */
-    rc = bsreadln (line1, bs, '\n');
-    if (rc == BSTR_ERR) {
-	print_and_exit ("Error reading image resolution\n", line1->data);
+    if (!getline (ifs, line)) {
+	print_and_exit ("Error reading image resolution");
     }
-    rc = sscanf ((char*) line1->data, "%d,%d,%d", &xch->dim[0], &xch->dim[1], 
+    rc = sscanf (line.c_str(), "%d,%d,%d", &xch->dim[0], &xch->dim[1], 
 	&xch->bit_depth);
     if (rc != 3) {
-	print_and_exit ("Error parsing image resolution (%s)\n", line1->data);
+	print_and_exit ("Error parsing image resolution (%s)\n", line.c_str());
     }
 
     /* Skip 9 lines */
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
+    getline (ifs, line);
 
     /* Get pixel size */
-    rc = bsreadln (line1, bs, '\n');
-    if (rc == BSTR_ERR) {
-	print_and_exit ("Error reading pixel size\n", line1->data);
+    if (!getline (ifs, line)) {
+	print_and_exit ("Error reading pixel size\n");
     }
-    rc = sscanf ((char*) line1->data, "%g,%g", &xch->spacing[0], 
-	&xch->spacing[1]);
+    rc = sscanf (line.c_str(), "%g,%g", &xch->spacing[0], &xch->spacing[1]);
     if (rc != 2) {
-	print_and_exit ("Error parsing pixel size (%s)\n", line1->data);
+	print_and_exit ("Error parsing pixel size (%s)\n", line.c_str());
     }
 
     /* EPF files have a zero as the second spacing.  Fudge these. */
@@ -130,10 +119,6 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
     printf ("%g %g %d %d %g %g %g\n", 
 	xch->slice_size[0], xch->slice_size[1], xch->dim[0], xch->dim[1], 
 	xch->spacing[0], xch->spacing[1], xch->z_loc);
-
-    bdestroy (line1);
-    bsclose (bs);
-    fclose (fp);
 }
 
 static void
