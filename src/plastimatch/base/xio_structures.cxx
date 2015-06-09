@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 #include <algorithm>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <stdlib.h>

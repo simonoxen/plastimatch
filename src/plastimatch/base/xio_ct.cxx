@@ -2,11 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <algorithm>
+#include <fstream>
+#include <string>
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
-#include <string>
-#include <algorithm>
 
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
