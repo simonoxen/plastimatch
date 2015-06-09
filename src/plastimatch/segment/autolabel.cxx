@@ -28,7 +28,7 @@ load_dlib_network (
     dlib::decision_function< Dlib_trainer::Kernel_type > *dlib_network,
     const std::string& network_fn)
 {
-    std::ifstream fin (network_fn, std::ios::binary);
+    std::ifstream fin (network_fn.c_str(), std::ios::binary);
     deserialize (*dlib_network, fin);
 }
 
