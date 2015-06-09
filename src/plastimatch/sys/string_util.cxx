@@ -226,7 +226,7 @@ parse_float_string (const char* s)
         if (rc == 0) {
             rc = sscanf (p, " , %f%n", &v, &n);
         }
-        if (rc == 0) {
+        if (rc == 0 || rc == EOF) {
             break;
         }
         p += n;
