@@ -12,6 +12,7 @@
 #include "delayload_opencl.h"
 #include "opencl_util.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 
 void
 opencl_device_info (
@@ -541,7 +542,7 @@ opencl_load_programs (
 
     /* Load and compile the programs */
     buf_cstr = buf.c_str();
-    len = (size_t) buf->length ();
+    len = (size_t) buf.length ();
     ocl_dev->programs = (cl_program*) malloc (
     ocl_dev->device_count * sizeof(cl_program));
 
