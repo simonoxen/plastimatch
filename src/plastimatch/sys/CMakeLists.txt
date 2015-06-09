@@ -10,10 +10,6 @@ configure_file (
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
-## JAS 2012.06.22
-##   Currently, it is necessary for appliations linking against
-##   plmregister to also link against bstrlib
-
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##  GCS 2012-09-28: Please include non-private header files as well
@@ -55,7 +51,6 @@ endforeach ()
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMSYS_LIBRARY_DEPENDENCIES 
-    bstrlib
     )
 if (LIBDL_FOUND)
     set (PLMSYS_LIBRARY_DEPENDENCIES

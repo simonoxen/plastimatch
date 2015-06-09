@@ -417,13 +417,6 @@ if (NOT SQLITE_FOUND AND NOT PLM_CONFIG_DEBIAN_BUILD)
   set (SQLITE_FOUND TRUE)
 endif ()
 
-##-----------------------------------------------------------------------------
-##  Only use local bstrlib
-##-----------------------------------------------------------------------------
-add_subdirectory (libs/bstrlib-05122010)
-set (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
-link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
-
 #-----------------------------------------------------------------------------
 ##  Only use local devillard
 ##-----------------------------------------------------------------------------

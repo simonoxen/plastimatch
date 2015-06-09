@@ -70,7 +70,6 @@ include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/Diffeomor
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/LOGDomainDemons)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
-include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
 include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
@@ -242,7 +241,7 @@ endif ()
 ##  Set up configuration for external projects using plastimatch API
 ##-----------------------------------------------------------------------------
 # Add targets to build tree export set
-set (EXPORT_TARGET_LIST bstrlib plmsys plmbase devillard nkidecompress plmutil)
+set (EXPORT_TARGET_LIST plmsys plmbase devillard nkidecompress plmutil)
 if (PLMLIB_CONFIG_ENABLE_DOSE)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} specfun plmdose)
 endif ()
