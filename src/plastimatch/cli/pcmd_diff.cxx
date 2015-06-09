@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "diff.h"
 #include "pcmd_diff.h"

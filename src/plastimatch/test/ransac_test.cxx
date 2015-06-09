@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <fstream>
 #include <stdio.h>
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
@@ -17,7 +18,7 @@ load_data (
     const char* filename
 )
 {
-    std::istream is (filename);
+    std::ifstream is (filename);
     std::string line;
     Autolabel_point datum;
     while (std::getline (is, line)) {
@@ -30,7 +31,6 @@ load_data (
         datum[1] = y;
         data.push_back (datum);
     }
-    fclose (fp);
 }
 
 int 

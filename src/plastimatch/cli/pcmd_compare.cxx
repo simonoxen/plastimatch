@@ -110,12 +110,12 @@ img_compare (Compare_parms* parms)
     img1 = plm_image_load_native (parms->img_in_1_fn);
     if (!img1) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_1_fn);
+	    parms->img_in_1_fn.c_str());
     }
     img2 = plm_image_load_native (parms->img_in_2_fn);
     if (!img2) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_2_fn);
+	    parms->img_in_2_fn.c_str());
     }
 
     if (!Plm_image::compare_headers (img1, img2)) {

@@ -36,7 +36,7 @@ mask_main (Mask_parms* parms)
         = plm_image_load_native (parms->input_fn);
     if (!img) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->input_fn);
+	    parms->input_fn.c_str());
     }
 
     UCharImageType::Pointer mask = itk_image_load_uchar (parms->mask_fn, 0);
