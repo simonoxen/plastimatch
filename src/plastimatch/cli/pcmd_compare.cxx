@@ -62,13 +62,13 @@ vf_compare (Compare_parms* parms)
     if (!vol1) {
 	fprintf (stderr, 
 	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    parms->img_in_1_fn);
+	    parms->img_in_1_fn.c_str());
 	exit (-1);
     }
     if (vol1->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
 	    "interleaved float vector field.\n", 
-	    parms->img_in_1_fn);
+	    parms->img_in_1_fn.c_str());
 	fprintf (stderr, "Type = %d\n", vol1->pix_type);
 	exit (-1);
     }
@@ -77,13 +77,13 @@ vf_compare (Compare_parms* parms)
     if (!vol2) {
 	fprintf (stderr, 
 	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    parms->img_in_2_fn);
+	    parms->img_in_2_fn.c_str());
 	exit (-1);
     }
     if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
 	    "interleaved float vector field.\n", 
-	    parms->img_in_2_fn);
+	    parms->img_in_2_fn.c_str());
 	fprintf (stderr, "Type = %d\n", vol2->pix_type);
 	exit (-1);
     }
