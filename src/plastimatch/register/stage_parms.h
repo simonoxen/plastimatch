@@ -15,6 +15,7 @@
 #include "plm_image_type.h"
 #include "plm_return_code.h"
 #include "process_parms.h"
+#include "registration_metric_type.h"
 #include "threading.h"
 
 enum Stage_transform_type {
@@ -59,15 +60,6 @@ enum Optimization_type {
 enum Stage_type {
     STAGE_TYPE_PROCESS,
     STAGE_TYPE_REGISTER
-};
-
-enum Registration_metric_type {
-    METRIC_NONE,
-    METRIC_GRADIENT_MAGNITUDE,
-    METRIC_MI,
-    METRIC_MI_MATTES,
-    METRIC_MSE,
-    METRIC_NMI
 };
 
 enum Resample_type {

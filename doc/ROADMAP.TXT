@@ -13,7 +13,8 @@ Backward incompatible changes
 *  Remove short options
 *  DRR/FDK/dose calc use IEC coordinates
 *  GDCM becomes deprecated
-*  Move vf-invert, landmark-warp, drr, fdk, wed into plastimatch executable
+*  vf-invert, landmark-warp, drr, fdk, wed no longer available, 
+   they are merged into plastimatch executable
 
 Documentation
 *  Registration tutorial based on NA-MIC case library

@@ -193,13 +193,13 @@ void
 Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 {
     switch (stage->metric_type[0]) {
-    case METRIC_MSE:
+    case REGISTRATION_METRIC_MSE:
     {
         MSEMetricType::Pointer metric = MSEMetricType::New();
         registration->SetMetric(metric);
     }
     break;
-    case METRIC_MI:
+    case REGISTRATION_METRIC_MI:
     {
         /*  The metric requires a number of parameters to be
             selected, including the standard deviation of the
@@ -219,7 +219,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         registration->SetMetric(metric);
     }
     break;
-    case METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI_MATTES:
     {
         /*  The metric requires two parameters to be selected: the 
             number of bins used to compute the entropy and the
@@ -253,7 +253,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         registration->SetMetric(metric);
     }
     break;
-    case METRIC_NMI:
+    case REGISTRATION_METRIC_NMI:
     {
         NMIMetricType::Pointer metric = NMIMetricType::New();
 

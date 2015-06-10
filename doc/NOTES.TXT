@@ -1,4 +1,12 @@
 ******************************************************************************
+Bspline_parms
+2015-06-10
+
+1. Historically, it is not possible to include ITK include files 
+   by the nvcc compiler.
+
+
+******************************************************************************
 Proj_volume, Rpl_volume, and dose calculation
 2015-05-06
 

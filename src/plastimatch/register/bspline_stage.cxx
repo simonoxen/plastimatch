@@ -148,12 +148,12 @@ Bspline_stage::initialize ()
         moving, stage, stage->resample_rate_moving);
 
     /* Gradient magnitude uses different fixed and moving images */
-    if (stage->metric_type[0] == METRIC_GRADIENT_MAGNITUDE) {
+    if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
         d_ptr->fixed_ss = volume_gradient_magnitude (d_ptr->fixed_ss);
         d_ptr->moving_ss = volume_gradient_magnitude (d_ptr->moving_ss);
     }
 
-    //Set parameter values for min/max histogram values
+    /* Copy parameters from stage_parms to bspline_parms */
     bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
     bsp_parms->mi_fixed_image_maxVal = stage->mi_fixed_image_maxVal;
     bsp_parms->mi_moving_image_minVal = stage->mi_moving_image_minVal;
@@ -249,14 +249,14 @@ Bspline_stage::initialize ()
 
     /* Metric */
     switch (stage->metric_type[0]) {
-    case METRIC_GRADIENT_MAGNITUDE:
+    case REGISTRATION_METRIC_GM:
         bsp_parms->metric[0] = BMET_GM;
         break;
-    case METRIC_MSE:
+    case REGISTRATION_METRIC_MSE:
         bsp_parms->metric[0] = BMET_MSE;
         break;
-    case METRIC_MI:
-    case METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI:
+    case REGISTRATION_METRIC_MI_MATTES:
         bsp_parms->metric[0] = BMET_MI;
         break;
     default:

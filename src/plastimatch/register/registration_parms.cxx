@@ -514,19 +514,19 @@ Registration_parms::set_key_value (
         stage->metric_type.clear();
         for (int i = 0; i < metric_vec.size(); i++) {
             if (metric_vec[i] == "gm") {
-                stage->metric_type.push_back (METRIC_GRADIENT_MAGNITUDE);
+                stage->metric_type.push_back (REGISTRATION_METRIC_GM);
             }
             else if (metric_vec[i] == "mattes") {
-                stage->metric_type.push_back (METRIC_MI_MATTES);
+                stage->metric_type.push_back (REGISTRATION_METRIC_MI_MATTES);
             }
             else if (metric_vec[i] == "mse" || metric_vec[i] == "MSE") {
-                stage->metric_type.push_back (METRIC_MSE);
+                stage->metric_type.push_back (REGISTRATION_METRIC_MSE);
             }
             else if (metric_vec[i] == "mi" || metric_vec[i] == "MI") {
-                stage->metric_type.push_back (METRIC_MI);
+                stage->metric_type.push_back (REGISTRATION_METRIC_MI);
             }
             else if (metric_vec[i] == "nmi" || metric_vec[i] == "NMI") {
-                stage->metric_type.push_back (METRIC_NMI);
+                stage->metric_type.push_back (REGISTRATION_METRIC_NMI);
             }
             else {
                 goto error_exit;

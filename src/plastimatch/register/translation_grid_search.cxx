@@ -206,7 +206,7 @@ translation_grid_search_stage (
     fixed_ss = registration_resample_volume (
         fixed, stage, stage->resample_rate_fixed);
 
-    if (stage->metric_type[0] == METRIC_GRADIENT_MAGNITUDE) {
+    if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
         fixed_ss = volume_gradient_magnitude (fixed_ss);
         moving_ss = volume_gradient_magnitude (moving_ss);
     }
@@ -230,12 +230,12 @@ translation_grid_search_stage (
         const Volume::Pointer& moving, const float dxyz[3]) 
         = &translation_mse;
     switch (stage->metric_type[0]) {
-    case METRIC_MSE:
-    case METRIC_GRADIENT_MAGNITUDE:
+    case REGISTRATION_METRIC_MSE:
+    case REGISTRATION_METRIC_GM:
         translation_score = &translation_mse;
         break;
-    case METRIC_MI:
-    case METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI:
+    case REGISTRATION_METRIC_MI_MATTES:
         translation_score = &translation_mi;
         break;
     default:
