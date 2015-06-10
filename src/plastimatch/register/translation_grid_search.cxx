@@ -234,8 +234,8 @@ translation_grid_search_stage (
     case REGISTRATION_METRIC_GM:
         translation_score = &translation_mse;
         break;
-    case REGISTRATION_METRIC_MI:
     case REGISTRATION_METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI_VW:
         translation_score = &translation_mi;
         break;
     default:

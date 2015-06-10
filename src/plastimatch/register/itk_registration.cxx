@@ -199,7 +199,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         registration->SetMetric(metric);
     }
     break;
-    case REGISTRATION_METRIC_MI:
+    case REGISTRATION_METRIC_MI_VW:
     {
         /*  The metric requires a number of parameters to be
             selected, including the standard deviation of the

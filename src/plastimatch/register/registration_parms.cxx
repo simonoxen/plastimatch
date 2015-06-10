@@ -523,7 +523,10 @@ Registration_parms::set_key_value (
                 stage->metric_type.push_back (REGISTRATION_METRIC_MSE);
             }
             else if (metric_vec[i] == "mi" || metric_vec[i] == "MI") {
-                stage->metric_type.push_back (REGISTRATION_METRIC_MI);
+                stage->metric_type.push_back (REGISTRATION_METRIC_MI_VW);
+            }
+            else if (metric_vec[i] == "mi_vw") {
+                stage->metric_type.push_back (REGISTRATION_METRIC_MI_VW);
             }
             else if (metric_vec[i] == "nmi" || metric_vec[i] == "NMI") {
                 stage->metric_type.push_back (REGISTRATION_METRIC_NMI);

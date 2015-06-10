@@ -255,8 +255,8 @@ Bspline_stage::initialize ()
     case REGISTRATION_METRIC_MSE:
         bsp_parms->metric[0] = BMET_MSE;
         break;
-    case REGISTRATION_METRIC_MI:
     case REGISTRATION_METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI_VW:
         bsp_parms->metric[0] = BMET_MI;
         break;
     default:
