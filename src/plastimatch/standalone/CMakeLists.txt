@@ -27,7 +27,6 @@ set (BSPLINE_SRC
   )
 set (CHECK_GRAD_SRC
   check_grad.cxx
-  check_grad_opts.cxx
   )
 set (COMPUTE_DISTANCE_SRC
   compute_distance.cxx

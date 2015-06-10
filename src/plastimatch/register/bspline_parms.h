@@ -9,6 +9,7 @@
 #include <vector>
 #include "bspline_mi_hist.h"
 #include "double_align8.h"
+#include "registration_metric_type.h"
 #include "smart_pointer.h"
 
 enum BsplineOptimization {
@@ -25,12 +26,6 @@ enum BsplineThreading {
     BTHR_CUDA
 };
 
-enum BsplineMetric {
-    BMET_GM,
-    BMET_MSE,
-    BMET_MI
-};
-
 class Bspline_landmarks;
 class Reg_parms;
 
@@ -44,7 +39,7 @@ public:
 public:
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
-    std::vector<enum BsplineMetric> metric;
+    std::vector<Registration_metric_type> metric_type;
     std::vector<float> metric_lambda;
     char implementation;         /* Implementation ('a', 'b', etc.) */
     int min_its;                 /* Miniumum iterations (line searches) */

@@ -17,6 +17,7 @@
 #include "mha_io.h"
 #include "plm_clp.h"
 #include "plm_image.h"
+#include "registration_metric_type.h"
 #include "volume.h"
 #include "volume_grad.h"
 
@@ -48,7 +49,7 @@ public:
 
     char bsp_implementation;
     BsplineThreading bsp_threading;
-    BsplineMetric bsp_metric;
+    Registration_metric_type bsp_metric;
 
 public:
     Check_grad_opts () {
@@ -73,7 +74,7 @@ public:
         debug_dir = "";
         bsp_implementation = '0';
         bsp_threading = BTHR_CPU;
-        bsp_metric = BMET_MSE;
+        bsp_metric = REGISTRATION_METRIC_MSE;
     }
 };
 
@@ -145,7 +146,7 @@ check_gradient (
         x[i] = bxf->coeff[i];
     }
 
-    if (parms->metric[0] == BMET_MI) {
+    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
         bst->mi_hist->initialize (parms->fixed, parms->moving);
     }
 
@@ -332,9 +333,9 @@ parse_fn (
     }
     val = parser->get_string("metric").c_str();
     if (val == "mse") {
-        parms->bsp_metric = BMET_MSE;
-    } else if (val == "cuda") {
-        parms->bsp_metric = BMET_MI;
+        parms->bsp_metric = REGISTRATION_METRIC_MSE;
+    } else if (val == "mi") {
+        parms->bsp_metric = REGISTRATION_METRIC_MI_MATTES;
     } else {
         throw (dlib::error ("Error parsing --metric, unknown option."));
     }

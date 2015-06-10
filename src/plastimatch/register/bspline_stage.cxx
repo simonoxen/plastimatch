@@ -248,19 +248,12 @@ Bspline_stage::initialize ()
     bsp_parms->lbfgsb_pgtol = stage->pgtol;
 
     /* Metric */
-    switch (stage->metric_type[0]) {
-    case REGISTRATION_METRIC_GM:
-        bsp_parms->metric[0] = BMET_GM;
-        break;
-    case REGISTRATION_METRIC_MSE:
-        bsp_parms->metric[0] = BMET_MSE;
-        break;
-    case REGISTRATION_METRIC_MI_MATTES:
-    case REGISTRATION_METRIC_MI_VW:
-        bsp_parms->metric[0] = BMET_MI;
-        break;
-    default:
-        print_and_exit ("Undefined metric type in gpuit_bspline\n");
+    bsp_parms->metric_type = stage->metric_type;
+    bsp_parms->metric_lambda = stage->metric_lambda;
+    for (int i = 0; i < stage->metric_type.size(); i++) {
+        if (bsp_parms->metric_type[i] == REGISTRATION_METRIC_MI_VW) {
+            bsp_parms->metric_type[i] = REGISTRATION_METRIC_MI_MATTES;
+        }
     }
 
     /* Threading */
