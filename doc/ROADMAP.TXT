@@ -10,38 +10,36 @@ Features
 *  Superbuild
 
 Backward incompatible changes
-*  Remove short options "-F"
-*  DRR/FDK uses IEC coordinates
+*  Remove short options
+*  DRR/FDK/dose calc use IEC coordinates
 *  GDCM becomes deprecated
+*  Move vf-invert, landmark-warp, drr, fdk, wed into plastimatch executable
 
 Documentation
 *  Registration tutorial based on NA-MIC case library
 *  MABS tutorial
 
 Cleanup
-*  Remove Pstring/bstring
-*  Remove unnecessary third party libraries
-*  Better handling of ??_parms class
-*  Move vf-invert, landmark-warp, drr, fdk, wed into plastimatch executable
+*  Remove Pstring/bstring (done)
+*  Remove unnecessary third party libraries (f2c, nocedal, sqlite?, lua?)
+*  Evaluate if duplication between Stage_parms and Bspline_parms 
+   can be removed
+*  Re-evaluate B-spline loop template
 
 Wishlist
 
 *  Autolabel (la,tsv1,tsv2)
 *  Copy-free conversion between itk and native volumes
-*  CUDA demons
-** (What is wrong with current one?)
-*  Extend B-spline loop template to other flavors
 *  RTK wrapping
 *  DRR/FDK dicom
 *  Evaluate native vs itk jacobian
-*  IEC patient coordinate system
-*  MSVC express multicore strategy (done -- use MSVC 2013)
+*  MSVC express multicore strategy (done, MSVC 2013 and higher)
 *  Native rigid registration
 *  Normalized MI
 *  patient mask to support MRI
-*  plastimatch gradient magnitude
+*  plastimatch gradient magnitude (done)
 *  Proton/photon/electron dose calculation
-** Add multi-beam to command file
+** Add multi-beam to command file (done)
 ** Remove duplication of code for photons
 *  RTPLAN support
 *  Standalone GUI
