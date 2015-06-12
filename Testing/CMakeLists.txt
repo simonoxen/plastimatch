@@ -53,6 +53,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-roi-c.txt"
   "plm-reg-roi-d.txt"
   "plm-reg-roi-e.txt"
+  "plm-reg-stiffness-a.txt"
   "plm-reg-multi-a.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-rigid-a.txt"
@@ -306,13 +307,17 @@ endif ()
 ##   rect-16           Off-center rect, slicer direction cosines
 ##   rect-17           Water phantom, resolution 5x5x5, for dose calculation
 ##   rect-18	       Water phantom, very low resolution 20x20, dose calc.
+##   rect-19	       Standard, but larger rectangle
 ##   rectarr-01        Two rectangles, both centered
 ##   rectarr-02        Two rectangles, lower rect offset
 ##   rectarr-m-01      Upper mask for rectarr-01 and rectarr-02
 ##   rectarr-m-02      Lower mask for rectarr-01 and rectarr-02
+##   roi-1             left = 0, right = 1
 ##   rgc-1             rect range compensator for dose calculation
 ##   sphere-1          Uchar sphere, bg=0, fg=255
 ##   sphere-2          Standard sphere, centered
+##   sphere-3          Standard, bg=0, fg=1
+##   sphere-4          Standard, radius = 150
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
 
@@ -507,6 +512,11 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-18.mha;--pattern;rect;--dim;15 15 15;--background;-1000;--foreground;0;--rect-size;-100 100 -100 100 -100 100;--origin;-150 -150 -150;--spacing;20 20 20"
   )
 plm_add_test (
+  "rect-19"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-19.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-150 150 -150 150 -150 150"
+  )
+plm_add_test (
   "rectarr-01-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rectarr-01-a.mha;--output-type;float;--pattern;rect;--dim;30 50 30;--background;-1000;--foreground;0;--rect-size;-5 5 -15 -5 -5 5;--origin;-14.5 -24.5 -14.5;--spacing;1 1 1"
@@ -541,6 +551,11 @@ plm_add_test (
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rgc-1.mha;--output-type;float;--pattern;rect;--dim;10 10 1;--background;0;--foreground;30;--rect-size;0 10 0 5 0 0;--origin;0 0 0;--spacing;1 1 1"
   )
 plm_add_test (
+    "roi-1"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "synth;--output;${PLM_BUILD_TESTING_DIR}/roi-1.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;0 300 -300 300 -300 300"
+    )
+plm_add_test (
   "sphere-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
@@ -555,6 +570,11 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;50 50 50"
   )
+plm_add_test (
+    "sphere-4"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-4.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;150 150 150"
+    )
 plm_add_test (
   "xramp-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -3134,11 +3154,12 @@ set_tests_properties (plm-reg-dv-itk-translation-check PROPERTIES
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 8)
-##   plm-reg-roi-a    bspline + mi
-##   plm-reg-roi-b    itk 
-##   plm-reg-roi-c    b-spline, upper rectangle
-##   plm-reg-roi-d    b-spline, lower rectangle
-##   plm-reg-roi-e    itk (no roi), b-spline (roi)
+##   plm-reg-roi-a         bspline + mi
+##   plm-reg-roi-b         itk 
+##   plm-reg-roi-c         b-spline, upper rectangle
+##   plm-reg-roi-d         b-spline, lower rectangle
+##   plm-reg-roi-e         itk (no roi), b-spline (roi)
+##   plm-reg-stiffness-a   b-spline, rect vs sphere
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-roi-a"
@@ -3174,6 +3195,14 @@ plm_add_test (
   "${PLM_BUILD_TESTING_DIR}/plm-reg-roi-e.txt"
   )
 set_tests_properties (plm-reg-roi-e PROPERTIES DEPENDS "rectarr-01;rectarr-02;rectarr-m-02")
+
+plm_add_test (
+    "plm-reg-stiffness-a"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "register;${PLM_BUILD_TESTING_DIR}/plm-reg-stiffness-a.txt"
+    )
+set_tests_properties (plm-reg-stiffness-a
+    PROPERTIES DEPENDS "rect-19;roi-1;sphere-4")
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 9)

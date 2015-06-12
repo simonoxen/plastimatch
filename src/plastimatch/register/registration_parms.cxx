@@ -255,6 +255,14 @@ Registration_parms::set_key_value (
         if (section_process) goto key_not_allowed_in_section_process;
         shared->moving_roi_enable = string_value_true (val);
     }
+    else if (key == "fixed_stiffness") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->fixed_stiffness_fn = val;
+    }
+    else if (key == "fixed_stiffness_enable") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->fixed_stiffness_enable = string_value_true (val);
+    }
     else if (key == "legacy_subsampling") {
         if (section_process) goto key_not_allowed_in_section_process;
         shared->legacy_subsampling = string_value_true (val);

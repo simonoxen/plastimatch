@@ -69,17 +69,25 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
             shared->fixed_roi_fn.c_str());
-        this->fixed_roi = Plm_image::New (new Plm_image (
-                shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
+        this->fixed_roi = Plm_image::New (
+            shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
     }
     if (shared->moving_roi_fn != "") {
         logfile_printf ("Loading moving roi: %s\n", 
             shared->moving_roi_fn.c_str());
-        this->moving_roi = Plm_image::New (new Plm_image (
-                shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
+        this->moving_roi = Plm_image::New (
+            shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
     }
 
-    /* Load landmarks */
+    /* load stiffness */
+    if (shared->fixed_stiffness_fn != "") {
+        logfile_printf ("Loading fixed stiffness: %s\n", 
+            shared->fixed_stiffness_fn.c_str());
+        this->fixed_stiffness = Plm_image::New (
+            shared->fixed_stiffness_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    }
+
+    /* load landmarks */
     if (shared->fixed_landmarks_fn != "") {
         if (shared->moving_landmarks_fn != "") {
             logfile_printf ("Loading fixed landmarks: %s\n", 

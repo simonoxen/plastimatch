@@ -27,6 +27,9 @@ public:
     Plm_image::Pointer fixed_roi;
     Plm_image::Pointer moving_roi;
 
+    /* Stiffness map */
+    Plm_image::Pointer fixed_stiffness;
+
     /* Input landmarks */
     Labeled_pointset *fixed_landmarks;
     Labeled_pointset *moving_landmarks;
