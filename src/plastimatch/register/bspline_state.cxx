@@ -97,6 +97,7 @@ Bspline_state::initialize (
     if (reg_parms->lambda > 0.0f) {
         rst->fixed = parms->fixed;
         rst->moving = parms->moving;
+        rst->fixed_stiffness = parms->fixed_stiffness;
         rst->initialize (reg_parms, bxf);
     }
 

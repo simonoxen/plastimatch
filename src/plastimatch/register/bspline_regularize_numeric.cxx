@@ -90,6 +90,12 @@ compute_score_numeric_internal (
     float d2_dy2[3],  d2_dxdz[3];
     float d2_dz2[3],  d2_dydz[3];
 
+    /* Voxel-specific stiffness */
+    const float *fsimg = 0;
+    if (rst->fixed_stiffness) {
+        fsimg = rst->fixed_stiffness->get_raw<float>();
+    }
+
     /* Square of 2nd derivative */
     float d2_sq;
 
@@ -152,6 +158,12 @@ compute_score_numeric_internal (
                 idx_jnkp = volume_index (vol->dim,   i, j-1, k+1);
                 idx_jpkn = volume_index (vol->dim,   i, j+1, k-1);
                 idx_jpkp = volume_index (vol->dim,   i, j+1, k+1);
+
+		/* Get stiffness */
+                float stiffness = 1.0;
+                if (fsimg) {
+                    stiffness = fsimg[idx_poi];
+                }
 
                 /* Load vectors relevant to current POI */
                 vec_poi = &img[3*idx_poi];

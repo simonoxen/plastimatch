@@ -65,13 +65,14 @@ public:
     double_align8 lbfgsb_factr;  /* Function value tolerance for L-BFGS-B */
     double_align8 lbfgsb_pgtol;  /* Projected grad tolerance for L-BFGS-B */
 
-    /* Image Volumes */
-    Volume* fixed;               /* Not owned by Bspline_parms */
-    Volume* moving;              /* Not owned by Bspline_parms */
-    Volume* fixed_grad;         /* Not owned by Bspline_parms */
-    Volume* moving_grad;         /* Not owned by Bspline_parms */
-    Volume* fixed_roi;           /* Not owned by Bspline_parms */
-    Volume* moving_roi;          /* Not owned by Bspline_parms */
+    /* Image Volumes - these are not owned by Bspline_parms */
+    Volume* fixed;
+    Volume* moving;
+    Volume* fixed_grad;
+    Volume* moving_grad;
+    Volume* fixed_roi;
+    Volume* moving_roi;
+    Volume* fixed_stiffness;
 
     /* Regularization */
     Reg_parms* reg_parms;        /* Regularization Parameters */

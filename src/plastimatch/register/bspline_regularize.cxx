@@ -14,6 +14,7 @@ Bspline_regularize::Bspline_regularize ()
     this->fixed = 0;
     this->moving = 0;
     this->bxf = 0;
+    this->fixed_stiffness = 0;
 
     /* semi-analytic method */
     this->q_dxdyz_lut = 0;

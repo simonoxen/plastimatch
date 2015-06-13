@@ -45,6 +45,7 @@ public:
     Volume::Pointer moving_grad;
     Volume::Pointer f_roi_ss;
     Volume::Pointer m_roi_ss;
+    Volume::Pointer f_stiffness_ss;
 public:
     Bspline_stage_private () {
         xf_out = Xform::New ();
@@ -220,6 +221,14 @@ Bspline_stage::initialize ()
         d_ptr->fixed_ss->dim[1], 
         d_ptr->fixed_ss->dim[2]);
 
+    /* Subsample stiffness */
+    if (shared->fixed_stiffness_enable && regd->fixed_stiffness) {
+        Volume::Pointer& stiffness 
+            = regd->fixed_stiffness->get_volume_float ();
+        d_ptr->f_stiffness_ss = registration_resample_volume (
+            stiffness, stage, stage->resample_rate_fixed);
+    }
+
     /* Make spatial gradient image */
     Volume *moving_grad = volume_make_gradient (d_ptr->moving_ss.get());
     d_ptr->moving_grad = Volume::New (moving_grad);
@@ -236,6 +245,9 @@ Bspline_stage::initialize ()
     if (m_roi) {
         bsp_parms->moving_roi = d_ptr->m_roi_ss.get();
     }
+    if (d_ptr->f_stiffness_ss) {
+        bsp_parms->fixed_stiffness = d_ptr->f_stiffness_ss.get();
+    }
 
     /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
@@ -250,7 +262,7 @@ Bspline_stage::initialize ()
     /* Metric */
     bsp_parms->metric_type = stage->metric_type;
     bsp_parms->metric_lambda = stage->metric_lambda;
-    for (int i = 0; i < stage->metric_type.size(); i++) {
+    for (size_t i = 0; i < stage->metric_type.size(); i++) {
         if (bsp_parms->metric_type[i] == REGISTRATION_METRIC_MI_VW) {
             bsp_parms->metric_type[i] = REGISTRATION_METRIC_MI_MATTES;
         }

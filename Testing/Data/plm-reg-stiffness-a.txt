@@ -11,6 +11,6 @@ img_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-img.mha
 xform=bspline
 res=2 2 2
 max_its=5
+regularization=numeric
 regularization_lambda=0.1
 grid_spac=10 10 10
-

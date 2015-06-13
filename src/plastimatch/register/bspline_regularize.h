@@ -33,9 +33,11 @@ public:
 public:
     /* all methods */
     Reg_parms *reg_parms;
+    Bspline_xform *bxf;
+
     Volume* fixed;
     Volume* moving;
-    Bspline_xform *bxf;
+    Volume* fixed_stiffness;
 
     /* numeric methods */
     float* q_dxdyz_lut;          /* LUT for influence of dN1/dx*dN2/dy*N3 */
