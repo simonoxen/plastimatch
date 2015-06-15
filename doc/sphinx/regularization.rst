@@ -34,12 +34,13 @@ where
 
 .. math::
 	c_{RM,x}
-	= \left( \frac{\partial u^2_x}{\partial x^2} \right)^2
+	= \left[ \left( \frac{\partial u^2_x}{\partial x^2} \right)^2
 	+ \left( \frac{\partial u^2_x}{\partial y^2} \right)^2
-	+ \left( \frac{\partial u^2_x}{\partial z^2} \right)^2
-	+ \left( \frac{\partial u^2_x}{\partial x \partial y} \right)^2
+	+ \left( \frac{\partial u^2_x}{\partial z^2} \right)^2 \right]
+	+ 2 \times 
+	  \left[ \left( \frac{\partial u^2_x}{\partial x \partial y} \right)^2
 	+ \left( \frac{\partial u^2_x}{\partial x \partial z} \right)^2
-	+ \left( \frac{\partial u^2_x}{\partial y \partial z} \right)^2.
+	+ \left( \frac{\partial u^2_x}{\partial y \partial z} \right)^2 \right].
 
 The integration is generally defined to be 
 performed over the domain of the fixed image.
@@ -82,3 +83,39 @@ Numeric regularization flavor "d" is a mixed analytic-numeric method.
 The derivatives are computed analytically at each voxel, and then 
 numerically integrated over all voxels.
 
+Stiffness images
+----------------
+If desired, a stiffness image can be used to perform voxel-specific 
+regularization.  At this time, this is supported only for numeric 
+regularization.  
+
+As an example, consider a registration with a sphere as the fixed 
+image, and a cube as the moving image.  A stiffness image has been 
+created with stiffness of one in the right side of the image 
+(outlined in blue), and a stiffness of zero elsewhere:
+
+.. image:: ../figures/stiffness_image_1.png
+   :width: 30 %
+.. image:: ../figures/stiffness_image_2.png
+   :width: 30 %
+
+The registration command file is specified to use a stiffness map, 
+with regularization lambda of 2.5.  The penalty in the 
+right side of the image is therefore :math:`1 \times 2.5 = 2.5`.::
+
+  [GLOBAL]
+  fixed=cube.mha
+  moving=sphere.mha
+  fixed_stiffness=stiffness_image.mha
+
+  [STAGE]
+  xform=bspline
+  regularization=numeric
+  regularization_lambda=2.5
+
+The result is an image with uneven regularization:
+
+.. image:: ../figures/stiffness_image_3.png
+   :width: 30 %
+.. image:: ../figures/stiffness_image_4.png
+   :width: 30 %

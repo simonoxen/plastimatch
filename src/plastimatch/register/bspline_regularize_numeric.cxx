@@ -14,6 +14,7 @@
 #include "bspline_score.h"
 #include "bspline_xform.h"
 #include "logfile.h"
+#include "mha_io.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
@@ -30,10 +31,6 @@ compute_score_numeric_internal (
     const Volume* vol
 )
 {
-#if defined (DEBUG)
-    FILE* fp[3];
-#endif
-
     plm_long i, j, k;
     int c;
     float *img = (float*) vol->img;
@@ -90,6 +87,7 @@ compute_score_numeric_internal (
     const float *fsimg = 0;
     if (rst->fixed_stiffness) {
         fsimg = rst->fixed_stiffness->get_raw<float>();
+        write_mha ("fixed_stiffness.mha", rst->fixed_stiffness);
     }
 
     /* Square of 2nd derivative */
@@ -99,6 +97,7 @@ compute_score_numeric_internal (
     float S;
 
 #if defined (DEBUG)
+    FILE* fp[3];
     printf ("Warning: compiled with DEBUG : writing to to files:\n");
     printf ("  d2ux_dxy_sq.txt\n"); fp[0] = fopen ("d2ux_dxdy_sq.txt", "w");
     printf ("  d2uy_dxy_sq.txt\n"); fp[1] = fopen ("d2uy_dxdy_sq.txt", "w");
@@ -155,12 +154,6 @@ compute_score_numeric_internal (
                 idx_jpkn = volume_index (vol->dim,   i, j+1, k-1);
                 idx_jpkp = volume_index (vol->dim,   i, j+1, k+1);
 
-		/* Get stiffness */
-                float stiffness = 1.0;
-                if (fsimg) {
-                    stiffness = fsimg[idx_poi];
-                }
-
                 /* Load vectors relevant to current POI */
                 vec_poi = &img[3*idx_poi];
 
@@ -174,6 +167,12 @@ compute_score_numeric_internal (
                 vec_ipkn = &img[3*idx_ipkn]; vec_ipkp = &img[3*idx_ipkp];
                 vec_jnkn = &img[3*idx_jnkn]; vec_jnkp = &img[3*idx_jnkp];
                 vec_jpkn = &img[3*idx_jpkn]; vec_jpkp = &img[3*idx_jpkp];
+
+		/* Get stiffness */
+                float stiffness = 1.0;
+                if (fsimg) {
+                    stiffness = fsimg[idx_poi];
+                }
 
                 /* Compute components */
                 d2_sq = 0.0f;
@@ -229,13 +228,38 @@ compute_score_numeric_internal (
 		    dc_dv_jpkn[c] = - 4 * dxdydz * inv_dydz * d2_dydz[c];
 		    dc_dv_jpkp[c] = + 4 * dxdydz * inv_dydz * d2_dydz[c];
 
+                    /* Apply stiffness to components */
+                    if (fsimg) {
+                        dc_dv[c] *= stiffness;
+
+                        dc_dv_in[c] *= stiffness;
+                        dc_dv_ip[c] *= stiffness;
+                        dc_dv_jn[c] *= stiffness;
+                        dc_dv_jp[c] *= stiffness;
+                        dc_dv_kn[c] *= stiffness;
+                        dc_dv_kp[c] *= stiffness;
+
+                        dc_dv_injn[c] *= stiffness;
+                        dc_dv_injp[c] *= stiffness;
+                        dc_dv_ipjn[c] *= stiffness;
+                        dc_dv_ipjp[c] *= stiffness;
+                        dc_dv_inkn[c] *= stiffness;
+                        dc_dv_inkp[c] *= stiffness;
+                        dc_dv_ipkn[c] *= stiffness;
+                        dc_dv_ipkp[c] *= stiffness;
+                        dc_dv_jnkn[c] *= stiffness;
+                        dc_dv_jnkp[c] *= stiffness;
+                        dc_dv_jpkn[c] *= stiffness;
+                        dc_dv_jpkp[c] *= stiffness;
+                    }
+
 #if defined (DEBUG)
                     fprintf (fp[c], "(%i,%i,%i) : %15e\n", 
 			i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
 #endif
                 }
-		/* Update score */
-                S += d2_sq;
+                /* Update score */
+                S += stiffness * d2_sq;
 
 		/* Update gradient */
 		int pidx, qidx;
