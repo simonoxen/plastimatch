@@ -44,6 +44,7 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_regularize.cxx bspline_regularize.h 
   bspline_regularize_analytic.cxx
   bspline_regularize_numeric.cxx
+  bspline_regularize_semi_analytic.cxx
   demons.cxx
   itk_demons.cxx
   itk_demons.cxx
