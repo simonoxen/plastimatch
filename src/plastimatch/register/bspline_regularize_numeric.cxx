@@ -87,7 +87,6 @@ compute_score_numeric_internal (
     const float *fsimg = 0;
     if (rst->fixed_stiffness) {
         fsimg = rst->fixed_stiffness->get_raw<float>();
-        write_mha ("fixed_stiffness.mha", rst->fixed_stiffness);
     }
 
     /* Square of 2nd derivative */
