@@ -46,6 +46,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-b.txt"
   "plm-bsp-landmark-c.txt"
   "plm-bsp-landmark-d.txt"
+  "plm-bsp-landmark-e.txt"
   "plm-bsp-double.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
@@ -2865,8 +2866,9 @@ set_tests_properties (plm-bsp-regularize-numeric-check PROPERTIES
 ## plastimatch register (group 4)
 ##   plm-bsp-landmark-a
 ##   plm-bsp-landmark-b
-##   plm-bsp-landmark-c
-##   plm-bsp-landmark-d         Same as "c", but landmarks within file
+##   plm-bsp-landmark-c         Same as "b", but landmarks in stage
+##   plm-bsp-landmark-d         Same as "b", but landmarks within file
+##   plm-bsp-landmark-e         Same as "b", but txt instead of fcsv
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bsp-landmark-a"
@@ -2943,6 +2945,29 @@ set_tests_properties (plm-bsp-landmark-d-stats PROPERTIES
     DEPENDS plm-bsp-landmark-d)
 set_tests_properties (plm-bsp-landmark-d-check PROPERTIES 
     DEPENDS plm-bsp-landmark-d-stats)
+
+plm_add_test (
+  "plm-bsp-landmark-e"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-e.txt"
+  )
+plm_add_test (
+  "plm-bsp-landmark-e-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-e-img.mha"
+  )
+plmtest_check_interval (
+  "plm-bsp-landmark-e-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-landmark-e-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-991.5"
+  "-991.0"
+  )
+set_tests_properties (plm-bsp-landmark-e PROPERTIES DEPENDS "rect-15;rect-16")
+set_tests_properties (plm-bsp-landmark-e-stats PROPERTIES 
+    DEPENDS plm-bsp-landmark-e)
+set_tests_properties (plm-bsp-landmark-e-check PROPERTIES 
+    DEPENDS plm-bsp-landmark-e-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 5)
