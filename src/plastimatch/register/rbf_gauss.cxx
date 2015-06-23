@@ -35,7 +35,7 @@ struct rbf_params { // used to pass information to bspline_rbf_score
 };
 
 static float 
-rbf_value (float *rbf_center, float *loc, float radius)
+rbf_value (const float *rbf_center, const float *loc, float radius)
 {
     float val, r, dx, dy, dz;
 
@@ -196,7 +196,7 @@ bspline_rbf_find_coeffs_reg (
     float rbfv1, rbfv2;
     int i, j, k, d;
     float rbf_prefactor, reg_term, r2, tmp;
-    int num_landmarks = lw->m_fixed_landmarks->num_points;
+    int num_landmarks = lw->m_fixed_landmarks.get_count();
 
     typedef vnl_matrix <double> Vnl_matrix;
     typedef vnl_svd <double> SVDSolverType;
@@ -216,17 +216,16 @@ bspline_rbf_find_coeffs_reg (
 	for (j=0; j<num_landmarks; j++) {
 	    float rbf_center[3];
 	    for (d=0; d<3; d++) {
-		rbf_center[d] = lw->m_fixed_landmarks->points[3*i+d];
+		rbf_center[d] = lw->m_fixed_landmarks.point(i,d);
 	    }
-
 	    rbfv1 = rbf_value (rbf_center, 
-		&lw->m_fixed_landmarks->points[3*j], 
+		lw->m_fixed_landmarks.point(j).p, 
 		lw->adapt_radius[j]);
 		
 	    for (d=0;d<3;d++) {
 		b (3*i +d, 0) -= rbfv1 
-		    * (lw->m_fixed_landmarks->points[3*j+d] 
-			- lw->m_moving_landmarks->points[3*j+d]);
+		    * (lw->m_fixed_landmarks.point(j,d) 
+			- lw->m_moving_landmarks.point(j,d));
 	    }
 	}
     }
@@ -239,14 +238,14 @@ bspline_rbf_find_coeffs_reg (
 
 		float rbf_center[3];
 		for (d=0; d<3; d++) {
-		    rbf_center[d] = lw->m_fixed_landmarks->points[3*k+d];
+		    rbf_center[d] = lw->m_fixed_landmarks.point(k,d);
 		}
 
 		rbfv1 = rbf_value (rbf_center, 
-		    &lw->m_fixed_landmarks->points[3*i], 
+		    lw->m_fixed_landmarks.point(i).p, 
 		    lw->adapt_radius[k]);
 		rbfv2 = rbf_value (rbf_center, 
-		    &lw->m_fixed_landmarks->points[3*j], 
+		    lw->m_fixed_landmarks.point(j).p, 
 		    lw->adapt_radius[k]);
 
 		tmp += rbfv1*rbfv2;
@@ -274,12 +273,12 @@ bspline_rbf_find_coeffs_reg (
 		}
 		else
 		{
-		    float dx = lw->m_fixed_landmarks->points[3*i+0]
-			- lw->m_fixed_landmarks->points[3*j+0];
-		    float dy = lw->m_fixed_landmarks->points[3*i+1]
-			- lw->m_fixed_landmarks->points[3*j+1];
-		    float dz = lw->m_fixed_landmarks->points[3*i+2]
-			- lw->m_fixed_landmarks->points[3*j+2];
+		    float dx = lw->m_fixed_landmarks.point(i,0)
+			- lw->m_fixed_landmarks.point(j,0);
+		    float dy = lw->m_fixed_landmarks.point(i,1)
+			- lw->m_fixed_landmarks.point(j,1);
+		    float dz = lw->m_fixed_landmarks.point(i,2)
+			- lw->m_fixed_landmarks.point(j,2);
 
 		    // r2 = sq distance between landmarks i,j in mm
 		    r2 = dx * dx + dy * dy + dz * dz;
@@ -304,22 +303,6 @@ bspline_rbf_find_coeffs_reg (
     for (i=0; i<3*num_landmarks; i++) {
 	coeff[i] = x(i,0);
     }
-
-#if defined (commentout)
-    //checking the matrix solution
-    float dx, totdx = 0;
-    for(i=0;i<3*num_landmarks;i++)
-    {
-	dx = (blm->fixed_landmarks->points[i] 
-	    + blm->landmark_dxyz[i] 
-	    - blm->moving_landmarks->points[i]);
-	for(j=0;j<3*num_landmarks;j++)
-	    dx += A(i,j)*blm->rbf_coeff[j];
-	totdx += dx*dx;
-    }
-    totdx = sqrt(totdx)/(3*num_landmarks);
-    printf("SVD residual error %f\n", totdx);
-#endif
 }
 
 #if defined (commentout)
@@ -372,9 +355,9 @@ bspline_rbf_find_coeffs_noreg (
     for(i=0;i<blm->num_landmarks;i++) {
 	for(d=0;d<3;d++) {
 	    b (3*i +d, 0) = 
-		-(blm->fixed_landmarks->points[3*i+d] 
+		-(blm->fixed_landmarks.point(i,d) 
 		    + blm->landmark_dxyz[3*i+d] 
-		    - blm->moving_landmarks->points[3*i+d]);
+		    - blm->moving_landmarks.point(i,d));
 	}
     }
 
@@ -422,7 +405,7 @@ bspline_rbf_find_coeffs (
     //bspline_rbf_find_coeffs_noreg(vector_field, parms);
 
     int i;
-    for (i=0; i < lw->m_fixed_landmarks->num_points; i++) {
+    for (i=0; i < lw->m_fixed_landmarks.get_count(); i++) {
 	printf("coeff %4d  %.4f %.4f %.4f\n",  i,
 	    coeff[3*i+0],
 	    coeff[3*i+1],
@@ -457,7 +440,7 @@ rbf_gauss_update_vf (
     float fxyz[3];
     float *vf_img;
     float rbf;
-    int num_landmarks = lw->m_fixed_landmarks->num_points;
+    int num_landmarks = lw->m_fixed_landmarks.get_count();
 
     printf("Gauss RBF, updating the vector field\n");
 
@@ -475,7 +458,7 @@ rbf_gauss_update_vf (
 		for (lidx=0; lidx < num_landmarks; lidx++) {
 			
 		    rbf = rbf_value (
-			&lw->m_fixed_landmarks->points[3*lidx], 
+			lw->m_fixed_landmarks.point(lidx).p, 
 			fxyz, 
 			lw->adapt_radius[lidx]);
 
@@ -514,7 +497,7 @@ rbf_gauss_update_vf_no_dircos (
     float fxyz[3];
     float *vf_img;
     float rbf;
-    int num_landmarks = lw->m_fixed_landmarks->num_points;
+    int num_landmarks = lw->m_fixed_landmarks.get_count();
 
     printf("Gauss RBF, updating the vector field\n");
 
@@ -534,7 +517,7 @@ rbf_gauss_update_vf_no_dircos (
 			+ fj * vf->dim[0] + fi;
 			
 		    rbf = rbf_value (
-			&lw->m_fixed_landmarks->points[3*lidx], 
+			lw->m_fixed_landmarks.point(lidx).p, 
 			fxyz, 
 			lw->adapt_radius[lidx]);
 
@@ -566,24 +549,24 @@ rbf_gauss_warp (Landmark_warp *lw)
     Volume::Pointer moving;
     Volume *vf_out, *warped_out;
 
-    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points*sizeof(float));
-    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points*sizeof(int));
+    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(float));
+    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(int));
 
     if (lw->num_clusters > 0) {
 	rbf_cluster_kmeans_plusplus( lw );
 	rbf_cluster_find_adapt_radius( lw );
     }
     else {
-	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+	for(i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
 	    lw->adapt_radius[i]=lw->rbf_radius;
     }
 
-    for (i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+    for (i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
 	printf("%f\n", lw->adapt_radius[i]);
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (
-	3 * lw->m_fixed_landmarks->num_points * sizeof(float));
+	3 * lw->m_fixed_landmarks.get_count() * sizeof(float));
     bspline_rbf_find_coeffs (coeff, lw);
 
     /* Create output vector field */

@@ -39,6 +39,8 @@ PLMBASE_API DoublePointSetType::Pointer itk_double_pointset_from_raw_pointset (R
 
 template<class T> PLMBASE_API FloatPointSetType::Pointer
 itk_float_pointset_from_pointset (const Pointset<T> *ps);
+template<class T> PLMBASE_API DoublePointSetType::Pointer
+itk_double_pointset_from_pointset (const Pointset<T>& ps);
 
 PLMBASE_API Unlabeled_pointset* unlabeled_pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);
 PLMBASE_API Raw_pointset* raw_pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);

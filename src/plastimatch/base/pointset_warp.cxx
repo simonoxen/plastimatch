@@ -18,9 +18,9 @@ pointset_warp (
     Labeled_pointset *input_pointset,
     DeformationFieldType::Pointer vf)
 {
-    float *dist_array = new float[input_pointset->count()];
+    float *dist_array = new float[input_pointset->get_count()];
 
-    for (size_t i = 0; i < input_pointset->count(); i++) {
+    for (size_t i = 0; i < input_pointset->get_count(); i++) {
         /* Clone pointset (to set labels) */
         warped_pointset->insert_lps (
             input_pointset->point_list[i].get_label(),
@@ -48,7 +48,7 @@ pointset_warp (
         moving_location[2] = fixed_location[2] + dxyz[2];
 
         /* Loop through landmarks */
-        for (size_t i = 0; i < input_pointset->count(); i++) {
+        for (size_t i = 0; i < input_pointset->get_count(); i++) {
 
             /* Get distance from correspondence to landmark */
             float dv[3] = {
@@ -73,7 +73,7 @@ pointset_warp (
         DeformationFieldType, float > InterpolatorType;
     InterpolatorType::Pointer interpolator = InterpolatorType::New ();
     interpolator->SetInputImage (vf);
-    for (size_t i = 0; i < input_pointset->count(); i++) {
+    for (size_t i = 0; i < input_pointset->get_count(); i++) {
         for (int its = 0; its < 10; its++) {
             float dv[3];
 

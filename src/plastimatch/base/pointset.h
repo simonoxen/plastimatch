@@ -78,13 +78,26 @@ public:
 
     /* Insert single points */
     void insert_lps (const std::string& label, float x, float y, float z);
+    void insert_lps (const float* xyz);
+    void insert_lps (const std::string& label, const float* xyz);
     void insert_ras (const std::string& label, float x, float y, float z);
 
+    /* Return reference to a point */
+    const T& point (int idx) const {
+        return point_list[idx];
+    }
+    /* Return coordinate of point */
+    float point (int idx, int dim) const {
+        return point_list[idx].p[dim];
+    }
+
     /* Return the number of points */
-    size_t count (void) const;
+    size_t get_count (void) const;
 
     /* Truncate points at the end of the list */
     void truncate (size_t new_length);
+
+    void debug () const;
 };
 
 typedef Pointset<Labeled_point> Labeled_pointset;

@@ -17,6 +17,8 @@ Backward incompatible changes
    they are merged into plastimatch executable:
    vf-invert, landmark-warp, drr, fdk, wed
 *  Metric mi will default to Mattes for ITK methods
+*  Automatic tuning of regularization lambda as default (?)
+*  xform=align_center -> xform=translation, optim=align_center
 
 Documentation
 *  Registration tutorial based on NA-MIC case library

@@ -12,9 +12,6 @@
 
 Landmark_warp::Landmark_warp (void)
 {
-    m_fixed_landmarks = 0;
-    m_moving_landmarks = 0;
-
     default_val = 0;
     rbf_radius = 0;
     young_modulus = 0;
@@ -25,20 +22,10 @@ Landmark_warp::Landmark_warp (void)
 
     m_warped_img = 0;
     m_vf = 0;
-    m_warped_landmarks = 0;
 }
 
 Landmark_warp::~Landmark_warp (void)
 {
-    if (m_moving_landmarks) {
-	pointset_destroy (m_moving_landmarks);
-    }
-    if (m_fixed_landmarks) {
-	pointset_destroy (m_fixed_landmarks);
-    }
-    if (m_warped_landmarks) {
-	pointset_destroy (m_warped_landmarks);
-    }
     if (cluster_id) free(cluster_id);
     if (adapt_radius) free(adapt_radius);
 }
@@ -102,8 +89,8 @@ Landmark_warp::load_pointsets (
     const char *moving_lm_fn
 )
 {
-    m_fixed_landmarks = pointset_load (fixed_lm_fn);
-    m_moving_landmarks = pointset_load (moving_lm_fn);
+    m_fixed_landmarks.load (fixed_lm_fn);
+    m_moving_landmarks.load (moving_lm_fn);
 }
 
 Landmark_warp*
@@ -114,7 +101,9 @@ landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn)
     lw = landmark_warp_create ();
     lw->load_pointsets (fixed_lm_fn, moving_lm_fn);
 
-    if (!lw->m_fixed_landmarks || !lw->m_moving_landmarks) {
+    if (lw->m_fixed_landmarks.get_count() == 0 
+        || lw->m_moving_landmarks.get_count() == 0)
+    {
 	landmark_warp_destroy (lw);
 	return 0;
     }
@@ -134,16 +123,16 @@ NSh 2013-02-13 - moved the code below from cli/landmark_warp_main.cxx
 static void 
 landmark_convert_mm_to_voxel (
     int *landvox, 
-    Raw_pointset *landmarks_mm, 
+    const Labeled_pointset& landmarks_mm, 
     float *origin, 
     float *pix_spacing,
     plm_long *dim,
     const float *direction_cosines)
 {
-    for (int i = 0; i < landmarks_mm->num_points; i++) {
+    for (int i = 0; i < landmarks_mm.get_count(); i++) {
 	for (int d = 0; d < 3; d++) {
 	    landvox[i*3 + d] = ROUND_INT (
-		( landmarks_mm->points[3*i + d]
+		( landmarks_mm.point(i,d)
 		    - origin[d]) / pix_spacing[d]);
 	    if (landvox[i*3 + d] < 0 
 		|| landvox[i*3 + d] >= dim[d])
@@ -184,7 +173,7 @@ calculate_warped_landmarks (Landmark_warp *lw)
     plm_long fixed_dim[3];
     float fixed_spacing[3], fixed_origin[3], fixed_direction_cosines[9];
 
-    num_landmarks = lw->m_fixed_landmarks->num_points;
+    num_landmarks = lw->m_fixed_landmarks.get_count();
 
     landvox_mov  = (int *)malloc( 3*num_landmarks * sizeof(int));
     landvox_fix  = (int *)malloc( 3*num_landmarks * sizeof(int));
@@ -263,7 +252,7 @@ calculate_warped_landmarks (Landmark_warp *lw)
     for (i = 0; i < num_landmarks; i++) {
 	for (d=0; d<3; d++) {
 	    warped_landmarks[3*i+d]
-		= lw->m_moving_landmarks->points[3*i+d]
+		= lw->m_moving_landmarks.point(i,d)
 		- landmark_dxyz[3*i+d];
 	}
     }
@@ -284,7 +273,7 @@ calculate_warped_landmarks (Landmark_warp *lw)
 		    lidx, d, landvox_warp[lidx*3 + d], 0, fixed_dim[d]-1);
 	    }
 	} 
-	pointset_add_point_noadjust (lw->m_warped_landmarks, warped_landmarks+3*lidx);
+        lw->m_warped_landmarks.insert_lps (&warped_landmarks[3*lidx]);
     }
 
 //debug only
@@ -293,7 +282,7 @@ calculate_warped_landmarks (Landmark_warp *lw)
     {
 	fx=0;
 	for (d = 0; d < 3; d++) { 
-	    fz = (lw->m_fixed_landmarks->points[3*lidx+d] - lw->m_warped_landmarks->points[3*lidx+d] );
+	    fz = lw->m_fixed_landmarks.point(lidx,d) - lw->m_warped_landmarks.point(lidx,d);
 	    fx += fz*fz;
 	}
 	printf("landmark %3d err %f mm\n", lidx, sqrt(fx));
@@ -342,7 +331,7 @@ calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
     plm_long fixed_dim[3];
     float fixed_spacing[3], fixed_origin[3], fixed_direction_cosines[9];
 
-    num_landmarks = lw->m_fixed_landmarks->num_points;
+    num_landmarks = lw->m_fixed_landmarks.get_count();
 
     landvox_mov  = (int *)malloc( 3*num_landmarks * sizeof(int));
     landvox_fix  = (int *)malloc( 3*num_landmarks * sizeof(int));
@@ -434,7 +423,7 @@ calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
     for (i = 0; i < num_landmarks; i++) {
 	for (d=0; d<3; d++) {
 	    warped_landmarks[3*i+d]
-		= lw->m_moving_landmarks->points[3*i+d]
+		= lw->m_moving_landmarks.point(3,d)
 		- landmark_dxyz[3*i+d];
 	}
     }
@@ -455,7 +444,7 @@ calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
 		    lidx, d, landvox_warp[lidx*3 + d], 0, fixed_dim[d]-1);
 	    }
 	} 
-	pointset_add_point_noadjust (lw->m_warped_landmarks, warped_landmarks+3*lidx);
+        lw->m_warped_landmarks.insert_lps (&warped_landmarks[3*lidx]);
     }
 
     printf("done warping, printing rms\n");
@@ -466,7 +455,7 @@ calculate_warped_landmarks_by_vf (Landmark_warp *lw , Volume *vector_field)
     {
 	fx=0;
 	for (d = 0; d < 3; d++) { 
-	    fz = (lw->m_fixed_landmarks->points[3*lidx+d] - lw->m_warped_landmarks->points[3*lidx+d] );
+	    fz = (lw->m_fixed_landmarks.point(lidx,d) - lw->m_warped_landmarks.point(lidx,d));
 	    fx += fz*fz;
 	}
 	printf("landmark %3d err %f mm\n", lidx, sqrt(fx));

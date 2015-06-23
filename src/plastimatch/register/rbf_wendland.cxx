@@ -35,7 +35,7 @@ struct rbf_params { // used to pass information to bspline_rbf_score
 };
 
 static float 
-rbf_wendland_value (float *rbf_center, float *loc, float radius)
+rbf_wendland_value (const float *rbf_center, const float *loc, float radius)
 {
     float val, r, dx, dy, dz;
 
@@ -61,7 +61,7 @@ bspline_rbf_find_coeffs_noreg (
 {
     float rbfv;
     int i, j, d;
-    int num_landmarks = lw->m_fixed_landmarks->num_points;
+    int num_landmarks = lw->m_fixed_landmarks.get_count();
 
     typedef vnl_matrix <double> Vnl_matrix;
     typedef vnl_svd <double> SVDSolverType;
@@ -80,8 +80,8 @@ bspline_rbf_find_coeffs_noreg (
     for(i=0;i<num_landmarks;i++) {
 	for(d=0;d<3;d++) {
 	    b (3*i +d, 0) = 
-		-(lw->m_fixed_landmarks->points[3*i+d] 
-		    - lw->m_moving_landmarks->points[3*i+d]);
+		-(lw->m_fixed_landmarks.point(i,d) 
+		    - lw->m_moving_landmarks.point(i,d));
 	}
     }
 
@@ -91,12 +91,12 @@ bspline_rbf_find_coeffs_noreg (
 
     	    float rbf_center[3];
 	    for (d=0; d<3; d++) {
-	        rbf_center[d] = lw->m_fixed_landmarks->points[3*j+d];
+	        rbf_center[d] = lw->m_fixed_landmarks.point(j,d);
 	    }
 
-	    rbfv = rbf_wendland_value( rbf_center, 
-		    &lw->m_fixed_landmarks->points[3*i], 
-		    lw->adapt_radius[j] );
+	    rbfv = rbf_wendland_value (rbf_center, 
+                lw->m_fixed_landmarks.point(i).p, 
+                lw->adapt_radius[j]);
 
 	    for(d=0;d<3;d++) A(3*i+d, 3*j+d) = rbfv ;
 
@@ -126,25 +126,23 @@ bspline_rbf_find_coeffs (
     Landmark_warp *lw               /* Input */
 )
 {
-// Regularization for Wendland RBF not yet implemented
-//    bspline_rbf_find_coeffs_reg (coeff, lw);
+    // Regularization for Wendland RBF not yet implemented
+    //    bspline_rbf_find_coeffs_reg (coeff, lw);
     bspline_rbf_find_coeffs_noreg( coeff, lw);
 
-    int i;
-    for (i=0; i < lw->m_fixed_landmarks->num_points; i++) {
-	printf("coeff %4d  %.4f %.4f %.4f\n",  i,
-	    coeff[3*i+0],
-	    coeff[3*i+1],
-	    coeff[3*i+2]);
+    for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
+        printf("coeff %4d  %.4f %.4f %.4f\n", (int) i,
+            coeff[3*i+0],
+            coeff[3*i+1],
+            coeff[3*i+2]);
     }
-
 }
 
 /*
-Adds RBF contributions to the vector field
-landmark_dxyz is not updated by this function
-Version without truncation: scan over the entire vf
-and add up all RBFs in each voxel
+  Adds RBF contributions to the vector field
+  landmark_dxyz is not updated by this function
+  Version without truncation: scan over the entire vf
+  and add up all RBFs in each voxel
 */
 void
 rbf_wendland_update_vf (
@@ -158,41 +156,41 @@ rbf_wendland_update_vf (
     float fxyz[3];
     float *vf_img;
     float rbf;
-    int num_landmarks = lw->m_fixed_landmarks->num_points;
+    int num_landmarks = lw->m_fixed_landmarks.get_count();
 
     printf("Wendland RBF, updating the vector field\n");
 
     if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
-	print_and_exit("Sorry, this type of vector field is not supported\n");
+        print_and_exit("Sorry, this type of vector field is not supported\n");
 
     vf_img = (float*) vf->img;
 
     LOOP_Z (ijk, fxyz, vf) {
-	LOOP_Y (ijk, fxyz, vf) {
-	    LOOP_X (ijk, fxyz, vf) {
-		/* Compute linear index of voxel */
-		plm_long fv = volume_index (vf->dim, ijk);
+        LOOP_Y (ijk, fxyz, vf) {
+            LOOP_X (ijk, fxyz, vf) {
+                /* Compute linear index of voxel */
+                plm_long fv = volume_index (vf->dim, ijk);
 
-		for (lidx=0; lidx < num_landmarks; lidx++) {
+                for (lidx=0; lidx < num_landmarks; lidx++) {
 			
-		    rbf = rbf_wendland_value (
-			&lw->m_fixed_landmarks->points[3*lidx], 
-			fxyz, 
-			lw->adapt_radius[lidx]);
+                    rbf = rbf_wendland_value (
+                        lw->m_fixed_landmarks.point(lidx).p, 
+                        fxyz, 
+                        lw->adapt_radius[lidx]);
 
-		    for (d=0; d<3; d++) {
-			vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
+                    for (d=0; d<3; d++) {
+                        vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
 #if defined (commentout)
-			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
-			    lidx, 
-			    ijk[0], ijk[1], ijk[2],
-			    coeff[3*lidx+d], rbf, 
-			    coeff[3*lidx+d] * rbf);
+                        printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
+                            lidx, 
+                            ijk[0], ijk[1], ijk[2],
+                            coeff[3*lidx+d], rbf, 
+                            coeff[3*lidx+d] * rbf);
 #endif
-		    }
-		}
-	    }
-	}
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -203,34 +201,36 @@ rbf_wendland_warp (Landmark_warp *lw)
     float origin[3], spacing[3];
     plm_long dim[3];
     float direction_cosines[9];
-    int i;
     Volume::Pointer moving;
     Volume *vf_out, *warped_out;
 
     //printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
-    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points * sizeof(float));
-    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points * sizeof(int));
+    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count() * sizeof(float));
+    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks.get_count() * sizeof(int));
 
     if (lw->num_clusters > 0) {
-	rbf_cluster_kmeans_plusplus( lw ); // cluster the landmarks; result in lw->cluster_id
-	rbf_cluster_find_adapt_radius( lw ); // using cluster_id, fill in lw->adapt_radius
+        // cluster the landmarks; result in lw->cluster_id
+        rbf_cluster_kmeans_plusplus( lw );
+         // using cluster_id, fill in lw->adapt_radius
+        rbf_cluster_find_adapt_radius( lw );
     }
-    else { // use the specified radius
-	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
-	    lw->adapt_radius[i]=lw->rbf_radius;
-    }
-
-
-    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++){ 
-	lw->adapt_radius[i]*=2;
-	printf("%f\n", lw->adapt_radius[i]);
+    else {
+        // use the specified radius
+        for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
+            lw->adapt_radius[i]=lw->rbf_radius;
+        }
     }
 
+    for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++)
+    {
+        lw->adapt_radius[i]*=2;
+        printf("%f\n", lw->adapt_radius[i]);
+    }
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (
-	3 * lw->m_fixed_landmarks->num_points * sizeof(float));
+        3 * lw->m_fixed_landmarks.get_count() * sizeof(float));
     bspline_rbf_find_coeffs (coeff, lw);
 
     /* Create output vector field */
@@ -240,7 +240,7 @@ rbf_wendland_warp (Landmark_warp *lw)
     lw->m_pih.get_dim (dim);
     lw->m_pih.get_direction_cosines (direction_cosines);
     vf_out = new Volume (dim, origin, spacing, direction_cosines, 
-	PT_VF_FLOAT_INTERLEAVED, 3);
+        PT_VF_FLOAT_INTERLEAVED, 3);
 
     printf ("Rendering vector field\n");
     rbf_wendland_update_vf (vf_out, lw, coeff);
@@ -251,7 +251,7 @@ rbf_wendland_warp (Landmark_warp *lw)
 
     printf ("Creating output vol\n");
     warped_out = new Volume (dim, origin, spacing, direction_cosines, 
-	PT_FLOAT, 1);
+        PT_FLOAT, 1);
 
     printf ("Warping image\n");
     vf_warp (warped_out, moving.get(), vf_out);

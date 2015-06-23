@@ -41,7 +41,6 @@ void
 Pointset<T>::load_fcsv (const char *fn)
 {
     FILE *fp;
-    char s[1024];
 
     fp = fopen (fn, "r");
     if (!fp) {
@@ -51,16 +50,15 @@ Pointset<T>::load_fcsv (const char *fn)
     /* Got an fcsv file.  Parse it. */
     while (!feof(fp)) {
 	float lm[3];
-	int land_sel, land_vis;
 	int rc;
 
+        char s[1024];
         fgets (s, 1024, fp);
 	if (feof(fp)) break;
         if (s[0]=='#') continue;
 
 	char buf[1024];
-        rc = sscanf (s, "%1023[^,],%f,%f,%f,%d,%d\n", buf, 
-	    &lm[0], &lm[1], &lm[2], &land_sel, &land_vis);
+        rc = sscanf (s, "%1023[^,],%f,%f,%f\n", buf, &lm[0], &lm[1], &lm[2]);
 	if (rc < 4) {
 	    /* Error parsing file */
 	    point_list.clear();
@@ -169,6 +167,27 @@ Pointset<T>::insert_lps (
 
 template<class T>
 void
+Pointset<T>::insert_lps (
+    const std::string& label,
+    const float *xyz
+)
+{
+    /* No RAS to LPS adjustment */
+    this->point_list.push_back (T (label, xyz[0], xyz[1], xyz[2]));
+}
+
+template<class T>
+void
+Pointset<T>::insert_lps (
+    const float *xyz
+)
+{
+    /* No RAS to LPS adjustment */
+    this->point_list.push_back (T ("", xyz[0], xyz[1], xyz[2]));
+}
+
+template<class T>
+void
 Pointset<T>::save (const char *fn)
 {
     if (extension_is (fn, ".fcsv")) {
@@ -256,7 +275,7 @@ Pointset<T>::save_txt (const char *fn)
 
 template<class T>
 size_t
-Pointset<T>::count (void) const
+Pointset<T>::get_count (void) const
 {
     return (size_t) this->point_list.size();
 }
@@ -266,6 +285,19 @@ void
 Pointset<T>::truncate (size_t new_length)
 {
     this->point_list.resize (new_length);
+}
+
+template<class T>
+void
+Pointset<T>::debug () const
+{
+    printf ("Pointset:\n");
+    for (size_t i = 0; i < this->get_count(); i++) {
+        const T& point = this->point(i);
+	printf (" %20s %10f %10f %10f\n", 
+            point.get_label().c_str(),
+            point.p[0], point.p[1], point.p[2]);
+    }
 }
 
 template class PLMBASE_API Pointset<Labeled_point>;

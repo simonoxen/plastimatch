@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 
+#include "pointset.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
@@ -14,14 +15,17 @@
 
 class Plm_image;
 class Xform;
-typedef struct raw_pointset Raw_pointset;
 
 class PLMREGISTER_API Landmark_warp
 {
 public:
     /* Inputs */
+#if defined (commentout)
     Raw_pointset *m_fixed_landmarks;
     Raw_pointset *m_moving_landmarks;
+#endif
+    Labeled_pointset m_fixed_landmarks;
+    Labeled_pointset m_moving_landmarks;
     Plm_image::Pointer m_input_img;
     Plm_image_header m_pih;
 
@@ -37,8 +41,9 @@ public:
 
     /* Outputs */
     Plm_image *m_warped_img;
-    Xform *m_vf;   //also, INPUT vf for calculate_warped_landmarks()
-    Raw_pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
+    Xform *m_vf; //also, INPUT vf for calculate_warped_landmarks()
+    // if regularized, warped landmarks may not exactly match fixed
+    Labeled_pointset m_warped_landmarks;
 
 public:
     Landmark_warp ();

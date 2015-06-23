@@ -86,7 +86,7 @@ stats_pointset_main (Stats_parms* parms, const std::string& current_fn)
 {
     Labeled_pointset ps;
     ps.load (current_fn.c_str());
-    lprintf ("Pointset has %d points\n", ps.count());
+    lprintf ("Pointset has %d points\n", ps.get_count());
 }
 
 static void

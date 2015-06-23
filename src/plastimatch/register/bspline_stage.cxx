@@ -342,8 +342,8 @@ Bspline_stage::initialize ()
     /* Landmarks */
     if (regd->fixed_landmarks && regd->moving_landmarks) {
         logfile_printf ("Landmarks: %d fixed, %d moving, lambda = %f\n",
-            regd->fixed_landmarks->count(),
-            regd->moving_landmarks->count(),
+            regd->fixed_landmarks->get_count(),
+            regd->moving_landmarks->get_count(),
             stage->landmark_stiffness);
         bsp_parms->blm->set_landmarks (regd->fixed_landmarks, 
             regd->moving_landmarks);

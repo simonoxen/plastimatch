@@ -85,11 +85,30 @@ itk_float_pointset_from_pointset (const Pointset<T> *ps)
 	= itk_ps->GetPoints ();
 
     FloatPointIdType id = itk::NumericTraits< FloatPointIdType >::Zero;
-    for (unsigned int i = 0; i < ps->count(); i++) {
+    for (unsigned int i = 0; i < ps->get_count(); i++) {
 	FloatPoint3DType p1;
 	p1[0] = ps->point_list[i].p[0];
 	p1[1] = ps->point_list[i].p[1];
 	p1[2] = ps->point_list[i].p[2];
+	itk_ps_c->InsertElement (id++, p1);
+    }
+    return itk_ps;
+}
+
+template<class T>
+DoublePointSetType::Pointer
+itk_double_pointset_from_pointset (const Pointset<T>& ps)
+{
+    DoublePointSetType::Pointer itk_ps = DoublePointSetType::New ();
+    DoublePointSetType::PointsContainer::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    DoublePointIdType id = itk::NumericTraits< DoublePointIdType >::Zero;
+    for (unsigned int i = 0; i < ps.get_count(); i++) {
+	DoublePoint3DType p1;
+	p1[0] = ps.point_list[i].p[0];
+	p1[1] = ps.point_list[i].p[1];
+	p1[2] = ps.point_list[i].p[2];
 	itk_ps_c->InsertElement (id++, p1);
     }
     return itk_ps;
@@ -207,3 +226,4 @@ template PLMBASE_API void itk_pointset_debug (DoublePointSetType::Pointer points
 template PLMBASE_API void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
 template PLMBASE_API FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
 template PLMBASE_API FloatPointSetType::Pointer itk_float_pointset_from_pointset (const Unlabeled_pointset *ps);
+template PLMBASE_API DoublePointSetType::Pointer itk_double_pointset_from_pointset (const Labeled_pointset& ps);

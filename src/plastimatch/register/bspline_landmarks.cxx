@@ -207,9 +207,9 @@ Bspline_landmarks::set_landmarks (
     this->moving_landmarks = moving_landmarks;
 
     /* Find list with fewer landmarks */
-    if (moving_landmarks->count() > fixed_landmarks->count()) {
-        this->num_landmarks = fixed_landmarks->count();
+    if (moving_landmarks->get_count() > fixed_landmarks->get_count()) {
+        this->num_landmarks = fixed_landmarks->get_count();
     } else {
-        this->num_landmarks = moving_landmarks->count();
+        this->num_landmarks = moving_landmarks->get_count();
     }
 }
