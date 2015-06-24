@@ -324,7 +324,7 @@ Registration::do_registration_stage (
 
     /* Run registration */
     switch (stage->xform_type) {
-    case STAGE_TRANSFORM_ALIGN_CENTER:
+    case STAGE_TRANSFORM_ALIGN_CENTER: case STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY:
         xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         lprintf ("Centering done\n");
         break;

@@ -405,6 +405,9 @@ Registration_parms::set_key_value (
         else if (val == "align_center") {
             stage->xform_type = STAGE_TRANSFORM_ALIGN_CENTER;
         }
+        else if (val == "align_center_of_gravity") {
+            stage->xform_type = STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY;
+        }
         else {
             goto error_exit;
         }

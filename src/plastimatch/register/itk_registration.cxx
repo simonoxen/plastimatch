@@ -8,6 +8,7 @@
 #include <string.h>
 #include "itkCenteredTransformInitializer.h"
 #include "itkImageMaskSpatialObject.h"
+#include <itkImageMomentsCalculator.h>
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkMutualInformationImageToImageMetric.h"
 #include "itkNormalizedMutualInformationHistogramImageToImageMetric.h"
@@ -63,6 +64,11 @@ typedef itk::LinearInterpolateImageFunction <
 
 static void
 itk_align_center (
+    Registration_data* regd, Xform *xf_out, 
+    const Xform *xf_in, const Stage_parms* stage);
+
+static void
+itk_align_center_of_gravity (
     Registration_data* regd, Xform *xf_out, 
     const Xform *xf_in, const Stage_parms* stage);
 
@@ -604,6 +610,9 @@ Itk_registration_private::set_transform ()
     case STAGE_TRANSFORM_ALIGN_CENTER:
         set_transform_versor(registration, xf_out, xf_in, stage);
         break;
+    case STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY:
+        set_transform_versor(registration, xf_out, xf_in, stage);
+        break;
     default:
         print_and_exit ("Error: unknown case in set_transform()\n");
         break;
@@ -640,6 +649,11 @@ itk_registration_stage (
     /* center_align is handled separately */
     if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER) {
         return itk_align_center (regd, xf_out, xf_in, stage);
+    }
+
+    /* align_center_of_gravity is handled separately */
+    if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY) {
+        return itk_align_center_of_gravity (regd, xf_out, xf_in, stage);
     }
 
     Itk_registration_private irp (regd, xf_out, xf_in, stage);
@@ -718,6 +732,40 @@ itk_align_center (
     trn_parms[1] = moving_center[1] - fixed_center[1];
     trn_parms[2] = moving_center[2] - fixed_center[2];
     xf_out->set_trn (trn_parms);
+}
+
+static void
+itk_align_center_of_gravity (
+    Registration_data* regd, Xform *xf_out, 
+    const Xform *xf_in, const Stage_parms* stage)
+{
+
+    if (regd->fixed_roi != NULL && regd->moving_roi != NULL) {
+        typedef itk::ImageMomentsCalculator<UCharImageType> ImageMomentsCalculatorType;
+        
+        ImageMomentsCalculatorType::Pointer fixedCalculator = ImageMomentsCalculatorType::New();
+        fixedCalculator->SetImage(regd->fixed_roi->itk_uchar());
+        fixedCalculator->Compute();
+
+        ImageMomentsCalculatorType::Pointer movingCalculator = ImageMomentsCalculatorType::New();
+        movingCalculator->SetImage(regd->moving_roi->itk_uchar());
+        movingCalculator->Compute();
+
+        ImageMomentsCalculatorType::VectorType fixedCenter; 
+        ImageMomentsCalculatorType::VectorType movingCenter; 
+    
+        fixedCenter = fixedCalculator->GetCenterOfGravity();
+        movingCenter = movingCalculator->GetCenterOfGravity();
+
+        itk::Array<double> trn_parms (3);
+        trn_parms[0] = movingCenter[0] - fixedCenter[0];
+        trn_parms[1] = movingCenter[1] - fixedCenter[1];
+        trn_parms[2] = movingCenter[2] - fixedCenter[2];
+        xf_out->set_trn (trn_parms);
+    }
+
+    else
+        print_and_exit("NO ROIs SET!");
 }
 
 /* Greg's notes about itk problems (ITK 3.20.1)
