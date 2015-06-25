@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "file_util.h"
+#include "logfile.h"
 #include "path_util.h"
 #include "plm_math.h"
 #include "pointset.h"
@@ -44,7 +45,7 @@ Pointset<T>::load_fcsv (const char *fn)
 
     fp = fopen (fn, "r");
     if (!fp) {
-	return;
+        print_and_exit ("Error loading file for read: %s\n", fn);
     }
 
     /* Got an fcsv file.  Parse it. */
@@ -58,9 +59,10 @@ Pointset<T>::load_fcsv (const char *fn)
         if (s[0]=='#') continue;
 
 	char buf[1024];
-        rc = sscanf (s, "%1023[^,],%f,%f,%f\n", buf, &lm[0], &lm[1], &lm[2]);
+        rc = sscanf (s, "%1023[^,],%f,%f,%f", buf, &lm[0], &lm[1], &lm[2]);
 	if (rc < 4) {
 	    /* Error parsing file */
+            lprintf ("Error parsing fcsv file: %s\n", fn);
 	    point_list.clear();
 	    return;
 	}
