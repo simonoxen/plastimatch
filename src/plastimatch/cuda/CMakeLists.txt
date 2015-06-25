@@ -4,7 +4,7 @@
 project (src_plastimatch_cuda)
 
 set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES "")
-set_directory_property (PROPERTIES COMPILE_DEFINITIONS "")
+set_directory_properties (PROPERTIES COMPILE_DEFINITIONS "")
 
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/base)
