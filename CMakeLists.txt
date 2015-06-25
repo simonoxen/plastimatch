@@ -737,35 +737,34 @@ endif ()
 if (PLM_CONFIG_DISABLE_QT)
     set (QT4_FOUND false)
 else ()
-#Edited by YPark, in VS2013 with win7, QtWebkit was not able to be compiled.(.lib file is not generated.) QtWebkit is only used by Reg23.
+    #Edited by YPark, in VS2013 with win7, QtWebkit was not able to be compiled.(.lib file is not generated.) QtWebkit is only used by Reg23.
    if (PLM_CONFIG_DISABLE_REG23)
-	message (STATUS "Due to the REG23 disabled, QtWebkit is no longer needed")
-	find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
+       message (STATUS "Due to the REG23 disabled, QtWebkit is no longer needed")
+       find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
    else ()
-	message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
-        find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
+       message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
+       find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
    endif ()	
 endif ()
 
 if (QT4_FOUND)
-  # Debian qtchooser is broken, so we disable.
-  # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=730423
-  execute_process (
-    COMMAND 
-    rcc
-    RESULT_VARIABLE rcc_result
-    OUTPUT_VARIABLE rcc_output
-    ERROR_VARIABLE rcc_error)
-  if (${rcc_error} MATCHES "could not find a Qt installation")
-    message (STATUS "Sorry, your Qt build environment is broken")
-    set (QT4_FOUND FALSE)
-  else ()
-    message (STATUS "Looking for Qt4 - found")
-    include (${QT_USE_FILE})
-  endif ()
-
+    # Debian qtchooser is broken, so we disable.
+    # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=730423
+    execute_process (
+	COMMAND 
+	rcc
+	RESULT_VARIABLE rcc_result
+	OUTPUT_VARIABLE rcc_output
+	ERROR_VARIABLE rcc_error)
+    if (${rcc_error} MATCHES "could not find a Qt installation")
+	message (STATUS "Sorry, your Qt build environment is broken")
+	set (QT4_FOUND FALSE)
+    else ()
+	message (STATUS "Looking for Qt4 - found")
+	include (${QT_USE_FILE})
+    endif ()
 else ()
-  message (STATUS "Looking for Qt4 - not found")
+    message (STATUS "Looking for Qt4 - not found")
 endif ()
 
 ##-----------------------------------------------------------------------------
