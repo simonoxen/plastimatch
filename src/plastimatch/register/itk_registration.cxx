@@ -764,8 +764,9 @@ itk_align_center_of_gravity (
         xf_out->set_trn (trn_parms);
     }
 
-    else
+    else {
         print_and_exit("NO ROIs SET!");
+    }
 }
 
 /* Greg's notes about itk problems (ITK 3.20.1)

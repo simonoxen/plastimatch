@@ -11,6 +11,7 @@
 #include "bspline_xform.h"
 #include "dlib_threads.h"
 #include "gpuit_demons.h"
+#include "itk_align_center.h"
 #include "itk_demons.h"
 #include "itk_image_save.h"
 #include "itk_image_stats.h"
@@ -324,12 +325,18 @@ Registration::do_registration_stage (
 
     /* Run registration */
     switch (stage->xform_type) {
-    case STAGE_TRANSFORM_ALIGN_CENTER: case STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY:
-        xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
-        lprintf ("Centering done\n");
+    case STAGE_TRANSFORM_ALIGN_CENTER:
+        xf_out = do_itk_align_center (regd.get(), xf_in, stage);
+        break;
+    case STAGE_TRANSFORM_ALIGN_CENTER_OF_GRAVITY:
+        xf_out = do_itk_align_center_of_gravity (regd.get(), xf_in, stage);
         break;
     case STAGE_TRANSFORM_TRANSLATION:
-        if (stage->impl_type == IMPLEMENTATION_ITK) {
+        if (stage->optim_type == OPTIMIZATION_ALIGN_CENTER) {
+            xf_out = do_itk_align_center (regd.get(), xf_in, stage);
+        } else if (stage->optim_type == OPTIMIZATION_ALIGN_ROI_CENTER) {
+            xf_out = do_itk_align_center_of_gravity (regd.get(), xf_in, stage);
+        } else if (stage->impl_type == IMPLEMENTATION_ITK) {
             xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else if (stage->impl_type == IMPLEMENTATION_PLASTIMATCH) {
             xf_out = translation_grid_search_stage (regd.get(), xf_in, stage);

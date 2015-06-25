@@ -46,6 +46,7 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_regularize_numeric.cxx
   bspline_regularize_semi_analytic.cxx
   demons.cxx
+  itk_align_center.cxx itk_align_center.h 
   itk_demons.cxx
   itk_demons.cxx
   itk_demons_util.cxx
