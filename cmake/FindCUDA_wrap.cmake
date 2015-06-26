@@ -89,7 +89,7 @@ set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL
 if (PLM_CUDA_ALL_DEVICES)
     message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
-    if(CUDA_VERSION_MAJOR LESS "6")
+    if (CUDA_VERSION_MAJOR LESS "7")
 	message (STATUS "  >> Generation 1: [X]")
 	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
             -gencode arch=compute_10,code=sm_10
@@ -97,10 +97,14 @@ if (PLM_CUDA_ALL_DEVICES)
             -gencode arch=compute_12,code=sm_12
             -gencode arch=compute_13,code=sm_13
 	    )
+	if (CUDA_VERSION_MAJOR EQUAL "6")
+	    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+		--Wno-deprecated-gpu-targets)
+	endif ()
     else()
 	message (STATUS "  >> Generation 1: [ ]")
     endif()
-    if(CUDA_VERSION_MAJOR GREATER "2")
+    if (CUDA_VERSION_MAJOR GREATER "2")
 	message (STATUS "  >> Generation 2: [X]")
 	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
             -gencode arch=compute_20,code=sm_20
@@ -109,7 +113,7 @@ if (PLM_CUDA_ALL_DEVICES)
 	message (STATUS "  >> Generation 2: [ ]")
     endif()
 
-    if(CUDA_VERSION_MAJOR GREATER "4")
+    if (CUDA_VERSION_MAJOR GREATER "4")
 	message (STATUS "  >> Generation 3: [X]")
 	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
             -gencode arch=compute_30,code=sm_30
@@ -118,7 +122,7 @@ if (PLM_CUDA_ALL_DEVICES)
 	message (STATUS "  >> Generation 3: [ ]")
     endif()
 
-    if(CUDA_VERSION_MAJOR GREATER "5")
+    if (CUDA_VERSION_MAJOR GREATER "5")
 	message (STATUS "  >> Generation 5: [X]")
 	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	    -gencode arch=compute_50,code=sm_50
