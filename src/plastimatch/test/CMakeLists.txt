@@ -5,6 +5,11 @@ project (src_plastimatch_test)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (CUDA_FOUND)
+  add_subdirectory (cuda)
+  include_directories (BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/cuda")
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  CMAKE FLAGS
 ##-----------------------------------------------------------------------------
@@ -39,18 +44,6 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     plm_add_executable (cpp_sizeof_test cpp_sizeof_test.cxx
 	"${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
-
-    # Test executable -- cuda
-    if (CUDA_FOUND)
-	cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
-	plm_add_executable (cuda_test "${CUDA_TEST_WRAPPERS}" 
-	    "${CUDA_LIBRARIES}" "" 
-	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
-	set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
-
-	# Test executable -- cuda_tex_test
-	add_subdirectory (CUDA_tex_test)
-    endif ()
 
     # Test executable -- dcmtk
     if (ITK_FOUND AND DCMTK_FOUND)

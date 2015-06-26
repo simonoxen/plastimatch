@@ -1,6 +1,9 @@
+##-----------------------------------------------------------------------------
+##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+##-----------------------------------------------------------------------------
 project (CUDA_tex_test)
 
-if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+if (CUDA_FOUND)
   cuda_compile (CUDA_TEX_TEST_WRAPPERS 
     tex_kernels.cu
     tex_stubs.cu)
