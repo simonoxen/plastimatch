@@ -9,6 +9,7 @@ function writemha(fn,A,offset,spacing,type)
 Asz = size(A);
 
 switch ndims(A)
+ case 2,
  case 3,
  case 4,
   if (size(A,4) ~= 3)
@@ -34,7 +35,11 @@ fprintf (fp,'ElementSpacing = ');
 fprintf (fp,' %g',spacing);
 fprintf (fp,'\n');
 fprintf (fp,'DimSize = ');
-fprintf (fp,' %d',Asz(1:3));
+if (ndims(A) == 2)
+    fprintf (fp,' %d %d 1',Asz(1),Asz(2));
+else
+    fprintf (fp,' %d',Asz(1:3));
+end
 fprintf (fp,'\n');
 fprintf (fp,'AnatomicalOrientation = RAI\n');
 if (ndims(A) == 4)
@@ -44,7 +49,9 @@ fprintf (fp,'TransformMatrix = 1 0 0 0 1 0 0 0 1\n');
 fprintf (fp,'CenterOfRotation = 0 0 0\n');
 
 %% This works for 3D (A stays the same), and 4D (shift left 1)
-A = shiftdim(A,3);
+if (ndims(A) ~= 2)
+    A = shiftdim(A,3);
+end
 
 switch(lower(type))
  case 'uchar'
