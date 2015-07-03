@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "itkImageMaskSpatialObject.h"
+#include "itkVotingBinaryIterativeHoleFillingImageFilter.h"
 
 #include "dir_list.h"
 #include "dice_statistics.h"
@@ -301,6 +302,41 @@ Mabs_private::segmentation_threshold_weight (
     timer.start();
     UCharImageType::Pointer thresh_img = itk_threshold_above (
         weight_image, thresh_val);
+
+    /* Fill holes and remove islands from the computed contour 
+     * PAOLO ZAFFINO July 3th 2015 */
+       
+    typedef itk::VotingBinaryIterativeHoleFillingImageFilter<UCharImageType>  MorphologicalFilterType;
+    
+    MorphologicalFilterType::Pointer closing_filter = MorphologicalFilterType::New();
+    MorphologicalFilterType::Pointer island_removing_filter = MorphologicalFilterType::New();
+    
+    UCharImageType::SizeType indexRadius;
+    indexRadius[0] = 1; 
+    indexRadius[1] = 1; 
+    indexRadius[2] = 1; 
+    
+    closing_filter->SetRadius(indexRadius);
+    island_removing_filter->SetRadius(indexRadius);
+
+    closing_filter->SetBackgroundValue(0);
+    closing_filter->SetForegroundValue(1);
+    closing_filter->SetMajorityThreshold(2);
+    closing_filter->SetMaximumNumberOfIterations(3);
+    
+    island_removing_filter->SetBackgroundValue(1);
+    island_removing_filter->SetForegroundValue(0);
+    island_removing_filter->SetMajorityThreshold(1);
+    island_removing_filter->SetMaximumNumberOfIterations(3);
+    
+    closing_filter->SetInput(thresh_img);
+    closing_filter->Update();
+    
+    island_removing_filter->SetInput(closing_filter->GetOutput());
+    island_removing_filter->Update();
+
+    UCharImageType::Pointer clean_structure = island_removing_filter->GetOutput();
+
     this->time_vote += timer.report();
 
     /* Optionally, save the thresholded files */
@@ -312,7 +348,8 @@ Mabs_private::segmentation_threshold_weight (
             structure_label.c_str(), 
             thresh_val);
         timer.start();
-        itk_image_save (thresh_img, thresh_img_fn.c_str());
+
+        itk_image_save (clean_structure, thresh_img_fn.c_str());
         this->time_io += timer.report();
     }
 
@@ -326,7 +363,7 @@ Mabs_private::segmentation_threshold_weight (
         std::string stats_string = this->stats.compute_statistics (
             "segmentation", /* Not used yet */
             this->ref_structure_image,
-            thresh_img);
+            clean_structure);
         std::string seg_log_string = string_format (
             "target=%s,reg=%s,struct=%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
@@ -355,7 +392,7 @@ Mabs_private::segmentation_threshold_weight (
        be saved as a final segmentation. */
     else if (this->write_dicom_rt_struct) {
         this->ref_rtds->add_structure (
-            thresh_img,
+            clean_structure,
             mapped_name.c_str(),
             0);
     }
