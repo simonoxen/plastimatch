@@ -92,14 +92,20 @@ if (PLM_CUDA_ALL_DEVICES)
     if (CUDA_VERSION_MAJOR LESS "7")
 	message (STATUS "  >> Generation 1: [X]")
 	set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-            -gencode arch=compute_10,code=sm_10
-            -gencode arch=compute_11,code=sm_11
-            -gencode arch=compute_12,code=sm_12
-            -gencode arch=compute_13,code=sm_13
+	    -gencode arch=compute_11,code=sm_11
+	    -gencode arch=compute_12,code=sm_12
+	    -gencode arch=compute_13,code=sm_13
 	    )
 	if (CUDA_VERSION_MAJOR EQUAL "6")
 	    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 		--Wno-deprecated-gpu-targets)
+	    if (CUDA_VERSION_MINOR LESS "5")
+		set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+		    -gencode arch=compute_10,code=sm_10)
+	    endif ()
+	else ()
+	    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+		-gencode arch=compute_10,code=sm_10)
 	endif ()
     else()
 	message (STATUS "  >> Generation 1: [ ]")
