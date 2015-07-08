@@ -65,6 +65,15 @@ mark_as_advanced (
   PLM_INSTALL_INCLUDE_DIR 
   PLM_INSTALL_CMAKE_DIR)
 
+# GCS 2015-07-08.  The below workflow is described here:
+#   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+# However, it creates install targets with absolute paths, which is 
+# not allowed for NSIS targets.
+# It is possible this is resolved by newer documentation, which is referred
+# by the above link:
+#   http://www.cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
+# Needs further investigation
+
 # Make relative install paths absolute (needed later on)
 foreach (p LIB BIN INCLUDE CMAKE)
   set (var PLM_INSTALL_${p}_DIR)
@@ -158,6 +167,8 @@ option (PLM_CONFIG_INSTALL_LIBRARIES
   "Include libraries in install" ON)
 option (PLM_PACKAGE_32BIT 
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
+option (PLM_PACKAGE_NSIS 
+  "Set to ON when packaging binaries with NSIS" OFF)
 
 # Update options if library build is selected  
 if (PLM_CONFIG_LIBRARY_BUILD)
@@ -1018,12 +1029,18 @@ endif ()
 ##
 ##    ...from within your build directory
 ##-----------------------------------------------------------------------------
-# Default Generators
-set (CPACK_GENERATOR "ZIP")
+# Choose generator
+if (PLM_PACKAGE_NSIS)
+  set (CPACK_GENERATOR "NSIS")
+else ()
+  set (CPACK_GENERATOR "ZIP")
+endif ()
 set (CPACK_SOURCE_GENERATOR "TBZ2")
 
-# General Stuff
-set (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
+# General stuff
+set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
+set (CPACK_PACKAGE_NAME "plastimatch")
+set (CPACK_PACKAGE_VENDOR "Plastimatch Dev Team")
 set (CPACK_PACKAGE_VERSION_MAJOR "${PLM_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${PLM_VERSION_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${PLM_VERSION_PATCH}")
@@ -1032,6 +1049,14 @@ set (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
 )
+
+# NSIS stuff
+#set(CPACK_NSIS_INSTALLED_ICON_NAME "${APP_LOW_NAME}.ico")
+set(CPACK_NSIS_HELP_LINK "http://plastimatch.org")
+set(CPACK_NSIS_URL_INFO_ABOUT "http://plastimatch.org")
+set(CPACK_NSIS_CONTACT "plastimatch@googlegroups.com")
+
+set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
 
 # Write files to extra_stuff directory.  These is sets the release date 
 # and version number correctly into the changelog, without needing 
@@ -1060,7 +1085,10 @@ set (CPACK_SOURCE_INSTALLED_DIRECTORIES
 #set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
 #set (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 #set (CPACK_PACKAGING_INSTALL_PREFIX "")
-set (CPACK_SET_DESTDIR ON)
+
+if (NOT CPACK_GENERATOR STREQUAL "NSIS")
+  set (CPACK_SET_DESTDIR ON)
+endif ()
 set (CPACK_INSTALL_PREFIX "")
 
 include (CPack)
