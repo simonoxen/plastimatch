@@ -142,7 +142,7 @@ at a distance defined by the SID.
 Suppose further that the pixel coordinate (0,0) is aligned with 
 the image center, as shown here:
 
-.. figure:: ../figures/proj_mat_format_5.png
+.. image:: ../figures/proj_mat_format_5.png
    :width: 50 %
 
 The mapping from world coordinates to image coordinates is

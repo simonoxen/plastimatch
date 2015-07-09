@@ -23,8 +23,8 @@ public:
 
 public:
     void get_nrm (double nrm[3]);
-    void get_pdn (double nrm[3]);
-    void get_prt (double nrm[3]);
+    void get_pdn (double pdn[3]);
+    void get_prt (double prt[3]);
 };
 
 PLMBASE_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);

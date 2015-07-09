@@ -4,16 +4,135 @@ Bspline_parms
 
 1. Historically, it is not possible to include ITK include files 
    by the nvcc compiler.
-2. 
+2. Also historically, the itk include file is in plm_config.h
+3. As a result, bspline_parms is needed, instead of accessing 
+   stage_parms.
 
 ******************************************************************************
 Proj_volume, Rpl_volume, and dose calculation
 2015-05-06
 
-1. Proj_volume is defined in documentation with a projective geometry.
-   It is not an spherical geometry.
+:: Proj_volume
 
-2. 
+    Volume *vol;
+    Proj_matrix *pmat;
+      double ic[2];
+      double matrix[12];
+      double sad;
+      double sid;
+      double cam[3];
+      double nrm[3];
+      double extrinsic[16];
+      double intrinsic[12];
+    int num_steps;
+    double step_length;
+    int image_dim[2];
+    double image_spacing[2];
+    double clipping_dist[2];
+    double nrm[3];
+    double src[3];
+    double iso[3];
+    double ul_room[3];
+    double incr_r[3];
+    double incr_c[3];
+
+* Proj_volume is defined in documentation with a projective geometry.
+  But it seems to be implemented as a spherical geometry.
+* It is used by rpl_volume, dose
+* It is not used by drr, fdk
+* Regarding Proj_matrix:
+   - Can be used by Siddon approach, does not depend on uniform steps
+   - Has no knowledge of projection plane dimension, spacing
+
+:: Aperture
+
+   Private:
+    Plm_image::Pointer aperture_image;
+    Plm_image::Pointer range_compensator_image;
+    double distance;
+    int dim[2];
+    double center[2];
+    double spacing[2];
+   Public:
+    double vup[3];        /* orientation */
+    double ic_room[3];    /* loc of center (room coords) */
+    double ul_room[3];    /* loc of upper left corder (room coords) */
+    double incr_r[3];     /* row increment vector */
+    double incr_c[3];     /* col increment vector */
+    double nrm[3];        /* unit vec: normal */
+    double pdn[3];        /* unit vec: down */
+    double prt[3];        /* unit vec: right */
+    double tmp[3];
+
+* Conflates projection plane geometry and proton artifacts
+* Duplications with Proj_matrix and Proj_volume
+
+:: Projection
+    Canonical
+      double src[3];
+      double iso[3];
+      double sid;
+      int image_dim[2];            // [0] = columns, [1] = rows
+      double image_center[2];      // in pixels
+      double image_spacing[2];     // spacing on detector
+      double vup[3];
+    Optional
+      double clipping_dist[2];
+    Derivative
+      double matrix[12];
+      double extrinsic[16];
+      double intrinsic[12];
+      double sad;            // || src - iso ||
+      double nrm[3];         // src - iso / || src - iso ||
+      double plt[3];         // nrm x vup / || nrm x vup ||
+      double pup[3];         // plt x nrm
+      double ic_room[3];     // src - sad * nrm
+      double incr_c[3];      // ic_room - image_center[0] * isp[0] * pup
+      double incr_r[3];      // ic_room + image_center[1] * isp[1] * plt
+      double ul_room[3];     // ic_room - ic[0] * incr_c - ic[1] * incr_r
+
+* Replaces Proj_matrix and Aperture
+* Why pdn instead of pup ?
+
+:: IEC
+      double gantry_angle;
+      double couch_angle;
+      double detector_angle;
+      double I_f;       // SAD (?)
+      double I_r;       // detector distance
+      double I_p[3];    // patient offset
+      double Rx, Ry;    // image center
+      N.b. IEC does not describe image resolution or spacing
+
+:: DICOM RT Image
+      General Image (C.7.6.1)
+      Image Pixel (C.7.6.3)
+        Rows
+	Columns
+      RT Image (C.8.8.2)
+	X-Ray Image Receptor Translation       // IEC
+	X-Ray Image Receptor Angle             // IEC
+        RT Image Plane, RT Image Orientation   // out-of-plane rotations
+	Image Plane Pixel Spacing
+	RT Image Position                      // 2D coords of first pixel
+	Radiation Machine SAD
+	RT Image SID
+	Source to Reference ObjectDistance
+	Gantry Angle
+	Gantry Pitch Angle
+	Patient Support Angle
+	Table Top Eccentric AxisDistance
+	Table Top Eccentric Angle
+	Table Top Pitch Angle
+	Table Top Roll Angle
+	Table Top Vertical Position
+	Table Top LongitudinalPosition
+	Table Top Lateral Position
+	Isocenter Position
+	Patient Position
+
+* Strangely, no Image Plane module seems required (or even allowed?), 
+  which would define Image Position Patient, Image Orientation Patient
 
 
 ******************************************************************************

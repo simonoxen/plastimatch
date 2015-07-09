@@ -39,7 +39,7 @@ public:
     int num_steps;
     double step_length;
     int image_dim[2];
-	double image_spacing[2];
+    double image_spacing[2];
     double clipping_dist[2];
     double nrm[3];
     double src[3];

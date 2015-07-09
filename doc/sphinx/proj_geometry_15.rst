@@ -38,6 +38,6 @@ geometry description:
 +-----------+-----------------+-----------------------------------------+
 
 
-.. figure:: ../figures/drr_geometry.png
+.. image:: ../figures/drr_geometry.png
    :width: 80 %
 
