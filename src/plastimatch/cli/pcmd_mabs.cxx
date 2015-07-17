@@ -20,6 +20,7 @@ public:
 
     std::string cmd_file_fn;
     std::string input_fn;
+    std::string input_roi_fn;
     std::string output_dir;
     std::string output_dicom_dir;
 
@@ -71,6 +72,8 @@ parse_fn (
         "parameters only", 0);
     parser->add_long_option ("", "segment", 
         "use mabs to segment the specified image or directory", 1, "");
+    parser->add_long_option ("", "input-roi", 
+        "input mask used to prealign the center of gravity", 1, "");
     parser->add_long_option ("", "output", 
         "output (non-dicom) directory when doing a segmentation", 1, "");
     parser->add_long_option ("", "output-dicom", 
@@ -113,6 +116,9 @@ parse_fn (
     if (parser->have_option ("segment")) {
         parms->segment = true;
         parms->input_fn = parser->get_string ("segment");
+    }
+    if (parser->have_option ("input-roi")) {
+        parms->input_roi_fn = parser->get_string ("input-roi");
     }
     if (parser->have_option ("output")) {
         parms->output_dir = parser->get_string ("output");
@@ -162,7 +168,10 @@ do_command_mabs (int argc, char *argv[])
         if (parms.output_dicom_dir != "") {
             mabs.set_segment_output_dicom (parms.output_dicom_dir);
         }
-        
+        if (parms.input_roi_fn != "") {
+            mabs.set_segment_input_roi (parms.input_roi_fn);
+        }
+       
         /* Run function */
         if (parms.atlas_selection) {
             mabs.atlas_selection ();

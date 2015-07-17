@@ -72,6 +72,9 @@ public:
     std::list<std::string> registration_list;
     /* output_dir is ??? */
     std::string output_dir;
+
+    /* input_roi_fn is the binary structure file name used to align the center of gravity*/
+    std::string input_roi_fn;
     
     /* process_dir_list is a list of the input directories which 
        need to be processed, one directory per case
@@ -2015,6 +2018,12 @@ void
 Mabs::set_segment_output_dicom (const std::string& output_dicom_dir)
 {
     /* Not yet implemented */
+}
+
+void 
+Mabs::set_segment_input_roi (const std::string& input_roi_fn)
+{
+    d_ptr->input_roi_fn = input_roi_fn;
 }
 
 void

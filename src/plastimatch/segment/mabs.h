@@ -61,6 +61,7 @@ public:
     void set_segment_input (const std::string& input_fn);
     void set_segment_output (const std::string& output_dir);
     void set_segment_output_dicom (const std::string& output_dicom_dir);
+    void set_segment_input_roi (const std::string& input_roi_fn);
 
     void atlas_selection ();
     void train_atlas_selection ();
