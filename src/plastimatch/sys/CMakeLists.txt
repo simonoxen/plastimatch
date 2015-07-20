@@ -60,10 +60,12 @@ if (LIBDL_FOUND)
 endif ()
 if (CYGWIN OR NOT WIN32)
     find_library (pthreadlib pthread)
-    set (PLMSYS_LIBRARY_DEPENDENCIES
-	${PLMSYS_LIBRARY_DEPENDENCIES}
-	${pthreadlib}
-	)
+    if (pthreadlib)
+	set (PLMSYS_LIBRARY_DEPENDENCIES
+	    ${PLMSYS_LIBRARY_DEPENDENCIES}
+	    ${pthreadlib}
+	    )
+    endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
