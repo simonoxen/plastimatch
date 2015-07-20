@@ -252,15 +252,9 @@ if (WIN32 AND NOT CYGWIN AND NOT MINGW)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  I can't remember why this is necessary.  But at one time I needed 
-##  it for compiling on AMD linux 64-bit.
+##  Compile with -fPIC is needed for amd64 and other platforms
 ##-----------------------------------------------------------------------------
-if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-endif ()
+plm_set_pic_flags ()
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths

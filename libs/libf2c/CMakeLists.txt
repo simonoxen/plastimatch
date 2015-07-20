@@ -1,12 +1,5 @@
 project (libf2c)
 
-if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-endif ()
-
 set (LIBF2C_LIBRARY_SRC
   abort_.c    d_int.c	inquire.c	r_atn2.c  sig_die.c
   d_lg10.c	ftell_.c    i_sign.c	r_cnjg.c  signal_.c
