@@ -37,7 +37,184 @@ public:
     void run_itk_signed_maurer ();
     void run_itk_signed_native ();
     void run ();
+protected:
+    void forward_propagate_i (
+        float *dm,
+        const Volume::Pointer& vb,
+        const float* sp2,
+        plm_long j, 
+        plm_long k);
+    void backward_propagate_i (
+        float *dm,
+        const Volume::Pointer& vb,
+        const float* sp2,
+        plm_long j, 
+        plm_long k);
+    void forward_propagate_j (
+        float *dm,
+        const Volume::Pointer& vb,
+        const float* sp2,
+        plm_long k);
+    void backward_propagate_j (
+        float *dm,
+        const Volume::Pointer& vb,
+        const float* sp2,
+        plm_long k);
 };
+
+/* Define some macros */
+#define SQ_DIST(idx,sp2)                        \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]              \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
+        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
+#define SQ_DIST_I(idx,sp2)                      \
+    (dm[3*idx+0]+1)*(dm[3*idx+0]+1)*sp2[0]      \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
+        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
+#define SQ_DIST_J(idx,sp2)                              \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
+        + (dm[3*idx+1]+1)*(dm[3*idx+1]+1)*sp2[1]        \
+        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
+#define SQ_DIST_K(idx,sp2)                              \
+    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
+        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                \
+        + (dm[3*idx+2]+1)*(dm[3*idx+2]+1)*sp2[2]
+
+#define COPY_I(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0] + 1;      \
+    dm[3*new_idx+1] = dm[3*old_idx+1];          \
+    dm[3*new_idx+2] = dm[3*old_idx+2];
+#define COPY_J(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0];          \
+    dm[3*new_idx+1] = dm[3*old_idx+1] + 1;      \
+    dm[3*new_idx+2] = dm[3*old_idx+2];
+#define COPY_K(new_idx,old_idx)                 \
+    dm[3*new_idx+0] = dm[3*old_idx+0];          \
+    dm[3*new_idx+1] = dm[3*old_idx+1];          \
+    dm[3*new_idx+2] = dm[3*old_idx+2] + 1;
+
+
+void
+Distance_map_private::forward_propagate_i (
+    float *dm,
+    const Volume::Pointer& vb,
+    const float* sp2,
+    plm_long j, 
+    plm_long k)
+{
+    /* Forward propagate i */
+    for (plm_long i = 1; i < vb->dim[0]; i++) {
+        plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
+        plm_long vn = vb->index (i, j, k);     /* "new" voxel */
+        if (dm[3*vo] == FLT_MAX) {
+            continue;
+        }
+        if (dm[3*vn] == FLT_MAX) {
+            COPY_I (vn, vo);
+            continue;
+        }
+        float odist = SQ_DIST_I(vo,sp2);
+        float ndist = SQ_DIST(vn,sp2);
+        if (odist < ndist) {
+            COPY_I (vn, vo);
+        }
+    }
+}
+
+void
+Distance_map_private::backward_propagate_i (
+    float *dm,
+    const Volume::Pointer& vb,
+    const float* sp2,
+    plm_long j, 
+    plm_long k)
+{
+    /* Backward propagate i */
+    for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
+        plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
+        plm_long vn = vb->index (i, j, k);     /* "new" voxel */
+        if (dm[3*vo] == FLT_MAX) {
+            continue;
+        }
+        if (dm[3*vn] == FLT_MAX) {
+            COPY_I (vn, vo);
+            continue;
+        }
+        float odist = SQ_DIST_I(vo,sp2);
+        float ndist = SQ_DIST(vn,sp2);
+        if (odist < ndist) {
+            COPY_I (vn, vo);
+        }
+    }
+}
+
+void 
+Distance_map_private::forward_propagate_j (
+    float *dm,
+    const Volume::Pointer& vb,
+    const float* sp2,
+    plm_long k)
+{
+    /* Propagate within j = 0 */
+    this->forward_propagate_i (dm, vb, sp2, 0, k);
+    this->backward_propagate_i (dm, vb, sp2, 0, k);
+
+    /* Forward scan j */
+    for (plm_long j = 1; j < vb->dim[1]; j++) {
+        /* Propagate j */
+        for (plm_long i = 0; i < vb->dim[0]; i++) {
+            plm_long vo = vb->index (i, j-1, k);   /* "old" voxel */
+            plm_long vn = vb->index (i, j, k);     /* "new" voxel */
+            if (dm[3*vo] == FLT_MAX) {
+                continue;
+            }
+            if (dm[3*vn] == FLT_MAX) {
+                COPY_J (vn, vo);
+                continue;
+            }
+            float odist = SQ_DIST_J(vo,sp2);
+            float ndist = SQ_DIST(vn,sp2);
+            if (odist < ndist) {
+                COPY_J (vn, vo);
+            }
+        }
+        /* Propagate along i */
+        this->forward_propagate_i (dm, vb, sp2, j, k);
+        this->backward_propagate_i (dm, vb, sp2, j, k);
+    }
+}
+
+void 
+Distance_map_private::backward_propagate_j (
+    float *dm,
+    const Volume::Pointer& vb,
+    const float* sp2,
+    plm_long k)
+{
+    /* Backward scan j */
+    for (plm_long j = vb->dim[1] - 2; j >= 0; j--) {
+        /* Propagate j */
+        for (plm_long i = 0; i < vb->dim[0]; i++) {
+            plm_long vo = vb->index (i, j+1, k);   /* "old" voxel */
+            plm_long vn = vb->index (i, j, k);     /* "new" voxel */
+            if (dm[3*vo] == FLT_MAX) {
+                continue;
+            }
+            if (dm[3*vn] == FLT_MAX) {
+                COPY_J (vn, vo);
+                continue;
+            }
+            float odist = SQ_DIST_J(vo,sp2);
+            float ndist = SQ_DIST(vn,sp2);
+            if (odist < ndist) {
+                COPY_J (vn, vo);
+            }
+        }
+        /* Propagate along i */
+        this->forward_propagate_i (dm, vb, sp2, j, k);
+        this->backward_propagate_i (dm, vb, sp2, j, k);
+    }
+}
 
 void
 Distance_map_private::run_native_danielsson ()
@@ -74,46 +251,19 @@ Distance_map_private::run_native_danielsson ()
         vb->spacing[2] * vb->spacing[2]
     };
 
-    /* Define some macros */
-#define SQ_DIST(idx,sp2)                        \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]              \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
-        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-#define SQ_DIST_I(idx,sp2)                      \
-    (dm[3*idx+0]+1)*(dm[3*idx+0]+1)*sp2[0]      \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]        \
-        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-#define SQ_DIST_J(idx,sp2)                              \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
-        + (dm[3*idx+1]+1)*(dm[3*idx+1]+1)*sp2[1]        \
-        + dm[3*idx+2]*dm[3*idx+2]*sp2[2]
-#define SQ_DIST_K(idx,sp2)                              \
-    dm[3*idx+0]*dm[3*idx+0]*sp2[0]                      \
-        + dm[3*idx+1]*dm[3*idx+1]*sp2[1]                \
-        + (dm[3*idx+2]+1)*(dm[3*idx+2]+1)*sp2[2]
-
-#define COPY_I(new_idx,old_idx)                 \
-    dm[3*new_idx+0] = dm[3*old_idx+0] + 1;      \
-    dm[3*new_idx+1] = dm[3*old_idx+1];          \
-    dm[3*new_idx+2] = dm[3*old_idx+2];
-#define COPY_J(new_idx,old_idx)                 \
-    dm[3*new_idx+0] = dm[3*old_idx+0];          \
-    dm[3*new_idx+1] = dm[3*old_idx+1] + 1;      \
-    dm[3*new_idx+2] = dm[3*old_idx+2];
-#define COPY_K(new_idx,old_idx)                 \
-    dm[3*new_idx+0] = dm[3*old_idx+0];          \
-    dm[3*new_idx+1] = dm[3*old_idx+1];          \
-    dm[3*new_idx+2] = dm[3*old_idx+2] + 1;
-
     /* GCS FIX -- This is only implemented as distance to set, 
        not distance to boundary. */
 
     /* GCS FIX -- I'm not entirely sure if it is required to scan 
        both forward and backward for j direction.  Need to test. */
 
+    /* Propagate within k = 0 */
+    this->forward_propagate_j (dm, vb, sp2, 0);
+    this->backward_propagate_j (dm, vb, sp2, 0);
+
     /* Forward scan k */
     for (plm_long k = 1; k < vb->dim[2]; k++) {
-        /* Propagate k */
+        /* Propagate from prev to curr k */
         for (plm_long j = 0; j < vb->dim[1]; j++) {
             for (plm_long i = 0; i < vb->dim[0]; i++) {
                 plm_long vo = vb->index (i, j, k-1);   /* "old" voxel */
@@ -132,119 +282,14 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
         }
-        /* Forward scan j */
-        for (plm_long j = 1; j < vb->dim[1]; j++) {
-            /* Propagate j */
-            for (plm_long i = 0; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i, j-1, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_J (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_J(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_J (vn, vo);
-                }
-            }
-            /* Forward propagate i */
-            for (plm_long i = 1; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-            /* Backward propagate i */
-            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-        }
-        /* Backward scan j */
-        for (plm_long j = vb->dim[1] - 2; j >= 0; j--) {
-            /* Propagate j */
-            for (plm_long i = 0; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i, j+1, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_J (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_J(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_J (vn, vo);
-                }
-            }
-            /* Forward propagate i */
-            for (plm_long i = 1; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-            /* Backward propagate i */
-            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-        }
+        /* Propagate within curr k */
+        this->forward_propagate_j (dm, vb, sp2, k);
+        this->backward_propagate_j (dm, vb, sp2, k);
     }
 
     /* Backward scan k */
     for (plm_long k = vb->dim[2] - 2; k >= 0; k--) {
-        /* Propagate k */
+        /* Propagate from prev to curr k */
         for (plm_long j = 0; j < vb->dim[1]; j++) {
             for (plm_long i = 0; i < vb->dim[0]; i++) {
                 plm_long vo = vb->index (i, j, k+1);   /* "old" voxel */
@@ -263,114 +308,9 @@ Distance_map_private::run_native_danielsson ()
                 }
             }
         }
-        /* Forward scan j */
-        for (plm_long j = 1; j < vb->dim[1]; j++) {
-            /* Propagate j */
-            for (plm_long i = 0; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i, j-1, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_J (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_J(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_J (vn, vo);
-                }
-            }
-            /* Forward propagate i */
-            for (plm_long i = 1; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-            /* Backward propagate i */
-            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-        }
-        /* Backward scan j */
-        for (plm_long j = vb->dim[1] - 2; j >= 0; j--) {
-            /* Propagate j */
-            for (plm_long i = 0; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i, j+1, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_J (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_J(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_J (vn, vo);
-                }
-            }
-            /* Forward propagate i */
-            for (plm_long i = 1; i < vb->dim[0]; i++) {
-                plm_long vo = vb->index (i-1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-            /* Backward propagate i */
-            for (plm_long i = vb->dim[0] - 2; i >= 0; i--) {
-                plm_long vo = vb->index (i+1, j, k);   /* "old" voxel */
-                plm_long vn = vb->index (i, j, k);     /* "new" voxel */
-                if (dm[3*vo] == FLT_MAX) {
-                    continue;
-                }
-                if (dm[3*vn] == FLT_MAX) {
-                    COPY_I (vn, vo);
-                    continue;
-                }
-                float odist = SQ_DIST_I(vo,sp2);
-                float ndist = SQ_DIST(vn,sp2);
-                if (odist < ndist) {
-                    COPY_I (vn, vo);
-                }
-            }
-        }
+        /* Propagate within curr k */
+        this->forward_propagate_j (dm, vb, sp2, k);
+        this->backward_propagate_j (dm, vb, sp2, k);
     }
 
     /* Fill in output image */
