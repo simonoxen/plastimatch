@@ -38,6 +38,13 @@ from within the plastimatch source directory::
 Build dependencies
 ------------------
 
+Debian installs
+^^^^^^^^^^^^^^^
+The following will get you started on a debian system::
+
+  sudo apt-get install cmake-curse-gui g++ make libdcmtk2-dev libinsighttoolkit4-dev libpng12-dev subversion zlib1g-dev
+
+
 Cmake (required)
 ^^^^^^^^^^^^^^^^
 Plastimatch uses cmake, so you must download and install cmake 
