@@ -1,5 +1,12 @@
 Version 1.6.2 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* New MABS post-processing feature to fill holes and remove islands
+* Center of gravity pre-alignment for registration and MABS
+* Fix subtle bug in gamma computation with mask
+* Fix bug in Hausdorff calculation with single slice images
+* Fix crash in vf_invert
+* Build system fixes for non-intel platforms
+* Remove dependency on bstrlib
 
 Version 1.6.1 (build 5068)
 Wed May 13 13:26:55 EDT 2015
