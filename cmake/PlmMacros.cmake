@@ -34,6 +34,8 @@ macro (PLM_ADD_LIBRARY
     set_target_properties(${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
+
+  # Decorate .so on unix
   set_target_properties(${TARGET_NAME} 
       PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
@@ -44,11 +46,13 @@ macro (PLM_ADD_STATIC_LIBRARY
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
 
   add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
+
   set_target_properties (${TARGET_NAME} PROPERTIES 
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     PUBLIC_HEADER "${TARGET_INCLUDES}")
+
   if (PLM_CONFIG_INSTALL_LIBRARIES)
     install (TARGETS ${TARGET_NAME}
       EXPORT PlastimatchLibraryDepends
@@ -88,6 +92,9 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
       )
   endif ()
 
+  # Decorate .so on unix
+  set_target_properties(${TARGET_NAME} 
+      PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
 
 macro (PLM_ADD_EXECUTABLE 
