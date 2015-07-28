@@ -38,21 +38,9 @@ set (PLMCUDA_LIBRARY_DEPENDENCIES
 ##-----------------------------------------------------------------------------
 if (CUDA_FOUND)
   if (PLM_USE_GPU_PLUGINS)
-    cuda_add_library (plmcuda SHARED
-      ${PLMCUDA_LIBRARY_SRC}
-      )
-    set_target_properties (plmcuda PROPERTIES 
-      ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-      RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+    plm_add_gpu_plugin_library (plmcuda "${PLMCUDA_LIBRARY_SRC}")
     target_link_libraries (plmcuda
       ${PLMCUDA_LIBRARY_DEPENDENCIES}
-      )
-    install (TARGETS plmcuda
-      EXPORT PlastimatchLibraryDepends
-      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
-      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
       )
   else ()
     cuda_compile (CUDA_WRAPPERS ${PLMCUDA_LIBRARY_SRC})
