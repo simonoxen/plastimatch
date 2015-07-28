@@ -1,5 +1,8 @@
-Version 1.6.2 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.6.3 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.6.2 (build 5130)
+Tue Jul 28 14:38:04 EDT 2015
 * New MABS post-processing feature to fill holes and remove islands
 * Center of gravity pre-alignment for registration and MABS
 * Fix subtle bug in gamma computation with mask
