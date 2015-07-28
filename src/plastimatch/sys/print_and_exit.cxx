@@ -16,20 +16,7 @@
 #endif
 
 void
-print_and_wait (char* prompt_fmt, ...)
-{
-    if (prompt_fmt) {
-        va_list argptr;
-	va_start (argptr, prompt_fmt);
-	vprintf (prompt_fmt, argptr);
-	va_end (argptr);
-    }
-    printf ("Hit any key to continue\n");
-    getchar();
-}
-
-void
-print_and_exit (char* prompt_fmt, ...)
+print_and_exit (const char* prompt_fmt, ...)
 {
     if (prompt_fmt) {
         va_list argptr;
