@@ -128,9 +128,22 @@ public:
     Plm_image* get_fail_image ();
     /*! \brief Return a binary image of failing voxels as an ITK image. */
     UCharImageType::Pointer get_fail_image_itk ();
+
+    /*! \brief Return ref. image used for gamma evaluation */
+    Plm_image* get_ref_image();
+    /*! \brief Return comp. image used for gamma evaluation */
+    Plm_image* get_comp_image();
+
+
+
     /*! \brief Return fraction of passing points, subject to reference dose 
       being greater than analysis threshold */
     float get_pass_fraction ();
+
+    int get_analysis_num_vox();
+    int get_passed_num_vox();
+    float get_reference_dose();
+
     ///@}
     /*! \brief Resample image_moving to image_reference */
     void resample_image_to_reference (Plm_image *image_reference, Plm_image *image_moving);

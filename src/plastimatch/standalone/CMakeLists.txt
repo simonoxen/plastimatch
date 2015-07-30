@@ -147,9 +147,17 @@ QT4_WRAP_CPP(nki2mha_converter_SRC
 	nki2mha_converter.h)
 QT4_WRAP_UI(nki2mha_converter_SRC
 	nki2mha_converter.ui)
-
 QT4_ADD_RESOURCES (nki2mha_converter_SRC
 	nki2mha_converter.qrc)
+
+set(GAMMA_GUI_SRC
+	gamma_gui_main.cpp
+	gamma_gui.cpp 	gamma_gui.h)
+
+QT4_WRAP_CPP(GAMMA_GUI_SRC
+	gamma_gui.h)
+QT4_WRAP_UI(GAMMA_GUI_SRC
+	gamma_gui.ui)
 endif()
 
 ##-----------------------------------------------------------------------------
@@ -229,6 +237,11 @@ if (QT4_FOUND)
 	#plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
 	 #"${PLASTIMATCH_LIBS} ${QT_LIBRARIES} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	 # ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+
+	set (GAMMA_GUI_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
+	ADD_EXECUTABLE(gamma_gui ${GAMMA_GUI_SRC})
+	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+	TARGET_LINK_LIBRARIES(gamma_gui ${GAMMA_GUI_LIBRARIES})
 
 endif()
 

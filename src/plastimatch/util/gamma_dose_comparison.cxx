@@ -361,6 +361,24 @@ Gamma_dose_comparison::get_pass_fraction ()
     return d_ptr->analysis_num_pass / (float) d_ptr->analysis_num_vox;
 }
 
+int
+Gamma_dose_comparison::get_analysis_num_vox()
+{    
+    return (int)d_ptr->analysis_num_vox;
+}
+
+int
+Gamma_dose_comparison::get_passed_num_vox()
+{
+    return (int)d_ptr->analysis_num_pass;
+}
+
+float Gamma_dose_comparison::get_reference_dose()
+{
+    return (float)d_ptr->reference_dose;
+}
+
+
 void 
 Gamma_dose_comparison::resample_image_to_reference (
     Plm_image *image_reference, Plm_image *image_moving)
@@ -1034,3 +1052,14 @@ void Gamma_dose_comparison::set_interp_search(bool b_interp_search)
 {
     d_ptr->b_interp_search = b_interp_search;
 }
+
+Plm_image* Gamma_dose_comparison::get_ref_image()
+{
+    return d_ptr->img_in1;
+}
+
+Plm_image* Gamma_dose_comparison::get_comp_image()
+{
+    return d_ptr->img_in2;
+}
+
