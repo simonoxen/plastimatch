@@ -13,6 +13,8 @@
 #include "itk_image_type.h"
 #include "pcmd_warp.h"
 #include "print_and_exit.h"
+#include "warp_parms.h"
+#include "xform.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
@@ -181,49 +183,50 @@ load_ctatts (Ctatts* ctatts, const char* ctatts_in)
 {
     int i;
     float f;
-    FILE* fp;
-    const int BUFLEN = 1024;
-    char buf[BUFLEN];
-
-    fp = fopen (ctatts_in, "rt");
-    if (!fp) {
-	fprintf (stderr, "Error opening ctatts file for read: %s\n", ctatts_in);
-	exit (-1);
+    std::ifstream ifs (ctatts_in);
+    if (!ifs) {
+	print_and_exit ("Error opening ctatts file for read: %s\n", ctatts_in);
     }
 
     /* Skip first line */
-    fgets (buf, BUFLEN, fp);
+    std::string buf;
 
     /* GCS FIX: I should give an error if not all lines are found */
-    while (1) {
-	if (!fgets (buf, BUFLEN, fp)) {
-	    break;
-	}
-	if (buf[0] == '\0' || buf[0] == '\n') {
-	    /* Empty lines are ok */
-	}
-	else if (sscanf (buf, "slice_dimension %d", &i)) {
+    while (std::getline (ifs, buf)) {
+	if (sscanf (buf.c_str(), "slice_dimension %d", &i)) {
 	    ctatts->slice_dimension = i;
 	}
-	else if (sscanf (buf, "slice_number %d", &i)) {
+	else if (sscanf (buf.c_str(), "slice_number %d", &i)) {
 	    ctatts->slice_number = i;
 	}
-	else if (sscanf (buf, "pixel_size %f", &f)) {
+	else if (sscanf (buf.c_str(), "pixel_size %f", &f)) {
 	    ctatts->pixel_size = f;
 	}
-	else if (sscanf (buf, "slice_distance %f", &f)) {
+	else if (sscanf (buf.c_str(), "slice_distance %f", &f)) {
 	    ctatts->slice_distance = f;
 	}
-	else if (sscanf (buf, "Pos-Isocenter-X %f", &f)) {
+	else if (sscanf (buf.c_str(), "Pos-Isocenter-X %f", &f)) {
 	    ctatts->pos_isocenter_x = f;
 	}
-	else if (sscanf (buf, "Pos-Isocenter-Y %f", &f)) {
+	else if (sscanf (buf.c_str(), "Pos_Isocenter_X %f", &f)) {
+	    ctatts->pos_isocenter_x = f;
+	}
+	else if (sscanf (buf.c_str(), "Pos-Isocenter-Y %f", &f)) {
 	    ctatts->pos_isocenter_y = f;
 	}
-	else if (sscanf (buf, "Pos-Isocenter-Z %f", &f)) {
+	else if (sscanf (buf.c_str(), "Pos_Isocenter_Y %f", &f)) {
+	    ctatts->pos_isocenter_y = f;
+	}
+	else if (sscanf (buf.c_str(), "Pos-Isocenter-Z %f", &f)) {
 	    ctatts->pos_isocenter_z = f;
 	}
-	else if (sscanf (buf, "Number-Of-Voxels-in-CT-Cube-Z %d", &i)) {
+	else if (sscanf (buf.c_str(), "Pos_Isocenter_Z %f", &f)) {
+	    ctatts->pos_isocenter_z = f;
+	}
+	else if (sscanf (buf.c_str(), "Number-Of-Voxels-in-CT-Cube-Z %d", &i)) {
+	    ctatts->num_of_voxels_in_ct_cube_z = i;
+	}
+	else if (sscanf (buf.c_str(), "Number_Of_Voxels_in_CT_Cube_Z %d", &i)) {
 	    ctatts->num_of_voxels_in_ct_cube_z = i;
 	}
 	else {
@@ -444,9 +447,9 @@ write_dij_header (Dij_Matrix* dij_matrix, FILE* fp)
 
 void
 warp_pencil_beam (DeformationFieldType::Pointer vf, 
-		  FloatImageType::Pointer oimg, 
-		  Dij_Matrix* dij_matrix, Ctatts* ctatts, 
-		  Dif* dif, Pencil_Beam* pb)
+    FloatImageType::Pointer oimg, 
+    Dij_Matrix* dij_matrix, Ctatts* ctatts, 
+    Dif* dif, Pencil_Beam* pb)
 {
     int i;
     float dose_offset_x, dose_offset_y, dose_offset_z;
@@ -454,7 +457,7 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
     ulong total = 0, discarded = 0;
 
     typedef itk::VectorLinearInterpolateImageFunction <
-			DeformationFieldType, double > InterpolatorType;
+        DeformationFieldType, double > InterpolatorType;
     typedef InterpolatorType::PointType PointType;
     typedef InterpolatorType::OutputType OutputType;
     PointType pt;
@@ -464,13 +467,16 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
     /* Compute shift from (pixel-centered) origin in original CT coordinates 
        to (pixel-centered) origin in konrad dose cube.  The (x,y,z) refer to 
        konrad coordinates, which conform to IEC. */
-    dose_offset_x = ctatts->pos_isocenter_x - (dif->iso_index_dose_x * dif->delta_x)
-			- (ctatts->pixel_size / 2.0);
-    dose_offset_y = ctatts->pos_isocenter_y - (dif->iso_index_ct_y * dif->delta_y)
-			- (ctatts->slice_distance / 2.0);
-    dose_offset_z = ((ctatts->num_of_voxels_in_ct_cube_z + dif->iso_index_dose_z)
-			* dif->delta_z) - ctatts->pos_isocenter_z
-			- (ctatts->pixel_size / 2.0);
+    dose_offset_x = ctatts->pos_isocenter_x 
+        - (dif->iso_index_dose_x * dif->delta_x)
+        - (ctatts->pixel_size / 2.0);
+    dose_offset_y = ctatts->pos_isocenter_y 
+        - (dif->iso_index_ct_y * dif->delta_y)
+        - (ctatts->slice_distance / 2.0);
+    dose_offset_z = ((ctatts->num_of_voxels_in_ct_cube_z 
+            + dif->iso_index_dose_z) * dif->delta_z) 
+        - ctatts->pos_isocenter_z
+        - (ctatts->pixel_size / 2.0);
 
     /* Get origin location within vector field */
     const DeformationFieldType::PointType& ori = vf->GetOrigin();
@@ -502,7 +508,7 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
 	bool bvalue = interpolator->IsInsideBuffer (pt);
 	if (!bvalue) {
 	    printf ("Warning: beamlet dose (%g %g %g) outside vector field\n",
-		    ct_x, ct_y, ct_z);
+                ct_x, ct_y, ct_z);
 	    continue;
 	}
 	OutputType oval = interpolator->Evaluate (pt);
@@ -513,16 +519,16 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
 	dose_wz = dose_z - (oval[1] / dif->delta_z);
 #if defined (commentout)
 	printf ("%g %g %g -> %g %g %g\n", ct_x, ct_y, ct_z,
-		oval[0], oval[1], oval[2]);
+            oval[0], oval[1], oval[2]);
 	printf ("%d %d %d -> %g %g %g\n", dose_x, dose_y, dose_z,
-		dose_wx, dose_wy, dose_wz);
+            dose_wx, dose_wy, dose_wz);
 #endif
 	total += value;
 	update_output_image (oimg, &discarded, dij_matrix, 
-			    dose_wx, dose_wy, dose_wz, value);
+            dose_wx, dose_wy, dose_wz, value);
     }
     printf ("Discarded dose: %8lu/%8lu (%6.4f %%)\n", discarded, total, 
-	    ((double)discarded/total));
+        ((double)discarded/total));
 }
 
 void
@@ -574,23 +580,19 @@ convert_vector_field (
 void
 warp_dij_main (Warp_parms* parms)
 {
-    print_and_exit (
-	"Warping of Dij matrices has been disabled due to lack of interest.\n"
-	"Please contact plastimatch developers if you need this.\n");
-
-#if defined (commentout)
-    DeformationFieldType::Pointer vf = DeformationFieldType::New();
+//    DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Ctatts ctatts;
     Dif dif;
 
-    printf ("Loading vector field...\n");
-    vf = itk_image_load_float_field (parms->vf_in_fn);
+//    printf ("Loading vector field...\n");
+//    vf = itk_image_load_float_field (parms->vf_in_fn);
+    Xform::Pointer xf = xform_load (parms->xf_in_fn);
+    DeformationFieldType::Pointer vf = xf->get_itk_vf ();
 
     printf ("Loading ctatts and dif...\n");
-    load_ctatts (&ctatts, (const char*) parms->ctatts_in_fn);
-    load_dif (&dif, (const char*) parms->dif_in_fn);
+    load_ctatts (&ctatts, parms->ctatts_in_fn.c_str());
+    load_dif (&dif, parms->dif_in_fn.c_str());
 
-    convert_vector_field (vf, &ctatts, &dif, parms->input_fn, 
-	(const char*) parms->output_dij_fn);
-#endif
+    convert_vector_field (vf, &ctatts, &dif, parms->input_fn.c_str(), 
+	parms->output_dij_fn.c_str());
 }
