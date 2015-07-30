@@ -10,10 +10,10 @@ Setting up a build system for the first time
 
 #. Install the requisite packages::
 
-     sudo apt-get install devscripts pbuilder debhelper gcc-4.9
+     sudo apt-get install devscripts pbuilder debhelper gcc-5 git-buildpackage
 
-   Note: devscripts must be 2.14.2 or higher, gcc must be 4.9 or higher.
-   To set up gcc, you might need to do something like this:
+   Note: devscripts must be 2.14.2 or higher, and gcc must be 5.0 
+   or higher.  To set up gcc, you might need to do something like this:
 
       http://lektiondestages.blogspot.com/2013/05/installing-and-switching-gccg-versions.html
 
@@ -24,17 +24,18 @@ Setting up a build system for the first time
    Be sure to set up your ~/.ssh/config file to tell it where to find the key::
 
      # Add this to ~/.ssh/config
-     Host svn.debian.org
+     Host *.debian.org
              IdentityFile ~/.ssh/id_rsa_alioth
 
    Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
 
 #. Download the relevant directory from the debian-med repository::
 
-     debcheckout --user <username> svn://svn.debian.org/debian-med/trunk/packages/<package> <package>
+     debcheckout --git-track='*' --user <username> git://git.debian.org/debian-med/plastimatch.git
 
 #. Link the helper scripts to the debian plastimatch directory::
 
+     TBD
      cd debian-med/plastimatch
      ln -s ~/work/plastimatch/extra/debian/* .
 
@@ -49,12 +50,12 @@ Setting up a build system for the first time
 
 Step 1: Preliminary testing
 ---------------------------
-The preliminary testing will make sure that the tarball will 
-build under debian in step 3.
+The preliminary testing is performed to make sure that the upstream 
+tarball has everything it needs.
 
 #. Update changelog (in an terminal, not emacs)::
 
-     cd plastimatch/trunk
+     cd plastimatch
      dch -v 1.5.4+dfsg-1
 
 #. Run rebundle.pl until satisfied::
@@ -117,9 +118,19 @@ Step 3: Build the debian package
 
      run_pbuilder.pl
 
+Various hints
+-------------
+
+Switching between git branches
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Like this::
+ git checkout pristine-tar
+ git checkout upstream
+ git checkout master
+
 
 Rebuilding an existing debian source package
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Like this::
 
  apt-get source foo
