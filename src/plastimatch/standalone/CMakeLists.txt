@@ -230,19 +230,23 @@ endif ()
 
 
 if (QT4_FOUND)
-	set (nki2mha_converter_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
-	ADD_EXECUTABLE(nki2mha_converter ${nki2mha_converter_SRC})
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-	TARGET_LINK_LIBRARIES(nki2mha_converter ${nki2mha_converter_LIBRARIES})
-	#plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
-	 #"${PLASTIMATCH_LIBS} ${QT_LIBRARIES} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	 # ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+#	set (nki2mha_converter_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
+#	ADD_EXECUTABLE(nki2mha_converter ${nki2mha_converter_SRC})
+#	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+#	TARGET_LINK_LIBRARIES(nki2mha_converter ${nki2mha_converter_LIBRARIES})
 
-	set (GAMMA_GUI_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
-	ADD_EXECUTABLE(gamma_gui ${GAMMA_GUI_SRC})
-	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-	TARGET_LINK_LIBRARIES(gamma_gui ${GAMMA_GUI_LIBRARIES})
+	plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
+	  "${PLASTIMATCH_LIBS} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	  ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 
+#	set (GAMMA_GUI_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
+#	ADD_EXECUTABLE(gamma_gui ${GAMMA_GUI_SRC})
+#	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+#	TARGET_LINK_LIBRARIES(gamma_gui ${GAMMA_GUI_LIBRARIES})
+
+	plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
+	  "${PLASTIMATCH_LIBS} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	  ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif()
 
 plm_add_executable (cmd_prompt_launcher "${CMD_PROMPT_LAUNCHER_SRC}" 
