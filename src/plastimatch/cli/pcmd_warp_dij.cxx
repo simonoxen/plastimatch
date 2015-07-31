@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 /*  Warp one or more dij matrices based on a vector field */
 #include "plmcli_config.h"
+#include <fstream>
 #include <math.h>
 #include <time.h>
 #include "itkImage.h"
@@ -233,7 +234,6 @@ load_ctatts (Ctatts* ctatts, const char* ctatts_in)
 	    ctatts_parse_error ();
 	}
     }
-    fclose (fp);
 }
 
 /* This is a "dumb array".  It doesn't know about pixel sizes etc. 
