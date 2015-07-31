@@ -17,9 +17,7 @@
 //#endif
 
 #include "itkImageIOBase.h"
-#if (PLM_ITK_ORIENTED_IMAGES)
 #include "itkOrientedImage.h"
-#endif
 #include "itkVectorImage.h"
 
 #include "itk_point.h"

@@ -4,11 +4,6 @@
 #ifndef __plm_config_h__
 #define __plm_config_h__
 
-/* ITK 3.20 is missing this */
-#if defined __cplusplus
-#include <stddef.h>
-#endif
-
 /* Architecture attributes */
 #cmakedefine MACHINE_IS_32_BIT 1
 #cmakedefine MACHINE_IS_64_BIT 1
@@ -76,15 +71,6 @@
 /* ITK attributes */
 #cmakedefine ITK_FOUND 1
 #cmakedefine ITK_USE_SYSTEM_GDCM 1
-#if (ITK_FOUND && !PLM_CUDA_COMPILE)
-#include "itkConfigure.h"
-//#if !defined (ITK_LEGACY_REMOVE)
-//#define ITK_LEGACY_SILENT 1 /* Silence MSVC+ITK compiler warnings */
-//#endif
-#if (ITK_VERSION_MAJOR >= 3) && (ITK_VERSION_MINOR >= 10) && defined (ITK_USE_ORIENTED_IMAGE_DIRECTION)
-#define PLM_ITK_ORIENTED_IMAGES 1
-#endif
-#endif
 
 /* Make Microsoft compiler less whiny */
 #if _MSC_VER >= 1400

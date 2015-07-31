@@ -86,12 +86,14 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We currently support version ITK 3.20.X, and ITK 4.1 and greater.
+We currently support version ITK 3.20.1 and greater, 
+and ITK 4.1 and greater.
 For ITK 4, you will need to install DCMTK if you want DICOM support. ::
 
+  ITK < 3.20.1          Not supported
   ITK 3.20.1            Supported (with caveats)
   ITK 3.20.2            Recommended
-  ITK 4.0               Not supported
+  ITK < 4.1             Not supported
   ITK >= 4.1            Recommended (install DCMTK)
 
 ITK 3.20.1 is a decent version, but it has a few bugs 
