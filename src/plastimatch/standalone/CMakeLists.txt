@@ -5,6 +5,7 @@ project (src_plastimatch_standalone)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (AFTER ${INIH_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
 set (XVI_ARCHIVE_LIBRARIES 
     ${PLASTIMATCH_LIBS}
@@ -230,19 +231,9 @@ endif ()
 
 
 if (QT4_FOUND)
-#	set (nki2mha_converter_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
-#	ADD_EXECUTABLE(nki2mha_converter ${nki2mha_converter_SRC})
-#	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-#	TARGET_LINK_LIBRARIES(nki2mha_converter ${nki2mha_converter_LIBRARIES})
-
 	plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
 	  "${PLASTIMATCH_LIBS} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	  ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
-
-#	set (GAMMA_GUI_LIBRARIES ${QT_LIBRARIES} ${PLASTIMATCH_LIBS})
-#	ADD_EXECUTABLE(gamma_gui ${GAMMA_GUI_SRC})
-#	INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
-#	TARGET_LINK_LIBRARIES(gamma_gui ${GAMMA_GUI_LIBRARIES})
 
 	plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
 	  "${PLASTIMATCH_LIBS} ${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
