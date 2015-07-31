@@ -5,7 +5,7 @@ project (src_plastimatch_standalone)
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (AFTER ${INIH_INCLUDE_DIR})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
 
 set (XVI_ARCHIVE_LIBRARIES 
     ${PLASTIMATCH_LIBS}
