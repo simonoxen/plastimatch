@@ -17,7 +17,6 @@
 //#endif
 
 #include "itkImageIOBase.h"
-#include "itkOrientedImage.h"
 #include "itkVectorImage.h"
 
 #include "itk_point.h"
