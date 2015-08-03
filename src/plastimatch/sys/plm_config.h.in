@@ -100,11 +100,9 @@
    for initialization of multi-dimensional array */
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #endif
-/* -Wunused-local-typedefs is emitted by older versions of ITK */
 #if (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8) && !defined(NVCC)
-# if (ITK_FOUND && (ITK_VERSION_MAJOR == 3))
+/* -Wunused-local-typedefs is emitted by older versions of ITK */
 # pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-# endif
 #endif
 
 /* Make clang compiler less whiny */
