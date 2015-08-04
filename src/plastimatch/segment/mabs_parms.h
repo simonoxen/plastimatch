@@ -30,6 +30,7 @@ public:
     std::string prealign_reference;
     std::string prealign_spacing;
     std::string prealign_registration_config;
+    std::string prealign_roi_name;
     
     /* [ATLASES-SELECTION] */
     bool enable_atlas_selection;

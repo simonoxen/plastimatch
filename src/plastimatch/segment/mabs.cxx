@@ -45,6 +45,9 @@ class Mabs_private {
 public:
     /* These are the input parameters */
     const Mabs_parms *parms;
+ 
+    /* Store the executed command */
+    std::string executed_command;
     
     /* traindir_base is the output directory when we are 
        doing a training task (i.e. not labeling), and is of the form:
@@ -75,6 +78,7 @@ public:
 
     /* input_roi_fn is the binary structure file name used to align the center of gravity*/
     std::string input_roi_fn;
+    Plm_image::Pointer input_roi;
     
     /* process_dir_list is a list of the input directories which 
        need to be processed, one directory per case
@@ -587,6 +591,51 @@ Mabs::run_registration_loop ()
             moving_image->set_itk (
                 rtds.get_image()->itk_float());
             reg.set_moving_image (moving_image);
+            
+            /* PAOLO ZAFFINO: align centers of gravity */
+            if (d_ptr->input_roi != NULL) {
+                
+                /* Add STAGE only if a segment command is executed. Is it needed or we can define it into the configuration file? */
+                if (d_ptr->executed_command == "segment") {
+                    std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
+                    command_string_plus_cog.append(command_string);
+                    int rc_cog = reg.set_command_string (command_string_plus_cog);
+                    if (rc != PLM_SUCCESS) {
+                        lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", command_file.c_str());
+                        continue;
+                        }
+                }
+             
+                /* Set fixed ROI */
+                reg.set_fixed_roi(d_ptr->input_roi); 
+               
+                /* Set moving ROI*/ 
+                std::string target_roi_name;
+                if (d_ptr->executed_command == "segment") {
+                    target_roi_name = strip_extension(basename(d_ptr->input_roi_fn));
+                }
+                else if (d_ptr->executed_command == "prealign") {
+                    target_roi_name = d_ptr->parms->prealign_roi_name;
+                }
+
+                size_t target_roi_index = -1;
+                for (size_t i = 0; i < rtss->get_num_structures(); i++) {
+                    std::string struct_name = rtss->get_structure_name (i);
+
+                    if (struct_name == target_roi_name) {
+                        target_roi_index = i;
+                        break;
+                    }
+                }
+                if (target_roi_index != -1) {
+                    Plm_image::Pointer moving_roi = Plm_image::New ();
+                    moving_roi->set_itk (rtss->get_structure_image (target_roi_index));
+                    reg.set_moving_roi(moving_roi);
+                }
+                else if (target_roi_index == -1) {
+                    lprintf("No moving ROI set!\n");
+                }
+            }
 
             /* Run the registration */
             lprintf ("DO_REGISTRATION_PURE\n");
@@ -1217,6 +1266,27 @@ Mabs::atlas_prealign ()
         ref_rtds->resample (d_ptr->prealign_spacing);
     }
     Plm_image::Pointer reference_image = ref_rtds->get_image ();
+    
+    /* PAOLO ZAFFINO
+     * set fixed ROI if defined into the prealign section */ 
+    if (d_ptr->parms->prealign_roi_name != "") {
+        Segmentation::Pointer fixed_rtss = ref_rtds->get_rtss();
+        size_t target_roi_index = -1;
+        for (size_t i = 0; i < fixed_rtss->get_num_structures(); i++) {
+            std::string struct_name = fixed_rtss->get_structure_name (i);
+            if (struct_name == d_ptr->parms->prealign_roi_name) {
+                target_roi_index = i;
+                break;
+            }
+        }
+        if (target_roi_index != -1) {
+            d_ptr->input_roi = Plm_image::New (fixed_rtss->get_structure_image (target_roi_index));
+        }
+        else if (target_roi_index == -1) {
+            lprintf("No fixed ROI set!\n");
+        }
+    }
+
     reference_image->save_image (reference_prealign_img_fn);
     ref_rtds->save_prefix (reference_prealign_structures_dir, "nrrd");
 
@@ -1313,6 +1383,14 @@ Mabs::parse_registration_dir (const std::string& registration_config)
         d_ptr->registration_list.push_back (registration_config);
     }
 }
+
+
+void 
+Mabs::set_executed_command (const std::string& executed_command)
+{
+    d_ptr->executed_command = executed_command;
+}
+
 
 FloatImageType::Pointer
 Mabs::compute_dmap (
@@ -2215,6 +2293,12 @@ Mabs::segment ()
 
     /* Run the registrations */
     d_ptr->write_warped_images = true;
+    
+    /* PAOLO ZAFFINO: if an input ROI has been passed, before registration prealign the centers of gravity */
+    if (d_ptr->input_roi_fn != "" ) {
+        d_ptr->input_roi = Plm_image::New (d_ptr->input_roi_fn);
+    }
+    
     this->run_registration_loop ();
 
     /* Run the segmentation */

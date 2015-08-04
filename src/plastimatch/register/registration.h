@@ -23,6 +23,8 @@ public:
     int set_command_string (const std::string& command_string);
     void set_fixed_image (Plm_image::Pointer& fixed);
     void set_moving_image (Plm_image::Pointer& moving);
+    void set_fixed_roi (Plm_image::Pointer& fixed_roi);
+    void set_moving_roi (Plm_image::Pointer& moving_roi);
 
     Registration_data::Pointer get_registration_data ();
     Registration_parms::Pointer get_registration_parms ();

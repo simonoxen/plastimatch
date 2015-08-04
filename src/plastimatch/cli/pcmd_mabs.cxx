@@ -140,20 +140,31 @@ do_command_mabs (int argc, char *argv[])
 
     Mabs mabs;
     mabs.set_parms (&mabs_parms);
+    
+    /* If defined set input ROI file name */
+    if (parms.input_roi_fn != "") {
+        mabs.set_segment_input_roi (parms.input_roi_fn);
+    }
 
+    /* Run the right function */
     if (parms.train_atlas_selection) {
+        mabs.set_executed_command("train_atlas_selection");
         mabs.train_atlas_selection ();
     }
     else if (parms.convert) {
+        mabs.set_executed_command("convert");
         mabs.atlas_convert ();
     }
     else if (parms.prealign) {
+        mabs.set_executed_command("prealign");
         mabs.atlas_prealign ();
     }
     else if (parms.train_registration) {
+        mabs.set_executed_command("train_registration");
         mabs.train_registration ();
     }
     else if (parms.train) {
+        mabs.set_executed_command("train");
         mabs.train ();
     }
     else { // can be mabs.atlas_selection() or mabs.segment()
@@ -168,15 +179,14 @@ do_command_mabs (int argc, char *argv[])
         if (parms.output_dicom_dir != "") {
             mabs.set_segment_output_dicom (parms.output_dicom_dir);
         }
-        if (parms.input_roi_fn != "") {
-            mabs.set_segment_input_roi (parms.input_roi_fn);
-        }
        
         /* Run function */
         if (parms.atlas_selection) {
+            mabs.set_executed_command("atlas_selection");
             mabs.atlas_selection ();
         }
         else {
+            mabs.set_executed_command("segment");
             mabs.segment ();
         }
     }

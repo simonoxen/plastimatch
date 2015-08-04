@@ -57,6 +57,8 @@ protected:
 public:
     void set_parms (const Mabs_parms *parms);
     void parse_registration_dir (const std::string& registration_config);
+    
+    void set_executed_command (const std::string& executed_command);
 
     void set_segment_input (const std::string& input_fn);
     void set_segment_output (const std::string& output_dir);

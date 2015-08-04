@@ -97,6 +97,18 @@ Registration::set_moving_image (Plm_image::Pointer& moving)
     d_ptr->rdata->moving_image = moving;
 }
 
+void
+Registration::set_fixed_roi (Plm_image::Pointer& fixed_roi)
+{
+    d_ptr->rdata->fixed_roi = fixed_roi;
+}
+
+void
+Registration::set_moving_roi (Plm_image::Pointer& moving_roi)
+{
+    d_ptr->rdata->moving_roi = moving_roi;
+}
+
 Registration_data::Pointer
 Registration::get_registration_data ()
 {
