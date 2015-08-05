@@ -156,6 +156,16 @@ Pointset<T>::insert_ras (
 
 template<class T>
 void
+Pointset<T>::insert_ras (
+    const float *xyz
+)
+{
+    /* RAS to LPS adjustment */
+    this->point_list.push_back (T ("", -xyz[0], -xyz[1], xyz[2]));
+}
+
+template<class T>
+void
 Pointset<T>::insert_lps (
     const std::string& label,
     float x,

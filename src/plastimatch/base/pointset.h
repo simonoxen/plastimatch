@@ -81,6 +81,7 @@ public:
     void insert_lps (const float* xyz);
     void insert_lps (const std::string& label, const float* xyz);
     void insert_ras (const std::string& label, float x, float y, float z);
+    void insert_ras (const float* xyz);
 
     /* Return reference to a point */
     const T& point (int idx) const {
