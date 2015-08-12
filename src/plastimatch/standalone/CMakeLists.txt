@@ -151,14 +151,47 @@ QT4_WRAP_UI(nki2mha_converter_SRC
 QT4_ADD_RESOURCES (nki2mha_converter_SRC
 	nki2mha_converter.qrc)
 
+	
 set(GAMMA_GUI_SRC
-	gamma_gui_main.cpp
-	gamma_gui.cpp 	gamma_gui.h)
+	gamma_gui_main.cpp	
+	gamma_gui.cpp
+	gamma_gui.h
+	qyklabel.h
+	qyklabel.cpp
+	DlgGammaView.h
+	DlgGammaView.cxx
+	YK16GrayImage.cxx
+	YK16GrayImage.h	
+	qt_util.h
+	qt_util.cxx
+	qcustomplot.h
+	qcustomplot.cpp
+	yk_config.h)
 
-QT4_WRAP_CPP(GAMMA_GUI_SRC
+QT4_WRAP_CPP(GAMMA_GUI_MOC
+	DlgGammaView.h
+	qyklabel.h
+	qcustomplot.h
 	gamma_gui.h)
-QT4_WRAP_UI(GAMMA_GUI_SRC
-	gamma_gui.ui)
+	
+QT4_WRAP_UI(GAMMA_GUI_UI
+	gamma_gui.ui
+	DlgGammaView.ui)
+
+set(GAMMA_GUI_SRC
+	${GAMMA_GUI_SRC}
+	${GAMMA_GUI_MOC}
+	${GAMMA_GUI_UI}
+	)
+
+set(REGISTER_GUI_SRC
+	register_gui_main.cpp
+	register_gui.cpp 	register_gui.h)
+
+QT4_WRAP_CPP(REGISTER_GUI_SRC
+	register_gui.h)
+QT4_WRAP_UI(REGISTER_GUI_SRC
+	register_gui.ui)
 endif()
 
 ##-----------------------------------------------------------------------------
@@ -234,6 +267,9 @@ if (QT4_FOUND)
 	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
     plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
+	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    plm_add_executable (register_gui "${REGISTER_GUI_SRC}" 
 	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif()
