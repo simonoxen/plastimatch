@@ -27,11 +27,13 @@ mask_image (
 	= mask->GetLargestPossibleRegion();
     const typename ImageType::PointType& og = input->GetOrigin();
     const typename ImageType::SpacingType& sp = input->GetSpacing();
+    const typename ImageType::DirectionType& dc = input->GetDirection();
     
     typename ImageType::Pointer im_out = ImageType::New();
     im_out->SetRegions (rgn_input);
     im_out->SetOrigin (og);
     im_out->SetSpacing (sp);
+    im_out->SetDirection (dc);
     im_out->Allocate ();
 
     ImageIteratorType it_in (input, rgn_input);
