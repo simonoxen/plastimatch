@@ -101,8 +101,8 @@ void QUTIL::Set2DTo3D(FloatImage2DType::Pointer& spSrcImg2D, UShortImageType::Po
                     it_3D.Set(outputVal);
                     //float tmpVal = (float)(it_3D.Get()); //in proj image case, this is intensity
                     //it_2D.Set(tmpVal);		  
-                    it_2D++;
-                    it_3D++;
+                    ++it_2D;
+                    ++it_3D;
                 }//while2
                 it_3D.NextLine();
             }//while1
@@ -222,8 +222,8 @@ void QUTIL::Get2DFrom3DByIndex(UShortImageType::Pointer& spSrcImg3D, UShortImage
                 {
                     float tmpVal = (float)(it_3D.Get()); //in proj image case, this is intensity
                     it_2D.Set(tmpVal);
-                    it_2D++;
-                    it_3D++;
+                    ++it_2D;
+                    ++it_3D;
                 }//while2
                 it_3D.NextLine();
             }//while1
@@ -347,8 +347,8 @@ void QUTIL::Get2DFrom3DByIndex(FloatImageType::Pointer& spSrcImg3D, FloatImage2D
                 {
                     float tmpVal = (float)(it_3D.Get()); //in proj image case, this is intensity
                     it_2D.Set(tmpVal);
-                    it_2D++;
-                    it_3D++;
+                    ++it_2D;
+                    ++it_3D;
                 }//while2
                 it_3D.NextLine();
             }//while1
@@ -472,8 +472,8 @@ void QUTIL::Get2DFrom3DByPosition(UShortImageType::Pointer& spSrcImg3D, UShortIm
                 {
                     float tmpVal = (float)(it_3D.Get()); //in proj image case, this is intensity
                     it_2D.Set(tmpVal);
-                    it_2D++;
-                    it_3D++;
+                    ++it_2D;
+                    ++it_3D;
                 }//while2
                 it_3D.NextLine();
             }//while1
@@ -594,8 +594,8 @@ void QUTIL::Get2DFrom3DByPosition(FloatImageType::Pointer& spSrcImg3D, FloatImag
                 {
                     float tmpVal = (float)(it_3D.Get()); //in proj image case, this is intensity
                     it_2D.Set(tmpVal);
-                    it_2D++;
-                    it_3D++;
+                    ++it_2D;
+                    ++it_3D;
                 }//while2
                 it_3D.NextLine();
             }//while1
@@ -639,7 +639,7 @@ bool QUTIL::GetProfile1DByPosition(UShortImage2DType::Pointer& spSrcImg2D, vecto
 
     it_2D.GoToBegin();
 
-    if (enDirection == enPROFILE_DIRECTON::PRIFLE_HOR)
+    if (enDirection == PRIFLE_HOR)
     {
         int fixedY = qRound(fixedPos - origin[1]) / spacing[1];
         for (int i = 0; i < height; i++)
@@ -655,13 +655,13 @@ bool QUTIL::GetProfile1DByPosition(UShortImage2DType::Pointer& spSrcImg2D, vecto
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
         }
     }        
-    else if (enDirection == enPROFILE_DIRECTON::PRIFLE_VER)
+    else if (enDirection == PRIFLE_VER)
     {
         int fixedX = qRound(fixedPos - origin[0]) / spacing[0];                
         for (int i = 0; i < height; i++)
@@ -677,7 +677,7 @@ bool QUTIL::GetProfile1DByPosition(UShortImage2DType::Pointer& spSrcImg2D, vecto
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
@@ -725,7 +725,7 @@ bool QUTIL::GetProfile1DByPosition(FloatImage2DType::Pointer& spSrcImg2D, vector
 
     it_2D.GoToBegin();
 
-    if (enDirection == enPROFILE_DIRECTON::PRIFLE_HOR)
+    if (enDirection == PRIFLE_HOR)
     {
         int fixedY = qRound((fixedPos - origin[1]) / spacing[1]);
         for (int i = 0; i < height; i++)
@@ -741,13 +741,13 @@ bool QUTIL::GetProfile1DByPosition(FloatImage2DType::Pointer& spSrcImg2D, vector
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
         }
     }
-    else if (enDirection == enPROFILE_DIRECTON::PRIFLE_VER)
+    else if (enDirection == PRIFLE_VER)
     {
         //cout << "PRIFLE_VER" << endl;
         int fixedX = qRound((fixedPos - origin[0]) / spacing[0]);
@@ -766,7 +766,7 @@ bool QUTIL::GetProfile1DByPosition(FloatImage2DType::Pointer& spSrcImg2D, vector
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
@@ -812,7 +812,7 @@ bool QUTIL::GetProfile1DByIndex(UShortImage2DType::Pointer& spSrcImg2D, vector<Q
 
     it_2D.GoToBegin();
 
-    if (enDirection == enPROFILE_DIRECTON::PRIFLE_HOR)
+    if (enDirection == PRIFLE_HOR)
     {
         int fixedY = fixedIndex;
         for (int i = 0; i < height; i++)
@@ -828,13 +828,13 @@ bool QUTIL::GetProfile1DByIndex(UShortImage2DType::Pointer& spSrcImg2D, vector<Q
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
         }
     }
-    else if (enDirection == enPROFILE_DIRECTON::PRIFLE_VER)
+    else if (enDirection == PRIFLE_VER)
     {
         int fixedX = fixedIndex;
 
@@ -851,7 +851,7 @@ bool QUTIL::GetProfile1DByIndex(UShortImage2DType::Pointer& spSrcImg2D, vector<Q
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
@@ -898,7 +898,7 @@ bool QUTIL::GetProfile1DByIndex(FloatImage2DType::Pointer& spSrcImg2D, vector<QP
 
     it_2D.GoToBegin();
 
-    if (enDirection == enPROFILE_DIRECTON::PRIFLE_HOR)
+    if (enDirection == PRIFLE_HOR)
     {
         int fixedY = fixedIndex;
         for (int i = 0; i < height; i++)
@@ -914,13 +914,13 @@ bool QUTIL::GetProfile1DByIndex(FloatImage2DType::Pointer& spSrcImg2D, vector<QP
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;
         }
     }
-    else if (enDirection == enPROFILE_DIRECTON::PRIFLE_VER)
+    else if (enDirection == PRIFLE_VER)
     {
         int fixedX = fixedIndex;
 
@@ -937,7 +937,7 @@ bool QUTIL::GetProfile1DByIndex(FloatImage2DType::Pointer& spSrcImg2D, vector<QP
 
                     vProfile.push_back(curPt);
                 }
-                it_2D++;
+                ++it_2D;
             }
             if (it_2D.IsAtEnd())
                 break;

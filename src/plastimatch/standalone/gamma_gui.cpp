@@ -31,7 +31,7 @@
 #include "qt_util.h"
 
 #include <QStandardItemModel>
-#include <QClipBoard>
+#include <QClipboard>
 
 //#ifdef _DEBUG
 //const BOOL VistaStyle = FALSE;
