@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -153,10 +154,14 @@ Itk_volume_header::print (void) const
 void 
 Itk_volume_header::get_image_center (float center[3])
 {
-    int d;
-    for (d = 0; d < 3; d++) {
-	center[d] = this->m_origin[d] 
-	    + this->m_spacing[d] * (this->Size(d) - 1) / 2;
+    for (int d1 = 0; d1 < 3; d1++) {
+	center[d1] = this->m_origin[d1];
+    }
+    for (int d1 = 0; d1 < 3; d1++) {
+        float v = this->m_spacing[d1] * (this->Size(d1) - 1.) / 2;
+        for (int d2 = 0; d2 < 3; d2++) {
+            center[d2] += v * m_direction[d2][d1];
+        }
     }
 }
 

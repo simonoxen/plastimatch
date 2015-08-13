@@ -190,7 +190,6 @@ itk_image_fix_negative_spacing (T img)
     typename T::ObjectType::SpacingType sp = img->GetSpacing ();
     typename T::ObjectType::DirectionType dc = img->GetDirection ();
 
-    /* Copy header & allocate data for gpuit float */
     for (int d = 0; d < 3; d++) {
         if (sp[d] < 0) {
             sp[d] = -sp[d];

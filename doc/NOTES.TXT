@@ -1,4 +1,29 @@
 ******************************************************************************
+Image orientation
+2015-08-13
+
+DICOM is simple.  Coordinate system is always LPS.
+
+a) (0020,0032) Image Position Patient: the world coordinate location of 
+the center of the first voxel in the file.
+b) (0020,0037) Image Orientation Patient: the real world direction cosines,
+mapping an increment in voxel index to an increment in real-world location.
+c) (0018,5100) Patient Position: does not affect mapping from voxel 
+index to world coordinate.  But it can be used to display correct 
+orientation on the screen (e.g. putting patient left on screen right 
+for HFS).
+
+ITK is simple.  However, not yet clear to me if coordinate system 
+is always LPS.
+
+a) Offset: the world coordinate location of the center of the first 
+voxel in the file.
+b) TransformMatrix: the real world direction cosines,
+mapping an increment in voxel index to an increment in real-world location.
+c) AnatomicOrientation: does not affect mapping from voxel index 
+to world coordinate.
+
+******************************************************************************
 Bspline_parms
 2015-06-10
 

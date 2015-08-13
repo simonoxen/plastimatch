@@ -176,6 +176,7 @@ template<class T>
 T
 itk_image_load_postprocess (T img)
 {
+//    img = orient_image (img);
     img = itk_image_fix_negative_spacing (img);
     return img;
 }
