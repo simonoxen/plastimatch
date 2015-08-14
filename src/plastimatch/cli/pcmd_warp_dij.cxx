@@ -7,48 +7,39 @@
 #include <math.h>
 #include <time.h>
 #include "itkImage.h"
+#include "itkImageRegionIteratorWithIndex.h"
 #include "itkInterpolateImagePointsFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 
+#include "itk_image_create.h"
+#include "itk_image_save.h"
 #include "itk_image_type.h"
+#include "itk_warp.h"
+#include "logfile.h"
 #include "pcmd_warp.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 #include "warp_parms.h"
 #include "xform.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 
-typedef struct __Ctatts Ctatts;
-struct __Ctatts {
-    int slice_dimension;
-    int slice_number;
-    float pixel_size;
-    float slice_distance;
-    float pos_isocenter_x;
-    float pos_isocenter_y;
-    float pos_isocenter_z;
-    int num_of_voxels_in_ct_cube_z;
-};
-
-typedef struct __Dif Dif;
-struct __Dif {
-    float delta_x;
-    float delta_y;
-    float delta_z;
-    int dimension_ct_x;
-    int dimension_ct_y;
-    int dimension_ct_z;
-    int dimension_dose_x;
-    int dimension_dose_y;
-    int dimension_dose_z;
-    int iso_index_ct_x;
-    int iso_index_ct_y;
-    int iso_index_ct_z;
-    int iso_index_dose_x;
-    int iso_index_dose_y;
-    int iso_index_dose_z;
+class Dij_header {
+public:
+    plm_long dose_dim[3];
+    float dose_origin[3];
+    float dose_spacing[3];
+public:
+    Dij_header () {
+        for (int d = 0; d < 3; d++) {
+            dose_dim[d] = 0;
+            dose_origin[d] = 0.;
+            dose_spacing[d] = 0.;
+        }
+    }
 };
 
 typedef struct __Pencil_Beam Pencil_Beam;
@@ -104,7 +95,7 @@ dif_parse_error (void)
 }
 
 void
-load_dif (Dif* dif, const char* dif_in)
+load_dif (Dij_header* dijh, const char* dif_in)
 {
     int i;
     float f;
@@ -119,6 +110,8 @@ load_dif (Dif* dif, const char* dif_in)
     }
 
     /* GCS FIX: I should give an error if not all lines are found */
+    /* N.b. This converts from IEC coordinats to DICOM coordinates 
+       during read */
     while (1) {
 	if (!fgets (buf, BUFLEN, fp)) {
 	    break;
@@ -127,203 +120,101 @@ load_dif (Dif* dif, const char* dif_in)
 	    /* Empty lines are ok */
 	}
 	else if (sscanf (buf, "Delta-X %f", &f)) {
-	    dif->delta_x = f;
+	    dijh->dose_spacing[0] = f;
 	}
 	else if (sscanf (buf, "Delta-Y %f", &f)) {
-	    dif->delta_y = f;
+	    dijh->dose_spacing[2] = f;
 	}
 	else if (sscanf (buf, "Delta-Z %f", &f)) {
-	    dif->delta_z = f;
-	}
-	else if (sscanf (buf, "Dimension-CT-X %d", &i)) {
-	    dif->dimension_ct_x = i;
-	}
-	else if (sscanf (buf, "Dimension-CT-Y %d", &i)) {
-	    dif->dimension_ct_y = i;
-	}
-	else if (sscanf (buf, "Dimension-CT-Z %d", &i)) {
-	    dif->dimension_ct_z = i;
+	    dijh->dose_spacing[1] = f;
 	}
 	else if (sscanf (buf, "Dimension-Dose-X %d", &i)) {
-	    dif->dimension_dose_x = i;
+	    dijh->dose_dim[0] = i;
 	}
 	else if (sscanf (buf, "Dimension-Dose-Y %d", &i)) {
-	    dif->dimension_dose_y = i;
+	    dijh->dose_dim[2] = i;
 	}
 	else if (sscanf (buf, "Dimension-Dose-Z %d", &i)) {
-	    dif->dimension_dose_z = i;
+	    dijh->dose_dim[1] = i;
 	}
-	else if (sscanf (buf, "ISO-Index-CT-X %d", &i)) {
-	    dif->iso_index_ct_x = i;
+	else if (sscanf (buf, "Position-Dose-X %f", &f)) {
+	    dijh->dose_origin[0] = f;
 	}
-	else if (sscanf (buf, "ISO-Index-CT-Y %d", &i)) {
-	    dif->iso_index_ct_y = i;
+	else if (sscanf (buf, "Position-Dose-Y %f", &f)) {
+	    dijh->dose_origin[2] = f;
 	}
-	else if (sscanf (buf, "ISO-Index-CT-Z %d", &i)) {
-	    dif->iso_index_ct_z = i;
-	}
-	else if (sscanf (buf, "ISO-Index-Dose-X %d", &i)) {
-	    dif->iso_index_dose_x = i;
-	}
-	else if (sscanf (buf, "ISO-Index-Dose-Y %d", &i)) {
-	    dif->iso_index_dose_y = i;
-	}
-	else if (sscanf (buf, "ISO-Index-Dose-Z %d", &i)) {
-	    dif->iso_index_dose_z = i;
+	else if (sscanf (buf, "Position-Dose-Z %f", &f)) {
+	    dijh->dose_origin[1] = -f;
 	}
 	else {
-	    fprintf (stdout, "Bogus Line = %s\n", buf);
-	    dif_parse_error ();
+            /* Ignore other lines */
 	}
     }
     fclose (fp);
 }
 
-void
-load_ctatts (Ctatts* ctatts, const char* ctatts_in)
-{
-    int i;
-    float f;
-    std::ifstream ifs (ctatts_in);
-    if (!ifs) {
-	print_and_exit ("Error opening ctatts file for read: %s\n", ctatts_in);
-    }
-
-    /* Skip first line */
-    std::string buf;
-
-    /* GCS FIX: I should give an error if not all lines are found */
-    while (std::getline (ifs, buf)) {
-	if (sscanf (buf.c_str(), "slice_dimension %d", &i)) {
-	    ctatts->slice_dimension = i;
-	}
-	else if (sscanf (buf.c_str(), "slice_number %d", &i)) {
-	    ctatts->slice_number = i;
-	}
-	else if (sscanf (buf.c_str(), "pixel_size %f", &f)) {
-	    ctatts->pixel_size = f;
-	}
-	else if (sscanf (buf.c_str(), "slice_distance %f", &f)) {
-	    ctatts->slice_distance = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos-Isocenter-X %f", &f)) {
-	    ctatts->pos_isocenter_x = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos_Isocenter_X %f", &f)) {
-	    ctatts->pos_isocenter_x = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos-Isocenter-Y %f", &f)) {
-	    ctatts->pos_isocenter_y = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos_Isocenter_Y %f", &f)) {
-	    ctatts->pos_isocenter_y = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos-Isocenter-Z %f", &f)) {
-	    ctatts->pos_isocenter_z = f;
-	}
-	else if (sscanf (buf.c_str(), "Pos_Isocenter_Z %f", &f)) {
-	    ctatts->pos_isocenter_z = f;
-	}
-	else if (sscanf (buf.c_str(), "Number-Of-Voxels-in-CT-Cube-Z %d", &i)) {
-	    ctatts->num_of_voxels_in_ct_cube_z = i;
-	}
-	else if (sscanf (buf.c_str(), "Number_Of_Voxels_in_CT_Cube_Z %d", &i)) {
-	    ctatts->num_of_voxels_in_ct_cube_z = i;
-	}
-	else {
-	    ctatts_parse_error ();
-	}
-    }
-}
-
-/* This is a "dumb array".  It doesn't know about pixel sizes etc. 
-   (x,y,z) are in beamlet coordinate system (IEC, I think).  */
 FloatImageType::Pointer
-make_output_image (Dij_Matrix* dij_matrix)
+make_dose_image (
+    Dij_header *dijh,
+    Dij_Matrix *dij_matrix)
 {
-    FloatImageType::Pointer image = FloatImageType::New();
-
-    FloatImageType::IndexType start;
-    start[0] =   0;
-    start[1] =   0;
-    start[2] =   0;
-
+    /* GCS FIX: Should check that this value matches the one in 
+       the dij header */
+#if defined (commentout)
     FloatImageType::SizeType size;
     size[0]  = dij_matrix->dose_cube_size[0];
     size[1]  = dij_matrix->dose_cube_size[1];
     size[2]  = dij_matrix->dose_cube_size[2];
-
-    FloatImageType::RegionType region;
-    region.SetSize (size);
-    region.SetIndex (start);
-    image->SetRegions (region);
-
-    image->Allocate ();
-
-    return image;
+#endif
+    return itk_image_create<float> (Plm_image_header (
+            dijh->dose_dim, 
+            dijh->dose_origin,
+            dijh->dose_spacing));
 }
 
 void
-clear_output_image (FloatImageType::Pointer img)
+set_pencil_beam_to_image (
+    FloatImageType::Pointer& img,
+    const Pencil_Beam *pb)
 {
-    typedef itk::ImageRegionIterator< FloatImageType > ImageIterator;
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > ImageIterator;
+
+    /* Clear image */
     ImageIterator it1 (img, img->GetBufferedRegion());
     it1.GoToBegin();
     while (!it1.IsAtEnd()) {
+        FloatImageType::IndexType idx = it1.GetIndex();
+	//it1.Set ((float) idx[0]);
 	it1.Set (0.0);
 	++it1;
     }
-}
 
-/* Resample using trilinear interpolation */
-void
-update_output_image (FloatImageType::Pointer img,
-		     ulong* discarded,
-		     Dij_Matrix* dij_matrix,
-		     float dose_wx, float dose_wy, float dose_wz, 
-		     ushort value)
-{
-    int x, y, z;
-    int x0 = (int) floor(dose_wx);
-    int y0 = (int) floor(dose_wy);
-    int z0 = (int) floor(dose_wz);
-    float x0f = 1.0 - (dose_wx - floor(dose_wx));
-    float y0f = 1.0 - (dose_wy - floor(dose_wy));
-    float z0f = 1.0 - (dose_wz - floor(dose_wz));
-    ushort vx[2], vy[2], vz[2];
+    /* Set non-zero voxels into image */
+    SizeType sz = img->GetLargestPossibleRegion().GetSize();
+    FloatImageType::IndexType itk_index;
+    for (long i = 0; i < pb->nvox; i++) {
+	/* Get index and value; convert index to DICOM */
+	long pb_index = (pb->vox[i*3+1] << 16) + pb->vox[i*3];
+	ushort value = pb->vox[i*3+2];
+        long iec_index[3];
+        iec_index[0] = pb_index % sz[0];
+        long tmp = pb_index / sz[0];
+        iec_index[1] = tmp % sz[2];
+        iec_index[2] = tmp / sz[2];
 
-    FloatImageType::IndexType idx;
+	/* Convert index to DICOM */
+        itk_index[2] = iec_index[1];
+        itk_index[1] = iec_index[2];
+        itk_index[0] = iec_index[0];
 
-    vx[0] = (ushort) (value * x0f + 0.5);
-    vx[1] = value - vx[0];
-    for (x = 0; x < 2; x++) {
-	if (vx[x] == 0) continue;
-	idx[0] = x0 + x;
-	if (idx[0] < 0 || idx[0] >= dij_matrix->dose_cube_size[0]) {
-	    *discarded += vx[x];
-	    continue;
-	}
-	vy[0] = (ushort) (vx[x] * y0f + 0.5);
-	vy[1] = vx[x] - vy[0];
-        for (y = 0; y < 2; y++) {
-	    if (vy[y] == 0) continue;
-	    idx[1] = y0 + y;
-	    if (idx[1] < 0 || idx[1] >= dij_matrix->dose_cube_size[1]) {
-		*discarded += vy[y];
-		continue;
-	    }
-	    vz[0] = (ushort) (vy[y] * z0f + 0.5);
-	    vz[1] = vy[y] - vz[0];
-	    for (z = 0; z < 2; z++) {
-		if (vz[z] == 0) continue;
-		idx[2] = z0 + z;
-		if (idx[2] < 0 || idx[2] >= dij_matrix->dose_cube_size[2]) {
-		    *discarded += vz[z];
-		    continue;
-		}
-		img->SetPixel(idx, img->GetPixel(idx)+vz[z]);
-	    }
-	}
+#if defined (commentout)
+        printf ("%d -> %d %d %d\n", pb_index, 
+            itk_index[0],  itk_index[1], itk_index[2]);
+        break;
+#endif
+
+        /* Set voxel */
+        img->SetPixel (itk_index, (float) value);
     }
 }
 
@@ -364,15 +255,24 @@ write_pencil_beam (Pencil_Beam* pb, FloatImageType::Pointer img, FILE* fp)
     rc = fwrite (&pb->nvox, sizeof(int), 1, fp);
     if (rc != 1) dij_write_error();
 
-    typedef itk::ImageRegionIterator< FloatImageType > ImageIterator;
+    SizeType sz = img->GetLargestPossibleRegion().GetSize();
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > ImageIterator;
     ImageIterator it1 (img, img->GetBufferedRegion());
     it1.GoToBegin();
     while (!it1.IsAtEnd()) {
 	ushort vox[3];
 	vox[2] = (ushort) it1.Get();
 	if (vox[2] > 0) {
-	    vox[0] = (ushort) index & 0xFF;
-	    vox[1] = (ushort) index << 16;
+            ImageIterator::IndexType idx = it1.GetIndex();
+            long iec_index = idx[1]*sz[2]*sz[0] + idx[2]*sz[0] + idx[0];
+	    vox[0] = (ushort) (iec_index & 0xFFFF);
+	    vox[1] = (ushort) (iec_index >> 16);
+#if defined (commentout)
+            printf ("%d %d %d -> %d, 0x%x -> 0x%02x 0x%02x\n", 
+                idx[0], idx[1], idx[2], 
+                iec_index, iec_index, vox[0], vox[1]);
+            break;
+#endif
 	    rc = fwrite (vox, sizeof(ushort), 3, fp);
 	    if (rc != 3) dij_write_error();
 	    nvox++;
@@ -445,113 +345,38 @@ write_dij_header (Dij_Matrix* dij_matrix, FILE* fp)
     if (rc != 1) dij_write_error();
 }
 
-void
-warp_pencil_beam (DeformationFieldType::Pointer vf, 
-    FloatImageType::Pointer oimg, 
-    Dij_Matrix* dij_matrix, Ctatts* ctatts, 
-    Dif* dif, Pencil_Beam* pb)
+FloatImageType::Pointer
+warp_pencil_beam (
+    DeformationFieldType::Pointer& vf, 
+    FloatImageType::Pointer& pb_img, 
+    Dij_Matrix *dij_matrix,
+    Dij_header *dijh, 
+    Pencil_Beam *pb)
 {
-    int i;
-    float dose_offset_x, dose_offset_y, dose_offset_z;
-    float vf_origin_x, vf_origin_y, vf_origin_z;
-    ulong total = 0, discarded = 0;
-
-    typedef itk::VectorLinearInterpolateImageFunction <
-        DeformationFieldType, double > InterpolatorType;
-    typedef InterpolatorType::PointType PointType;
-    typedef InterpolatorType::OutputType OutputType;
-    PointType pt;
-    InterpolatorType::Pointer interpolator = InterpolatorType::New();
-    interpolator->SetInputImage(vf);
-
-    /* Compute shift from (pixel-centered) origin in original CT coordinates 
-       to (pixel-centered) origin in konrad dose cube.  The (x,y,z) refer to 
-       konrad coordinates, which conform to IEC. */
-    dose_offset_x = ctatts->pos_isocenter_x 
-        - (dif->iso_index_dose_x * dif->delta_x)
-        - (ctatts->pixel_size / 2.0);
-    dose_offset_y = ctatts->pos_isocenter_y 
-        - (dif->iso_index_ct_y * dif->delta_y)
-        - (ctatts->slice_distance / 2.0);
-    dose_offset_z = ((ctatts->num_of_voxels_in_ct_cube_z 
-            + dif->iso_index_dose_z) * dif->delta_z) 
-        - ctatts->pos_isocenter_z
-        - (ctatts->pixel_size / 2.0);
-
-    /* Get origin location within vector field */
-    const DeformationFieldType::PointType& ori = vf->GetOrigin();
-    vf_origin_x = ori[0];
-    vf_origin_y = ori[1];
-    vf_origin_z = ori[2];
-
-    /* Loop: For each voxel of this pencil beam */
-    for (i = 0; i < pb->nvox; i++) {
-	long dose_x, dose_y, dose_z, tmp;
-	float ct_x, ct_y, ct_z;
-	float dose_wx, dose_wy, dose_wz;
-	long index = (pb->vox[i*3+1] << 16) + pb->vox[i*3];
-	ushort value = pb->vox[i*3+2];
-
-	/* Get coordinate of voxel within dose grid (in konrad-IEC coords) */
-	dose_x = index % dif->dimension_dose_x;
-	tmp = (index - dose_x) / dif->dimension_dose_x;
-	dose_y = tmp % dif->dimension_dose_y;
-	dose_z = (tmp - dose_y) / dif->dimension_dose_y;
-
-	/* Compute voxel location in coordinate of original CT (mha-RAI coords) */
-	ct_x = vf_origin_x + dose_offset_x + dose_x * dif->delta_x;
-	ct_y = vf_origin_y + dose_offset_z - dose_z * dif->delta_z;
-	ct_z = vf_origin_z + dose_offset_y + dose_y * dif->delta_y;
-
-	/* Get deformation vector at that voxel location */
-	pt[0] = ct_x; pt[1] = ct_y; pt[2] = ct_z;
-	bool bvalue = interpolator->IsInsideBuffer (pt);
-	if (!bvalue) {
-	    printf ("Warning: beamlet dose (%g %g %g) outside vector field\n",
-                ct_x, ct_y, ct_z);
-	    continue;
-	}
-	OutputType oval = interpolator->Evaluate (pt);
-
-	/* Accumulate dose to output grid */
-	dose_wx = dose_x + (oval[0] / dif->delta_x);
-	dose_wy = dose_y + (oval[2] / dif->delta_y);
-	dose_wz = dose_z - (oval[1] / dif->delta_z);
-#if defined (commentout)
-	printf ("%g %g %g -> %g %g %g\n", ct_x, ct_y, ct_z,
-            oval[0], oval[1], oval[2]);
-	printf ("%d %d %d -> %g %g %g\n", dose_x, dose_y, dose_z,
-            dose_wx, dose_wy, dose_wz);
-#endif
-	total += value;
-	update_output_image (oimg, &discarded, dij_matrix, 
-            dose_wx, dose_wy, dose_wz, value);
-    }
-    printf ("Discarded dose: %8lu/%8lu (%6.4f %%)\n", discarded, total, 
-        ((double)discarded/total));
+    return itk_warp_image (pb_img, vf, 1, 0.f);
 }
 
 void
 convert_vector_field (
-    DeformationFieldType::Pointer vf, 
-    Ctatts* ctatts, 
-    Dif* dif,
-    const char* dij_in, 
-    const char* dij_out)
+    Xform::Pointer& xf,
+    Dij_header* dijh,
+    Warp_parms *parms)
 {
     int i;
     FILE *fp_in, *fp_out;
     Dij_Matrix dij_matrix;
     Pencil_Beam pb;
 
-    fp_in = fopen (dij_in, "rb");
+    fp_in = fopen (parms->input_fn.c_str(), "rb");
     if (!fp_in) {
-	fprintf (stderr, "Error opening dij file for read: %s\n", dij_in);
+	fprintf (stderr, "Error opening dij file for read: %s\n", 
+            parms->input_fn.c_str());
 	exit (-1);
     }
-    fp_out = fopen (dij_out, "wb");
+    fp_out = fopen (parms->output_dij_fn.c_str(), "wb");
     if (!fp_out) {
-	fprintf (stderr, "Error opening dij file for write: %s\n", dij_out);
+	fprintf (stderr, "Error opening dij file for write: %s\n", 
+            parms->output_dij_fn.c_str());
 	exit (-1);
     }
 
@@ -560,15 +385,33 @@ convert_vector_field (
     printf ("Found %d pencil beams\n", dij_matrix.num_pencil_beams);
     write_dij_header (&dij_matrix, fp_out);
 
-    /* Create a new image to hold the warped output */
-    FloatImageType::Pointer oimg = make_output_image (&dij_matrix);
+    /* Create a new image to hold the input_image (gets re-used 
+       for each pencil beam) */
+    FloatImageType::Pointer pb_img = make_dose_image (
+        dijh, &dij_matrix);
+
+    /* Resample vector field to match dose image */
+    printf ("Resampling vector field (please be patient)\n");
+    Plm_image_header pih (pb_img);
+    Xform::Pointer xf2 = xform_to_itk_vf (xf, &pih);
+    DeformationFieldType::Pointer vf = xf2->get_itk_vf ();
 
     /* For each pencil beam, load, warp, and write warped */
     for (i = 0; i < dij_matrix.num_pencil_beams; i++) {
-	clear_output_image (oimg);
+        printf ("Warping PB %03d\n", i);
 	read_pencil_beam (&pb, fp_in);
-	warp_pencil_beam (vf, oimg, &dij_matrix, ctatts, dif, &pb);
-	write_pencil_beam (&pb, oimg, fp_out);
+        set_pencil_beam_to_image (pb_img, &pb);
+        if (parms->output_dij_dose_volumes) {
+            std::string fn = string_format ("PB_%03d.nrrd", i);
+            itk_image_save (pb_img, fn);
+        }
+        FloatImageType::Pointer warped_pb_img 
+            = warp_pencil_beam (vf, pb_img, &dij_matrix, dijh, &pb);
+        if (parms->output_dij_dose_volumes) {
+            std::string fn = string_format ("PBw_%03d.nrrd", i);
+            itk_image_save (warped_pb_img, fn);
+        }
+	write_pencil_beam (&pb, warped_pb_img, fp_out);
 	free (pb.vox);
     }
 
@@ -580,19 +423,13 @@ convert_vector_field (
 void
 warp_dij_main (Warp_parms* parms)
 {
-//    DeformationFieldType::Pointer vf = DeformationFieldType::New();
-    Ctatts ctatts;
-    Dif dif;
-
-//    printf ("Loading vector field...\n");
-//    vf = itk_image_load_float_field (parms->vf_in_fn);
+    lprintf ("Loading xf...\n");
     Xform::Pointer xf = xform_load (parms->xf_in_fn);
-    DeformationFieldType::Pointer vf = xf->get_itk_vf ();
 
-    printf ("Loading ctatts and dif...\n");
-    load_ctatts (&ctatts, parms->ctatts_in_fn.c_str());
-    load_dif (&dif, parms->dif_in_fn.c_str());
+    lprintf ("Loading dif...\n");
+    Dij_header dijh;
+    load_dif (&dijh, parms->dif_in_fn.c_str());
 
-    convert_vector_field (vf, &ctatts, &dif, parms->input_fn.c_str(), 
-	parms->output_dij_fn.c_str());
+    convert_vector_field (xf, &dijh, 
+        parms);
 }

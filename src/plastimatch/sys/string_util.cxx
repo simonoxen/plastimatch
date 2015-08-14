@@ -355,6 +355,16 @@ bool string_value_true (const std::string& s)
     return t == "1" || t == "true" || t == "on" || t == "yes";
 }
 
+bool string_value_false (const char* s)
+{
+    return string_value_false (std::string(s));
+}
+
+bool string_value_false (const std::string& s)
+{
+    return !string_value_true (s);
+}
+
 // compiler does not recognize the std::to_string (c++11), so made our own
 template <typename T>
 std::string PLM_to_string(T value)

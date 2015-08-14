@@ -61,10 +61,6 @@ parse_fn (
         "input an astroid dose volume", 1, "");
     parser->add_long_option ("", "input-dose-mc", 
         "input an monte carlo volume", 1, "");
-    
-    /* Dij input files */
-    parser->add_long_option ("", "ctatts", 
-        "ct attributes file (used by dij warper)", 1, "");
     parser->add_long_option ("", "dif", 
         "dif file (used by dij warper)", 1, "");
 
@@ -112,6 +108,9 @@ parse_fn (
     parser->add_long_option ("", "dicom-with-uids", 
         "set to false to remove uids from created dicom filenames, "
         "default is true", 1, "true");
+    parser->add_long_option ("", "dij-dose-volumes",
+        "set to true to output nrrd files corresponding to Dij matrix "
+        " beamlets, default is false", 1, "true");
 
     /* Algorithm options */
     parser->add_long_option ("", "algorithm", 
@@ -202,7 +201,6 @@ parse_fn (
     parms->input_dose_mc_fn = parser->get_string("input-dose-mc").c_str();
 
     /* Dij input files */
-    parms->ctatts_in_fn = parser->get_string("ctatts").c_str();
     parms->dif_in_fn = parser->get_string("dif").c_str();
 
     /* Output files */
@@ -239,6 +237,10 @@ parse_fn (
     if (parser->option("dicom-with-uids")) {
         parms->dicom_with_uids = string_value_true (
             parser->get_string ("dicom-with-uids"));
+    }
+    if (parser->option("dij-dose-volumes")) {
+        parms->output_dij_dose_volumes = string_value_true (
+            parser->get_string ("dij-dose-volumes"));
     }
 
     /* Algorithm options */
@@ -355,12 +357,12 @@ do_command_warp (int argc, char* argv[])
 
     /* Dij matrices are a special case */
     if (parms.output_dij_fn != "") {
-        if (parms.ctatts_in_fn != "" && parms.dif_in_fn != "")
+        if (parms.dif_in_fn != "")
         {
             warp_dij_main (&parms);
             return;
         } else {
-            print_and_exit ("Sorry, you need to specify --ctatts and --dif for dij warping.\n");
+            print_and_exit ("Sorry, you need to specify --dif for dij warping.\n");
         }
     }
 

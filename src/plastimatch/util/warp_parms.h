@@ -26,9 +26,6 @@ public:
     std::string input_dose_ast_fn;
     std::string input_dose_mc_fn;
     std::string fixed_img_fn;
-
-    /* Dij input files */
-    std::string ctatts_in_fn;
     std::string dif_in_fn;
 
     /* Output files */
@@ -52,6 +49,7 @@ public:
     std::string prefix_format;
     bool dicom_with_uids;
     Xio_version output_xio_version;
+    bool output_dij_dose_volumes;
 
     /* Algorithm options */
     float default_val;
@@ -94,6 +92,7 @@ public:
 	prefix_format = "mha";
         dicom_with_uids = true;
 	output_xio_version = XIO_VERSION_4_2_1;
+        output_dij_dose_volumes = false;
 
 	prune_empty = 0;
 	use_itk = 0;
