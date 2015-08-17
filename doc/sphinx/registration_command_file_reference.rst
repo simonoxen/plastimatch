@@ -244,6 +244,11 @@ specific parameters are available.
      - boolean
      - specify whether or not to equalize intensity histograms before 
        registration
+   * - landmark_stiffness
+     - bspline+any+plastimatch
+     - 1.0
+     - float
+     - Relative contribution of landmark distance in cost function
    * - mattes_fixed_minVal, mattes_fixed_maxVal
      - bspline+any+itk
      - 0
