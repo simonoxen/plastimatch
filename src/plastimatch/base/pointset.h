@@ -99,6 +99,9 @@ public:
     void truncate (size_t new_length);
 
     void debug () const;
+private:
+    Pointset (const Pointset&);
+    Pointset& operator= (const Pointset&);
 };
 
 typedef Pointset<Labeled_point> Labeled_pointset;
