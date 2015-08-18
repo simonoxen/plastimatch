@@ -11,7 +11,7 @@ class Bspline_xform;
 
 class PLMBASE_API Itk_volume_header {
 public:
-    ImageRegionType m_region;
+    RegionType m_region;
     OriginType m_origin;
     SpacingType m_spacing;
     DirectionType m_direction;

@@ -54,9 +54,6 @@ set (DRR_SRC
   drr_main.cxx 
   drr_opts.cxx
   )
-set (EXTRACT_CONTOUR_SRC
-  extract_contour.cxx
-  )
 set (FDK_SRC
   fdk_main.cxx 
   fdk_opts.cxx
@@ -204,9 +201,6 @@ if (ITK_FOUND)
   plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
   plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
     "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})

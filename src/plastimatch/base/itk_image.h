@@ -13,12 +13,13 @@ class Plm_image_header;
 class Volume_header;
 
 /* Other types */
-typedef itk::VariableLengthVector<unsigned char> UCharVecType;
-typedef itk::Size < 3 > SizeType;
-typedef itk::Point < double, 3 >  OriginType;
-typedef itk::Vector < double, 3 > SpacingType;
 typedef itk::Matrix < double, 3, 3 > DirectionType;
-typedef itk::ImageRegion < 3 > ImageRegionType;
+typedef itk::Index < 3 >  IndexType;
+typedef itk::Point < double, 3 >  OriginType;
+typedef itk::ImageRegion < 3 > RegionType;
+typedef itk::Size < 3 > SizeType;
+typedef itk::Vector < double, 3 > SpacingType;
+typedef itk::VariableLengthVector<unsigned char> UCharVecType;
 
 /* -----------------------------------------------------------------------
    Function prototypes

@@ -1,4 +1,21 @@
 ******************************************************************************
+ITK Origin and Index
+2015-08-18
+
+It seems that ITK allows images for which the first pixel is a 
+non-zero (but non-negative) index.  When using such images, care 
+must be used.
+
+Either, use the region and the (ITK) origin:
+
+    const typename ImageType::PointType& og = input->GetOrigin();
+    const typename ImageType::SpacingType& sp = input->GetSpacing();
+
+Or, use the dimension and the (plastimatch) origin:
+
+
+
+******************************************************************************
 Image orientation
 2015-08-13
 

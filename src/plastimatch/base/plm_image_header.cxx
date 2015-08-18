@@ -21,11 +21,109 @@
 #include "volume.h"
 #include "volume_header.h"
 
+class Plm_image_header_private
+{
+public:
+    OriginType m_origin;
+};
+
+Plm_image_header::Plm_image_header ()
+{
+    d_ptr = new Plm_image_header_private;
+}
+
+Plm_image_header::Plm_image_header (
+    plm_long dim[3], float origin[3], float spacing[3])
+{
+    d_ptr = new Plm_image_header_private;
+    this->set_from_gpuit (dim, origin, spacing, 0);
+}
+
+Plm_image_header::Plm_image_header (
+    plm_long dim[3], float origin[3], float spacing[3],
+    float direction_cosines[9])
+{
+    d_ptr = new Plm_image_header_private;
+    this->set_from_gpuit (dim, origin, spacing, direction_cosines);
+}
+
+Plm_image_header::Plm_image_header (Plm_image *pli) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set_from_plm_image (pli);
+}
+
+Plm_image_header::Plm_image_header (const Plm_image& pli) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set_from_plm_image (pli);
+}
+
+Plm_image_header::Plm_image_header (const Plm_image::Pointer& pli) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set_from_plm_image (pli);
+}
+
+Plm_image_header::Plm_image_header (const Volume_header& vh) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set (vh);
+}
+
+Plm_image_header::Plm_image_header (const Volume& vol) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set (vol);
+}
+
+Plm_image_header::Plm_image_header (const Volume* vol) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set (vol);
+}
+
+Plm_image_header::Plm_image_header (Volume* vol) 
+{
+    d_ptr = new Plm_image_header_private;
+    this->set (vol);
+}
+
+template<class T> 
+Plm_image_header::Plm_image_header (T image) {
+    d_ptr = new Plm_image_header_private;
+    this->set_from_itk_image (image);
+}
+
+Plm_image_header::Plm_image_header (const Plm_image_header& other)
+{
+    d_ptr = new Plm_image_header_private ();
+    this->m_origin = other.m_origin;
+    this->m_spacing = other.m_spacing;
+    this->m_region = other.m_region;
+    this->m_direction = other.m_direction;
+}
+
+Plm_image_header::~Plm_image_header ()
+{
+    delete d_ptr;
+}
+
+const Plm_image_header& 
+Plm_image_header::operator= (const Plm_image_header& other)
+{
+    this->m_origin = other.m_origin;
+    this->m_spacing = other.m_spacing;
+    this->m_region = other.m_region;
+    this->m_direction = other.m_direction;
+    return *this;
+}
+
 void
 Plm_image_header::set_dim (const plm_long dim[3])
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
+    RegionType::SizeType itk_size;
+    RegionType::IndexType itk_index;
     for (unsigned int d = 0; d < 3; d++) {
 	itk_index[d] = 0;
 	itk_size[d] = dim[d];
@@ -211,6 +309,7 @@ Plm_image_header::expand_to_contain (
 {
     /* Compute index for this position */
     FloatPoint3DType idx = this->get_index (position);
+    printf ("idx = %g %g %g\n", idx[0], idx[1], idx[2]);
 
     /* Get the step & proj matrices */
     /* GCS FIX: This is inefficient, already computed in get_index() */
@@ -219,14 +318,14 @@ Plm_image_header::expand_to_contain (
     this->get_spacing (spacing);
     compute_direction_matrices (step, proj, dc, spacing);
 
-    ImageRegionType::SizeType itk_size = m_region.GetSize();
+    RegionType::SizeType itk_size = m_region.GetSize();
 
     /* Expand the volume to contain the point */
     for (int d1 = 0; d1 < 3; d1++) {
         if (idx[d1] < 0) {
             float extra = (float) floor ((double) idx[d1]);
             for (int d2 = 0; d2 < 3; d2++) {
-                m_origin += extra * step[d1*3+d2];
+                m_origin[d1] += extra * step[d1*3+d2];
             }
             itk_size[d1] += -extra;
         }
@@ -243,6 +342,7 @@ Plm_image_header::set_geometry_to_contain (
 {
     /* Initialize to reference image */
     this->set (reference_pih);
+    this->print ();
 
     /* Expand to contain all eight corners of compare image */
     FloatPoint3DType pos;
@@ -251,7 +351,9 @@ Plm_image_header::set_geometry_to_contain (
     idx[1] = 0;
     idx[2] = 0;
     pos = compare_pih.get_position (idx);
+    printf ("pos = %g %g %g\n", pos[0], pos[1], pos[2]);
     this->expand_to_contain (pos);
+    printf ("---\n");
 
     idx[0] = 0;
     idx[1] = 0;
@@ -294,6 +396,9 @@ Plm_image_header::set_geometry_to_contain (
     idx[2] = compare_pih.dim(2) - 1;
     pos = compare_pih.get_position (idx);
     this->expand_to_contain (pos);
+
+    printf ("---\n");
+    this->print ();
 }
 
 void
@@ -324,7 +429,7 @@ Plm_image_header::get_spacing (float spacing[3]) const
 void 
 Plm_image_header::get_dim (plm_long dim[3]) const
 {
-    ImageRegionType::SizeType itk_size = m_region.GetSize ();
+    RegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {
 	dim[d] = itk_size[d];
     }
@@ -339,7 +444,7 @@ Plm_image_header::get_direction_cosines (float direction_cosines[9]) const
 void
 Plm_image_header::print (void) const
 {
-    ImageRegionType::SizeType itk_size;
+    RegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
     float dc[9];
     this->get_direction_cosines (dc);
@@ -395,9 +500,11 @@ Plm_image_header::get_position (const float index[3]) const
     FloatPoint3DType pos;
 
     for (int d = 0; d < 3; d++) {
-        pos[d] = 0.f;
+        pos[d] = m_origin[d];
+    }
+    for (int d = 0; d < 3; d++) {
         for (int dc = 0; dc < 3; dc++) {
-            pos[d] += m_spacing[d] * index[dc] * m_direction[dc][d];
+            pos[dc] += m_spacing[d] * index[d] * m_direction[d][dc];
         }
     }
     return pos;
@@ -450,3 +557,15 @@ Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2,
 
     return true;
 }
+
+/* Explicit instantiations */
+template PLMBASE_API Plm_image_header::Plm_image_header (CharImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (UCharImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (ShortImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (UShortImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (Int32ImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (UInt32ImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (FloatImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (DoubleImageType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (DeformationFieldType::Pointer image);
+template PLMBASE_API Plm_image_header::Plm_image_header (UCharVecImageType::Pointer image);

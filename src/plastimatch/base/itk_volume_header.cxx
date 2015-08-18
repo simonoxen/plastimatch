@@ -48,8 +48,8 @@ Itk_volume_header::set_spacing (float spacing[3])
 void
 Itk_volume_header::set_dim (plm_long dim[3])
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
+    SizeType itk_size;
+    IndexType itk_index;
     for (unsigned int d = 0; d < 3; d++) {
 	itk_index[d] = 0;
 	itk_size[d] = dim[d];
@@ -65,8 +65,8 @@ Itk_volume_header::set_from_gpuit (
     plm_long gpuit_dim[3],
     float gpuit_direction_cosines[9])
 {
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
+    SizeType itk_size;
+    IndexType itk_index;
 
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	m_origin[d1] = gpuit_origin[d1];
@@ -112,7 +112,7 @@ Itk_volume_header::get_spacing (float spacing[3])
 void 
 Itk_volume_header::get_dim (plm_long dim[3])
 {
-    ImageRegionType::SizeType itk_size = m_region.GetSize ();
+    SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {
 	dim[d] = itk_size[d];
     }
@@ -127,7 +127,7 @@ Itk_volume_header::get_direction_cosines (float direction_cosines[9])
 void
 Itk_volume_header::print (void) const
 {
-    ImageRegionType::SizeType itk_size;
+    SizeType itk_size;
     itk_size = m_region.GetSize ();
 
     printf ("Origin =");

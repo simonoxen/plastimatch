@@ -25,21 +25,6 @@ public:
     }
 };
 
-/* For differing resolutions, resamples image_2 to image_1 */
-void check_resolution (
-    UCharImageType::Pointer *image_1,
-    UCharImageType::Pointer *image_2
-)
-{
-    if ((*image_1)->GetLargestPossibleRegion().GetSize() !=
-        (*image_2)->GetLargestPossibleRegion().GetSize())
-    {
-        Plm_image_header pih;
-        pih.set_from_itk_image (*image_1);
-        *image_2 = resample_image (*image_2, &pih, 0, false);
-    }
-}
-
 static void
 usage_fn (dlib::Plm_clp *parser, int argc, char *argv[])
 {
@@ -117,8 +102,6 @@ do_command_dice (int argc, char *argv[])
         parms.reference_image_fn, 0);
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
-
-    check_resolution (&image_1, &image_2);
 
     if (parms.have_dice_option) {
         Dice_statistics ds;

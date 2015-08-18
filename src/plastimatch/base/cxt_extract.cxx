@@ -15,6 +15,7 @@
 
 #include "cxt_extract.h"
 #include "itk_image.h"
+#include "itk_image_origin.h"
 #include "itk_image_type.h"
 #include "rtss.h"
 #include "rtss_contour.h"
@@ -224,7 +225,8 @@ cxt_extract (
 	    uchar_slice = and_filter->GetOutput ();
 
 	    run_marching_squares (curr_structure, uchar_slice, slice_no,
-		image->GetOrigin(), image->GetSpacing(), image->GetDirection());
+		itk_image_origin (image), image->GetSpacing(), 
+                image->GetDirection());
 
 	}
 	slice_it.NextSlice();
@@ -321,7 +323,7 @@ cxt_extract (
 		uchar_slice = and_filter->GetOutput ();
 
 		run_marching_squares (curr_structure, uchar_slice, slice_no, 
-                    image->GetOrigin(), image->GetSpacing(), 
+		itk_image_origin (image), image->GetSpacing(), 
                     image->GetDirection());
 	    }
 	}

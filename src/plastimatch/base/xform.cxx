@@ -837,7 +837,7 @@ xform_any_to_itk_bsp_nobulk (
 void
 itk_bsp_extend_to_region (Xform* xf,                
     const Plm_image_header* pih,
-    const ImageRegionType* roi)
+    const RegionType* roi)
 {
     int d, old_idx;
     unsigned long i, j, k;
@@ -1074,7 +1074,7 @@ xform_gpuit_bsp_to_itk_bsp (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    const ImageRegionType* roi, /* Not yet used */
+    const RegionType* roi, /* Not yet used */
     const float* grid_spac)
 {
     Xform xf_tmp;
@@ -1179,7 +1179,7 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
     Xform xf_tmp;
     OriginType img_origin;
     SpacingType img_spacing;
-    ImageRegionType img_region;
+    RegionType img_region;
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
     gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
@@ -1287,7 +1287,7 @@ xform_any_to_gpuit_bsp (
     const float* grid_spac)
 {
     Xform xf_tmp;
-    ImageRegionType roi;
+    RegionType roi;
 
     /* Initialize gpuit bspline data structure */
     Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
@@ -1322,7 +1322,7 @@ xform_gpuit_bsp_to_gpuit_bsp (
 )
 {
     Xform xf_tmp;
-    ImageRegionType roi;
+    RegionType roi;
 
     /* Initialize gpuit bspline data structure */
     Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);

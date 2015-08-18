@@ -7,10 +7,12 @@
 #include "plmbase_config.h"
 #include "direction_cosines.h"
 #include "itk_image.h"
+#include "itk_image_region.h"
+#include "itk_image_origin.h"
 #include "plm_image.h"
 
 class Bspline_xform;
-class Plm_image_header;
+class Plm_image_header_private;
 class Volume;
 class Volume_header;
 
@@ -21,49 +23,30 @@ class Volume_header;
  */
 class PLMBASE_API Plm_image_header {
 public:
+    Plm_image_header_private *d_ptr;
     OriginType m_origin;
     SpacingType m_spacing;
-    ImageRegionType m_region;
+    RegionType m_region;
     DirectionType m_direction;
 
 public:
-    Plm_image_header () {}
-    Plm_image_header (
-        plm_long dim[3], float origin[3], float spacing[3])
-    {
-        this->set_from_gpuit (dim, origin, spacing, 0);
-    }
-    Plm_image_header (
-        plm_long dim[3], float origin[3], float spacing[3],
-        float direction_cosines[9])
-    {
-        this->set_from_gpuit (dim, origin, spacing, direction_cosines);
-    }
-    Plm_image_header (Plm_image *pli) {
-        this->set_from_plm_image (pli);
-    }
-    Plm_image_header (const Plm_image& pli) {
-        this->set_from_plm_image (pli);
-    }
-    Plm_image_header (const Plm_image::Pointer& pli) {
-        this->set_from_plm_image (pli);
-    }
-    Plm_image_header (const Volume_header& vh) {
-        this->set (vh);
-    }
-    Plm_image_header (const Volume& vol) {
-        this->set (vol);
-    }
-    Plm_image_header (const Volume* vol) {
-        this->set (vol);
-    }
-    Plm_image_header (Volume* vol) {
-        this->set (vol);
-    }
-    template<class T> 
-        Plm_image_header (T image) {
-        this->set_from_itk_image (image);
-    }
+    Plm_image_header ();
+    Plm_image_header (plm_long dim[3], float origin[3], float spacing[3]);
+    Plm_image_header (plm_long dim[3], float origin[3], float spacing[3],
+        float direction_cosines[9]);
+    Plm_image_header (Plm_image *pli);
+    Plm_image_header (const Plm_image& pli);
+    Plm_image_header (const Plm_image::Pointer& pli);
+    Plm_image_header (const Volume_header& vh);
+    Plm_image_header (const Volume& vol);
+    Plm_image_header (const Volume* vol);
+    Plm_image_header (Volume* vol);
+    template<class T> Plm_image_header (T image);
+    Plm_image_header (const Plm_image_header&);
+    ~Plm_image_header ();
+
+public:
+    const Plm_image_header& operator= (const Plm_image_header&);
 
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
@@ -126,9 +109,9 @@ public:
 
     template<class T> 
         void set_from_itk_image (T image) {
-        m_origin = image->GetOrigin ();
+        m_origin = itk_image_origin (image);
         m_spacing = image->GetSpacing ();
-        m_region = image->GetLargestPossibleRegion ();
+        m_region = itk_image_region (image);
         m_direction = image->GetDirection ();
     }
     static void clone (Plm_image_header *dest, const Plm_image_header *src) {
@@ -150,7 +133,7 @@ public:
     const SpacingType& GetSpacing () const {
         return m_spacing;
     }
-    const ImageRegionType& GetLargestPossibleRegion () const {
+    const RegionType& GetLargestPossibleRegion () const {
         return m_region;
     }
     const DirectionType& GetDirection () const {
@@ -165,8 +148,9 @@ public:
 
     /*! \brief Get the number of voxels in the image */
     plm_long get_num_voxels () const;
-    /*! \brief Get the physical size of the image, from first voxel center
-      to last voxel center.  Size is zero if only one voxel. */
+    /*! \brief Get the physical extent (size) of the image, from 
+      first voxel center to last voxel center.  Extent is zero 
+      if only one voxel. */
     void get_image_extent (float extent[3]) const;
 };
 
@@ -178,7 +162,5 @@ direction_cosines_from_itk (
     float direction_cosines[9],
     DirectionType* itk_direction
 );
-
-
 
 #endif

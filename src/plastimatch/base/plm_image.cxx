@@ -1522,6 +1522,7 @@ Plm_image::dim (size_t d1)
     return 0;
 }
 
+/* GCS FIX: This is inefficient. */
 float 
 Plm_image::origin (size_t d1)
 {
@@ -1530,21 +1531,21 @@ Plm_image::origin (size_t d1)
     case PLM_IMG_TYPE_UNDEFINED:
 	return 0;
     case PLM_IMG_TYPE_ITK_CHAR:
-        return this->m_itk_char->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_char)[d];
     case PLM_IMG_TYPE_ITK_UCHAR:
-        return this->m_itk_uchar->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_uchar)[d];
     case PLM_IMG_TYPE_ITK_SHORT:
-        return this->m_itk_short->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_short)[d];
     case PLM_IMG_TYPE_ITK_USHORT:
-        return this->m_itk_ushort->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_ushort)[d];
     case PLM_IMG_TYPE_ITK_LONG:
-        return this->m_itk_int32->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_int32)[d];
     case PLM_IMG_TYPE_ITK_ULONG:
-        return this->m_itk_uint32->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_uint32)[d];
     case PLM_IMG_TYPE_ITK_FLOAT:
-        return this->m_itk_float->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_float)[d];
     case PLM_IMG_TYPE_ITK_DOUBLE:
-        return this->m_itk_double->GetOrigin()[d];
+        return itk_image_origin(this->m_itk_double)[d];
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT16:
     case PLM_IMG_TYPE_GPUIT_UINT32:

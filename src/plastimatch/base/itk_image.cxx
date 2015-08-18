@@ -154,15 +154,13 @@ itk_image_header_compare (T image1, U image2)
     typedef typename U::ObjectType I1ImageType;
     typedef typename T::ObjectType I2ImageType;
 
-    const typename I1ImageType::SizeType& i1_sz
-	= image1->GetLargestPossibleRegion().GetSize ();
-    const typename I1ImageType::PointType& i1_og = image1->GetOrigin();
+    const SizeType& i1_sz = image1->GetLargestPossibleRegion().GetSize ();
+    const OriginType i1_og = itk_image_origin (image1);
     const typename I1ImageType::SpacingType& i1_sp = image1->GetSpacing();
     const typename I1ImageType::DirectionType& i1_dc = image1->GetDirection();
 
-    const typename I2ImageType::SizeType& i2_sz
-	= image2->GetLargestPossibleRegion().GetSize ();
-    const typename I2ImageType::PointType& i2_og = image2->GetOrigin();
+    const SizeType& i2_sz = image2->GetLargestPossibleRegion().GetSize ();
+    const OriginType i2_og = itk_image_origin (image2);
     const typename I2ImageType::SpacingType& i2_sp = image2->GetSpacing();
     const typename I2ImageType::DirectionType& i2_dc = image2->GetDirection();
 

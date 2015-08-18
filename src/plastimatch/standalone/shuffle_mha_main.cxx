@@ -45,7 +45,7 @@ main (int argc, char* argv[])
     typedef itk::ImageSliceIteratorWithIndex<FloatImageType> IteratorType;
     ConstIteratorType it_in (v_in, v_in->GetLargestPossibleRegion());
     IteratorType it_out (v_out, v_out->GetLargestPossibleRegion());
-    ImageRegionType rgn_out = v_out->GetLargestPossibleRegion();
+    RegionType rgn_out = v_out->GetLargestPossibleRegion();
     it_in.SetFirstDirection(0);
     it_in.SetSecondDirection(1);
     it_out.SetFirstDirection(0);

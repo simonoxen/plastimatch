@@ -293,7 +293,7 @@ Segment_body::do_segmentation ()
     if (m_fast) {
         Plm_image_header pih;
         bool need_resample = false;
-        ImageRegionType::SizeType itk_size;
+        SizeType itk_size;
         pih.set_from_plm_image (this->img_in);
         for (int d = 0; d < 3; d++) {
             if (pih.m_spacing[d] < 5.0) {
@@ -401,7 +401,7 @@ Segment_body::do_segmentation_air_cavity()//for air cavity filling in CT/CBCT im
 	if (m_fast) {
 		Plm_image_header pih;
 		bool need_resample = false;
-		ImageRegionType::SizeType itk_size;
+		SizeType itk_size;
 		pih.set_from_plm_image(this->img_in);
 		for (int d = 0; d < 3; d++) {
 			if (pih.m_spacing[d] < 5.0) {
