@@ -123,9 +123,9 @@ Slice_list::get_slice_index (float z) const
     }
 
     /* NOTE: This algorithm doesn't work if there are duplicate slices */
-    int slice_no = ROUND_INT ((z - d_ptr->m_pih.m_origin[2]) 
-	/ d_ptr->m_pih.m_spacing[2]);
-    if (slice_no < 0 || slice_no >= d_ptr->m_pih.Size(2)) {
+    int slice_no = ROUND_INT ((z - d_ptr->m_pih.origin(2)) 
+	/ d_ptr->m_pih.spacing(2));
+    if (slice_no < 0 || slice_no >= d_ptr->m_pih.dim(2)) {
 	return -1;
     }
     return slice_no;

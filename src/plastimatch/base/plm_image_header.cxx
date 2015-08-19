@@ -27,6 +27,9 @@ public:
     OriginType m_origin;
 };
 
+/* -----------------------------------------------------------------------
+   Constructors, destructors, operator=
+   ----------------------------------------------------------------------- */
 Plm_image_header::Plm_image_header ()
 {
     d_ptr = new Plm_image_header_private;
@@ -117,6 +120,27 @@ Plm_image_header::operator= (const Plm_image_header& other)
     this->m_region = other.m_region;
     this->m_direction = other.m_direction;
     return *this;
+}
+
+/* -----------------------------------------------------------------------
+   Getters and Setters
+   ----------------------------------------------------------------------- */
+int 
+Plm_image_header::dim (int d) const
+{
+    return m_region.GetSize()[d];
+}
+
+float 
+Plm_image_header::origin (int d) const
+{
+    return m_origin[d];
+}
+
+float 
+Plm_image_header::spacing (int d) const
+{
+    return m_spacing[d];
 }
 
 void
@@ -303,6 +327,130 @@ Plm_image_header::set (const Volume* vol)
 	vol->spacing, vol->direction_cosines);
 }
 
+void Plm_image_header::set (
+    const RegionType& region, const OriginType& origin,
+    const SpacingType& spacing, const DirectionType& direction)
+{
+    m_region = region;
+    m_origin = origin;
+    m_spacing = spacing;
+    m_direction = direction;
+
+    /* Adjust origin and set index to zero in case of non-zero 
+       ITK region index */
+    const IndexType& index = region.GetIndex();
+    for (int d1 = 0; d1 < 3; d1++) {
+        for (int d2 = 0; d2 < 3; d2++) {
+            m_origin[d2] += index[d1] * spacing[d1] * direction[d2][d1];
+        }
+    }
+    IndexType i2;
+    i2[0] = i2[1] = i2[2] = 0;
+    m_region.SetIndex (i2);
+}
+
+template<class T> 
+void 
+Plm_image_header::set_from_itk_image (const T& image)
+{
+    m_origin = itk_image_origin (image);
+    m_spacing = image->GetSpacing ();
+    m_region = itk_image_region (image);
+    m_direction = image->GetDirection ();
+}
+
+template<class T> 
+void 
+Plm_image_header::set_from_itk_image (const T* image)
+{
+    m_origin = itk_image_origin (image);
+    m_spacing = image->GetSpacing ();
+    m_region = itk_image_region (image);
+    m_direction = image->GetDirection ();
+}
+
+const OriginType& 
+Plm_image_header::GetOrigin () const
+{
+    return m_origin;
+}
+
+const SpacingType& 
+Plm_image_header::GetSpacing () const
+{
+    return m_spacing;
+}
+
+const RegionType& 
+Plm_image_header::GetRegion () const 
+{
+    return m_region;
+}
+
+const DirectionType& 
+Plm_image_header::GetDirection () const 
+{
+    return m_direction;
+}
+
+const SizeType& 
+Plm_image_header::GetSize (void) const
+{
+    return m_region.GetSize ();
+}
+
+void
+Plm_image_header::get_volume_header (Volume_header *vh) const
+{
+    this->get_origin (vh->get_origin());
+    this->get_dim (vh->get_dim());
+    this->get_spacing (vh->get_spacing());
+    this->get_direction_cosines (vh->get_direction_cosines());
+}
+
+void 
+Plm_image_header::get_origin (float origin[3]) const
+{
+    for (unsigned int d = 0; d < 3; d++) {
+	origin[d] = m_origin[d];
+    }
+}
+
+void 
+Plm_image_header::get_spacing (float spacing[3]) const
+{
+    for (unsigned int d = 0; d < 3; d++) {
+	spacing[d] = m_spacing[d];
+    }
+}
+
+void 
+Plm_image_header::get_dim (plm_long dim[3]) const
+{
+    RegionType::SizeType itk_size = m_region.GetSize ();
+    for (unsigned int d = 0; d < 3; d++) {
+	dim[d] = itk_size[d];
+    }
+}
+
+void 
+Plm_image_header::get_direction_cosines (float direction_cosines[9]) const
+{
+    dc_from_itk_direction (direction_cosines, &m_direction);
+}
+
+/* -----------------------------------------------------------------------
+   Algorithms
+   ----------------------------------------------------------------------- */
+/* static */ void 
+Plm_image_header::clone (Plm_image_header *dest, const Plm_image_header *src)
+{
+    dest->m_origin = src->m_origin;
+    dest->m_spacing = src->m_spacing;
+    dest->m_region = src->m_region;
+    dest->m_direction = src->m_direction;
+}
+
 void 
 Plm_image_header::expand_to_contain (
     const FloatPoint3DType& position)
@@ -402,46 +550,6 @@ Plm_image_header::set_geometry_to_contain (
 }
 
 void
-Plm_image_header::get_volume_header (Volume_header *vh) const
-{
-    this->get_origin (vh->get_origin());
-    this->get_dim (vh->get_dim());
-    this->get_spacing (vh->get_spacing());
-    this->get_direction_cosines (vh->get_direction_cosines());
-}
-
-void 
-Plm_image_header::get_origin (float origin[3]) const
-{
-    for (unsigned int d = 0; d < 3; d++) {
-	origin[d] = m_origin[d];
-    }
-}
-
-void 
-Plm_image_header::get_spacing (float spacing[3]) const
-{
-    for (unsigned int d = 0; d < 3; d++) {
-	spacing[d] = m_spacing[d];
-    }
-}
-
-void 
-Plm_image_header::get_dim (plm_long dim[3]) const
-{
-    RegionType::SizeType itk_size = m_region.GetSize ();
-    for (unsigned int d = 0; d < 3; d++) {
-	dim[d] = itk_size[d];
-    }
-}
-
-void 
-Plm_image_header::get_direction_cosines (float direction_cosines[9]) const
-{
-    dc_from_itk_direction (direction_cosines, &m_direction);
-}
-
-void
 Plm_image_header::print (void) const
 {
     RegionType::SizeType itk_size;
@@ -516,14 +624,14 @@ Plm_image_header::get_image_center (float center[3]) const
     int d;
     for (d = 0; d < 3; d++) {
 	center[d] = this->m_origin[d] 
-	    + this->m_spacing[d] * (this->Size(d) - 1) / 2;
+	    + this->m_spacing[d] * (this->dim(d) - 1) / 2;
     }
 }
 
 plm_long
 Plm_image_header::get_num_voxels (void) const
 {
-    return this->Size(0) * this->Size(1) * this->Size(2);
+    return this->dim(0) * this->dim(1) * this->dim(2);
 }
 
 void 
@@ -531,7 +639,7 @@ Plm_image_header::get_image_extent (float extent[3]) const
 {
     int d;
     for (d = 0; d < 3; d++) {
-	extent[d] = this->m_spacing[d] * (this->Size(d) - 1);
+	extent[d] = this->m_spacing[d] * (this->dim(d) - 1);
     }
 }
 
@@ -548,7 +656,7 @@ Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2,
         if (fabs (pli1->m_spacing[d] - pli2->m_spacing[d]) > threshold) {
             return false;
         }
-        if (pli1->Size(d) != pli2->Size(d)) {
+        if (pli1->dim(d) != pli2->dim(d)) {
             return false;
         }
     }
@@ -569,3 +677,25 @@ template PLMBASE_API Plm_image_header::Plm_image_header (FloatImageType::Pointer
 template PLMBASE_API Plm_image_header::Plm_image_header (DoubleImageType::Pointer image);
 template PLMBASE_API Plm_image_header::Plm_image_header (DeformationFieldType::Pointer image);
 template PLMBASE_API Plm_image_header::Plm_image_header (UCharVecImageType::Pointer image);
+
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UShortImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt32ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const FloatImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const DoubleImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const DeformationFieldType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharVecImageType::Pointer& image);
+
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UShortImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt32ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const FloatImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const DoubleImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const DeformationFieldType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharVecImageType* image);

@@ -988,8 +988,10 @@ Segmentation::broaden_ss_image (int new_vector_length)
     /* Loop through image */
     typedef itk::ImageRegionIterator< 
         UCharVecImageType > UCharVecIteratorType;
-    UCharVecIteratorType it_old (old_ss_img, pih.m_region);
-    UCharVecIteratorType it_new (new_ss_img, pih.m_region);
+    UCharVecIteratorType it_old (
+        old_ss_img, old_ss_img->GetLargestPossibleRegion());
+    UCharVecIteratorType it_new (
+        new_ss_img, new_ss_img->GetLargestPossibleRegion());
     for (it_old.GoToBegin(), it_new.GoToBegin(); 
          !it_old.IsAtEnd(); 
          ++it_old, ++it_new)

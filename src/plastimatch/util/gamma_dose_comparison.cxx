@@ -484,7 +484,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     }
     rg.SetSize (sz);
     rg.SetIndex (st);
-    dc = pih.m_direction;
+    dc = pih.GetDirection();
 
     FloatImageType::Pointer gamma_img = FloatImageType::New();
     UCharImageType::Pointer gamma_labelmap = UCharImageType::New();

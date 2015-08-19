@@ -90,6 +90,7 @@ int main
         }
     }
 
+    pli->save_image ("itk_test_directions.mha");
     pli->save_image ("itk_test_directions.nrrd");
 
     Rt_study rt;

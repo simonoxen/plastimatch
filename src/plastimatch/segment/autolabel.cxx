@@ -60,10 +60,10 @@ autolabel_la1 (Autolabel_parms *parms)
     float best_score = FLT_MAX;
     float best_slice = 0.f;
     UNUSED_VARIABLE (best_slice);
-    for (int i = 0; i < pih.Size(2); i++) {
+    for (int i = 0; i < pih.dim(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
-        float loc = pih.m_origin[2] + i * pih.m_spacing[2];
+        float loc = pih.origin(2) + i * pih.spacing(2);
         Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
@@ -109,10 +109,10 @@ autolabel_tsv1 (Autolabel_parms *parms)
 
     /* Loop through slices, and predict location for each slice */
     Plm_image_header pih (thumb.pli);
-    for (int i = 0; i < pih.Size(2); i++) {
+    for (int i = 0; i < pih.dim(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
-        float loc = pih.m_origin[2] + i * pih.m_spacing[2];
+        float loc = pih.origin(2) + i * pih.spacing(2);
         Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */
@@ -157,10 +157,10 @@ autolabel_tsv2 (Autolabel_parms *parms)
 
     /* Loop through slices, and predict location for each slice */
     Plm_image_header pih (thumb.pli);
-    for (int i = 0; i < pih.Size(2); i++) {
+    for (int i = 0; i < pih.dim(2); i++) {
 
         /* Create slice thumbnail and dlib sample */
-        float loc = pih.m_origin[2] + i * pih.m_spacing[2];
+        float loc = pih.origin(2) + i * pih.spacing(2);
         Dlib_trainer::Dense_sample_type d = thumb.make_sample (loc);
 
         /* Predict the value */

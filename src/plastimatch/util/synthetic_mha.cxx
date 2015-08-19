@@ -579,10 +579,10 @@ synthetic_mha (
             Plm_image pi (parms->fixed_fn);
             Plm_image_header pih;
             pih.set_from_plm_image (&pi);
-            og = pih.m_origin;
-            sp = pih.m_spacing;
-            rg = pih.m_region;
-            itk_dc = pih.m_direction;
+            og = pih.GetOrigin();
+            sp = pih.GetSpacing();
+            rg = pih.GetRegion();
+            itk_dc = pih.GetDirection();
             for (int d1 = 0; d1 < 3; d1++) {
                 parms->origin[d1] = og[d1];
             }

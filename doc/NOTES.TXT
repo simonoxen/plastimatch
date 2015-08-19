@@ -391,12 +391,18 @@ array, also by columns.
 
 These are then converted into the "step" and "proj" matrices.
 
-  step[0] = spacing[0] * dc[0];
-  step[1] = spacing[1] * dc[1];
-  step[2] = spacing[2] * dc[2];
-  step[3] = spacing[0] * dc[3];
+  step[0] <- spacing[0] * dc[0] == spacing[0] * itk_dc[0][0]
+  step[1] <- spacing[1] * dc[1] == spacing[1] * itk_dc[0][1]
+  step[2] <- spacing[2] * dc[2] == spacing[2] * itk_dc[0][2]
+  step[3] <- spacing[0] * dc[3] == spacing[0] * itk_dc[1][0]
   ...
-  step[8] = spacing[2] * dc[8];
+  step[8] <- spacing[2] * dc[8] == spacing[0] * itk_dc[2][2]
+
+To convert an index into a position, you do this:
+
+  pos[0] = origin[0] + idx[0]*step[0] + idx[1]*step[1] + idx[2]*step[2]
+  pos[1] = origin[1] + idx[0]*step[3] + idx[1]*step[4] + idx[2]*step[5]
+  pos[2] = origin[2] + idx[0]*step[6] + idx[1]*step[7] + idx[2]*step[8]
 
 
 ***** How to delete items from conquest *****

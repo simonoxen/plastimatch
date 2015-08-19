@@ -124,8 +124,8 @@ Xio_ct_transform::set_from_rdd (
     if (patient_pos == "HFS" ||	patient_pos == "") {
 
 	/* Offsets */
-	this->x_offset = v->origin[0] - pih->m_origin[0];
-	this->y_offset = v->origin[1] - pih->m_origin[1];
+	this->x_offset = v->origin[0] - pih->origin(0);
+	this->y_offset = v->origin[1] - pih->origin(1);
 
 	/* Direction cosines */
 	this->direction_cosines[0] = 1.0f;
@@ -135,8 +135,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "HFP") {
 
 	/* Offsets */
-	this->x_offset = v->origin[0] + pih->m_origin[0];
-	this->y_offset = v->origin[1] + pih->m_origin[1];
+	this->x_offset = v->origin[0] + pih->origin(0);
+	this->y_offset = v->origin[1] + pih->origin(1);
 
 	/* Direction cosines */
 	this->direction_cosines[0] = -1.0f;
@@ -146,8 +146,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "FFS") {
 
 	/* Offsets */
-	this->x_offset = v->origin[0] + pih->m_origin[0];
-	this->y_offset = v->origin[1] - pih->m_origin[1];
+	this->x_offset = v->origin[0] + pih->origin(0);
+	this->y_offset = v->origin[1] - pih->origin(1);
 
 	/* Direction cosines */
 	this->direction_cosines[0] = -1.0f;
@@ -157,8 +157,8 @@ Xio_ct_transform::set_from_rdd (
     } else if (patient_pos == "FFP") {
 
 	/* Offsets */
-	this->x_offset = v->origin[0] - pih->m_origin[0];
-	this->y_offset = v->origin[1] + pih->m_origin[1];
+	this->x_offset = v->origin[0] - pih->origin(0);
+	this->y_offset = v->origin[1] + pih->origin(1);
 
 	/* Direction cosines */
 	this->direction_cosines[0] = 1.0f;

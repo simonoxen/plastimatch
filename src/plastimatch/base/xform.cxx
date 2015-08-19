@@ -16,6 +16,7 @@
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
 #include "itk_directions.h"
+#include "itk_image_create.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
@@ -660,18 +661,18 @@ bsp_grid_from_img_grid (
 
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
-        float img_ext = (pih->Size(d) - 1) * fabs (pih->m_spacing[d]);
-        bsp_origin[d] = pih->m_origin[d];
+        float img_ext = (pih->dim(d) - 1) * fabs (pih->spacing(d));
+        bsp_origin[d] = pih->origin(d);
         bsp_spacing[d] = grid_spac[d];
         bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
     }
-    bsp_direction = pih->m_direction;
+    bsp_direction = pih->GetDirection();
     bsp_region.SetSize (bsp_size);
 
     /* Adjust origin based on direction cosines */
     for (int d1=0; d1<3; d1++) {
         for (int d2=0; d2<3; d2++) {
-            bsp_origin[d2] -= grid_spac[d1] * pih->m_direction[d1][d2];
+            bsp_origin[d2] -= grid_spac[d1] * bsp_direction[d1][d2];
         }
     }
 }
@@ -775,28 +776,21 @@ xform_any_to_itk_bsp_nobulk (
         bsp_region, bsp_direction, pih, grid_spac);
 
     /* Make a vector field at bspline grid spacing */
-    pih_bsp.m_origin = bsp_origin;
-    pih_bsp.m_spacing = bsp_spacing;
-    pih_bsp.m_region = bsp_region;
-    pih_bsp.m_direction = bsp_direction;
+    pih_bsp.set (bsp_region, bsp_origin, bsp_spacing, bsp_direction);
     xform_to_itk_vf (&xf_tmp, xf_in, &pih_bsp);
 
     /* Vector field is interleaved.  We need planar for decomposition. */
-    FloatImageType::Pointer img = FloatImageType::New();
-    img->SetOrigin (pih_bsp.m_origin);
-    img->SetSpacing (pih_bsp.m_spacing);
-    img->SetRegions (pih_bsp.m_region);
-    img->SetDirection (pih_bsp.m_direction);
-    img->Allocate ();
+    FloatImageType::Pointer img = itk_image_create<float> (pih_bsp);
 
     /* Loop through planes */
     unsigned int counter = 0;
+    DeformationFieldType::Pointer vf = xf_tmp.get_itk_vf();
     for (d = 0; d < 3; d++) {
         /* Copy a single VF plane into img */
         typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
         typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
-        FloatIteratorType img_it (img, pih_bsp.m_region);
-        VFIteratorType vf_it (xf_tmp.get_itk_vf(), pih_bsp.m_region);
+        FloatIteratorType img_it (img, img->GetLargestPossibleRegion());
+        VFIteratorType vf_it (vf, vf->GetLargestPossibleRegion());
         for (img_it.GoToBegin(), vf_it.GoToBegin(); 
              !img_it.IsAtEnd(); 
              ++img_it, ++vf_it) 
@@ -835,8 +829,9 @@ xform_any_to_itk_bsp_nobulk (
     the b-spline with extra coefficients such that all pixels fall 
     within the valid region. */
 void
-itk_bsp_extend_to_region (Xform* xf,                
-    const Plm_image_header* pih,
+itk_bsp_extend_to_region (
+    Xform* xf, 
+    const Plm_image_header* pih, 
     const RegionType* roi)
 {
     int d, old_idx;
@@ -846,15 +841,18 @@ itk_bsp_extend_to_region (Xform* xf,
     BsplineTransformType::OriginType bsp_origin = bsp->GetGridOrigin();
     BsplineTransformType::RegionType bsp_region = bsp->GetGridRegion();
     BsplineTransformType::RegionType::SizeType bsp_size = bsp->GetGridRegion().GetSize();
-    int eb[3], ea[3];  /* # of control points to "extend before" and "extend after" existing grid */
 
-    /* Figure out if we need to extend the bspline grid.  If so, compute ea & eb, 
-       as well as new values of bsp_region and bsp_origin. */
+    /* # of control points to "extend before" and "extend after" 
+       existing grid */
+    int eb[3], ea[3];
+
+    /* Figure out if we need to extend the bspline grid.  If so, compute 
+       ea & eb, as well as new values of bsp_region and bsp_origin. */
     for (d = 0; d < 3; d++) {
         float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
         float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
-        float new_roi_origin = pih->m_origin[d] + roi->GetIndex()[d] * pih->m_spacing[d];
-        float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->m_spacing[d];
+        float new_roi_origin = pih->origin(d) + roi->GetIndex()[d] * pih->spacing(d);
+        float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->spacing(d);
         ea[d] = eb[d] = 0;
         if (old_roi_origin > new_roi_origin) {
             float diff = old_roi_origin - new_roi_origin;
@@ -1036,7 +1034,7 @@ gpuit_bsp_to_itk_bsp_raw (
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
-    BsplineTransformType::DirectionType bsp_direction = pih->m_direction;
+    BsplineTransformType::DirectionType bsp_direction = pih->GetDirection();
 
     /* Convert bspline grid geometry from gpuit to itk */
     gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, 
@@ -1074,7 +1072,6 @@ xform_gpuit_bsp_to_itk_bsp (
     Xform *xf_out, 
     const Xform* xf_in,
     const Plm_image_header* pih,
-    const RegionType* roi, /* Not yet used */
     const float* grid_spac)
 {
     Xform xf_tmp;
@@ -1099,13 +1096,16 @@ xform_itk_any_to_itk_vf (
     itk::Transform<double,3,3>* xf,
     const Plm_image_header* pih)
 {
+#if defined (commentout)
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
-
     itk_vf->SetOrigin (pih->m_origin);
     itk_vf->SetSpacing (pih->m_spacing);
     itk_vf->SetRegions (pih->m_region);
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
+#endif
+    DeformationFieldType::Pointer itk_vf 
+        = itk_image_create<FloatVector3DType> (*pih);
 
     typedef itk::ImageRegionIteratorWithIndex< 
         DeformationFieldType > FieldIterator;
@@ -1148,7 +1148,8 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
     xform_itk_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, grid_spac);
 
     /* Extend bsp control point grid */
-    itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
+    RegionType region = pih->GetRegion();
+    itk_bsp_extend_to_region (&xf_tmp, pih, &region);
 
     /* Convert extended bsp to vf */
     return xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
@@ -1185,7 +1186,8 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
     gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
     /* Resize itk array to span image */
-    itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
+    RegionType region = pih->GetRegion();
+    itk_bsp_extend_to_region (&xf_tmp, pih, &region);
 
     /* Render to vector field */
     itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
@@ -1287,14 +1289,13 @@ xform_any_to_gpuit_bsp (
     const float* grid_spac)
 {
     Xform xf_tmp;
-    RegionType roi;
 
     /* Initialize gpuit bspline data structure */
     Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
     if (xf_in->m_type != XFORM_NONE) {
         /* Output ROI is going to be whole image */
-        roi = pih->m_region;
+        RegionType roi = pih->GetRegion ();
 
         /* Create itk_bsp xf using image specifications */
         xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
@@ -1322,16 +1323,12 @@ xform_gpuit_bsp_to_gpuit_bsp (
 )
 {
     Xform xf_tmp;
-    RegionType roi;
 
     /* Initialize gpuit bspline data structure */
     Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
-    /* Output ROI is going to be whole image */
-    roi = pih->m_region;
-
     /* Create itk_bsp xf using image specifications */
-    xform_gpuit_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, &roi, bxf_new->grid_spac);
+    xform_gpuit_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
 
     /* Copy from ITK coefficient array to gpuit coefficient array */
     int k = 0;
@@ -1612,9 +1609,8 @@ xform_to_itk_bsp (
     case XFORM_ITK_VECTOR_FIELD:
         print_and_exit ("Sorry, couldn't convert itk_vf to itk_bsp\n");
         break;
-    case XFORM_GPUIT_BSPLINE:
-        xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, 
-            &pih->m_region, grid_spac);
+    case XFORM_GPUIT_BSPLINE: 
+        xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
         print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");

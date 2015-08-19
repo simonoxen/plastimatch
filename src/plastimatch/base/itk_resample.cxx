@@ -26,10 +26,10 @@ vector_resample_image (const T& vf_image, const Plm_image_header* pih)
 
     typename FilterType::Pointer filter = FilterType::New();
 
-    filter->SetOutputOrigin (pih->m_origin);
-    filter->SetOutputSpacing (pih->m_spacing);
-    filter->SetSize (pih->m_region.GetSize());
-    filter->SetOutputDirection (pih->m_direction);
+    filter->SetOutputOrigin (pih->GetOrigin());
+    filter->SetOutputSpacing (pih->GetSpacing());
+    filter->SetSize (pih->GetSize());
+    filter->SetOutputDirection (pih->GetDirection());
 
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();
@@ -121,8 +121,8 @@ resample_image (
     float default_val, 
     int interp_lin)
 {
-    return resample_image (image, pih->m_origin, pih->m_spacing,
-        pih->m_region.GetSize(), pih->m_direction,
+    return resample_image (image, pih->GetOrigin(), pih->GetSpacing(),
+        pih->GetSize(), pih->GetDirection(),
         default_val, interp_lin);
 }
 
@@ -134,9 +134,8 @@ resample_image (
     float default_val, 
     int interp_lin)
 {
-    return resample_image (image, pih.m_origin, pih.m_spacing,
-        pih.m_region.GetSize(), pih.m_direction,
-        default_val, interp_lin);
+    return resample_image (image, pih.GetOrigin(), pih.GetSpacing(),
+        pih.GetSize(), pih.GetDirection(), default_val, interp_lin);
 }
 
 template <class T>

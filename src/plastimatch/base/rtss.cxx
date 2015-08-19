@@ -481,11 +481,9 @@ Rtss::apply_slice_list (const Slice_list *slice_list)
 
     const Plm_image_header *pih = slice_list->get_image_header ();
     /* Geometry */
-    for (int d = 0; d < 3; d++) {
-        this->m_offset[d] = pih->m_origin[d];
-        this->m_dim[d] = pih->Size(d);
-        this->m_spacing[d] = pih->m_spacing[d];
-    }
+    pih->get_dim (this->m_dim);
+    pih->get_origin (this->m_offset);
+    pih->get_spacing (this->m_spacing);
 
     /* Slice numbers and slice uids */
     for (size_t i = 0; i < this->num_structures; i++) {

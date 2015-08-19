@@ -396,7 +396,7 @@ set_auto_resample (float subsample_rate[], Plm_image *pli)
     Plm_image_header pih (pli);
 
     for (int d = 0; d < 3; d++) {
-        subsample_rate[d] = (float) ((pih.Size(d)+99) / 100);
+        subsample_rate[d] = (float) ((pih.dim(d)+99) / 100);
     }
 }
 

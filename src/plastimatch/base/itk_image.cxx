@@ -114,10 +114,10 @@ template<class T>
 void
 itk_image_set_header (T dest, const Plm_image_header *pih)
 {
-    dest->SetRegions (pih->m_region);
-    dest->SetOrigin (pih->m_origin);
-    dest->SetSpacing (pih->m_spacing);
-    dest->SetDirection (pih->m_direction);
+    dest->SetRegions (pih->GetRegion());
+    dest->SetOrigin (pih->GetOrigin());
+    dest->SetSpacing (pih->GetSpacing());
+    dest->SetDirection (pih->GetDirection());
 }
 
 template<class T>
