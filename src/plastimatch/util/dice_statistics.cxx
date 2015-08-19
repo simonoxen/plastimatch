@@ -80,26 +80,14 @@ Dice_statistics::set_compare_image (
 void 
 Dice_statistics::run ()
 {
-#if defined (commentout)
-    itk_image_save (d_ptr->ref_image, "/PHShome/gcs6/scratch/bug/ref_1.nrrd");
-    itk_image_save (d_ptr->cmp_image, "/PHShome/gcs6/scratch/bug/cmp_1.nrrd");
-#endif
-
-    /* Resample warped onto geometry of reference */
+    /* Resample and/or expand images based on geometry of reference */
     if (!itk_image_header_compare (d_ptr->ref_image, d_ptr->cmp_image)) {
-        d_ptr->cmp_image = resample_image (d_ptr->cmp_image, 
-            Plm_image_header (d_ptr->ref_image), 0, 0);
-#if defined (commentout)
         Plm_image_header pih;
         pih.set_geometry_to_contain (
             Plm_image_header (d_ptr->cmp_image),
             Plm_image_header (d_ptr->ref_image));
         d_ptr->cmp_image = resample_image (d_ptr->cmp_image, pih, 0, 0);
         d_ptr->ref_image = resample_image (d_ptr->ref_image, pih, 0, 0);
-
-        itk_image_save (d_ptr->cmp_image, "/PHShome/gcs6/scratch/bug/cmp_2.nrrd");
-        itk_image_save (d_ptr->ref_image, "/PHShome/gcs6/scratch/bug/ref_2.nrrd");
-#endif
     }
 
     /* Initialize counters */

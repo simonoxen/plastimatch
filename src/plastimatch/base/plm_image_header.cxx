@@ -10,11 +10,11 @@
 #include <stdio.h>
 #include <math.h>
 
-
 #include "bspline_xform.h"
 #include "direction_cosines.h"
 #include "direction_matrices.h"
 #include "itk_directions.h"
+#include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
@@ -457,7 +457,6 @@ Plm_image_header::expand_to_contain (
 {
     /* Compute index for this position */
     FloatPoint3DType idx = this->get_index (position);
-    printf ("idx = %g %g %g\n", idx[0], idx[1], idx[2]);
 
     /* Get the step & proj matrices */
     /* GCS FIX: This is inefficient, already computed in get_index() */
@@ -473,14 +472,15 @@ Plm_image_header::expand_to_contain (
         if (idx[d1] < 0) {
             float extra = (float) floor ((double) idx[d1]);
             for (int d2 = 0; d2 < 3; d2++) {
-                m_origin[d1] += extra * step[d1*3+d2];
+                m_origin[d2] += extra * step[d2*3+d1];
             }
-            itk_size[d1] += -extra;
+            itk_size[d1] += (int) -extra;
         }
-        else if (idx[d1] > itk_size[d1]) {
+        else if (idx[d1] > itk_size[d1] - 1) {
             itk_size[d1] = (int) floor ((double) idx[d1]) + 1;
         }
     }
+    m_region.SetSize (itk_size);
 }
 
 void 
@@ -490,7 +490,6 @@ Plm_image_header::set_geometry_to_contain (
 {
     /* Initialize to reference image */
     this->set (reference_pih);
-    this->print ();
 
     /* Expand to contain all eight corners of compare image */
     FloatPoint3DType pos;
@@ -499,9 +498,7 @@ Plm_image_header::set_geometry_to_contain (
     idx[1] = 0;
     idx[2] = 0;
     pos = compare_pih.get_position (idx);
-    printf ("pos = %g %g %g\n", pos[0], pos[1], pos[2]);
     this->expand_to_contain (pos);
-    printf ("---\n");
 
     idx[0] = 0;
     idx[1] = 0;
@@ -544,9 +541,6 @@ Plm_image_header::set_geometry_to_contain (
     idx[2] = compare_pih.dim(2) - 1;
     pos = compare_pih.get_position (idx);
     this->expand_to_contain (pos);
-
-    printf ("---\n");
-    this->print ();
 }
 
 void
@@ -557,26 +551,26 @@ Plm_image_header::print (void) const
     float dc[9];
     this->get_direction_cosines (dc);
 
-    printf ("Origin =");
+    lprintf ("Origin =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %g", m_origin[d]);
+	lprintf (" %g", m_origin[d]);
     }
-    printf ("\nSize =");
+    lprintf ("\nSize =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %lu", itk_size[d]);
+	lprintf (" %lu", itk_size[d]);
     }
-    printf ("\nSpacing =");
+    lprintf ("\nSpacing =");
     for (unsigned int d = 0; d < 3; d++) {
-	printf (" %g", m_spacing[d]);
+	lprintf (" %g", m_spacing[d]);
     }
-    printf ("\nDirection =");
+    lprintf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    printf (" %g", dc[d1*3+d2]);
+	    lprintf (" %g", dc[d1*3+d2]);
 	}
     }
 
-    printf ("\n");
+    lprintf ("\n");
 }
 
 FloatPoint3DType
@@ -595,7 +589,7 @@ Plm_image_header::get_index (const FloatPoint3DType& pos) const
         tmp[d1] = pos[d1] - m_origin[d1];
         idx[d1] = 0;
         for (int d2 = 0; d2 < 3; d2++) {
-            idx[d1] += pos[d2] * proj[d1*3+d2];
+            idx[d1] += tmp[d2] * proj[d1*3+d2];
         }
     }
 
