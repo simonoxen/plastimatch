@@ -27,7 +27,6 @@
 #include "rt_study.h"
 //#include "DlgGammaView.h"
 
-#include "yk_config.h"
 #include "qt_util.h"
 
 #include <QStandardItemModel>
@@ -44,36 +43,45 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
 {
     ui.setupUi(this);
-    //m_pImgOffset = NULL;
-    //m_pImgGain = NULL;
-    ////Badpixmap;
-    //m_pImgOffset = new YK16GrayImage(IMG_WIDTH, IMG_HEIGHT);
-    //m_pImgGain = new YK16GrayImage(IMG_WIDTH, IMG_HEIGHT);
-
-    //	const char* inFileName = "C:\\test.scan";
-    //	const char* outFileName = "C:\\test.mha";
-
-
-    /*Volume *v = nki_load (inFileName);
-    if (!v)
-    {
-    printf("file reading error\n");		
-    }
-    write_mha(outFileName, v);*/
-
-    //m_pView = new DlgGammaView(this);
 
     m_pCurImageRef = new YK16GrayImage();
     m_pCurImageComp = new YK16GrayImage();
     m_pCurImageGamma3D = new YK16GrayImage();
-    m_pCurImageGamma2D = new YK16GrayImage();    
+    m_pCurImageGamma2D = new YK16GrayImage();
+
+    QUTIL::LoadColorTable("colormap_jet.txt", m_vColormapDose);
+    QUTIL::LoadColorTable("colormap_customgamma.txt", m_vColormapGamma);
+    
+
+    m_pCurImageRef->SetColorTable(m_vColormapDose);
+    m_pCurImageComp->SetColorTable(m_vColormapDose);
+
+    m_pCurImageGamma3D->SetColorTable(m_vColormapGamma);
+    //m_pCurImageGamma3D->SetColorTable(m_vColormapGammaLow);
+
+    m_pCurImageGamma2D->SetColorTable(m_vColormapGamma);
+    //m_pCurImageGamma2D->SetColorTableGammaHigh(m_vColormapGammaLow);
+
 
     connect(ui.labelReferDose, SIGNAL(Mouse_Pressed_Left()), this, SLOT(SLT_UpdateProbePosRef())); //added
     connect(ui.labelCompDose, SIGNAL(Mouse_Pressed_Left()), this, SLOT(SLT_UpdateProbePosComp())); //added
     connect(ui.labelGammaMap2D, SIGNAL(Mouse_Pressed_Left()), this, SLOT(SLT_UpdateProbePosGamma2D())); //added
     connect(ui.labelGammaMap3D, SIGNAL(Mouse_Pressed_Left()), this, SLOT(SLT_UpdateProbePosGamma3D())); //added
 
+    connect(ui.labelReferDose, SIGNAL(Mouse_Left_DoubleClick()), this, SLOT(SLT_GoCenterPosRef())); //added
+    connect(ui.labelCompDose, SIGNAL(Mouse_Left_DoubleClick()), this, SLOT(SLT_GoCenterPosComp())); //added
+
+    
+
+
+    if (m_vColormapDose.size() < 1 || m_vColormapGamma.size() < 1 || m_vColormapGamma.size() < 1)
+    {
+        cout << "Fatal error!: colormap is not ready. Text files such as colormap_jet.txt should be checked." << endl;
+    }
+
     m_pTableModel = NULL;
+
+    m_bGamma2DIsDone = false;
 }
 
 gamma_gui::~gamma_gui()
@@ -287,6 +295,8 @@ void gamma_gui::SLT_RunBatchGamma()
     }
 
     fout.close();
+
+    SLT_LoadResults();
 }
 
 QString gamma_gui::GammaMain(Gamma_parms* parms)
@@ -562,8 +572,7 @@ void gamma_gui::SLT_DrawAll()
     ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
     ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
-    
+    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);    
 
 
     //Convert3DTo2D (float2D, get radio, probe pos from GUI)
@@ -585,9 +594,12 @@ void gamma_gui::SLT_DrawAll()
     float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
     float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
 
-    FloatImage2DType::Pointer spCurRef2D;
-    FloatImage2DType::Pointer spCurComp2D;
-    FloatImage2DType::Pointer spCurGamma2D;
+    //Move them to Global due to 2D gamma export
+    /*FloatImage2DType::Pointer m_spCurRef2D;
+    FloatImage2DType::Pointer m_spCurComp2D;*/
+    //Move them to Global due to 2D gamma export
+
+    FloatImage2DType::Pointer spCurGamma2DFrom3D; 
     double finalPos1, finalPos2, finalPos3;
 
     enPLANE curPlane;
@@ -621,43 +633,78 @@ void gamma_gui::SLT_DrawAll()
         probePos2D_Y = probePosZ;//YKDebug: may be reversed   
     }
     
-    QUTIL::Get2DFrom3DByPosition(spCurRef, spCurRef2D, curPlane, fixedPos, finalPos1);
-    QUTIL::Get2DFrom3DByPosition(spCurComp, spCurComp2D, curPlane, fixedPos, finalPos2);
+    QUTIL::Get2DFrom3DByPosition(spCurRef, m_spCurRef2D, curPlane, fixedPos, finalPos1);
+    QUTIL::Get2DFrom3DByPosition(spCurComp, m_spCurComp2D, curPlane, fixedPos, finalPos2);
 
 
     if (spCurGamma)
     {
-        QUTIL::Get2DFrom3DByPosition(spCurGamma, spCurGamma2D, curPlane, fixedPos, finalPos3);
+        QUTIL::Get2DFrom3DByPosition(spCurGamma, spCurGamma2DFrom3D, curPlane, fixedPos, finalPos3);
     }    
 
     //YKImage receives 2D float
-    m_pCurImageRef->UpdateFromItkImageFloat(spCurRef2D, GY2YKIMG_MAG, NON_NEG_SHIFT);
-    m_pCurImageComp->UpdateFromItkImageFloat(spCurComp2D, GY2YKIMG_MAG, NON_NEG_SHIFT);  
+    m_pCurImageRef->UpdateFromItkImageFloat(m_spCurRef2D, GY2YKIMG_MAG, NON_NEG_SHIFT);
+    m_pCurImageComp->UpdateFromItkImageFloat(m_spCurComp2D, GY2YKIMG_MAG, NON_NEG_SHIFT);
 
-    if (spCurGamma2D)
+    if (spCurGamma2DFrom3D)
     {
-        m_pCurImageGamma3D->UpdateFromItkImageFloat(spCurGamma2D, GY2YKIMG_MAG, NON_NEG_SHIFT);        
+        m_pCurImageGamma3D->UpdateFromItkImageFloat(spCurGamma2DFrom3D, GAMMA2YKIMG_MAG, NON_NEG_SHIFT);    
+    }
+
+    if (m_spGamma2DResult)
+    {
+        m_pCurImageGamma2D->UpdateFromItkImageFloat(m_spGamma2DResult, GAMMA2YKIMG_MAG, NON_NEG_SHIFT);
     }
 
     float doseGyNormRef = 0.01 * (ui.sliderNormRef->value());
     float doseGyNormComp = 0.01 *(ui.sliderNormComp->value());
     //PixMap
-    m_pCurImageRef->FillPixMapDose(doseGyNormRef);
-    m_pCurImageComp->FillPixMapDose(doseGyNormComp);
+
+    m_pCurImageRef->SetNormValueOriginal(doseGyNormRef);
+    m_pCurImageComp->SetNormValueOriginal(doseGyNormComp);
+
+    m_pCurImageRef->FillPixMapDose();
+    m_pCurImageComp->FillPixMapDose();
+    //m_pCurImageRef->FillPixMapDose(doseGyNormRef);
+    //m_pCurImageComp->FillPixMapDose(doseGyNormComp);
     m_pCurImageGamma3D->FillPixMapGamma();
+    m_pCurImageGamma2D->FillPixMapGamma();
     
     m_pCurImageRef->SetCrosshairPosPhys(probePos2D_X, probePos2D_Y, curPlane);
     m_pCurImageComp->SetCrosshairPosPhys(probePos2D_X, probePos2D_Y, curPlane);
     m_pCurImageGamma3D->SetCrosshairPosPhys(probePos2D_X, probePos2D_Y, curPlane);
+    m_pCurImageGamma2D->SetCrosshairPosPhys(probePos2D_X, probePos2D_Y, curPlane);
 
     m_pCurImageRef->m_bDrawCrosshair = true;
     m_pCurImageComp->m_bDrawCrosshair = true;
     m_pCurImageGamma3D->m_bDrawCrosshair = true;
+    m_pCurImageGamma2D->m_bDrawCrosshair = true;
 
+    m_pCurImageRef->m_bDrawOverlayText = true;
+    m_pCurImageComp->m_bDrawOverlayText = true;
+    m_pCurImageGamma3D->m_bDrawOverlayText = true;
+    m_pCurImageGamma2D->m_bDrawOverlayText = true;
+
+    QString strValRef = QString::number(m_pCurImageRef->GetCrosshairOriginalData() * 100, 'f', 1) + " cGy";
+    QString strValComp = QString::number(m_pCurImageComp->GetCrosshairOriginalData() * 100, 'f', 1) + " cGy";
+    QString strValGamma3D = QString::number(m_pCurImageGamma3D->GetCrosshairOriginalData(), 'f', 2);
+    QString strValGamma2D = QString::number(m_pCurImageGamma2D->GetCrosshairOriginalData(), 'f', 2);
+
+    float fPercRef = m_pCurImageRef->GetCrosshairPercData();
+    float fPercComp = m_pCurImageComp->GetCrosshairPercData();
+    QString strPercRef = QString::number(fPercRef, 'f', 1) + "%";
+    QString strPercComp = QString::number(fPercComp, 'f', 1) + "%";
+    QString strDelta = QString::number(fPercComp - fPercRef, 'f', 1) + "%";   
+
+    m_pCurImageRef->m_strOverlayText = strValRef + " [" + strPercRef + "]";
+    m_pCurImageComp->m_strOverlayText = strValComp + " [" + strPercComp + "]" + ",          Delta= " + strDelta;
+    m_pCurImageGamma3D->m_strOverlayText = strValGamma3D;
+    m_pCurImageGamma2D->m_strOverlayText = strValGamma2D;
 
     ui.labelReferDose->SetBaseImage(m_pCurImageRef);
     ui.labelCompDose->SetBaseImage(m_pCurImageComp);
     ui.labelGammaMap3D->SetBaseImage(m_pCurImageGamma3D);
+    ui.labelGammaMap2D->SetBaseImage(m_pCurImageGamma2D);
     //ui.labelRefDose
     //Set probe point in YKImage and crosshair display on
     //Update Table and Plot    
@@ -666,6 +713,7 @@ void gamma_gui::SLT_DrawAll()
     ui.labelReferDose->update();
     ui.labelCompDose->update();
     ui.labelGammaMap3D->update();
+    ui.labelGammaMap2D->update();
 
     //Update Table and Chart
 
@@ -707,13 +755,16 @@ void gamma_gui::SLT_DrawAll()
             fixedPosProfile = probePosX;
     }
    
-    QUTIL::GetProfile1DByPosition(spCurRef2D, vProfileRef, fixedPosProfile, enDirection);
-    QUTIL::GetProfile1DByPosition(spCurComp2D, vProfileComp, fixedPosProfile, enDirection);
-    QUTIL::GetProfile1DByPosition(spCurGamma2D, vProfileGamma3D, fixedPosProfile, enDirection);
+    QUTIL::GetProfile1DByPosition(m_spCurRef2D, vProfileRef, fixedPosProfile, enDirection);
+    QUTIL::GetProfile1DByPosition(m_spCurComp2D, vProfileComp, fixedPosProfile, enDirection);
+    QUTIL::GetProfile1DByPosition(spCurGamma2DFrom3D, vProfileGamma3D, fixedPosProfile, enDirection);
     //QUTIL::GetProfile1DByPosition(spCurRef2D, vProfileGamma2D, fixedPosProfile, enDirection);
     //cout << "vectorSize= " << vProfileRef.size() << endl;
     
-    UpdateTable(vProfileRef, vProfileComp, vProfileGamma3D, 100.0);
+    //fNorm: Gy
+    //float doseGyNormRef = 0.01 * (ui.sliderNormRef->value());
+    //float doseGyNormComp = 0.01 *(ui.sliderNormComp->value());
+    UpdateTable(vProfileRef, vProfileComp, vProfileGamma3D, doseGyNormRef, doseGyNormComp, 1.0, 100.0, 100.0, 1.0);
 
     SLT_DrawGraph(ui.checkBoxAutoAdjust->isChecked());
 
@@ -863,7 +914,9 @@ void gamma_gui::UpdateProbePos(qyklabel* qlabel)
 
         ui.lineEdit_ProbePosX->setText(QString("%1").arg(physPosX));
         ui.lineEdit_ProbePosZ->setText(QString("%1").arg(physPosY));
-    }
+    }   
+  
+    
     SLT_DrawAll();
 }
 
@@ -878,7 +931,8 @@ void gamma_gui::SLT_DrawChart()
 
 }
 
-void gamma_gui::UpdateTable (vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3, float fMag)
+void gamma_gui::UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
+    float fNorm1, float fNorm2, float fNorm3, float fMag1, float fMag2, float fMag3)
 {
     int numOfData = 3;
 
@@ -920,50 +974,65 @@ void gamma_gui::UpdateTable (vector<QPointF>& vData1, vector<QPointF>& vData2, v
         return;
     }
 
+    if (fNorm1 <= 0 || fNorm2 <= 0 || fNorm3 <= 0)
+        return;
+
     m_pTableModel = new QStandardItemModel(maxRowSize, columnSize, this); //2 Rows and 3 Columns
     m_pTableModel->setHorizontalHeaderItem(0, new QStandardItem(QString("mm")));
-    m_pTableModel->setHorizontalHeaderItem(1, new QStandardItem(QString("cGy_1")));
-    m_pTableModel->setHorizontalHeaderItem(2, new QStandardItem(QString("mm")));
-    m_pTableModel->setHorizontalHeaderItem(3, new QStandardItem(QString("cGy_2")));
-    m_pTableModel->setHorizontalHeaderItem(4, new QStandardItem(QString("mm")));
-    m_pTableModel->setHorizontalHeaderItem(5, new QStandardItem(QString("Gammax100")));
+    m_pTableModel->setHorizontalHeaderItem(1, new QStandardItem(QString("Ref_cGy")));    
+    m_pTableModel->setHorizontalHeaderItem(2, new QStandardItem(QString("Com_cGy")));
+    m_pTableModel->setHorizontalHeaderItem(3, new QStandardItem(QString("Ref_%")));
+    m_pTableModel->setHorizontalHeaderItem(4, new QStandardItem(QString("Com_%")));    
+    m_pTableModel->setHorizontalHeaderItem(5, new QStandardItem(QString("Gamma")));
 
+
+    bool bData2Exists = false;
+    bool bData3Exists = false;
 
     for (int i = 0; i < maxRowSize; i++)
     {
-        qreal tmpVal1 = vData1.at(i).x();
-        qreal tmpVal2 = vData1.at(i).y()*fMag;        
-
-        QString strVal1 = QString::number(tmpVal1, 'f', 1); //cGy
-        QString strVal2 = QString::number(tmpVal2, 'f', 1); //cGy
-
-        m_pTableModel->setItem(i, 0, new QStandardItem(strVal1));
-        m_pTableModel->setItem(i, 1, new QStandardItem(strVal2));
-
         if (i < rowSize2)
+            bData2Exists = true;
+        if (i < rowSize3)
+            bData3Exists = true;
+
+        qreal tmpValX1 = vData1.at(i).x();
+        qreal tmpValY1 = vData1.at(i).y()*fMag1; //Gy --> cGy
+        qreal tmpValY1_Perc = vData1.at(i).y() / fNorm1 * 100.0;
+
+        QString strValX, strValY1, strValY2, strValY1_Perc, strValY2_Perc, strValY3;
+
+
+
+        strValX = QString::number(tmpValX1, 'f', 1); //cGy
+        strValY1 = QString::number(tmpValY1, 'f', 1); //cGy
+        strValY1_Perc = QString::number(tmpValY1_Perc, 'f', 1); //%
+
+        if (bData2Exists)
         {
+            qreal tmpValX2 = vData2.at(i).x();
+            qreal tmpValY2 = vData2.at(i).y()*fMag2;
+            qreal tmpValY2_Perc = vData2.at(i).y() / fNorm2 * 100.0; //fNorm : Gy not cGy            
 
-            tmpVal1 = vData2.at(i).x();
-            tmpVal2 = vData2.at(i).y()*fMag;
-
-            strVal1 = QString::number(tmpVal1, 'f', 1); //cGy
-            strVal2 = QString::number(tmpVal2, 'f', 1); //cGy
-
-            m_pTableModel->setItem(i, 2, new QStandardItem(strVal1));
-            m_pTableModel->setItem(i, 3, new QStandardItem(strVal2));
+            strValY2 = QString::number(tmpValY2, 'f', 1); //cGy        
+            strValY2_Perc = QString::number(tmpValY2_Perc, 'f', 1); //%            
         }
 
-        if (i < rowSize3) //gamma
+        if (bData3Exists)
         {
-            tmpVal1 = vData3.at(i).x();
-            tmpVal2 = vData3.at(i).y()*fMag;
+            qreal tmpValX3 = vData3.at(i).x();
+            qreal tmpValY3 = vData3.at(i).y()*fMag3;
+            qreal tmpValY3_Perc = vData3.at(i).y() / fNorm3 * 100.0; //fNorm : Gy not cGy
 
-            strVal1 = QString::number(tmpVal1, 'f', 1); //cGy
-            strVal2 = QString::number(tmpVal2, 'f', 1); //cGy
+            strValY3 = QString::number(tmpValY3, 'f', 1); //gamma
+        }       
 
-            m_pTableModel->setItem(i, 4, new QStandardItem(strVal1));
-            m_pTableModel->setItem(i, 5, new QStandardItem(strVal2));
-        }
+        m_pTableModel->setItem(i, 0, new QStandardItem(strValX));
+        m_pTableModel->setItem(i, 1, new QStandardItem(strValY1));
+        m_pTableModel->setItem(i, 2, new QStandardItem(strValY2));
+        m_pTableModel->setItem(i, 3, new QStandardItem(strValY1_Perc));
+        m_pTableModel->setItem(i, 4, new QStandardItem(strValY2_Perc));
+        m_pTableModel->setItem(i, 5, new QStandardItem(strValY3));
     }
 
     ui.tableViewProfile->setModel(m_pTableModel);
@@ -979,7 +1048,7 @@ void gamma_gui::SLT_CopyTableToClipboard()
     int rowCnt = m_pTableModel->rowCount();
     int columnCnt = m_pTableModel->columnCount();
 
-    list << "\n";
+    //list << "\n";
     //for (int i = 0 ; i < columnCnt ; i++)		
     //{
     //QFileInfo tmpInfo = QFileInfo(ui.lineEdit_Cur3DFileName->text());
@@ -987,12 +1056,19 @@ void gamma_gui::SLT_CopyTableToClipboard()
     //list << tmpInfo.baseName();
     list << "\n";
 
+    /*  m_pTableModel->setHorizontalHeaderItem(0, new QStandardItem(QString("mm")));
+      m_pTableModel->setHorizontalHeaderItem(1, new QStandardItem(QString("Ref_cGy")));
+      m_pTableModel->setHorizontalHeaderItem(2, new QStandardItem(QString("Com_cGy")));
+      m_pTableModel->setHorizontalHeaderItem(3, new QStandardItem(QString("Ref_%")));
+      m_pTableModel->setHorizontalHeaderItem(4, new QStandardItem(QString("Com_%")));
+      m_pTableModel->setHorizontalHeaderItem(5, new QStandardItem(QString("Gmma100")));
+      */
     list << "mm";
-    list << "cGy_1";
-    list << "mm";
-    list << "cGy_2";
-    list << "mm";
-    list << "Gammax100";
+    list << "Ref_cGy";
+    list << "Com_cGy";
+    list << "Ref_%";
+    list << "Com_%";
+    list << "Gamma";
     list << "\n";
 
     for (int j = 0; j < rowCnt; j++)
@@ -1013,6 +1089,9 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
 {
     if (m_pTableModel == NULL)
         return;
+
+
+    bool bNorm = ui.checkBoxNormalized->isChecked();// show percentage chart
 
     //Draw only horizontal, center
 
@@ -1066,14 +1145,30 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
         if (maxY < tableVal2)
             maxY = tableVal2;
 
-        vAxisX1.push_back(tableVal1);
-        vAxisY1.push_back(tableVal2);
+        
 
-        vAxisX2.push_back(tableVal3);
-        vAxisY2.push_back(tableVal4);
+        if (bNorm) //%
+        {            
+            vAxisX1.push_back(tableVal1);
+            vAxisY1.push_back(tableVal4);
 
-        vAxisX3.push_back(tableVal5);
-        vAxisY3.push_back(tableVal6);
+            vAxisX2.push_back(tableVal1);
+            vAxisY2.push_back(tableVal5);
+
+            vAxisX3.push_back(tableVal1);
+            vAxisY3.push_back(tableVal6);
+        }
+        else
+        {
+            vAxisX1.push_back(tableVal1);
+            vAxisY1.push_back(tableVal2);
+
+            vAxisX2.push_back(tableVal1);
+            vAxisY2.push_back(tableVal3);
+
+            vAxisX3.push_back(tableVal1);
+            vAxisY3.push_back(tableVal6);
+        }        
     }
 
     ui.customPlotProfile->addGraph();
@@ -1086,10 +1181,10 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
     ui.customPlotProfile->graph(1)->setPen(QPen(Qt::red));
     ui.customPlotProfile->graph(1)->setName("Compared dose");
 
-    ui.customPlotProfile->addGraph();
-    ui.customPlotProfile->graph(2)->setData(vAxisX3, vAxisY3);
-    ui.customPlotProfile->graph(2)->setPen(QPen(Qt::green));
-    ui.customPlotProfile->graph(2)->setName("Gamma");
+    /* ui.customPlotProfile->addGraph();
+     ui.customPlotProfile->graph(2)->setData(vAxisX3, vAxisY3);
+     ui.customPlotProfile->graph(2)->setPen(QPen(Qt::green));
+     ui.customPlotProfile->graph(2)->setName("Gamma");*/
 
     if (bInitMinMax)
     {
@@ -1110,7 +1205,12 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
     ui.customPlotProfile->yAxis->setRange(tmpYMin, tmpYMax);
 
     ui.customPlotProfile->xAxis->setLabel("mm");
-    ui.customPlotProfile->yAxis->setLabel("cGy");
+
+    if (bNorm)
+        ui.customPlotProfile->yAxis->setLabel("%");
+    else
+        ui.customPlotProfile->yAxis->setLabel("cGy");
+    
     ui.customPlotProfile->setTitle("Dose profile");
 
     QFont titleFont = font();
@@ -1125,4 +1225,393 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
     ui.customPlotProfile->legend->setPositionStyle(QCPLegend::psTopRight);
     ui.customPlotProfile->legend->setBrush(QBrush(QColor(255, 255, 255, 200)));
     ui.customPlotProfile->replot();
+}
+
+void gamma_gui::SLT_RunGamma2D()
+{
+    if (!m_spCurRef2D)
+        return;
+    if (!m_spCurComp2D)
+        return;
+    //Find export folder.
+    if (m_strlistPath_RD_Comp.empty())
+        return;
+
+    if (m_strlistFileBaseName_Comp.empty())
+        return;
+
+    QComboBox* crntCombo = ui.comboBoxCompareFile;
+    int iCnt = crntCombo->count();
+    if (iCnt < 1 || m_strlistFileBaseName_Comp.count() != iCnt)
+        return;
+
+    int curIdx = crntCombo->currentIndex(); //this should be basename       
+
+    if (curIdx < 0)
+        return;
+
+    QString strPathOutputRoot = m_strlistPath_RD_Comp.at(curIdx);
+    QFileInfo fInfo(strPathOutputRoot);
+    QDir crntDir = fInfo.absolutePath();    
+
+    //Get Current plane
+    
+    float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
+    float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
+    float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();    
+
+    QString curBaseNameRef = m_strlistFileBaseName_Ref.at(curIdx);
+    QString curBaseNameComp = m_strlistFileBaseName_Comp.at(curIdx);
+
+    QString strPlane;
+    if (ui.radioButtonAxial->isChecked())
+    {
+        strPlane = "AXL_Z" + QString::number(probePosZ, 'f', 1) + "mm";
+        //fixedPos = probePosZ;
+    }
+    else if (ui.radioButtonSagittal->isChecked())
+    {
+        strPlane = "SAG_X" + QString::number(probePosX, 'f', 1) + "mm";
+        //fixedPos = probePosX;
+    }
+    else if (ui.radioButtonFrontal->isChecked())
+    {
+        strPlane = "FRN_Y" + QString::number(probePosY, 'f', 1) + "mm";
+        //fixedPos = probePosY;
+    }
+
+    QString subDirName = curBaseNameComp + "_" + strPlane;
+    bool tmpResult = crntDir.mkdir(subDirName); //what if the directory exists?	
+
+    if (!tmpResult)
+        cout << "Warning! Directory for 2D gamma already exists. files will be overwritten." << endl;
+
+    QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
+
+    QDir dirSaving(strSavingFolder);
+    if (!dirSaving.exists())
+    {
+        cout << "Dir is not found:" << strSavingFolder.toLocal8Bit().constData() << endl;
+        return;
+    }
+
+    /* From now on, the target folder is ready */
+
+    QString tmpFilePathRef = strSavingFolder + "/" + "Gamma2DRef.mha";
+    QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";    
+
+    //Save current 2D
+    m_spCurRef2D;
+    m_spCurComp2D;
+
+    QUTIL::SaveFloatImage2D(tmpFilePathRef.toLocal8Bit().constData(), m_spCurRef2D);
+    QUTIL::SaveFloatImage2D(tmpFilePathComp.toLocal8Bit().constData(), m_spCurComp2D);        
+
+    Gamma_parms parms;
+    //Gamma param: should come from the UI
+
+    parms.mask_image_fn = "";
+    //parms->reference_dose;
+    parms.gamma_max = 2.0;
+    parms.b_compute_full_region = false;
+    parms.b_resample_nn = false; //default: false
+
+    //From File List
+    parms.ref_image_fn = tmpFilePathRef.toLocal8Bit().constData();
+    parms.cmp_image_fn = tmpFilePathComp.toLocal8Bit().constData();
+
+    //From GUI
+    if (ui.checkBox_inhereResample->isChecked())
+        parms.f_inherent_resample_mm = ui.lineEdit_inhereResample->text().toDouble();
+    else
+        parms.f_inherent_resample_mm = -1.0;
+
+    parms.b_interp_search = ui.checkBox_Interp_search->isChecked();
+
+    if (ui.radioButton_localGamma->isChecked())
+    {
+        parms.b_local_gamma = true;
+        parms.reference_dose = 0.0;
+    }
+    else
+    {
+        parms.b_local_gamma = false;
+        parms.reference_dose = ui.lineEdit_refDoseInGy->text().toDouble();
+    }
+
+    parms.dta_tolerance = ui.lineEdit_dta_tol->text().toDouble();
+    parms.dose_tolerance = ui.lineEdit_dose_tol->text().toDouble() / 100.0;//gui input: 3% --> param: 0.03
+    parms.f_analysis_threshold = ui.lineEdit_cutoff_dose->text().toDouble() / 100.0;
+
+    //Saving folder: comp folder. FileName Should Include dta, dose, local/global
+
+    //QFileInfo fInfo = QFileInfo(tmpFilePathComp);
+    //QString dirPath = fInfo.absolutePath();
+    //QString baseName = fInfo.completeBaseName();
+
+    QString strLocGlob;
+
+    if (parms.b_local_gamma)
+        strLocGlob = "loc";
+    else
+        strLocGlob = "glb";
+
+    QString strSettingAbs = QString::number(parms.dta_tolerance, 'f', 0) + "mm_" + ""
+        + QString::number(parms.dose_tolerance*100.0, 'f', 0) + "%_" + strLocGlob;
+
+    //QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";
+
+    QString strPathGamma2D = strSavingFolder + "\\" + "gamma2D" + ".mha";
+    if (ui.checkBox_gammamap_output->isChecked())
+    {        
+        parms.out_image_fn = strPathGamma2D.toLocal8Bit().constData();     
+    }
+
+    QString strPathFailmap2D = strSavingFolder + "\\" + "fail2D" + ".mha";
+    if (ui.checkBox_failuremap_output->isChecked())
+    {
+        parms.out_failmap_fn = strPathFailmap2D.toLocal8Bit().constData();
+    }
+
+    QString strPathReport = strSavingFolder + "\\" + "_report" + ".txt";
+    parms.out_report_fn = strPathReport.toLocal8Bit().constData();
+
+    QString overallReport = GammaMain(&parms); //report for a single case
+    //Update GUI
+
+    //Read gammap2D
+
+    //m_spGamma2DResult;
+    QUTIL::LoadFloatImage2D(strPathGamma2D.toLocal8Bit().constData(), m_spGamma2DResult);
+
+
+    
+
+    //Update plainTextEditGammaResult    
+    
+
+    QFileInfo reportInfo = QFileInfo(strPathReport);
+
+    if (!reportInfo.exists())
+    {
+        cout << "Error! output text doesn't exist." << endl;
+        return;
+    }    
+
+
+    //Update Report txt here
+    ui.plainTextEditGammaResult2D->clear();
+    QStringList strList = QUTIL::LoadTextFile(strPathReport.toLocal8Bit().constData());
+
+    for (int i = 0; i < strList.count(); i++)
+        ui.plainTextEditGammaResult2D->appendPlainText(strList.at(i));
+
+    QTextCursor txtCursor = ui.plainTextEditGammaResult2D->textCursor();
+    //position where you want it
+    txtCursor.setPosition(0);
+    ui.plainTextEditGammaResult2D->setTextCursor(txtCursor);
+
+
+    //SaveIBA Image format
+
+    
+    QString IBAFilePathRef = strSavingFolder + "/" + strPlane + "_" + curBaseNameRef + ".OPG";
+    QString IBAFilePathComp = strSavingFolder + "/" + strPlane + "_" + curBaseNameComp + ".OPG";
+    
+    SaveDoseIBAGenericTXTFromItk(IBAFilePathRef.toLocal8Bit().constData(), m_spCurRef2D);
+    SaveDoseIBAGenericTXTFromItk(IBAFilePathComp.toLocal8Bit().constData(), m_spCurComp2D);
+
+    SLT_DrawAll();
+}
+
+void gamma_gui::SLT_GoCenterPosRef()
+{
+    QComboBox* crntCombo = ui.comboBoxCompareFile;    
+    int curIdx = crntCombo->currentIndex(); //this should be basename       
+
+    if (curIdx < 0)
+        return;
+
+    if (m_vRefDoseImages.empty())
+        return;
+
+    FloatImageType::Pointer spCurFloat3D = m_vRefDoseImages.at(curIdx);
+
+    FloatImageType::PointType ptOrigin = spCurFloat3D->GetOrigin();
+    FloatImageType::SizeType imgSize = spCurFloat3D->GetBufferedRegion().GetSize(); //dimension
+    FloatImageType::SpacingType imgSpacing = spCurFloat3D->GetSpacing(); //dimension    
+
+    VEC3D middlePtPos;
+    middlePtPos.x = ptOrigin[0] + imgSize[0] * imgSpacing[0] / 2.0;
+    middlePtPos.y = ptOrigin[1] + imgSize[1] * imgSpacing[1] / 2.0;
+    middlePtPos.z = ptOrigin[2] + imgSize[2] * imgSpacing[2] / 2.0;
+
+    ui.lineEdit_ProbePosX->setText(QString::number(middlePtPos.x, 'f', 1));
+    ui.lineEdit_ProbePosY->setText(QString::number(middlePtPos.y, 'f', 1));
+    ui.lineEdit_ProbePosZ->setText(QString::number(middlePtPos.z, 'f', 1));
+
+    SLT_DrawAll(); //triggered when Go Position button
+}
+
+void gamma_gui::SLT_GoCenterPosComp()
+{
+    QComboBox* crntCombo = ui.comboBoxCompareFile;
+    int curIdx = crntCombo->currentIndex(); //this should be basename       
+
+    if (curIdx < 0)
+        return;
+
+    if (m_vCompDoseImages.empty())
+        return;
+
+    FloatImageType::Pointer spCurFloat3D = m_vCompDoseImages.at(curIdx);
+
+    FloatImageType::PointType ptOrigin = spCurFloat3D->GetOrigin();
+    FloatImageType::SizeType imgSize = spCurFloat3D->GetBufferedRegion().GetSize(); //dimension
+    FloatImageType::SpacingType imgSpacing = spCurFloat3D->GetSpacing(); //dimension    
+
+    VEC3D middlePtPos;
+    middlePtPos.x = ptOrigin[0] + imgSize[0] * imgSpacing[0] / 2.0;
+    middlePtPos.y = ptOrigin[1] + imgSize[1] * imgSpacing[1] / 2.0;
+    middlePtPos.z = ptOrigin[2] + imgSize[2] * imgSpacing[2] / 2.0;
+
+    ui.lineEdit_ProbePosX->setText(QString::number(middlePtPos.x, 'f', 1));
+    ui.lineEdit_ProbePosY->setText(QString::number(middlePtPos.y, 'f', 1));
+    ui.lineEdit_ProbePosZ->setText(QString::number(middlePtPos.z, 'f', 1));
+
+    SLT_DrawAll(); //triggered when Go Position button
+}
+
+void gamma_gui::SLT_NormCompFromRefNorm() //button
+{
+    QString crntNormComp = ui.lineEditNormComp->text();
+    float crntNormF = crntNormComp.toFloat();
+
+    if (crntNormF <= 0)
+        return;
+
+    //Get RefValue
+    int iCurrRefNormVal = ui.sliderNormRef->value(); //cGy
+    int iCurrCompNormVal = qRound(iCurrRefNormVal*crntNormF);
+
+    ui.sliderNormComp->setValue(iCurrCompNormVal);
+}
+
+
+void gamma_gui::SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DType::Pointer& spFloatDose)
+{
+    if (!spFloatDose)
+        return;
+
+    //Set center point first (from MainDLg --> TIF) //this will update m_rXPos.a, b
+    //SetRationalCenterPosFromDataCenter(dataCenterPoint);
+    //POINT ptCenter = GetDataCenter(); //will get dataPt from m_rXPos    
+
+    FloatImage2DType::PointType ptOrigin = spFloatDose->GetOrigin();
+    FloatImage2DType::SizeType imgSize = spFloatDose->GetBufferedRegion().GetSize(); //dimension
+    FloatImage2DType::SpacingType imgSpacing = spFloatDose->GetSpacing(); //dimension    
+
+    int imgWidth = imgSize[0];
+    int imgHeight = imgSize[1];
+
+    float spacingX = imgSpacing[0];
+    float spacingY = imgSpacing[1];
+
+    float originX = ptOrigin[0];
+    float originY = ptOrigin[1];
+
+    ofstream fout;
+    fout.open(strFilePath.toLocal8Bit().constData());
+
+    fout << "<opimrtascii>" << endl;
+    fout << endl;
+
+    fout << "<asciiheader>" << endl;
+    fout << "Separator:	[TAB]" << endl;
+    fout << "Workspace Name:	n/a" << endl;
+    fout << "File Name:	n/a" << endl;
+    fout << "Image Name:	n/a" << endl;
+    fout << "Radiation Type:	Photons" << endl;
+    fout << "Energy:	0.0 MV" << endl;
+    fout << "SSD:	10.0 cm" << endl;
+    fout << "SID:	100.0 cm" << endl;
+    fout << "Field Size Cr:	10.0 cm" << endl;
+    fout << "Field Size In:	10.0 cm" << endl;
+    fout << "Data Type:	Abs. Dose" << endl;
+    fout << "Data Factor:	1.000" << endl;
+    fout << "Data Unit:	mGy" << endl;
+    fout << "Length Unit:	cm" << endl;
+    fout << "Plane:	" << "XY" << endl;
+    fout << "No. of Columns:	" << imgWidth << endl;
+    fout << "No. of Rows:	" << imgHeight << endl;
+    fout << "Number of Bodies:	" << 1 << endl;
+    fout << "Operators Note:	made by ykp" << endl;
+    fout << "</asciiheader>" << endl;
+    fout << endl;
+
+    fout << "<asciibody>" << endl;
+    fout << "Plane Position:     0.00 cm" << endl;
+    fout << endl;
+
+    fout << "X[cm]" << "\t";
+
+    QString strTempX;
+    double fPosX = 0.0;
+
+    for (int i = 0; i < imgWidth; i++)
+    {
+        fPosX = (originX + i*spacingX) * 0.1;//mm --> cm        
+        fout << QString::number(fPosX, 'f', 3).toLocal8Bit().constData() << "\t";
+    }
+    fout << endl;
+
+    fout << "Y[cm]" << endl;
+
+    QString strTempY;
+    double fPosY = 0.0; //cm
+
+    int imgVal = 0; // mGy, integer
+
+
+    itk::ImageRegionConstIterator<FloatImage2DType> it(spFloatDose, spFloatDose->GetRequestedRegion());
+    it.GoToBegin();
+
+
+    float* pImg;
+    pImg = new float [imgWidth*imgHeight];
+        
+    int idx = 0;
+    for (it.GoToBegin(); !it.IsAtEnd(); it++)
+    {
+        pImg[idx] = it.Get();
+        idx++;
+    }
+
+    for (int i = imgHeight - 1; i >= 0; i--)
+    {
+        //spacing: mm/px --> to make a cm, * 0.1 
+        fPosY = (originY + i*spacingY) * 0.1; //--> Image writing From bottom to Top   // Y value < 0  means Inferior in XY plane --> more make sense
+        QString strYVal = QString::number(fPosY, 'f', 3);
+        fout << strYVal.toLocal8Bit().constData() << "\t";
+
+        for (int j = 0; j < imgWidth; j++)
+        {
+            imgVal = qRound(pImg[imgWidth*i + j] * 1000); // Gy --> mGy
+            fout << imgVal << "\t";
+        }
+        fout << endl;
+    }
+
+    delete [] pImg;
+
+    fout << "</asciibody>" << endl;
+    fout << "</opimrtascii>" << endl;
+
+    //  POINT GetDataCenter();//data center index, 0 based
+    // double m_spacingX;	// mm/pixel
+    //double m_spacingY;// mm/pixel
+
+    fout.close();
+
+    return;
 }

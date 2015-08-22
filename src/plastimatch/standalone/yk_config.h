@@ -16,7 +16,7 @@
 
 
 #define GY2YKIMG_MAG 1000.0 //40Gy --> 40000, 2Gy --> 2000
-#define GAMMA2YKIMG_MAG 256.0 //2 --> 512: 0~1: 256, 1-2: 256
+#define GAMMA2YKIMG_MAG 1000.0 //2 --> 512: 0~1: 256, 1-2: 256
 #define GY2CGY 100.0;
 
 #define NON_NEG_SHIFT 0.0 //2 --> 512: 0~1: 256, 1-2: 256

@@ -12,6 +12,8 @@
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include <QPainter>
 
+#include "qt_util.h"
+
 
 using namespace std;
 
@@ -91,11 +93,13 @@ YK16GrayImage::YK16GrayImage(void)
 
 	m_bDraw8Bit = false;
 
-
         m_fIntensityMag = 1.0;//intensity magnification factor default = 1.0;
         m_fIntensityOffset = 0.0;//intensity Offset factor default = 0.0;
 
+        m_bDrawOverlayText = false;
+
         //m_bDrawContours = false;
+        m_fNormValue = -1.0;
 }
 
 YK16GrayImage::YK16GrayImage(int width, int height)
@@ -176,6 +180,9 @@ YK16GrayImage::YK16GrayImage(int width, int height)
 
         m_fIntensityMag = 1.0;//intensity magnification factor default = 1.0;
         m_fIntensityOffset = 0.0;//intensity Offset factor default = 0.0;
+
+        m_bDrawOverlayText = false;
+        m_fNormValue = -1.0;
 }
 
 YK16GrayImage::~YK16GrayImage(void)
@@ -212,6 +219,10 @@ bool YK16GrayImage::ReleaseBuffer()
         //m_vContourROI.clear();
 
         ClearContourROI();
+
+        m_strOverlayText = "";
+
+        m_fNormValue = -1.0;
 
 	return true;
 }
@@ -484,6 +495,72 @@ bool YK16GrayImage::FillPixMap(int winMid, int winWidth) //0-65535 Сп window lev
 	return true;
 }
 
+void YK16GrayImage::SetNormValueOriginal(float normval)
+{
+    m_fNormValue = normval;
+}
+
+
+//normval = Gy
+bool YK16GrayImage::FillPixMapDose()
+{
+    if (m_pData == NULL)
+        return false;
+
+    if (m_fNormValue <= 0.0)
+        return false;
+
+    int size = m_iWidth*m_iHeight;
+
+    uchar* tmpData = new uchar[size * 3];//RGB
+    unsigned short curVal = 0;
+    float originalVal = 0.0;
+    float percVal = 0.0;
+
+    for (int i = 0; i < m_iHeight; i++) //So long time....
+    {
+        for (int j = 0; j < m_iWidth; j++)
+        {
+            curVal = m_pData[i*m_iWidth + j];
+            originalVal = GetOriginalIntensityVal(curVal);
+            percVal = originalVal / m_fNormValue*100.0;
+
+            //use lookup table
+            QColor colorVal = GetColorFromDosePerc(percVal);
+
+            int tmpIdx = 3 * (i*m_iWidth + j);
+
+            tmpData[tmpIdx + 0] = colorVal.red();
+            tmpData[tmpIdx + 1] = colorVal.green();
+            tmpData[tmpIdx + 2] = colorVal.blue();
+        }
+    }
+
+    int iBytesPerLine = m_iWidth * 3;
+    QImage tmpQImage = QImage((unsigned char*)tmpData, m_iWidth, m_iHeight, iBytesPerLine, QImage::Format_RGB888); //not deep copy!
+
+
+    //image ratio (width / height) should be kept constant.
+    //PAN: center of image is moving
+
+    //m_QImage = tmpQImage.copy(0,0,m_iWidth, m_iHeight); //memory allocated here!!!
+
+    int newWidth = qRound(m_iWidth / m_fZoom);
+    int newHeight = qRound(m_iHeight / m_fZoom);
+
+    int centerX = m_iOffsetX + qRound(m_iWidth / 2.0);
+    int centerY = m_iOffsetY + qRound(m_iHeight / 2.0);
+
+    int newLeftTopX = centerX - qRound(newWidth / 2.0);
+    int newLeftTopY = centerY - qRound(newHeight / 2.0);
+
+    m_QImage = tmpQImage.copy(qRound(newLeftTopX), qRound(newLeftTopY), newWidth, newHeight); //memory allocated here!!!
+
+    delete[] tmpData;
+    return true;
+
+}
+
 //normval = Gy
 bool YK16GrayImage::FillPixMapDose(float normval)
 {
@@ -560,11 +637,23 @@ bool YK16GrayImage::FillPixMapGamma()
     {
         for (int j = 0; j < m_iWidth; j++)
         {
+                 if (i == 10 && j == qRound(m_iWidth / 2.0))
+                     int aa = 5;
             curVal = m_pData[i*m_iWidth + j];
             originalVal = GetOriginalIntensityVal(curVal);            
 
             //use lookup table
             QColor colorVal = GetColorFromGamma(originalVal);
+
+            //originalVal is always 0 or 1 now
+
+           /* if (originalVal > 0 && originalVal < 1)
+            {
+                cout << "number is = " << originalVal << " " << curVal << " " << m_fIntensityMag << endl;
+            }*/
+                
+
+
 
             int tmpIdx = 3 * (i*m_iWidth + j);
 
@@ -2191,6 +2280,9 @@ void YK16GrayImage::UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkI
 
     m_pData = new unsigned short[m_iWidth*m_iHeight];
 
+    this->m_fIntensityMag = fIntenistyMag;
+    this->m_fIntensityOffset = fIntensityOffset;
+
     itk::ImageRegionIterator<FloatImageType2D> it(spRefItkImg, spRefItkImg->GetRequestedRegion());
 
     int i = 0;
@@ -2452,7 +2544,7 @@ bool YK16GrayImage::SetDisplayStatus(QString& strROIName, bool bDisplay)
 
 float YK16GrayImage::GetOriginalIntensityVal(unsigned short usPixVal)
 {
-    if (m_fIntensityMag <= 0)
+    if (m_fIntensityMag <= 0)   
         return -1.0;
 
     return (float)(usPixVal - m_fIntensityOffset) / m_fIntensityMag;
@@ -2506,41 +2598,59 @@ void YK16GrayImage::SetCrosshairPosPhys(float physX, float physY, enPLANE plane)
 
 QColor YK16GrayImage::GetColorFromDosePerc(float percVal) //to be edited to use LUT
 {
-    float blueRef = 40.0;
+   /* float blueRef = 40.0;
     float greenRef = 80.0;
-    float redRef = 120.0;
+    float redRef = 120.0;*/
 
+        
+
+    /*   if (percVal < blueRef)
+       {
+       blueVal = (int)((blueRef - percVal)*4.0+90.0);
+       greenVal = 0;
+       redVal = 0;
+       }
+
+       else if (percVal >= blueRef && percVal < greenRef)
+       {
+       blueVal = 0;
+       greenVal = (int)((greenRef - percVal)*4.0 + 90.0);
+       redVal = 0;
+       }
+       else if (percVal >= greenRef && percVal < redRef)
+       {
+       blueVal = 0;
+       greenVal = 0;;
+       redVal = (int)((redRef - percVal)*4.0 + 90.0);
+       }
+
+       else if (percVal > redRef)
+       {
+       blueVal = 255;
+       greenVal = 255;;
+       redVal = 255;
+       }       */
     QColor color;
     int blueVal, greenVal, redVal;
 
-    if (percVal < blueRef)
-    {
-        blueVal = (int)((blueRef - percVal)*4.0+90.0);
-        greenVal = 0;
-        redVal = 0;
-    }
+    if (m_vColorTable.empty())
+        return color;
 
-    else if (percVal >= blueRef && percVal < greenRef)
-    {
-        blueVal = 0;
-        greenVal = (int)((greenRef - percVal)*4.0 + 90.0);
-        redVal = 0;
-    }
-    else if (percVal >= greenRef && percVal < redRef)
-    {
-        blueVal = 0;
-        greenVal = 0;;
-        redVal = (int)((redRef - percVal)*4.0 + 90.0);
-    }
+    float minDosePerc = 0.0;
+    float maxDosePerc = 120.0; //120%
+    VEC3D curVal = QUTIL::GetRGBValueFromTable(m_vColorTable, minDosePerc, maxDosePerc, percVal);
 
-    else if (percVal > redRef)
-    {
-        blueVal = 255;
-        greenVal = 255;;
+    redVal = qRound(curVal.x*255);
+    greenVal = qRound(curVal.y*255);
+    blueVal = qRound(curVal.z*255);
+
+    if (redVal > 255)
         redVal = 255;
-    }       
+    if (greenVal > 255)
+        greenVal = 255;
+    if (blueVal > 255)
+        blueVal = 255;
 
-    
     color.setRed(redVal);
     color.setGreen(greenVal);
     color.setBlue(blueVal);
@@ -2550,37 +2660,128 @@ QColor YK16GrayImage::GetColorFromDosePerc(float percVal) //to be edited to use 
 
 QColor YK16GrayImage::GetColorFromGamma(float gammaVal)
 {    
-    float redRef = 1.0;
+       /* int baseRed = 50;
+     int baseBlue = 55;
+
+     if (gammaVal <= 1.0)
+     {
+     blueVal = baseBlue + (int)(200 - 200 * gammaVal);
+     if (blueVal < 50)
+     blueVal = baseBlue;
+     greenVal = 0;
+     redVal = 0;
+     }
+     else if (gammaVal > 1.0 && gammaVal < 2.0)
+     {
+     blueVal = 0;
+     greenVal = 0;
+     redVal = baseRed + (gammaVal - 1.0)*200;
+     }
+     else
+     {
+     blueVal = 0;
+     greenVal = 0;
+     redVal = 255;
+     }*/
+
 
     QColor color;
     int blueVal, greenVal, redVal;
 
-    int baseRed = 50;
-    int baseBlue = 55;
+    if (m_vColorTable.empty())
+        return color;
 
-    if (gammaVal <= 1.0)
-    {
-        blueVal = baseBlue + (int)(200 - 200 * gammaVal);
-        if (blueVal < 50)
-            blueVal = baseBlue;
-        greenVal = 0;
-        redVal = 0;
-    }
-    else if (gammaVal > 1.0 && gammaVal < 2.0)
-    {
-        blueVal = 0;
-        greenVal = 0;
-        redVal = baseRed + (gammaVal - 1.0)*200;
-    }
-    else
-    {
-        blueVal = 0;
-        greenVal = 0;
+    float minVal;
+    float maxVal;
+
+    VEC3D curVal; 
+
+    //if (gammaVal < 1.0)
+    //{
+    //    minVal = 0.0;
+    //    maxVal = 1.0; //120%
+    //    
+    //}
+    //else if (gammaVal >= 1.0 && gammaVal <= 2.0)
+    //{
+    //    minVal = 1.0;
+    //    maxVal = 2.0; //120%        
+    //    curVal = QUTIL::GetRGBValueFromTable(m_vColorTableGammaHigh, minVal, maxVal, gammaVal);
+    //}
+    //else
+    //{
+    //    curVal = { 1.0, 1.0, 1.0 };
+    //}   
+
+    curVal = QUTIL::GetRGBValueFromTable(m_vColorTable, 0.0, 2.0, gammaVal);
+
+    redVal = qRound(curVal.x * 255);
+    greenVal = qRound(curVal.y * 255);
+    blueVal = qRound(curVal.z * 255);
+
+    if (redVal > 255)
         redVal = 255;
-    }
+    if (greenVal > 255)
+        greenVal = 255;
+    if (blueVal > 255)
+        blueVal = 255;
+
     color.setRed(redVal);
     color.setGreen(greenVal);
     color.setBlue(blueVal);
 
     return color;
 }
+
+void YK16GrayImage::SetColorTable(vector<VEC3D>& vInputColorTable)
+{
+    if (vInputColorTable.empty())
+        return;
+
+    m_vColorTable.clear();
+
+    m_vColorTable = vInputColorTable; //deep copy?
+
+}
+
+unsigned short YK16GrayImage::GetCrosshairPixelData()
+{
+    return  GetPixelData(m_ptCrosshair.x(), m_ptCrosshair.y());
+}
+
+float YK16GrayImage::GetCrosshairOriginalData()
+{
+    return GetOriginalIntensityVal(GetCrosshairPixelData());
+}
+
+float YK16GrayImage::GetCrosshairPercData()
+{
+    if (m_fNormValue > 0)
+    {
+        return (GetOriginalIntensityVal(GetCrosshairPixelData()) / m_fNormValue*100.0);
+    }
+    else
+        return 0.0;
+}
+
+//void YK16GrayImage::SetColorTableGammaLow(vector<VEC3D>& vInputColorTable)
+//{
+//    if (vInputColorTable.empty())
+//        return;
+//
+//    m_vColorTableGammaLow.clear();
+//
+//    m_vColorTableGammaLow = vInputColorTable; //deep copy?
+//
+//}
+//
+//void YK16GrayImage::SetColorTableGammaHigh(vector<VEC3D>& vInputColorTable)
+//{
+//    if (vInputColorTable.empty())
+//        return;
+//
+//    m_vColorTableGammaHigh.clear();
+//
+//    m_vColorTableGammaHigh = vInputColorTable; //deep copy?
+//
+//}

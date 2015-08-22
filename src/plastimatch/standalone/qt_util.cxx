@@ -1055,6 +1055,72 @@ QStringList QUTIL::LoadTextFile(const char* txtFilePath)
 
     return resultStrList;
 }
+
+void QUTIL::LoadColorTable(const char* filePath, vector<VEC3D>& vRGBTable)
+{
+    vRGBTable.clear();
+
+    QStringList resultStrList;
+
+    ifstream fin;
+    fin.open(filePath);
+
+    if (fin.fail())
+    {
+        cout << "No such file found: " << filePath << endl;
+        return;
+    }     
+
+    char str[MAX_LINE_LENGTH];
+    VEC3D curRGB;
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+        QString tmpStr = QString(str);
+        resultStrList = tmpStr.split("\t");
+
+        if (resultStrList.count() == 3)
+        {
+            curRGB.x = resultStrList.at(0).toFloat();
+            curRGB.y = resultStrList.at(1).toFloat();
+            curRGB.z = resultStrList.at(2).toFloat();
+        }
+        vRGBTable.push_back(curRGB);
+    }
+    fin.close();
+    return;
+}
+
+VEC3D QUTIL::GetRGBValueFromTable(vector<VEC3D>& vRGBTable, float fMinGray, float fMaxGray, float fLookupGray)
+{
+    VEC3D resultRGB = { 0.0, 0.0, 0.0 };
+
+    float width = fMaxGray - fMinGray;
+
+    if (width <= 0)
+        return resultRGB;
+
+    float fractionGray = (fLookupGray - fMinGray) / width;
+
+    int numDiscret = vRGBTable.size();
+
+    if (numDiscret < 1)
+        return resultRGB;
+
+    int lookupIdx = qRound(fractionGray*numDiscret);
+
+    if (lookupIdx < numDiscret)
+    {
+        resultRGB = vRGBTable.at(lookupIdx);
+    }
+    else
+    {
+        resultRGB = vRGBTable.at(numDiscret - 1);
+    }
+    return resultRGB;
+}
+
 //
 //void QUTIL::UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
 //    QStandardItemModel* pTableModel, gamma_gui* pParent)

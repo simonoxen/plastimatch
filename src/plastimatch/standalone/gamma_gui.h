@@ -5,6 +5,7 @@
 #include "ui_gamma_gui.h"
 #include <QStringList>
 #include <vector>
+#include "yk_config.h"
 
 //#include "itkImageFileReader.h"
 //#include "itkImageFileWriter.h"
@@ -33,12 +34,13 @@ public:
     QString GammaMain(Gamma_parms* parms);     
 
     void Load_FilesToMem();//all ref, comp, gamma map should be prepared    
-    void UpdateProbePos(qyklabel* qlabel);
-    
+    void UpdateProbePos(qyklabel* qlabel);    
 
-    //void UpdateTable();
-    void UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3, float fMag);    
-    
+    void UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
+        float fNorm1, float fNorm2, float fNorm3, float fMag1, float fMag2, float fMag3);
+    //fNorm: Gy value, fNorm3 = 1.0;
+    //fMag1,2 for dose, 100.0
+    //fMag3: for gamma, 100.0    
 
     public slots:        
         void SLT_Load_RD_Ref();
@@ -66,7 +68,13 @@ public:
         void SLT_CopyTableToClipboard();
         //void SLT_DrawGraph(); 
         void SLT_DrawGraph(bool bInitMinMax = false);
+        void SLT_RunGamma2D();
 
+        void SLT_GoCenterPosRef();
+        void SLT_GoCenterPosComp();
+        void SLT_NormCompFromRefNorm();
+
+        void SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DType::Pointer& spFloatDose);
         
 
 public:    
@@ -88,6 +96,11 @@ public:
     vector<FloatImageType::Pointer> m_vCompDoseImages;
     vector<FloatImageType::Pointer> m_vGammaMapImages;
 
+
+    FloatImage2DType::Pointer m_spCurRef2D;
+    FloatImage2DType::Pointer m_spCurComp2D;
+    FloatImage2DType::Pointer m_spGamma2DResult; //Read from output of 2D gamma
+
     /*FloatImageType::Pointer m_spRefDoseImages;
     FloatImageType::Pointer m_spCompDoseImages;
     FloatImageType::Pointer m_spGammaMapImages;*/
@@ -96,8 +109,12 @@ public:
     YK16GrayImage* m_pCurImageComp;
     YK16GrayImage* m_pCurImageGamma3D;
     YK16GrayImage* m_pCurImageGamma2D;
-
     QStandardItemModel *m_pTableModel;
+
+    vector<VEC3D> m_vColormapDose;
+    vector<VEC3D> m_vColormapGamma;
+
+    bool m_bGamma2DIsDone;
 private:
     Ui::gamma_guiClass ui;
 };

@@ -34,6 +34,8 @@ public:
 	void mouseReleaseEvent(QMouseEvent *ev);
 	void wheelEvent(QWheelEvent * event); //this->setText("Delta Value: "+QString::number(event->delta()));
 
+        void mouseDoubleClickEvent(QMouseEvent *ev);
+
 	//void keyPressEvent ( QKeyEvent *ev);
 	//void focusInEvent ( QFocusEvent * ev );
 	//void focusOutEvent ( QFocusEvent * ev );
@@ -68,6 +70,9 @@ signals:
 	void Mouse_Released_Left();
 	void Mouse_Released_Right();
 	void Mouse_Wheel();
+
+        void Mouse_Left_DoubleClick();
+        void Mouse_Right_DoubleClick();
 
 	void FocusIn();
 	void FocusOut();

@@ -81,6 +81,7 @@ public:
 
         float m_fIntensityMag;//intensity magnification factor default = 1.0;
         float m_fIntensityOffset;//intensity Offset factor default = 0.0;
+        float m_fNormValue;
 
         void SetIntensityModification(float intensityMag, float intensityOffset){ m_fIntensityMag = intensityMag; m_fIntensityOffset = intensityOffset; }
         float GetOriginalIntensityVal(unsigned short usPixVal); //regarding m_fIntensityMag and m_fIntensityOffset
@@ -104,10 +105,12 @@ public:
 	bool FillPixMapMinMax(int winMin, int winMax); //0-65535 Сп window level
         
         bool FillPixMapDose(float normval);
+        bool FillPixMapDose(); //m_fNormValue
+        void SetNormValueOriginal(float normval);
+
         QColor GetColorFromDosePerc(float percVal);
         bool FillPixMapGamma();
-        QColor GetColorFromGamma(float gammaVal);
-        
+        QColor GetColorFromGamma(float gammaVal);        
 
 	bool FillPixMapDual(int winMid1, int winMid2,int winWidth1, int winWidth2);
 	bool FillPixMapMinMaxDual(int winMin1, int winMin2, int winMax1, int winMax2); //0-65535 Сп window level
@@ -190,6 +193,9 @@ public:
 	double m_fZoom;
 	void SetZoom(double fZoom);
 	unsigned short GetPixelData(int x, int y);
+        unsigned short GetCrosshairPixelData();//Get pixel data of crosshair
+        float GetCrosshairOriginalData();//Get pixel data of crosshair
+        float GetCrosshairPercData();//Get pixel data of crosshair
 
 	//SPLIT VIEW
 	QPoint m_ptSplitCenter; //Fixed image with Moving image. center is based on dataPt.//Fixed Image: Left Top + Right Bottom, Moving: Right Top + Left Bottom        
@@ -204,10 +210,10 @@ public:
 	void SetProfileProbePos(int dataX, int dataY);                
         void SetCrosshairPosPhys(float physX, float physY, enPLANE plane);
 
-
 	unsigned short GetProfileProbePixelVal();	
 	void GetProfileData(int dataX, int dataY, QVector<double>& vTarget, enProfileDirection direction); 
 	void GetProfileData(QVector<double>& vTarget, enProfileDirection direction);
+       
 
 	void EditImage_Flip();
 	void EditImage_Mirror();
@@ -266,6 +272,9 @@ public:
 
 	void UpdateTrackingData(YK16GrayImage* pYKProcessedImage);
 	bool m_bDraw8Bit; //if some processing is done by 8bit
+
+        bool m_bDrawOverlayText;
+        QString m_strOverlayText;
 	
         //2D points in data map. only outer contour points are included here after trimming out.
         //std::vector<QPoint> m_vContourROI; //later it will be array or linked list to display mutliple ROIs
@@ -279,4 +288,13 @@ public:
         void ClearContourROI();// delete all the data of contourROI
         bool SetDisplayStatus(QString& strROIName, bool bDisplay);
         //void GetColorSingleROI()
+
+
+        vector<VEC3D> m_vColorTable;
+        //vector<VEC3D> m_vColorTableGammaLow;
+        //vector<VEC3D> m_vColorTableGammaHigh;
+
+        void SetColorTable(vector<VEC3D>& vInputColorTable);
+
+        
 };

@@ -51,6 +51,23 @@ void qyklabel::mousePressEvent( QMouseEvent *ev )
 	}
 }
 
+
+void qyklabel::mouseDoubleClickEvent(QMouseEvent *ev)
+{
+    if (m_pYK16Image == NULL)
+        return;
+
+    if (ev->button() == Qt::LeftButton)
+    {
+        emit Mouse_Left_DoubleClick();
+    }
+    if (ev->button() == Qt::RightButton)
+    {
+        emit Mouse_Right_DoubleClick();
+    }
+}
+
+
 void qyklabel::mouseReleaseEvent( QMouseEvent *ev )
 {
   if (m_pYK16Image == NULL)
@@ -259,6 +276,21 @@ void qyklabel::paintEvent( QPaintEvent * )
 	  painter.drawLine(0, ptDispCrosshair.y() ,this->width()-1, ptDispCrosshair.y());
 	  painter.drawLine(ptDispCrosshair.x(), 0, ptDispCrosshair.x(), this->height()-1);
 	}
+
+        if (m_pYK16Image->m_bDrawOverlayText && m_pYK16Image->m_strOverlayText.length() > 1) //objects should be addressed one by one
+        {
+            /*this->setText(m_pYK16Image->m_strOverlayText);
+            this->setFont(QFont("Helvetica", 12, 1, false));
+            this->setAlignment(Qt::AlignBottom);*/
+            int rtWidth = this->width();
+            int rtHeight = this->height() / 7.0;
+            int leftPos = 10;
+            int topPos = qRound(this->height() - rtHeight);
+
+            QRect rt = QRect(leftPos, topPos, rtWidth, rtHeight);
+            painter.setPen(QPen(Qt::white, 3, Qt::SolidLine));
+            painter.drawText(rt, m_pYK16Image->m_strOverlayText);
+        }
 }
 
 void qyklabel::SetBaseImage( YK16GrayImage* pYKImage )

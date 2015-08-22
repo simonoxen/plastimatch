@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1301</width>
+    <width>1212</width>
     <height>857</height>
    </rect>
   </property>
@@ -32,7 +32,7 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>351</width>
+      <width>281</width>
       <height>191</height>
      </rect>
     </property>
@@ -43,9 +43,9 @@
    <widget class="QPlainTextEdit" name="plainTextEdit_RD_Comp">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>300</x>
       <y>50</y>
-      <width>351</width>
+      <width>281</width>
       <height>191</height>
      </rect>
     </property>
@@ -56,10 +56,10 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>730</x>
+      <x>670</x>
       <y>0</y>
-      <width>421</width>
-      <height>251</height>
+      <width>501</width>
+      <height>171</height>
      </rect>
     </property>
     <property name="title">
@@ -110,8 +110,8 @@
     <widget class="QCheckBox" name="checkBox_Interp_search">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>60</y>
+       <x>230</x>
+       <y>30</y>
        <width>121</width>
        <height>17</height>
       </rect>
@@ -126,8 +126,8 @@
     <widget class="QRadioButton" name="radioButton_localGamma">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>90</y>
+       <x>370</x>
+       <y>30</y>
        <width>82</width>
        <height>17</height>
       </rect>
@@ -142,8 +142,8 @@
     <widget class="QRadioButton" name="radioButton_globalGamma">
      <property name="geometry">
       <rect>
-       <x>120</x>
-       <y>90</y>
+       <x>370</x>
+       <y>50</y>
        <width>111</width>
        <height>17</height>
       </rect>
@@ -155,8 +155,8 @@
     <widget class="QLineEdit" name="lineEdit_refDoseInGy">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>110</y>
+       <x>90</x>
+       <y>60</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -165,8 +165,8 @@
     <widget class="QLabel" name="label_7">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>110</y>
+       <x>140</x>
+       <y>60</y>
        <width>121</width>
        <height>20</height>
       </rect>
@@ -178,8 +178,8 @@
     <widget class="QLabel" name="label_8">
      <property name="geometry">
       <rect>
-       <x>140</x>
-       <y>110</y>
+       <x>10</x>
+       <y>60</y>
        <width>81</width>
        <height>20</height>
       </rect>
@@ -191,8 +191,8 @@
     <widget class="QLineEdit" name="lineEdit_dta_tol">
      <property name="geometry">
       <rect>
-       <x>80</x>
-       <y>140</y>
+       <x>70</x>
+       <y>90</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -205,7 +205,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>140</y>
+       <y>90</y>
        <width>61</width>
        <height>20</height>
       </rect>
@@ -217,8 +217,8 @@
     <widget class="QLabel" name="label_10">
      <property name="geometry">
       <rect>
-       <x>140</x>
-       <y>140</y>
+       <x>120</x>
+       <y>90</y>
        <width>81</width>
        <height>20</height>
       </rect>
@@ -230,8 +230,8 @@
     <widget class="QLineEdit" name="lineEdit_dose_tol">
      <property name="geometry">
       <rect>
-       <x>220</x>
-       <y>140</y>
+       <x>200</x>
+       <y>90</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -243,8 +243,8 @@
     <widget class="QLabel" name="label_11">
      <property name="geometry">
       <rect>
-       <x>270</x>
-       <y>140</y>
+       <x>250</x>
+       <y>90</y>
        <width>81</width>
        <height>20</height>
       </rect>
@@ -256,8 +256,8 @@
     <widget class="QLineEdit" name="lineEdit_cutoff_dose">
      <property name="geometry">
       <rect>
-       <x>370</x>
-       <y>140</y>
+       <x>340</x>
+       <y>90</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -270,7 +270,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>190</y>
+       <y>130</y>
        <width>131</width>
        <height>17</height>
       </rect>
@@ -285,8 +285,8 @@
     <widget class="QCheckBox" name="checkBox_failuremap_output">
      <property name="geometry">
       <rect>
-       <x>180</x>
-       <y>190</y>
+       <x>150</x>
+       <y>130</y>
        <width>161</width>
        <height>17</height>
       </rect>
@@ -301,8 +301,8 @@
     <widget class="QPushButton" name="pushButton_RunBatchGamma">
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>170</y>
+       <x>280</x>
+       <y>130</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -312,10 +312,13 @@
      </property>
     </widget>
     <widget class="QPushButton" name="pushButton_LoadResults">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
-       <x>310</x>
-       <y>210</y>
+       <x>390</x>
+       <y>130</y>
        <width>101</width>
        <height>31</height>
       </rect>
@@ -328,7 +331,7 @@
    <widget class="QPushButton" name="pushButton_Open_RD_Comp">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>300</x>
       <y>10</y>
       <width>121</width>
       <height>31</height>
@@ -341,20 +344,20 @@
    <widget class="QGroupBox" name="groupBox_2">
     <property name="geometry">
      <rect>
-      <x>700</x>
-      <y>260</y>
-      <width>481</width>
-      <height>201</height>
+      <x>670</x>
+      <y>180</y>
+      <width>501</width>
+      <height>81</height>
      </rect>
     </property>
     <property name="title">
-     <string>2D analysis</string>
+     <string>Analysis 3D</string>
     </property>
     <widget class="QLineEdit" name="lineEdit_ProbePosX">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>50</y>
+       <y>40</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -367,7 +370,7 @@
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>50</y>
+       <y>40</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -380,7 +383,7 @@
      <property name="geometry">
       <rect>
        <x>130</x>
-       <y>50</y>
+       <y>40</y>
        <width>41</width>
        <height>21</height>
       </rect>
@@ -393,7 +396,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
+       <y>20</y>
        <width>51</width>
        <height>20</height>
       </rect>
@@ -406,7 +409,7 @@
      <property name="geometry">
       <rect>
        <x>70</x>
-       <y>30</y>
+       <y>20</y>
        <width>51</width>
        <height>20</height>
       </rect>
@@ -419,7 +422,7 @@
      <property name="geometry">
       <rect>
        <x>130</x>
-       <y>30</y>
+       <y>20</y>
        <width>51</width>
        <height>20</height>
       </rect>
@@ -431,7 +434,7 @@
     <widget class="QRadioButton" name="radioButtonAxial">
      <property name="geometry">
       <rect>
-       <x>190</x>
+       <x>290</x>
        <y>50</y>
        <width>61</width>
        <height>17</height>
@@ -447,7 +450,7 @@
     <widget class="QRadioButton" name="radioButtonSagittal">
      <property name="geometry">
       <rect>
-       <x>260</x>
+       <x>360</x>
        <y>50</y>
        <width>61</width>
        <height>17</height>
@@ -460,7 +463,7 @@
     <widget class="QRadioButton" name="radioButtonFrontal">
      <property name="geometry">
       <rect>
-       <x>350</x>
+       <x>430</x>
        <y>50</y>
        <width>61</width>
        <height>17</height>
@@ -473,7 +476,7 @@
     <widget class="QComboBox" name="comboBoxCompareFile">
      <property name="geometry">
       <rect>
-       <x>290</x>
+       <x>310</x>
        <y>20</y>
        <width>181</width>
        <height>22</height>
@@ -483,47 +486,21 @@
     <widget class="QLabel" name="label_15">
      <property name="geometry">
       <rect>
-       <x>200</x>
+       <x>270</x>
        <y>20</y>
-       <width>71</width>
+       <width>31</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>3D File name</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_Run2DGamma">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>160</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Run 2D Gamma</string>
-     </property>
-    </widget>
-    <widget class="QPlainTextEdit" name="plainTextEditGammaResult">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>80</y>
-       <width>301</width>
-       <height>111</height>
-      </rect>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
+      <string>File</string>
      </property>
     </widget>
     <widget class="QPushButton" name="pushButtonGoForcedProbe">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>80</y>
+       <x>180</x>
+       <y>30</y>
        <width>71</width>
        <height>31</height>
       </rect>
@@ -661,7 +638,7 @@
    <widget class="QSlider" name="sliderNormComp">
     <property name="geometry">
      <rect>
-      <x>610</x>
+      <x>600</x>
       <y>300</y>
       <width>31</width>
       <height>191</height>
@@ -700,7 +677,7 @@
     <property name="geometry">
      <rect>
       <x>540</x>
-      <y>530</y>
+      <y>540</y>
       <width>41</width>
       <height>20</height>
      </rect>
@@ -725,7 +702,7 @@
    <widget class="QLineEdit" name="lineEditXMin">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>600</x>
       <y>780</y>
       <width>51</width>
       <height>20</height>
@@ -746,9 +723,9 @@
     <property name="geometry">
      <rect>
       <x>980</x>
-      <y>510</y>
+      <y>520</y>
       <width>201</width>
-      <height>291</height>
+      <height>281</height>
      </rect>
     </property>
    </widget>
@@ -756,7 +733,7 @@
     <property name="geometry">
      <rect>
       <x>980</x>
-      <y>470</y>
+      <y>480</y>
       <width>201</width>
       <height>31</height>
      </rect>
@@ -768,7 +745,7 @@
    <widget class="QLabel" name="label_20">
     <property name="geometry">
      <rect>
-      <x>540</x>
+      <x>530</x>
       <y>250</y>
       <width>131</width>
       <height>16</height>
@@ -776,19 +753,6 @@
     </property>
     <property name="text">
      <string>Normalization dose (cGy)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_21">
-    <property name="geometry">
-     <rect>
-      <x>660</x>
-      <y>270</y>
-      <width>31</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>cGy</string>
     </property>
    </widget>
    <widget class="qyklabel" name="labelReferDose">
@@ -826,7 +790,7 @@
    <widget class="QSpinBox" name="spinBoxNormComp">
     <property name="geometry">
      <rect>
-      <x>600</x>
+      <x>590</x>
       <y>270</y>
       <width>51</width>
       <height>22</height>
@@ -842,8 +806,8 @@
    <widget class="QGroupBox" name="radioButtonVer">
     <property name="geometry">
      <rect>
-      <x>690</x>
-      <y>470</y>
+      <x>750</x>
+      <y>480</y>
       <width>221</width>
       <height>51</height>
      </rect>
@@ -884,7 +848,7 @@
    <widget class="QCheckBox" name="checkBoxAutoAdjust">
     <property name="geometry">
      <rect>
-      <x>780</x>
+      <x>680</x>
       <y>780</y>
       <width>81</width>
       <height>17</height>
@@ -897,13 +861,133 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_Run2DGamma">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>260</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Run 2D Gamma</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="plainTextEditGammaResult">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
+      <y>300</y>
+      <width>271</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_21">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>270</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>3D Gamma report</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_22">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>270</y>
+      <width>111</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>2D Gamma report</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="plainTextEditGammaResult2D">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>300</y>
+      <width>271</width>
+      <height>171</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxNormalized">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>780</y>
+      <width>81</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Normalized</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNormComp">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>500</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>1.00</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_23">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>500</y>
+      <width>51</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>NormF</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonNormApply">
+    <property name="geometry">
+     <rect>
+      <x>630</x>
+      <y>501</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>apply</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1301</width>
+     <width>1212</width>
      <height>21</height>
     </rect>
    </property>
@@ -959,7 +1043,7 @@
    <slot>SLT_Load_RD_Comp()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>485</x>
+     <x>385</x>
      <y>73</y>
     </hint>
     <hint type="destinationlabel">
@@ -991,8 +1075,8 @@
    <slot>SLT_RunBatchGamma()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1040</x>
-     <y>233</y>
+     <x>950</x>
+     <y>193</y>
     </hint>
     <hint type="destinationlabel">
      <x>121</x>
@@ -1023,11 +1107,11 @@
    <slot>SLT_LoadResults()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1112</x>
-     <y>254</y>
+     <x>1132</x>
+     <y>193</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1162</x>
+     <x>1075</x>
      <y>285</y>
     </hint>
    </hints>
@@ -1135,11 +1219,11 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1094</x>
-     <y>327</y>
+     <x>1084</x>
+     <y>254</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1185</x>
+     <x>1075</x>
      <y>448</y>
     </hint>
    </hints>
@@ -1151,8 +1235,8 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>736</x>
-     <y>396</y>
+     <x>876</x>
+     <y>273</y>
     </hint>
     <hint type="destinationlabel">
      <x>690</x>
@@ -1167,8 +1251,8 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>921</x>
-     <y>355</y>
+     <x>991</x>
+     <y>279</y>
     </hint>
     <hint type="destinationlabel">
      <x>913</x>
@@ -1183,11 +1267,11 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1002</x>
-     <y>356</y>
+     <x>1072</x>
+     <y>279</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1202</x>
+     <x>1075</x>
      <y>508</y>
     </hint>
    </hints>
@@ -1199,11 +1283,11 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1096</x>
-     <y>355</y>
+     <x>1146</x>
+     <y>279</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1197</x>
+     <x>1075</x>
      <y>404</y>
     </hint>
    </hints>
@@ -1231,8 +1315,8 @@
    <slot>SLT_DrawGraph(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>835</x>
-     <y>816</y>
+     <x>735</x>
+     <y>829</y>
     </hint>
     <hint type="destinationlabel">
      <x>875</x>
@@ -1279,8 +1363,8 @@
    <slot>SLT_DrawGraph()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>697</x>
-     <y>820</y>
+     <x>637</x>
+     <y>832</y>
     </hint>
     <hint type="destinationlabel">
      <x>725</x>
@@ -1311,8 +1395,8 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>758</x>
-     <y>536</y>
+     <x>818</x>
+     <y>549</y>
     </hint>
     <hint type="destinationlabel">
      <x>934</x>
@@ -1327,8 +1411,8 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>848</x>
-     <y>532</y>
+     <x>908</x>
+     <y>549</y>
     </hint>
     <hint type="destinationlabel">
      <x>946</x>
@@ -1343,12 +1427,60 @@
    <slot>SLT_DrawAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1162</x>
-     <y>324</y>
+     <x>1152</x>
+     <y>254</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1190</x>
+     <x>1075</x>
      <y>331</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_Run2DGamma</sender>
+   <signal>released()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLT_RunGamma2D()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>990</x>
+     <y>311</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>911</x>
+     <y>303</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxNormalized</sender>
+   <signal>released()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLT_DrawAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>837</x>
+     <y>820</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>906</x>
+     <y>832</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonNormApply</sender>
+   <signal>released()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLT_NormCompFromRefNorm()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>669</x>
+     <y>543</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>692</x>
+     <y>548</y>
     </hint>
    </hints>
   </connection>
@@ -1364,5 +1496,7 @@
   <slot>SLT_CopyTableToClipboard()</slot>
   <slot>SLT_DrawGraph(bool)</slot>
   <slot>SLT_DrawGraph()</slot>
+  <slot>SLT_RunGamma2D()</slot>
+  <slot>SLT_NormCompFromRefNorm()</slot>
  </slots>
 </ui>
