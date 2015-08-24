@@ -203,7 +203,7 @@ set_pencil_beam_to_image (
         iec_index[2] = tmp / sz[2];
 
 	/* Convert index to DICOM */
-        itk_index[2] = iec_index[1];
+        itk_index[2] = (sz[2] - iec_index[1] - 1);
         itk_index[1] = iec_index[2];
         itk_index[0] = iec_index[0];
 
@@ -264,7 +264,8 @@ write_pencil_beam (Pencil_Beam* pb, FloatImageType::Pointer img, FILE* fp)
 	vox[2] = (ushort) it1.Get();
 	if (vox[2] > 0) {
             ImageIterator::IndexType idx = it1.GetIndex();
-            long iec_index = idx[1]*sz[2]*sz[0] + idx[2]*sz[0] + idx[0];
+            long iec_index
+                = idx[1]*sz[2]*sz[0] + (sz[2]-idx[2]-1)*sz[0] + idx[0];
 	    vox[0] = (ushort) (iec_index & 0xFFFF);
 	    vox[1] = (ushort) (iec_index >> 16);
 #if defined (commentout)
