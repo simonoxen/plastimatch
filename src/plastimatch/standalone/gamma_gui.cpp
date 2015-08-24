@@ -1581,7 +1581,7 @@ void gamma_gui::SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DTy
     pImg = new float [imgWidth*imgHeight];
         
     int idx = 0;
-    for (it.GoToBegin(); !it.IsAtEnd(); it++)
+    for (it.GoToBegin(); !it.IsAtEnd(); ++it)
     {
         pImg[idx] = it.Get();
         idx++;
