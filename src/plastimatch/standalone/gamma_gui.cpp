@@ -1024,7 +1024,7 @@ void gamma_gui::UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, ve
             qreal tmpValY3 = vData3.at(i).y()*fMag3;
             qreal tmpValY3_Perc = vData3.at(i).y() / fNorm3 * 100.0; //fNorm : Gy not cGy
 
-            strValY3 = QString::number(tmpValY3, 'f', 1); //gamma
+            strValY3 = QString::number(tmpValY3, 'f', 2); //gamma
         }       
 
         m_pTableModel->setItem(i, 0, new QStandardItem(strValX));
