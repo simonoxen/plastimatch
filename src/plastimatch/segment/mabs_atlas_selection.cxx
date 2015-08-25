@@ -358,7 +358,7 @@ Mabs_atlas_selection::compute_nmi (
         this->min_hist_atl_value_defined)
     {
         NmiMetricType::MeasurementVectorType lower_bounds;
-        #ifdef ITK4 
+        #if ITK_VERSION_MAJOR >= 4 
         lower_bounds.SetSize(2);
         #endif
         lower_bounds.SetElement(0, this->min_hist_sub_value);
@@ -370,7 +370,7 @@ Mabs_atlas_selection::compute_nmi (
         this->max_hist_atl_value_defined)
     {
         NmiMetricType::MeasurementVectorType upper_bounds;
-        #ifdef ITK4 
+        #if ITK_VERSION_MAJOR >= 4
         upper_bounds.SetSize(2);
         #endif
         upper_bounds.SetElement(0, this->max_hist_sub_value);
@@ -381,7 +381,7 @@ Mabs_atlas_selection::compute_nmi (
     /* Metric settings */
     unsigned int numberOfHistogramBins = this->hist_bins;
     NmiMetricType::HistogramType::SizeType histogramSize;
-    #ifdef ITK4
+    #if ITK_VERSION_MAJOR >= 4
     histogramSize.SetSize(2);
     #endif
     histogramSize.Fill(numberOfHistogramBins);

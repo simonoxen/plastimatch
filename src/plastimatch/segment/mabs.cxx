@@ -901,7 +901,7 @@ Mabs::atlas_selection ()
     atlas_selector->subject_id = d_ptr->segment_input_fn.c_str();
     atlas_selector->atlas_dir = d_ptr->parms->atlas_dir;
     atlas_selector->number_of_atlases = (int) d_ptr->process_dir_list.size();
-        
+    
     if (d_ptr->parms->roi_mask_fn != "") { /* Set the mask if defined */
         Plm_image::Pointer mask_plm = plm_image_load (d_ptr->parms->roi_mask_fn, PLM_IMG_TYPE_ITK_UCHAR);
             
