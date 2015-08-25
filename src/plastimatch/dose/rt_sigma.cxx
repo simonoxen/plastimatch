@@ -8,7 +8,12 @@
 #include "rt_lut.h"
 #include "rt_sigma.h"
 
-void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string size, int* margins) //Rpl_volume* sigma_vol, Rpl_volume* ct_vol, float energy, float spacing_z, float* sigma_max)
+void compute_sigmas (
+    Rt_plan* plan,
+    float energy,
+    float* sigma_max,
+    std::string size, int*
+    margins)
 {
     /* We compute the sigmas for source, range compensator and patient as described in the Hong's paper */
     /* First we set the volume in which the sigmas have to be calculated: the normal rpl_sigma_volume,  */
@@ -49,7 +54,7 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
         printf("Sigma source computed - sigma_src_max = 0 mm. (Source size <= 0)\n");
     }    
     /* + sigma^2 range compensator */
-	if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
+    if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
         compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, energy, margins);
     }
@@ -59,7 +64,7 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
     } 
     /* Last step: sigma = sqrt(sigma_pt^2 + sigma_src^2 + sigma_rc^2), at this point sigma_vol contains the sum of the sigmas' square */
 	
-	/* We update also the value of sigma_max */
+    /* We update also the value of sigma_max */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     plm_long dim[3] = { 
         sigma_vol->get_vol()->dim[0], 
@@ -81,7 +86,12 @@ void compute_sigmas(Rt_plan* plan, float energy, float* sigma_max, std::string s
     return;
 }
 
-void compute_sigma_pt(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rpl_volume* ct_vol, Rt_plan* plan, float energy)
+void compute_sigma_pt (
+    Rpl_volume* sigma_vol,
+    Rpl_volume* rpl_volume,
+    Rpl_volume* ct_vol,
+    Rt_plan* plan,
+    float energy)
 {
     float sigma_max = 0;
 
@@ -95,30 +105,33 @@ void compute_sigma_pt(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rpl_volume*
     }
 
     printf("Sigma patient computed - sigma_pt_max = %lg mm.\n", sigma_max);
-	return;
+    return;
 }
 
-float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float energy)
+float compute_sigma_pt_homo (
+    Rpl_volume* sigma_vol,
+    Rpl_volume* rpl_vol,
+    float energy)
 {
     float sigma_max = 0;
-	int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
-	int dim_rpl = rpl_vol->get_vol()->dim[0] * rpl_vol->get_vol()->dim[1] * rpl_vol->get_vol()->dim[2];
-	if (dim != dim_rpl)
-	{
-		printf("Error: rpl_vol & sigma_vol have different dimensions. Sigma volume not built\n");
-		return 0;
-	}
+    int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
+    int dim_rpl = rpl_vol->get_vol()->dim[0] * rpl_vol->get_vol()->dim[1] * rpl_vol->get_vol()->dim[2];
+    if (dim != dim_rpl)
+    {
+        printf("Error: rpl_vol & sigma_vol have different dimensions. Sigma volume not built\n");
+        return 0;
+    }
 
     /* At this time, sigma_vol contains the range length, WITHOUT range compensator */
     float* sigma_volume = (float*) sigma_vol->get_vol()->img;
-	float* rpl_img = (float*) rpl_vol->get_vol()->img;
+    float* rpl_img = (float*) rpl_vol->get_vol()->img;
 
-	unsigned char* ap_img = NULL;
+    unsigned char* ap_img = NULL;
 	
-	if (rpl_vol->get_aperture()->have_aperture_image())
-	{
-		ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
-	}
+    if (rpl_vol->get_aperture()->have_aperture_image())
+    {
+        ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
+    }
 
     double x_over_range = 0;
 
@@ -136,16 +149,16 @@ float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float en
         {
             if (rpl_img[i] <= 0) 
             {
-               sigma_volume[i] = 0;
+                sigma_volume[i] = 0;
             }
             else if (rpl_img[i] >= range)
             {
                 sigma_volume[i] = sigma0 * sigma0; // sigma will contains the square of the sigmas to do the quadratic sum
             
-               /* sigma_max update */
+                /* sigma_max update */
                 if (sigma0 > sigma_max)
                 {
-                   sigma_max = sigma0;
+                    sigma_max = sigma0;
                 }
             }
             else
@@ -168,12 +181,16 @@ float compute_sigma_pt_homo(Rpl_volume* sigma_vol, Rpl_volume* rpl_vol, float en
     return sigma_max;
 }
 
-float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_volume* ct_vol, float energy)
+float compute_sigma_pt_hetero (
+    Rpl_volume* sigma_vol,
+    Rpl_volume* rgl_vol,
+    Rpl_volume* ct_vol,
+    float energy)
 {
     float sigma_max = 0;
 
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
-	float* rpl_img = (float*) rgl_vol->get_vol()->img;
+    float* rpl_img = (float*) rgl_vol->get_vol()->img;
     float* ct_img = (float*) ct_vol->get_vol()->img;
     unsigned char* ap_img = 0;
     if (rgl_vol->get_aperture()->have_aperture_image())
@@ -217,7 +234,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 idx = dim[0]*dim[1]*s + apert_idx;
                 range_length_ray[s] = rpl_img[idx];   // at this point sigma is still a range_length volume without range compensator
                 sigma_ray[s] = 0;
-				HU_ray[s] = ct_img[idx];           // the density ray is initialized with density
+                HU_ray[s] = ct_img[idx];           // the density ray is initialized with density
             }
     
             //Now we can compute the sigma rays!!!!
@@ -253,7 +270,7 @@ float compute_sigma_pt_hetero(Rpl_volume* sigma_vol, Rpl_volume* rgl_vol, Rpl_vo
                 pv_cache[s] = p * v;
 
                 inv_rad_len[s] = 1.0f / compute_X0_from_HU(HU_ray[s]);
-				stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * getstop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
+                stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * getstop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
 
                 sum = 0;
                 inverse_rad_length_integrated = 0;

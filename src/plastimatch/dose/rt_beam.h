@@ -10,6 +10,7 @@
 #include "aperture.h"
 #include "rpl_volume.h"
 #include "rt_sobp.h"
+#include "smart_pointer.h"
 
 class Rt_beam_private;
 class Rt_sobp;
@@ -20,11 +21,12 @@ class Rt_sobp;
  */
 class PLMDOSE_API Rt_beam {
 public:
+    SMART_POINTER_SUPPORT (Rt_beam);
+    Rt_beam_private *d_ptr;
+public:
     Rt_beam ();
     Rt_beam (const Rt_beam* rt_beam);
     ~Rt_beam ();
-public:
-    Rt_beam_private *d_ptr;
 
 public:
     /*! \name Inputs */

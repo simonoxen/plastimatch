@@ -51,17 +51,19 @@ public:
     Rt_parms::Pointer rt_parms;
     Rt_study* rt_study;
 
+    /* Storage of beams */
+    std::vector<Rt_beam::Pointer> beam_storage;
+
 public: 
     Rt_plan_private ()
     {
         debug = false;
         normalization_dose = 1.f;
-		depth_dose_max = 1.f;
+        depth_dose_max = 1.f;
         
         patient = Plm_image::New();
         target = Plm_image::New();
         dose = Plm_image::New();
-
         rt_parms = Rt_parms::New ();
     }
 
@@ -109,17 +111,17 @@ Rt_plan::init ()
         
     if (!this->beam->rpl_vol) return false;
 
-	/* building the ct_density_vol */
+    /* building the ct_density_vol */
     this->beam->rpl_ct_vol_HU = new Rpl_volume;
     this->beam->rpl_ct_vol_HU->set_geometry (
-            this->beam->get_source_position(),
-            this->beam->get_isocenter_position(),
-            this->beam->get_aperture()->vup,
-            this->beam->get_aperture()->get_distance(),
-            this->beam->get_aperture()->get_dim(),
-            this->beam->get_aperture()->get_center(),
-            this->beam->get_aperture()->get_spacing(),
-            this->beam->get_step_length());
+        this->beam->get_source_position(),
+        this->beam->get_isocenter_position(),
+        this->beam->get_aperture()->vup,
+        this->beam->get_aperture()->get_distance(),
+        this->beam->get_aperture()->get_dim(),
+        this->beam->get_aperture()->get_center(),
+        this->beam->get_aperture()->get_spacing(),
+        this->beam->get_step_length());
     if (!this->beam->rpl_ct_vol_HU) return false;
 
     if (this->beam->get_flavor() == 'f'|| this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
@@ -141,7 +143,7 @@ Rt_plan::init ()
 
     /* Copy aperture from scene into rpl volume */
     this->beam->rpl_vol->set_aperture (this->beam->get_aperture());
-	this->beam->rpl_ct_vol_HU->set_aperture (this->beam->get_aperture());
+    this->beam->rpl_ct_vol_HU->set_aperture (this->beam->get_aperture());
 	
     if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
     {
@@ -154,14 +156,14 @@ Rt_plan::init ()
     if(this->beam->rpl_vol->get_ct() && this->beam->rpl_vol->get_ct_limit())
     {
         /* We don't do everything again, we just copy the ct & ct_limits as all the volumes geometrically equal*/
-		this->beam->rpl_ct_vol_HU->set_ct (this->beam->rpl_vol->get_ct());
-		this->beam->rpl_ct_vol_HU->set_ct_limit(this->beam->rpl_vol->get_ct_limit());
+        this->beam->rpl_ct_vol_HU->set_ct (this->beam->rpl_vol->get_ct());
+        this->beam->rpl_ct_vol_HU->set_ct_limit(this->beam->rpl_vol->get_ct_limit());
         
-		if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
-		{
+        if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
+        {
             this->beam->sigma_vol->set_ct(this->beam->rpl_vol->get_ct());
             this->beam->sigma_vol->set_ct_limit(this->beam->rpl_vol->get_ct_limit());
-		}
+        }
     }
     else
     {
@@ -169,25 +171,25 @@ Rt_plan::init ()
     }
     
     /*Now we can compute the rpl_volume*/
-	this->beam->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
+    this->beam->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
     
     /* and the others */
     if(this->beam->rpl_vol->get_Ray_data() && this->beam->rpl_vol->get_front_clipping_plane() && this->beam->rpl_vol->get_back_clipping_plane())
     {
-		this->beam->rpl_ct_vol_HU->set_ray(this->beam->rpl_vol->get_Ray_data());
-		this->beam->rpl_ct_vol_HU->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
-		this->beam->rpl_ct_vol_HU->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
-		this->beam->rpl_ct_vol_HU->compute_rpl_HU();
+        this->beam->rpl_ct_vol_HU->set_ray(this->beam->rpl_vol->get_Ray_data());
+        this->beam->rpl_ct_vol_HU->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
+        this->beam->rpl_ct_vol_HU->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
+        this->beam->rpl_ct_vol_HU->compute_rpl_HU();
 
-         if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
-		{
-			/* We don't do everything again, we just copy the ray_data & clipping planes as all the volumes geometrically equal*/
+        if (this->beam->get_flavor() == 'f' || this->beam->get_flavor() == 'g' || this->beam->get_flavor() == 'h')
+        {
+            /* We don't do everything again, we just copy the ray_data & clipping planes as all the volumes geometrically equal*/
         
-			this->beam->sigma_vol->set_ray(this->beam->rpl_vol->get_Ray_data());
-			this->beam->sigma_vol->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
-			this->beam->sigma_vol->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
-		}
-	}
+            this->beam->sigma_vol->set_ray(this->beam->rpl_vol->get_Ray_data());
+            this->beam->sigma_vol->set_front_clipping_plane(this->beam->rpl_vol->get_front_clipping_plane());
+            this->beam->sigma_vol->set_back_clipping_plane(this->beam->rpl_vol->get_back_clipping_plane());
+        }
+    }
     else
     {
         printf("ct or ct_limits to be copied from rpl_vol don't exist\n");
@@ -288,6 +290,12 @@ Rt_study*
 Rt_plan::get_rt_study()
 {
     return d_ptr->rt_study;
+}
+
+void
+Rt_plan::append_beam (const Rt_beam::Pointer& new_beam)
+{
+    d_ptr->beam_storage.push_back (new_beam);
 }
 
 Rt_beam*

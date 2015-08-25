@@ -7,13 +7,13 @@
 #include "plmdose_config.h"
 #include "plm_image.h"
 #include "plm_return_code.h"
+#include "rt_beam.h"
 #include "smart_pointer.h"
 #include "threading.h"
 
 class Plm_image;
 class Proj_matrix;
 class Rpl_volume;
-class Rt_beam;
 class Rt_plan_private;
 class Rt_study;
 class Volume;
@@ -21,7 +21,6 @@ class Volume;
 class PLMDOSE_API Rt_plan {
 public:
     SMART_POINTER_SUPPORT (Rt_plan);
-public:
     Rt_plan_private *d_ptr;
 public:
     Rt_plan ();
@@ -57,6 +56,7 @@ public:
     /* Get/Set Rt_beam(s) */
     Rt_beam* append_beam ();
     Rt_beam* get_last_rt_beam ();
+    void append_beam (const Rt_beam::Pointer& new_beam);
 
     /* Return the state of the debug flag, which generates debug 
        information on the console */
@@ -85,7 +85,6 @@ public:
     void print_verif ();
 
 public:
-
     Rt_beam *beam;
     std::vector<Rt_beam*> beam_storage;
 };
