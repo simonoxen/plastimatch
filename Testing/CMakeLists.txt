@@ -4151,30 +4151,77 @@ plm_add_test (
     ${PLM_PLASTIMATCH_PATH}/proton_dose
     "${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
     )
+plm_add_test (
+  "proton-dose-1-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-1.mha"
+  )
+plmtest_check_interval ("proton-dose-1-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-1-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.160"
+  "0.165"
+  )
 set_tests_properties (proton-dose-1 PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-1-stats
+    PROPERTIES DEPENDS proton-dose-1)
+set_tests_properties (proton-dose-1-check
+    PROPERTIES DEPENDS proton-dose-1-stats)
 
- plm_add_test (
-     "proton-dose-2"
-     ${PLM_PLASTIMATCH_PATH}/proton_dose
-     "${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
-     )
- set_tests_properties (proton-dose-2 PROPERTIES DEPENDS rect-17)
- set_tests_properties (proton-dose-2 PROPERTIES DEPENDS ptv-1)
+plm_add_test (
+    "proton-dose-2"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
+    )
+plm_add_test (
+  "proton-dose-2-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-2.mha"
+  )
+plmtest_check_interval ("proton-dose-2-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-2-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0010"
+  "0.0012"
+  )
+set_tests_properties (proton-dose-2 PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-2 PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-2-stats
+    PROPERTIES DEPENDS proton-dose-2)
+set_tests_properties (proton-dose-2-check
+    PROPERTIES DEPENDS proton-dose-2-stats)
 
- plm_add_test (
-     "proton-dose-3"
-     ${PLM_PLASTIMATCH_PATH}/proton_dose
-     "${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
-     )
- set_tests_properties (proton-dose-3 PROPERTIES DEPENDS rect-17)
+plm_add_test (
+    "proton-dose-3"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
+    )
+plm_add_test (
+  "proton-dose-3-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-3.mha"
+  )
+plmtest_check_interval ("proton-dose-3-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-3-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0022"
+  "0.0024"
+  )
+set_tests_properties (proton-dose-3 PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-3 PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-3-stats
+    PROPERTIES DEPENDS proton-dose-3)
+set_tests_properties (proton-dose-3-check
+    PROPERTIES DEPENDS proton-dose-3-stats)
 
- plm_add_test (
-     "proton-dose-4"
-     ${PLM_PLASTIMATCH_PATH}/proton_dose
-     "${PLM_BUILD_TESTING_DIR}/proton-dose-4.txt"
-     )
- set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rect-18)
- set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rgc-1)
+## This seems to not work, gives zero dose.
+#plm_add_test (
+#    "proton-dose-4"
+#    ${PLM_PLASTIMATCH_PATH}/proton_dose
+#    "${PLM_BUILD_TESTING_DIR}/proton-dose-4.txt"
+#    )
+#set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rect-18)
+#set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rgc-1)
 
 ## -------------------------------------------------------------------------
 ## i hate myself

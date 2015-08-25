@@ -2,7 +2,7 @@
 
 [PLAN]
 patient = @PLM_BUILD_TESTING_DIR@/rect-17.mha
-dose_out = @PLM_BUILD_TESTING_DIR@/dose-2.mha
+dose_out = @PLM_BUILD_TESTING_DIR@/proton-dose-2.mha
 target = @PLM_BUILD_TESTING_DIR@/ptv-1.mha
 
 [BEAM]
