@@ -35,20 +35,20 @@ public:
     bool load (const char* fn);
 
     /*! \brief Get the position of the beam source in world coordinates. */
-    const double* get_source_position ();
+    const double* get_source_position () const;
     /*! \brief Get the x, y, or z coordinate of the beam source 
       in world coordinates. */
-    double get_source_position (int dim);
+    double get_source_position (int dim) const;
     /*! \brief Set the position of the beam source in world coordinates. */
     void set_source_position (const float position[3]);
     /*! \brief Set the position of the beam source in world coordinates. */
     void set_source_position (const double position[3]);
 
     /*! \brief Get the position of the beam isocenter in world coordinates. */
-    const double* get_isocenter_position ();
+    const double* get_isocenter_position () const;
     /*! \brief Get the x, y, or z coordinate of the beam source 
       in world coordinates. */
-    double get_isocenter_position (int dim);
+    double get_isocenter_position (int dim) const;
     /*! \brief Set the position of the beam isocenter in world coordinates. */
     void set_isocenter_position (const float position[3]);
     /*! \brief Set the position of the beam isocenter in world coordinates. */
@@ -110,7 +110,7 @@ public:
     void set_source_size(float source_size);
 
     /* Get source size in mm */
-    float get_source_size();
+    float get_source_size() const;
 
     /*! \brief Request debugging information to be written to directory */
     void set_debug (const std::string& dir);

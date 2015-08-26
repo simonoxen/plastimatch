@@ -1337,7 +1337,15 @@ compute_dose_ray_sharp (
     } // ap_ij[0]   
 }
 
-void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const Rt_depth_dose* ppp, std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+void compute_dose_ray_shackleford (
+    Volume::Pointer dose_vol,
+    Rt_plan* plan,
+    Rt_beam* beam,
+    const Rt_depth_dose* ppp,
+    std::vector<double>* area,
+    std::vector<double>* xy_grid,
+    int radius_sample,
+    int theta_sample)
 {
     int ijk[3] = {0,0,0};
     double xyz[4] = {0,0,0,1};
@@ -1368,15 +1376,15 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
     double dr = 0;
 
     /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, if there is a range compensator */
-    if (plan->beam->rpl_vol->get_aperture()->have_range_compensator_image())
+    if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
     {
-        add_rcomp_length_to_rpl_volume(plan->beam);
+        add_rcomp_length_to_rpl_volume(beam);
     }
 
-    vec3_copy(vec_ud, plan->beam->rpl_vol->get_proj_volume()->get_incr_c());
+    vec3_copy(vec_ud, beam->rpl_vol->get_proj_volume()->get_incr_c());
     vec3_normalize1(vec_ud);
 
-    vec3_copy(vec_rl, plan->beam->rpl_vol->get_proj_volume()->get_incr_r());
+    vec3_copy(vec_rl, beam->rpl_vol->get_proj_volume()->get_incr_r());
     vec3_normalize1(vec_rl);
 
     for (ijk[0] = 0; ijk[0] < ct_dim[0]; ijk[0]++){
@@ -1389,7 +1397,7 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                 xyz[1] = (double) dose_vol->origin[1] + ijk[1] * dose_vol->spacing[1];
                 xyz[2] = (double) dose_vol->origin[2] + ijk[2] * dose_vol->spacing[2]; // xyz[3] always = 1.0
 
-                sigma_3 = 3 * plan->beam->sigma_vol_lg->get_rgdepth(xyz);
+                sigma_3 = 3 * beam->sigma_vol_lg->get_rgdepth(xyz);
 
                 for (int i = 0; i < radius_sample; i++)
                 {
@@ -1409,8 +1417,8 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                         vec3_scale2(tmp_xy, tmp_cst);
                         vec3_add2(xyz_travel,tmp_xy);
 							
-                        rg_length = plan->beam->rpl_vol->get_rgdepth(xyz_travel);
-                        HU = plan->beam->rpl_ct_vol_HU_lg->get_rgdepth(xyz_travel);
+                        rg_length = beam->rpl_vol->get_rgdepth(xyz_travel);
+                        HU = beam->rpl_ct_vol_HU_lg->get_rgdepth(xyz_travel);
                         ct_density = compute_density_from_HU(HU);
                         STPR = compute_PrSTPR_from_HU(HU);
 							
@@ -1421,16 +1429,16 @@ void compute_dose_ray_shackleford(Volume::Pointer dose_vol, Rt_plan* plan, const
                         else
                         {
                             /* the dose from that sector is summed */
-                            sigma_travel = plan->beam->sigma_vol->get_rgdepth(xyz_travel);
+                            sigma_travel = beam->sigma_vol->get_rgdepth(xyz_travel);
                             radius = vec3_dist(xyz, xyz_travel);
 								
-                            if (sigma_travel < radius / 3 || (plan->beam->get_aperture()->have_aperture_image() == true && plan->beam->aperture_vol->get_rgdepth(xyz_travel) < 0.999)) 
+                            if (sigma_travel < radius / 3 || (beam->get_aperture()->have_aperture_image() == true && beam->aperture_vol->get_rgdepth(xyz_travel) < 0.999)) 
                             {
                                 continue;
                             }
                             else
                             {
-                                central_sector_dose = ppp->lookup_energy_integration((float) rg_length, ct_density * plan->beam->rpl_vol->get_vol()->spacing[2])* STPR * (1/(sigma_travel*sqrt(2*M_PI)));
+                                central_sector_dose = ppp->lookup_energy_integration((float) rg_length, ct_density * beam->rpl_vol->get_vol()->spacing[2])* STPR * (1/(sigma_travel*sqrt(2*M_PI)));
                                 dr = sigma_3 / (2* radius_sample);
                                 // * is normalized to a radius =1, 
                                 // need to be adapted to a 3_sigma 
@@ -1491,7 +1499,7 @@ double get_dose_norm(char flavor, double energy, double PB_density)
     }
 }
 
-void add_rcomp_length_to_rpl_volume(Rt_beam* beam)
+void add_rcomp_length_to_rpl_volume (Rt_beam* beam)
 {
     int dim[3] = {beam->rpl_vol->get_vol()->dim[0], beam->rpl_vol->get_vol()->dim[1], beam->rpl_vol->get_vol()->dim[2]};
     float* rpl_img = (float*) beam->rpl_vol->get_vol()->img;

@@ -10,6 +10,7 @@
 
 void compute_sigmas (
     Rt_plan* plan,
+    const Rt_beam* beam,
     float energy,
     float* sigma_max,
     std::string size, int*
@@ -25,15 +26,15 @@ void compute_sigmas (
 
     if (size == "small")
     {
-        sigma_vol = plan->beam->sigma_vol;
-        ct_vol = plan->beam->rpl_ct_vol_HU;
-        rgl_vol = plan->beam->rpl_vol;
+        sigma_vol = beam->sigma_vol;
+        ct_vol = beam->rpl_ct_vol_HU;
+        rgl_vol = beam->rpl_vol;
     }
     else if (size == "large")
     {
-        sigma_vol = plan->beam->sigma_vol_lg;
-        ct_vol = plan->beam->rpl_ct_vol_HU_lg;
-        rgl_vol = plan->beam->rpl_vol_lg;
+        sigma_vol = beam->sigma_vol_lg;
+        ct_vol = beam->rpl_ct_vol_HU_lg;
+        rgl_vol = beam->rpl_vol_lg;
     }
     else
     {
@@ -43,20 +44,20 @@ void compute_sigmas (
 
     /* Now that the volumes were defined, we can compute the sigmas in them and do the quadratic sigmas sum */
     /* sigma^2 patient */
-    compute_sigma_pt(sigma_vol, rgl_vol, ct_vol, plan, energy);
+    compute_sigma_pt (sigma_vol, rgl_vol, ct_vol, plan, beam, energy);
     /* + sigma^2 source */
-    if (plan->beam->get_source_size() > 0)
+    if (beam->get_source_size() > 0)
     {            
-        compute_sigma_source(sigma_vol, rgl_vol, plan, energy);
+        compute_sigma_source(sigma_vol, rgl_vol, plan, beam, energy);
     }
     else
     {
         printf("Sigma source computed - sigma_src_max = 0 mm. (Source size <= 0)\n");
     }    
     /* + sigma^2 range compensator */
-    if (plan->beam->get_aperture()->have_range_compensator_image() && energy > 1)
+    if (beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
-        compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, energy, margins);
+        compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, beam, energy, margins);
     }
     else
     {
@@ -91,11 +92,12 @@ void compute_sigma_pt (
     Rpl_volume* rpl_volume,
     Rpl_volume* ct_vol,
     Rt_plan* plan,
+    const Rt_beam* beam,
     float energy)
 {
     float sigma_max = 0;
 
-    if (plan->beam->get_homo_approx() == 'y')
+    if (beam->get_homo_approx() == 'y')
     {
         sigma_max = compute_sigma_pt_homo(sigma_vol, rpl_volume, energy);
     }
@@ -335,14 +337,14 @@ float compute_sigma_pt_hetero (
     return sigma_max;
 }
 
-void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, float energy)
+void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
 
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
 
-    unsigned char* ap_img = (unsigned char*) plan->beam->get_aperture()->get_aperture_volume()->img;
+    unsigned char* ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
 
     int idx = 0;
     double proj = 0; // projection factor of the ray on the z axis
@@ -352,7 +354,7 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan
 
     /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     double nrm[3] = {0,0,0};
-    vec3_sub3(nrm, plan->beam->get_source_position(), plan->beam->get_isocenter_position());
+    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 
     plm_long dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
@@ -365,14 +367,14 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan
         {
             Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
             proj = -vec3_dot(ray_data->ray, nrm);
-            dist_cp = vec3_dist(ray_data->cp,plan->beam->get_source_position());
+            dist_cp = vec3_dist(ray_data->cp,beam->get_source_position());
 
             for (int j = 0; j < dim[2]; j++)
             {
                 if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_src a little bit farther after the range to be sure (+1 cm)
                 {
                     idx = dim[0]*dim[1]*j + i;
-                    sigma = plan->beam->get_source_size() * ((dist_cp + proj * (float) j * sigma_vol->get_vol()->spacing[2])/ plan->beam->get_aperture()->get_distance() - 1);
+                    sigma = beam->get_source_size() * ((dist_cp + proj * (float) j * sigma_vol->get_vol()->spacing[2])/ beam->get_aperture()->get_distance() - 1);
                     sigma_img[idx] += sigma * sigma; // we return the square of sigma_source for the quadratic sum, added to the sigma patient already contained in the sigma volume
                     /* We update sigma_max */
                     if (sigma_max < sigma)
@@ -391,7 +393,7 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan
 	return;
 }
 
-void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, float energy, int* margins)
+void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy, int* margins)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
@@ -422,12 +424,12 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
-    float* rc_img = (float*) plan->beam->get_aperture()->get_range_compensator_volume ()->img;
+    float* rc_img = (float*) beam->get_aperture()->get_range_compensator_volume ()->img;
 
     unsigned char* ap_img = 0;
     if (rpl_volume->get_aperture()->have_aperture_image())
     {
-        ap_img = (unsigned char*) plan->beam->get_aperture()->get_aperture_volume()->img;
+        ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
     }
     plm_long dim[3] = { 
         sigma_vol->get_vol()->dim[0], 
@@ -472,11 +474,11 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                     Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
 	        
                     /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
-                    vec3_sub3(nrm, plan->beam->get_source_position(), plan->beam->get_isocenter_position());
+                    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
                     vec3_normalize1(nrm);
 	        
                     proj = -vec3_dot(ray_data->ray, nrm);
-                    dist_cp = vec3_dist(ray_data->cp, plan->beam->get_source_position()) * proj;
+                    dist_cp = vec3_dist(ray_data->cp, beam->get_source_position()) * proj;
 	
                     for (int j = 0; j < dim[2]; j++)
                     {
@@ -484,7 +486,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                         if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
                         {
                             z_POI = proj * (dist_cp + (float) j * sigma_vol->get_vol()->spacing[2]);
-                            z_eff = plan->beam->get_aperture()->get_distance() + proj * rc_eff;
+                            z_eff = beam->get_aperture()->get_distance() + proj * rc_eff;
 	            
                             /* sigma = sigma_srm * (z_POI- z_eff) */
                             if (z_POI - z_eff >= 0)
@@ -539,11 +541,11 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                         Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
 	        
                         /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
-                        vec3_sub3(nrm, plan->beam->get_source_position(), plan->beam->get_isocenter_position());
+                        vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
                         vec3_normalize1(nrm);
 	        
                         proj = -vec3_dot(ray_data->ray, nrm);
-                        dist_cp = vec3_dist(ray_data->cp, plan->beam->get_source_position()) * proj;
+                        dist_cp = vec3_dist(ray_data->cp, beam->get_source_position()) * proj;
 
                         for (int k = 0; k < dim[2]; k++)
                         {
@@ -551,7 +553,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                             if ( (rgl_img[idx] + rc_img[idx2d_sm]) < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
                             {
                                 z_POI = proj * (dist_cp + (float) k * sigma_vol->get_vol()->spacing[2]);
-                                z_eff = plan->beam->get_aperture()->get_distance() + proj * rc_eff;
+                                z_eff = beam->get_aperture()->get_distance() + proj * rc_eff;
 		            
                                 /* sigma = sigma_srm * (z_POI- z_eff) */
                                 if (z_POI - z_eff >= 0)

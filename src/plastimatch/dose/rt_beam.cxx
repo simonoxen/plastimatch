@@ -263,13 +263,13 @@ Rt_beam::load (const char* fn)
 }
 
 const double*
-Rt_beam::get_source_position ()
+Rt_beam::get_source_position () const
 {
     return d_ptr->source;
 }
 
 double
-Rt_beam::get_source_position (int dim)
+Rt_beam::get_source_position (int dim) const
 {
     return d_ptr->source[dim];
 }
@@ -291,13 +291,13 @@ Rt_beam::set_source_position (const double* position)
 }
 
 const double*
-Rt_beam::get_isocenter_position ()
+Rt_beam::get_isocenter_position () const
 {
     return d_ptr->isocenter;
 }
 
 double
-Rt_beam::get_isocenter_position (int dim)
+Rt_beam::get_isocenter_position (int dim) const
 {
     return d_ptr->isocenter[dim];
 }
@@ -467,7 +467,7 @@ Rt_beam::set_source_size(float source_size)
 }
 
 float
-Rt_beam::get_source_size()
+Rt_beam::get_source_size() const
 {
     return d_ptr->source_size;
 }

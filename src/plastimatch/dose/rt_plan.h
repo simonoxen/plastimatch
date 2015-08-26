@@ -29,8 +29,6 @@ public:
 public:
     Plm_return_code parse_args (int argc, char* argv[]);
 
-    bool init ();
-
     /* Set the CT volume for dose calculation.
        The Rt_plan takes ownership of this CT/Patient. */
     void set_patient (const std::string& patient_fn);
@@ -73,8 +71,9 @@ public:
     float get_normalization_dose ();
 
     /* Compute dose */
-    Plm_return_code compute_plan ();
+    bool prepare_beam_for_calc ();
     void compute_dose ();
+    Plm_return_code compute_plan ();
 
     /* Get outputs */
     Plm_image::Pointer get_dose ();
@@ -84,9 +83,8 @@ public:
 
     void print_verif ();
 
-public:
+protected:
     Rt_beam *beam;
-    std::vector<Rt_beam*> beam_storage;
 };
 
 #endif

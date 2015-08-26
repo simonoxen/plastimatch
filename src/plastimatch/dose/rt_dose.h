@@ -66,7 +66,8 @@ void compute_dose_ray_sharp (
     const Rpl_volume* rpl_vol, 
     const Rpl_volume* sigma_vol, 
     Rpl_volume* ct_vol_density, 
-    const Rt_beam* beam, Rpl_volume* rpl_dose_volume, 
+    const Rt_beam* beam,
+    Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
     const Rt_depth_dose* ppp, 
     const int* margins, 
@@ -75,6 +76,7 @@ void compute_dose_ray_sharp (
 void compute_dose_ray_shackleford (
     Volume::Pointer dose_volume, 
     Rt_plan* plan, 
+    Rt_beam *beam,
     const Rt_depth_dose* ppp, 
     std::vector<double>* area, 
     std::vector<double>* xy_grid, 

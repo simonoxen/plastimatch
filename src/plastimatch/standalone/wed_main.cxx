@@ -65,10 +65,11 @@ wed_ct_compute (
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
     Rt_plan *scene,
+    Rt_beam *beam,
     float background
 )
 {
-    Rpl_volume* rpl_vol = scene->beam->rpl_vol;
+    Rpl_volume* rpl_vol = beam->rpl_vol;
 
     if (parms->mode==0)  {
         Volume* wed_vol;
@@ -140,9 +141,9 @@ wed_ct_compute (
                 src2[0] = cos(angle)*radius_len + iso[0];
                 src2[1] = sin(angle)*radius_len + iso[1];
 
-                scene->beam->set_source_position (src2);
-                scene->init();
-                rpl_vol = scene->beam->rpl_vol;
+                beam->set_source_position (src2);
+                scene->prepare_beam_for_calc ();
+                rpl_vol = beam->rpl_vol;
                 rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
 
                 //Fill proj array with voxel values.
@@ -180,11 +181,12 @@ wed_ct_compute (
     const std::string& out_fn,
     Wed_Parms* parms,
     Rt_plan *scene,
+    Rt_beam *beam,
     float background
 )
 {
     Plm_image::Pointer ct_vol = Plm_image::New();
-    wed_ct_compute (out_fn, parms, ct_vol, scene, background);
+    wed_ct_compute (out_fn, parms, ct_vol, scene, beam, background);
 }
 
 int
@@ -193,7 +195,7 @@ wed_ct_initialize(Wed_Parms *parms)
 
     Plm_image::Pointer dose_vol;
     Rt_plan scene;
-    scene.beam = new Rt_beam;
+    Rt_beam beam;
     float background[4];
 
     /*
@@ -248,11 +250,11 @@ wed_ct_initialize(Wed_Parms *parms)
             PLM_IMG_TYPE_ITK_FLOAT);
     }
     /* set scene parameters */
-    scene.beam->set_source_position (parms->src);
-    scene.beam->set_isocenter_position (parms->isocenter);
+    beam.set_source_position (parms->src);
+    beam.set_isocenter_position (parms->isocenter);
 
-    scene.beam->get_aperture()->set_distance (parms->ap_offset);
-    scene.beam->get_aperture()->set_spacing (parms->ap_spacing);
+    beam.get_aperture()->set_distance (parms->ap_offset);
+    beam.get_aperture()->set_spacing (parms->ap_spacing);
   
     //Scene dimensions are set by .cfg file
 
@@ -262,12 +264,12 @@ wed_ct_initialize(Wed_Parms *parms)
 
     //Aperture dimensions
     if (parms->have_ires) {
-        scene.beam->get_aperture()->set_dim (parms->ires);
+        beam.get_aperture()->set_dim (parms->ires);
 	//If dew, pad each by one for interpolations
 	if (parms->mode==1)  {
             ap_res[0] = (int) (parms->ires[0]+2);
             ap_res[1] = (int) (parms->ires[1]+2);
-            scene.beam->get_aperture()->set_dim (ap_res);
+            beam.get_aperture()->set_dim (ap_res);
             parms->ires[0]=ap_res[0];
             parms->ires[1]=ap_res[1];
 	}
@@ -283,7 +285,7 @@ wed_ct_initialize(Wed_Parms *parms)
         ap_res[0] = (int) (wed_vol->dim[0]+2);
         ap_res[1] = (int) (wed_vol->dim[1]+2);
   
-        scene.beam->get_aperture()->set_dim (ap_res);
+        beam.get_aperture()->set_dim (ap_res);
         parms->ires[0]=ap_res[0];
         parms->ires[1]=ap_res[1];
     }
@@ -307,14 +309,14 @@ wed_ct_initialize(Wed_Parms *parms)
 	  else {
             ap_center[0] = parms->ic[0]+1.*parms->ap_spacing[0];
             ap_center[1] = parms->ic[1]+1.*parms->ap_spacing[1];
-            scene.beam->get_aperture()->set_center (ap_center);
+            beam.get_aperture()->set_center (ap_center);
 	  }
         }
 
         else {
             ap_center[0] = parms->ic[0];
             ap_center[1] = parms->ic[1];
-            scene.beam->get_aperture()->set_center (ap_center);
+            beam.get_aperture()->set_center (ap_center);
         }
 
     }
@@ -324,25 +326,25 @@ wed_ct_initialize(Wed_Parms *parms)
         //Set center as half the resolutions.
         ap_center[0] = (float) ap_res[0]/2.;
         ap_center[1] = (float) ap_res[1]/2.;
-        scene.beam->get_aperture()->set_center (ap_center);
+        beam.get_aperture()->set_center (ap_center);
         parms->ic[0]=ap_center[0];
         parms->ic[1]=ap_center[1];
     } 
 
-    scene.beam->set_step_length(parms->ray_step);
+    beam.set_step_length(parms->ray_step);
 
 
 
     /* Try to setup the scene with the provided parameters.
        This function computes the rpl volume. */
-    if (!scene.init ()) {
+    if (!scene.prepare_beam_for_calc ()) {
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }
 
     /* Save rpl volume if requested */
     if (parms->rpl_vol_fn != "") {
-        scene.beam->rpl_vol->save (parms->rpl_vol_fn);
+        beam.rpl_vol->save (parms->rpl_vol_fn);
     }
 
     printf ("Working...\n");
@@ -352,7 +354,7 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->mode==0)  {
         printf ("Computing patient wed volume...\n");
         wed_ct_compute (parms->output_ct_fn, parms, ct_vol, 
-            &scene, background[0]);
+            &scene, &beam, background[0]);
         printf ("done.\n");
     }
   
@@ -361,7 +363,7 @@ wed_ct_initialize(Wed_Parms *parms)
         if ((parms->mode==0)||(parms->mode==1))  {
             printf ("Calculating dose...\n");
             wed_ct_compute (parms->output_dose_fn,
-                parms, dose_vol, &scene, background[1]);
+                parms, dose_vol, &scene, &beam, background[1]);
             printf ("Complete...\n");
         }
     }
@@ -370,7 +372,7 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->mode==2)  {
         printf ("Calculating depths...\n");
         wed_ct_compute (parms->output_depth_fn,
-            parms, dose_vol, &scene, background[2]);
+            parms, dose_vol, &scene, &beam, background[2]);
         printf ("Complete...\n");
     }
 
@@ -378,7 +380,7 @@ wed_ct_initialize(Wed_Parms *parms)
     if (parms->mode==3)  {
         printf ("Calculating wed projection...\n");
         wed_ct_compute (parms->output_proj_wed_fn,
-            parms, &scene, background[3]);
+            parms, &scene, &beam, background[3]);
         printf ("Complete...\n");
     }
 
