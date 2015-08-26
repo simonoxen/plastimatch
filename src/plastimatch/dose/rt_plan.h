@@ -54,7 +54,6 @@ public:
     /* Get/Set Rt_beam(s) */
     Rt_beam* append_beam ();
     Rt_beam* get_last_rt_beam ();
-    void append_beam (const Rt_beam::Pointer& new_beam);
 
     /* Return the state of the debug flag, which generates debug 
        information on the console */

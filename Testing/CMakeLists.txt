@@ -70,6 +70,8 @@ set (CONFIG_FILE_LIST
   "proton-dose-2.txt"
   "proton-dose-3.txt"
   "proton-dose-4.txt"
+  "proton-dose-5a.txt"
+  "proton-dose-5g.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -4135,6 +4137,10 @@ set_tests_properties (vf-invert-trans-1-check
 ## proton-dose-2    Flavor f, single bragg peak, target, autom. rgcomp
 ## proton-dose-3    Flavor g, multiple beam
 ## proton-dose-4    Flavor h, load range comp file
+## proton-dose-5a   Flavor a, sobp target with aperture and rgc
+## proton-dose-5f   Flavor f, sobp target with aperture and rgc
+## proton-dose-5g   Flavor g, sobp target with aperture and rgc
+## proton-dose-5h   Flavor h, sobp target with aperture and rgc
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -4222,6 +4228,52 @@ set_tests_properties (proton-dose-3-check
 #    )
 #set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rect-18)
 #set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rgc-1)
+
+plm_add_test (
+    "proton-dose-5a"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
+    )
+plm_add_test (
+  "proton-dose-5a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-5a.mha"
+  )
+plmtest_check_interval ("proton-dose-5a-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-5a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0028"
+  "0.0029"
+  )
+set_tests_properties (proton-dose-5a PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-5a PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-5a-stats
+    PROPERTIES DEPENDS proton-dose-5a)
+set_tests_properties (proton-dose-5a-check
+    PROPERTIES DEPENDS proton-dose-5a-stats)
+
+plm_add_test (
+    "proton-dose-5g"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-5g.txt"
+    )
+plm_add_test (
+  "proton-dose-5g-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-5g.mha"
+  )
+plmtest_check_interval ("proton-dose-5g-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-5g-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0037"
+  "0.0038"
+  )
+set_tests_properties (proton-dose-5g PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-5g PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-5g-stats
+    PROPERTIES DEPENDS proton-dose-5g)
+set_tests_properties (proton-dose-5g-check
+    PROPERTIES DEPENDS proton-dose-5g-stats)
 
 ## -------------------------------------------------------------------------
 ## i hate myself

@@ -333,8 +333,6 @@ wed_ct_initialize(Wed_Parms *parms)
 
     beam.set_step_length(parms->ray_step);
 
-
-
     /* Try to setup the scene with the provided parameters.
        This function computes the rpl volume. */
     if (!scene.prepare_beam_for_calc (&beam)) {

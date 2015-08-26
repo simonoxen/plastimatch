@@ -1,6 +1,6 @@
 [PLAN]
 patient = @PLM_BUILD_TESTING_DIR@/rect-18.mha
-dose_out = @PLM_BUILD_TESTING_DIR@/proton-dose-4.mha
+dose_out = @PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@.mha
 
 [BEAM]
 flavor = h

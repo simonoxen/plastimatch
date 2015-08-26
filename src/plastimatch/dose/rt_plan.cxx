@@ -35,7 +35,7 @@ public:
     bool debug;
 
     float normalization_dose; // dose prescription
-	float depth_dose_max;
+    float depth_dose_max;
 
     /* Filenames for input and output images */
     std::string patient_fn;
@@ -52,7 +52,6 @@ public:
     Rt_study* rt_study;
 
     /* Storage of beams */
-    std::vector<Rt_beam::Pointer> beam_storage_new;
     std::vector<Rt_beam*> beam_storage;
 
 public: 
@@ -182,12 +181,6 @@ Rt_study*
 Rt_plan::get_rt_study()
 {
     return d_ptr->rt_study;
-}
-
-void
-Rt_plan::append_beam (const Rt_beam::Pointer& new_beam)
-{
-    d_ptr->beam_storage_new.push_back (new_beam);
 }
 
 Rt_beam*
