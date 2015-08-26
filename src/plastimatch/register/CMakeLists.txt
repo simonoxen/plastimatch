@@ -155,7 +155,7 @@ endif ()
 
 # bspline registration benefits from SSE2
 if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
-  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx)
+  plm_set_sse2_flags (bspline.cxx bspline_gm.cxx bspline_mi.cxx bspline_mse.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------
