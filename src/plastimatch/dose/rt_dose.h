@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _Rt_dose_h_
-#define _Rt_dose_h_
+#ifndef _rt_dose_h_
+#define _rt_dose_h_
 
 #include "aperture.h"
 #include "rt_depth_dose.h"

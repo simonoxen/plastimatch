@@ -142,7 +142,7 @@ wed_ct_compute (
                 src2[1] = sin(angle)*radius_len + iso[1];
 
                 beam->set_source_position (src2);
-                scene->prepare_beam_for_calc ();
+                scene->prepare_beam_for_calc (beam);
                 rpl_vol = beam->rpl_vol;
                 rpl_vol->compute_proj_wed_volume (proj_wed_vol, background);
 
@@ -337,7 +337,7 @@ wed_ct_initialize(Wed_Parms *parms)
 
     /* Try to setup the scene with the provided parameters.
        This function computes the rpl volume. */
-    if (!scene.prepare_beam_for_calc ()) {
+    if (!scene.prepare_beam_for_calc (&beam)) {
         fprintf (stderr, "ERROR: Unable to initilize scene.\n");
         return -1;
     }

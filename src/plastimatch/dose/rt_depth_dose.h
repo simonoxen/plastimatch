@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _Rt_depth_dose_h_
-#define _Rt_depth_dose_h_
+#ifndef _rt_depth_dose_h_
+#define _rt_depth_dose_h_
 
 #include "plmdose_config.h"
 

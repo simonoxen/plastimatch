@@ -71,8 +71,9 @@ public:
     float get_normalization_dose ();
 
     /* Compute dose */
-    bool prepare_beam_for_calc ();
-    void compute_dose ();
+    void propagate_target_to_beams ();
+    bool prepare_beam_for_calc (Rt_beam *beam);
+    void compute_dose (Rt_beam *beam);
     Plm_return_code compute_plan ();
 
     /* Get outputs */
@@ -82,9 +83,6 @@ public:
     void set_dose(Plm_image::Pointer& dose);
 
     void print_verif ();
-
-protected:
-    Rt_beam *beam;
 };
 
 #endif

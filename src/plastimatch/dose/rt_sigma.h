@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _Rt_sigma_h_
-#define _Rt_sigma_h_
+#ifndef _rt_sigma_h_
+#define _rt_sigma_h_
 
 #include "rt_plan.h"
 #include "rpl_volume.h"
