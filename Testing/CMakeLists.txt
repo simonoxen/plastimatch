@@ -72,6 +72,7 @@ set (CONFIG_FILE_LIST
   "proton-dose-4.txt"
   "proton-dose-5a.txt"
   "proton-dose-5g.txt"
+  "proton-dose-6a.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -294,6 +295,7 @@ endif ()
 ##   lung-1            Synthetic lung, tumor position 0
 ##   lung-2            Synthetic lung, tumor position -5
 ##   ptv-1             rect PTV target for dose calculation
+##   ptv-2             rect PTV target for dose calculation, smaller geometry
 ##   rect-1            Inverted rect, centered
 ##   rect-2            Standard rect, off-center
 ##   rect-3            Standard rect, centered
@@ -408,6 +410,11 @@ plm_add_test (
   "ptv-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/ptv-1.mha;--pattern;rect;--dim;60 60 60;--background;0;--foreground;6;--rect-size;20 20 20;--origin;-150 -150 -150;--spacing;5 5 5"
+  )
+plm_add_test (
+  "ptv-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/ptv-2.mha;--pattern;rect;--dim;40 40 40;--background;0;--foreground;6;--rect-size;20 20 20;--origin;-100 -100 -100;--spacing;5 5 5"
   )
 plm_add_test (
   "rect-1"
@@ -4141,6 +4148,7 @@ set_tests_properties (vf-invert-trans-1-check
 ## proton-dose-5f   Flavor f, sobp target with aperture and rgc
 ## proton-dose-5g   Flavor g, sobp target with aperture and rgc
 ## proton-dose-5h   Flavor h, sobp target with aperture and rgc
+## proton-dose-6a   Flavor a, target geometry differs from CT geometry
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -4274,6 +4282,30 @@ set_tests_properties (proton-dose-5g-stats
     PROPERTIES DEPENDS proton-dose-5g)
 set_tests_properties (proton-dose-5g-check
     PROPERTIES DEPENDS proton-dose-5g-stats)
+
+plm_add_test (
+    "proton-dose-6a"
+    ${PLM_PLASTIMATCH_PATH}/proton_dose
+    "${PLM_BUILD_TESTING_DIR}/proton-dose-6a.txt"
+    )
+plm_add_test (
+  "proton-dose-6a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-6a.mha"
+  )
+plmtest_check_interval ("proton-dose-6a-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-6a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0028"
+  "0.0029"
+  )
+set_tests_properties (proton-dose-6a PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-6a PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-6a-stats
+    PROPERTIES DEPENDS proton-dose-6a)
+set_tests_properties (proton-dose-6a-check
+    PROPERTIES DEPENDS proton-dose-6a-stats)
+
 
 ## -------------------------------------------------------------------------
 ## i hate myself
