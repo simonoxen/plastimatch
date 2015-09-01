@@ -160,6 +160,12 @@ Rt_study_metadata::set_study_date (const char* date)
     d_ptr->date_string = date;
 }
 
+void
+Rt_study_metadata::set_study_date (const std::string& date)
+{
+    d_ptr->date_string = date;
+}
+
 const char*
 Rt_study_metadata::get_study_time () const
 {
@@ -170,6 +176,12 @@ void
 Rt_study_metadata::set_study_time (const char* time)
 {
     if (!time) return;
+    d_ptr->time_string = time;
+}
+
+void
+Rt_study_metadata::set_study_time (const std::string& time)
+{
     d_ptr->time_string = time;
 }
 

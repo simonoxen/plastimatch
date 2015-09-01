@@ -7,15 +7,16 @@
    ** This algorithm does not use dbase file, which reduces need
    to access xvi computer **
 
-   (1) Get patient ID (PATID) from command line argument
-   (2) Search through file system, identify CBCT images according to 
-       patient_<PATID>/IMAGES/img_<CBCT_UID>/Reconstruction/<RECON_UID>.SCAN
+   (1) Get input directory from command line
+   (2) Identify CBCT images according to 
+       <INDIR>/IMAGES/img_<CBCT_UID>/Reconstruction/<RECON_UID>.SCAN
    (3) Load Reconstruction/<RECON_UID>.INI
    (3a) Parse this file to get Name, TreatmentID, 
    (4) Load Reconstruction/<RECON_UID>.INI.XVI
    (4a) Parse this file to get Date, Xform
    (5) Identify reference image in Mosaiq (optional?)
    
+   ** Needs fix for multiple reference studies **
 
    ----------------------------------------------------------------------- */
 #include <stdlib.h>
@@ -32,9 +33,6 @@
 #include "rt_study.h"
 #include "string_util.h"
 #include "xvi_archive.h"
-
-#define DEFAULT_DATABASE_DIRECTORY ""
-#define DEFAULT_PATIENT_DIRECTORY ""
 
 void
 do_xvi_archive (Xvi_archive_parms *parms)
@@ -132,6 +130,27 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
         /* Load the INI.XVI file */
         INIReader recon_xvi (recon_xvi_fn);
+        std::string date_time_string = 
+            recon_xvi.Get ("ALIGNMENT", "DateTime", "");
+        std::string date_string, time_string;
+        size_t semicol_pos = date_time_string.find (";");
+        if (semicol_pos != std::string::npos) {
+            printf ("semicol_pos = %d\n", (int) semicol_pos);
+            date_string 
+                = string_trim (date_time_string.substr (0, semicol_pos));
+            printf ("date = |%s|\n", date_string.c_str());
+            time_string 
+                = string_trim (date_time_string.substr (semicol_pos+1));
+            while (1) {
+                size_t colon_pos = time_string.find (":");
+                if (colon_pos == std::string::npos) {
+                    break;
+                }
+                time_string = time_string.substr (0, colon_pos)
+                    + time_string.substr (colon_pos+1);
+            }
+            printf ("time = |%s|\n", time_string.c_str());
+        }
         std::string registration_string = 
             recon_xvi.Get ("ALIGNMENT", "OnlineToRefTransformCorrection", "");
         printf ("xform = %s\n", registration_string.c_str());
@@ -148,7 +167,9 @@ do_xvi_archive (Xvi_archive_parms *parms)
 
         /* Write the DICOM image */
         std::string output_dir = string_format (
-            "cbct_output/%s", images_dir.entries[i]);
+            "cbct_output/%s/%s", 
+            reference_meta->get_patient_id().c_str(),
+            images_dir.entries[i]);
 
         Rt_study_metadata::Pointer& cbct_meta 
             = cbct_study.get_rt_study_metadata ();
@@ -159,6 +180,10 @@ do_xvi_archive (Xvi_archive_parms *parms)
                 reference_meta->get_patient_id().c_str());
         }
         cbct_meta->set_patient_name (patient_name);
+        if (date_string != "" && time_string != "") {
+            cbct_meta->set_study_date (date_string);
+            cbct_meta->set_study_time (time_string);
+        }
         cbct_study.save_dicom (output_dir);
 
         /* Create the DICOM SRO */
@@ -226,8 +251,7 @@ parse_fn (
 
     /* Input files and directories */
     parser->add_long_option ("", "patient-directory", 
-        "base directory containing patient images", 1, 
-        DEFAULT_PATIENT_DIRECTORY);
+        "base directory containing patient images", 1, "");
 
     /* Other options */
     parser->add_long_option ("", "patient-id-override", 

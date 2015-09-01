@@ -41,8 +41,10 @@ public:
     const char* get_rtss_series_uid () const;
     const char* get_study_date () const;
     void set_study_date (const char* date);
+    void set_study_date (const std::string& date);
     const char* get_study_time () const;
     void set_study_time (const char* time);
+    void set_study_time (const std::string& time);
     const char* get_study_uid () const;
     void set_study_uid (const char* uid);
     const std::string& get_patient_name ();
