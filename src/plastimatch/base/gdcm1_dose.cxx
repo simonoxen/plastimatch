@@ -311,17 +311,18 @@ gdcm1_dose_save (
     gf->InsertValEntry ("1", 0x0020, 0x0013);
     /* ImagePositionPatient */
     s = gdcm::Util::Format ("%g\\%g\\%g", 
-	plh.m_origin[0], plh.m_origin[1], plh.m_origin[2]);
+    plh.GetOrigin()[0], plh.GetOrigin()[1], plh.GetOrigin()[2]);
     gf->InsertValEntry (s, 0x0020, 0x0032);
 
     /* ImageOrientationPatient */
+    itk::Matrix < double, 3, 3 > direction=plh.GetDirection();
     s = gdcm::Util::Format ("%g\\%g\\%g\\%g\\%g\\%g",
-	plh.m_direction[0][0],
-	plh.m_direction[0][1],
-	plh.m_direction[0][2],
-	plh.m_direction[1][0],
-	plh.m_direction[1][1],
-	plh.m_direction[1][2]);
+    direction[0][0],
+    direction[0][1],
+    direction[0][2],
+    direction[1][0],
+    direction[1][1],
+    direction[1][2]);
     gf->InsertValEntry (s, 0x0020, 0x0037);
 
     /* FrameOfReferenceUID */
@@ -332,7 +333,7 @@ gdcm1_dose_save (
     /* PhotometricInterpretation */
     gf->InsertValEntry ("MONOCHROME2", 0x0028, 0x0004);
     /* NumberOfFrames */
-    s = gdcm::Util::Format ("%d", plh.Size(2));
+    s = gdcm::Util::Format ("%d", plh.GetSize()[2]);
     gf->InsertValEntry (s, 0x0028, 0x0008);
 
     /* FrameIncrementPointer */
@@ -342,13 +343,13 @@ gdcm1_dose_save (
     gf->InsertBinEntry ((uint8_t*)fip, 4, 0x0028, 0x0009, std::string("AT"));
 
     /* Rows */
-    s = gdcm::Util::Format ("%d", plh.Size(1));
+    s = gdcm::Util::Format ("%d", plh.GetSize()[1]);
     gf->InsertValEntry (s, 0x0028, 0x0010);
     /* Columns */
-    s = gdcm::Util::Format ("%d", plh.Size(0));
+    s = gdcm::Util::Format ("%d", plh.GetSize()[0]);
     gf->InsertValEntry (s, 0x0028, 0x0011);
     /* PixelSpacing */
-    s = gdcm::Util::Format ("%g\\%g", plh.m_spacing[1], plh.m_spacing[0]);
+    s = gdcm::Util::Format ("%g\\%g", plh.GetSpacing()[1], plh.GetSpacing()[0]);
     gf->InsertValEntry (s, 0x0028, 0x0030);
 
     /* BitsAllocated */
@@ -380,8 +381,8 @@ gdcm1_dose_save (
 
     /* GridFrameOffsetVector */
     s = std::string ("0");
-    for (i = 1; i < plh.Size(2); i++) {
-	s += gdcm::Util::Format ("\\%g", i * plh.m_spacing[2]);
+    for (i = 1; i < plh.GetSize()[2]; i++) {
+    s += gdcm::Util::Format ("\\%g", i * plh.GetSpacing()[2]);
     }
     gf->InsertValEntry (s, 0x3004, 0x000c);
 
