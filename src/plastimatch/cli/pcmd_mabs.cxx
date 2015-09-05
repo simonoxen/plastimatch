@@ -57,7 +57,7 @@ parse_fn (
 
     /* Parameters */
     parser->add_long_option ("", "atlas-selection", 
-        "run just atlas selection", 0);
+        "run just atlas selection", 1, "");
     parser->add_long_option ("", "train-atlas-selection", 
         "run just train atlas selection", 0);
     parser->add_long_option ("", "convert", 
@@ -97,6 +97,7 @@ parse_fn (
     /* Parameters */
     if (parser->have_option ("atlas-selection")) {
         parms->atlas_selection = true;
+        parms->input_fn = parser->get_string ("atlas-selection");
     }
     if (parser->have_option ("train-atlas-selection")) {
         parms->train_atlas_selection = true;
@@ -143,7 +144,7 @@ do_command_mabs (int argc, char *argv[])
     
     /* If defined set input ROI file name */
     if (parms.input_roi_fn != "") {
-        mabs.set_segment_input_roi (parms.input_roi_fn);
+        mabs.set_prealign_roi_cmd_name (parms.input_roi_fn);
     }
 
     /* Run the right function */

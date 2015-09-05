@@ -76,9 +76,11 @@ public:
     /* output_dir is ??? */
     std::string output_dir;
 
-    /* input_roi_fn is the binary structure file name used to align the center of gravity*/
-    std::string input_roi_fn;
-    Plm_image::Pointer input_roi;
+    /* Binary structure used to align the center of gravity */
+    Plm_image::Pointer input_roi_for_cog_prealignment;
+
+    /* String containing the roi file name passed by command line */
+    std::string prealign_roi_cmd_name;
     
     /* process_dir_list is a list of the input directories which 
        need to be processed, one directory per case
@@ -593,29 +595,27 @@ Mabs::run_registration_loop ()
             reg.set_moving_image (moving_image);
             
             /* PAOLO ZAFFINO: align centers of gravity */
-            if (d_ptr->input_roi != NULL) {
+            if (d_ptr->input_roi_for_cog_prealignment != NULL) {
                 
                 /* Add STAGE only if a segment command is executed. Is it needed or we can define it into the configuration file? */
-                if (d_ptr->executed_command == "segment") {
-                    std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
-                    command_string_plus_cog.append(command_string);
-                    int rc_cog = reg.set_command_string (command_string_plus_cog);
-                    if (rc != PLM_SUCCESS) {
-                        lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", command_file.c_str());
-                        continue;
-                        }
+                std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
+                command_string_plus_cog.append(command_string);
+                int rc_cog = reg.set_command_string (command_string_plus_cog);
+                if (rc != PLM_SUCCESS) {
+                    lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", command_file.c_str());
+                    continue;
                 }
              
                 /* Set fixed ROI */
-                reg.set_fixed_roi(d_ptr->input_roi); 
+                reg.set_fixed_roi(d_ptr->input_roi_for_cog_prealignment); 
                
                 /* Set moving ROI*/ 
                 std::string target_roi_name;
                 if (d_ptr->executed_command == "segment") {
-                    target_roi_name = strip_extension(basename(d_ptr->input_roi_fn));
+                    target_roi_name = strip_extension(basename(d_ptr->prealign_roi_cmd_name));
                 }
                 else if (d_ptr->executed_command == "prealign") {
-                    target_roi_name = d_ptr->parms->prealign_roi_name;
+                    target_roi_name = d_ptr->parms->prealign_roi_cfg_name;
                 }
 
                 size_t target_roi_index = -1;
@@ -922,8 +922,84 @@ Mabs::atlas_selection ()
         
     /* New selection is required, execute it */
     if (compute_new_ranking) {
+        
         atlas_selector->subject = plm_image_load_native(atlas_selector->subject_id);
         atlas_selector->atlas_dir_list = d_ptr->process_dir_list;
+
+        // if set, before the selection, prealign the images (using COG or whatever else)
+        if (d_ptr->parms->prealign_mode == "custom") {
+            
+            Registration reg; 
+            Registration_parms::Pointer regp = reg.get_registration_parms ();
+            Registration_data::Pointer regd = reg.get_registration_data ();
+            
+            /* Parse the registration command string */
+            std::string command_string = slurp_file (d_ptr->parms->prealign_registration_config);
+            int rc = reg.set_command_string (command_string);
+            if (rc != PLM_SUCCESS) {
+                lprintf ("Skipping command file \"%s\" "
+                        "due to parse error.\n", d_ptr->parms->prealign_registration_config.c_str());
+            }
+            
+            /* Set input images */
+            std::string fixed_image_fn;
+            fixed_image_fn = string_format ("%s/%s/img.nrrd",
+                    d_ptr->convert_dir.c_str(),
+                    d_ptr->parms->prealign_reference.c_str());
+            Plm_image::Pointer fixed_image = Plm_image::New (fixed_image_fn);
+            reg.set_fixed_image (fixed_image);
+            
+            Plm_image::Pointer moving_image = Plm_image::New ();
+            moving_image->set_itk (atlas_selector->subject->itk_float());
+            reg.set_moving_image (moving_image);
+            
+            /* Align centers of gravity */
+            if (d_ptr->prealign_roi_cmd_name != "") {
+
+                /* Add STAGE for COG */
+                std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
+                command_string_plus_cog.append(command_string);
+                int rc_cog = reg.set_command_string (command_string_plus_cog);
+                if (rc != PLM_SUCCESS) {
+                    lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", d_ptr->parms->prealign_registration_config.c_str());
+                }
+            
+                /* Set moving ROI */
+                d_ptr->input_roi_for_cog_prealignment = Plm_image::New (d_ptr->prealign_roi_cmd_name);    
+                reg.set_moving_roi(d_ptr->input_roi_for_cog_prealignment);
+            
+                /* Set fixed ROI*/
+                std::string fixed_roi_fn;
+                fixed_roi_fn = string_format ("%s/%s/structures/%s.nrrd",
+                    d_ptr->convert_dir.c_str(),
+                    d_ptr->parms->prealign_reference.c_str(), 
+                    d_ptr->parms->prealign_roi_cfg_name.c_str());
+
+                Plm_image::Pointer fixed_roi = Plm_image::New (fixed_roi_fn);
+                reg.set_fixed_roi(fixed_roi);
+            }
+        
+            /* Run the registration */
+            lprintf ("DO_REGISTRATION_PURE\n");
+            lprintf ("regp->num_stages = %d\n", regp->num_stages);
+            timer.start();
+            Xform::Pointer xf_out = reg.do_registration_pure ();
+            d_ptr->time_reg += timer.report();
+        
+            /* Warp the image */
+            lprintf ("Prealign input image...\n");
+            Plm_image_header fixed_pih (regd->fixed_image);
+            Plm_image::Pointer warped_image = Plm_image::New();
+            timer.start();
+            plm_warp (warped_image, 0, xf_out, &fixed_pih,
+                regd->moving_image,
+                regp->default_value, 0, 1);
+            d_ptr->time_warp_img += timer.report();
+
+            atlas_selector->subject = warped_image; 
+
+        }
+        
         atlas_selector->run_selection();
     }
 
@@ -1269,18 +1345,18 @@ Mabs::atlas_prealign ()
     
     /* PAOLO ZAFFINO
      * set fixed ROI if defined into the prealign section */ 
-    if (d_ptr->parms->prealign_roi_name != "") {
+    if (d_ptr->parms->prealign_roi_cfg_name != "") {
         Segmentation::Pointer fixed_rtss = ref_rtds->get_rtss();
         size_t target_roi_index = -1;
         for (size_t i = 0; i < fixed_rtss->get_num_structures(); i++) {
             std::string struct_name = fixed_rtss->get_structure_name (i);
-            if (struct_name == d_ptr->parms->prealign_roi_name) {
+            if (struct_name == d_ptr->parms->prealign_roi_cfg_name) {
                 target_roi_index = i;
                 break;
             }
         }
         if (target_roi_index != -1) {
-            d_ptr->input_roi = Plm_image::New (fixed_rtss->get_structure_image (target_roi_index));
+            d_ptr->input_roi_for_cog_prealignment = Plm_image::New (fixed_rtss->get_structure_image (target_roi_index));
         }
         else if (target_roi_index == -1) {
             lprintf("No fixed ROI set!\n");
@@ -2099,9 +2175,9 @@ Mabs::set_segment_output_dicom (const std::string& output_dicom_dir)
 }
 
 void 
-Mabs::set_segment_input_roi (const std::string& input_roi_fn)
+Mabs::set_prealign_roi_cmd_name (const std::string& input_roi_for_cog_prealignment_fn)
 {
-    d_ptr->input_roi_fn = input_roi_fn;
+    d_ptr->prealign_roi_cmd_name = input_roi_for_cog_prealignment_fn;
 }
 
 void
@@ -2135,7 +2211,7 @@ Mabs::train_internal ()
 
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->preprocessed_dir);
- 
+
     /* If set, run train atlas selection */
     if (d_ptr->parms->enable_atlas_selection)
     {
@@ -2294,9 +2370,9 @@ Mabs::segment ()
     /* Run the registrations */
     d_ptr->write_warped_images = true;
     
-    /* PAOLO ZAFFINO: if an input ROI has been passed, before registration prealign the centers of gravity */
-    if (d_ptr->input_roi_fn != "" ) {
-        d_ptr->input_roi = Plm_image::New (d_ptr->input_roi_fn);
+    /* PAOLO ZAFFINO: if an input ROI has been passed, prealign the centers of gravity before registration */
+    if (d_ptr->prealign_roi_cmd_name != "" ) {
+        d_ptr->input_roi_for_cog_prealignment = Plm_image::New (d_ptr->prealign_roi_cmd_name);
     }
     
     this->run_registration_loop ();

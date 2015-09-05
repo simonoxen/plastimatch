@@ -126,7 +126,7 @@ Mabs_parms_parser::set_key_value (
             mp->prealign_registration_config = val;
         }
         else if (key == "prealign_struct") {
-            mp->prealign_roi_name = val;
+            mp->prealign_roi_cfg_name = val;
         }
         else {
             goto error_exit;
@@ -375,6 +375,7 @@ Mabs_parms::Mabs_parms ()
     this->prealign_reference = "";
     this->prealign_spacing = "";
     this->prealign_registration_config = "";
+    this->prealign_roi_cfg_name = "";
 
     /* [ATLAS-SELECTION] */
     this->enable_atlas_selection = false;

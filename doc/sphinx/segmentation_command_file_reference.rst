@@ -38,6 +38,11 @@ All the possible parameters are listed below:
      - not set
      - plastimatch registration file without the GLOABL section
      - Set the registration parmameters for prealign if "custom" mode is chosen
+   * - prealign_struct
+     - PREALIGNMENT
+     - not set
+     - name of an atlas structure
+     - Use the specified structure to execute center of gravity initialization 
    * -
      -
      -
