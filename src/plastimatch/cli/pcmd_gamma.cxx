@@ -74,6 +74,8 @@ gamma_main (Gamma_parms* parms)
     gdc.set_local_gamma(parms->b_local_gamma);//default: false
     gdc.set_compute_full_region(parms->b_compute_full_region);//default: false
     gdc.set_resample_nn(parms->b_resample_nn); //default: false
+    //gdc.set_include_high_dose_in_comp(parms->b_include_high_dose_comp); //default: false
+    gdc.set_ref_only_threshold(parms->b_ref_only_threshold); //default: false
 
     if (parms->f_inherent_resample_mm > 0.0) {
         gdc.set_inherent_resample_mm(parms->f_inherent_resample_mm);
@@ -153,6 +155,7 @@ parse_fn (
         "(default is 2.0)", 1, "2.0");
 
     /* extended by YK*/
+    parser->add_long_option("", "ref-only-threshold", "With this option, analysis threshold is applied only to ref dose, regardless of the corresponding dose of compare image. ", 0);
     parser->add_long_option("", "interp-search", "With this option, smart interpolation search will be used in points near the reference point. This will eliminate the needs of fine resampling. However, it will take longer time to compute. ", 0);
     parser->add_long_option("", "local-gamma", "With this option, dose difference is calculated based on local dose difference. Otherwise, a given reference dose will be used, which is called global-gamma. ",0);
     parser->add_long_option("", "compute-full-region", "With this option, full gamma map will be generated over the entire image region (even for low-dose region). It is recommended not to use this option to speed up the computation. It has no effect on gamma pass-rate. ", 0);
@@ -208,6 +211,9 @@ parse_fn (
 
     if (parser->option("interp-search")) {
         parms->b_interp_search = true;
+    }
+    if (parser->option("ref-only-threshold")) {
+        parms->b_ref_only_threshold = true;
     }
 	
     if (parser->option("local-gamma")) {

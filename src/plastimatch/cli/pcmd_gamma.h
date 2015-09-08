@@ -33,6 +33,8 @@ public:
     bool b_resample_nn; //with this on, nearest resample will be used for comp-to-ref image resampling (as well as inherent resampling for ref image)
 
     bool b_interp_search;
+    /*With this option, analysis threshold is applied only to ref dose, regardless of the corresponding dose of compare image.*/
+    bool b_ref_only_threshold;
 
 public:
     Gamma_parms () {
@@ -47,7 +49,7 @@ public:
         f_analysis_threshold = 0.1;
         b_resample_nn = false;
         b_interp_search = false;
-
+        b_ref_only_threshold = false;
     }
 };
 

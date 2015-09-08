@@ -10,6 +10,7 @@
 #include "itkResampleImageFilter.h"
 #include "itkAffineTransform.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkFlipImageFilter.h"
 #include <QPainter>
 
 #include "qt_util.h"
@@ -2253,7 +2254,7 @@ void YK16GrayImage::UpdateFromItkImageFloat( FloatImageType2D::Pointer& spRefItk
   }
 }
 
-void YK16GrayImage::UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkImg, float fIntenistyMag, float fIntensityOffset)
+void YK16GrayImage::UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkImg, float fIntenistyMag, float fIntensityOffset, bool bYFlip)
 {
     if (!spRefItkImg)
         return;
@@ -2276,14 +2277,42 @@ void YK16GrayImage::UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkI
     m_iHeight = size[1];
 
     SetSpacing(spacing[0], spacing[1]);
-    SetOrigin(origin[0], origin[1]);
+    SetOrigin(origin[0], origin[1]);    
 
     m_pData = new unsigned short[m_iWidth*m_iHeight];
 
     this->m_fIntensityMag = fIntenistyMag;
-    this->m_fIntensityOffset = fIntensityOffset;
+    this->m_fIntensityOffset = fIntensityOffset;    
 
-    itk::ImageRegionIterator<FloatImageType2D> it(spRefItkImg, spRefItkImg->GetRequestedRegion());
+
+    FloatImageType2D::Pointer spTmpImg;
+
+    if (bYFlip)
+    {
+        ////Let's flip image
+        typedef itk::FlipImageFilter< FloatImageType2D >  FilterType;
+
+        FilterType::Pointer flipFilter = FilterType::New();
+        typedef FilterType::FlipAxesArrayType FlipAxesArrayType;
+
+        FlipAxesArrayType arrFlipAxes;
+        arrFlipAxes[0] = 0;
+        arrFlipAxes[1] = 1;
+
+        flipFilter->SetFlipAxes(arrFlipAxes);
+        flipFilter->SetInput(spRefItkImg);
+        flipFilter->Update();      
+        spTmpImg = flipFilter->GetOutput();
+
+        //spTmpImg = spRefItkImg;
+    }
+    else
+    {
+        spTmpImg = spRefItkImg;
+    }
+
+    itk::ImageRegionIterator<FloatImageType2D> it(spTmpImg, spTmpImg->GetRequestedRegion());
+    //itk::ImageRegionIterator<FloatImageType2D> it(flipFilter->GetOutput(), flipFilter->GetOutput()->GetRequestedRegion());
 
     int i = 0;
     for (it.GoToBegin(); !it.IsAtEnd(); ++it)
@@ -2751,11 +2780,16 @@ unsigned short YK16GrayImage::GetCrosshairPixelData()
 
 float YK16GrayImage::GetCrosshairOriginalData()
 {
+    //YKTMP
+ //   cout << "GetCrosshairPixelData() " << GetCrosshairPixelData() << endl;
+   // cout << "MagnificationFactor= " << this->m_fIntensityMag << endl;
+
     return GetOriginalIntensityVal(GetCrosshairPixelData());
 }
 
 float YK16GrayImage::GetCrosshairPercData()
-{
+{   
+
     if (m_fNormValue > 0)
     {
         return (GetOriginalIntensityVal(GetCrosshairPixelData()) / m_fNormValue*100.0);

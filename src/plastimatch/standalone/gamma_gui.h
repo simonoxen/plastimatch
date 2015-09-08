@@ -31,7 +31,8 @@ public:
     gamma_gui(QWidget *parent = 0, Qt::WFlags flags = 0);
     ~gamma_gui(); 
     
-    QString GammaMain(Gamma_parms* parms);     
+    //QString GammaMain(Gamma_parms* parms);     
+    QString GammaMain(Gamma_parms* parms, float& refDoseGy);
 
     void Load_FilesToMem();//all ref, comp, gamma map should be prepared    
     void UpdateProbePos(qyklabel* qlabel);    
@@ -41,6 +42,9 @@ public:
     //fNorm: Gy value, fNorm3 = 1.0;
     //fMag1,2 for dose, 100.0
     //fMag3: for gamma, 100.0    
+
+    void WhenMousePressedRight(qyklabel* pWnd);
+    void UpdatePanCommon(qyklabel* qWnd);
 
     public slots:        
         void SLT_Load_RD_Ref();
@@ -55,9 +59,12 @@ public:
         void SLT_DrawGammaMap2D();
         void SLT_UpdateComboContents();        
 
+        void SLT_WhenSelectCombo();
         void SLT_DrawAll();
         void SLT_DrawTable();
         void SLT_DrawChart();
+
+        void SLT_WhenChangePlane();//restore zoom and pan then draw all
 
         void SLT_UpdateReportTxt();
 
@@ -74,8 +81,36 @@ public:
         void SLT_GoCenterPosComp();
         void SLT_NormCompFromRefNorm();
 
-        void SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DType::Pointer& spFloatDose);
         
+
+        void SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DType::Pointer& spFloatDose);
+
+        void SLT_MouseWheelUpdateRef();
+        void SLT_MouseWheelUpdateComp();
+        void SLT_MouseWheelUpdateGamma2D();
+        void SLT_MouseWheelUpdateGamma3D();
+
+        void SLT_RestoreZoomPan();
+
+        void SLT_MouseMoveUpdateRef();
+        void SLT_MouseMoveUpdateComp();
+        void SLT_MouseMoveUpdateGamma2D();
+        void SLT_MouseMoveUpdateGamma3D();
+
+        void SLT_MousePressedRightRef();
+        void SLT_MousePressedRightComp();
+        void SLT_MousePressedRightGamma3D();
+        void SLT_MousePressedRightGamma2D();     
+
+        void SLT_MouseReleasedRightRef();
+        void SLT_MouseReleasedRightComp();
+        void SLT_MouseReleasedRightGamma3D();
+        void SLT_MouseReleasedRightGamma2D();
+
+        void SLT_UpdatePanSettingRef();
+        void SLT_UpdatePanSettingComp();
+        void SLT_UpdatePanSettingGamma3D();
+        void SLT_UpdatePanSettingGamma2D();
 
 public:    
     QStringList m_strlistPath_RD_Ref;
@@ -114,7 +149,18 @@ public:
     vector<VEC3D> m_vColormapDose;
     vector<VEC3D> m_vColormapGamma;
 
+    vector<float> m_vRefDose;
     bool m_bGamma2DIsDone;
+
+    bool m_bMousePressedRightRef;
+    bool m_bMousePressedRightComp;
+    bool m_bMousePressedRightGamma3D;
+    bool m_bMousePressedRightGamma2D;
+
+    QPoint m_ptPanStart;
+    QPoint m_ptOriginalDataOffset;
+
+
 private:
     Ui::gamma_guiClass ui;
 };

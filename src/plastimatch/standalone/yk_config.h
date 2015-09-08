@@ -15,7 +15,7 @@
 #define MAX_LINE_LENGTH 1024
 
 
-#define GY2YKIMG_MAG 1000.0 //40Gy --> 40000, 2Gy --> 2000
+#define GY2YKIMG_MAG 700.0 //if 1000: 70Gy --> 70000 --> overflow,  if 500: 70Gy --> 35000 cGy, if 700: 100Gy --> 70000 cGy ->OK
 #define GAMMA2YKIMG_MAG 1000.0 //2 --> 512: 0~1: 256, 1-2: 256
 #define GY2CGY 100.0;
 

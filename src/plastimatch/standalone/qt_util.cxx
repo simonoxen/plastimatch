@@ -490,6 +490,7 @@ void QUTIL::Get2DFrom3DByPosition(FloatImageType::Pointer& spSrcImg3D, FloatImag
         return;
 
     int idxHor, idxVer, idxZ;
+    //bool bUpDownFlip = false;
 
     switch (iDirection)
     {
@@ -502,11 +503,13 @@ void QUTIL::Get2DFrom3DByPosition(FloatImageType::Pointer& spSrcImg3D, FloatImag
         idxHor = 1;
         idxVer = 2;
         idxZ = 0;
+        //bUpDownFlip = true;
         break;
     case PLANE_FRONTAL:
         idxHor = 0;
         idxVer = 2;
         idxZ = 1;
+        //bUpDownFlip = true;
         break;  
     }
 

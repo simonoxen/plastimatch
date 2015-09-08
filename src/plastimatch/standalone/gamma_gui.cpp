@@ -71,7 +71,27 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
     connect(ui.labelReferDose, SIGNAL(Mouse_Left_DoubleClick()), this, SLOT(SLT_GoCenterPosRef())); //added
     connect(ui.labelCompDose, SIGNAL(Mouse_Left_DoubleClick()), this, SLOT(SLT_GoCenterPosComp())); //added
 
-    
+
+    connect(ui.labelReferDose, SIGNAL(Mouse_Wheel()), this, SLOT(SLT_MouseWheelUpdateRef())); //added
+    connect(ui.labelCompDose, SIGNAL(Mouse_Wheel()), this, SLOT(SLT_MouseWheelUpdateComp())); //added
+    connect(ui.labelGammaMap2D, SIGNAL(Mouse_Wheel()), this, SLOT(SLT_MouseWheelUpdateGamma2D())); //added
+    connect(ui.labelGammaMap3D, SIGNAL(Mouse_Wheel()), this, SLOT(SLT_MouseWheelUpdateGamma3D())); //added
+
+
+    connect(ui.labelReferDose, SIGNAL(Mouse_Move()), this, SLOT(SLT_UpdatePanSettingRef())); //added
+    connect(ui.labelCompDose, SIGNAL(Mouse_Move()), this, SLOT(SLT_UpdatePanSettingComp())); //added
+    connect(ui.labelGammaMap3D, SIGNAL(Mouse_Move()), this, SLOT(SLT_UpdatePanSettingGamma3D())); //added
+    connect(ui.labelGammaMap2D, SIGNAL(Mouse_Move()), this, SLOT(SLT_UpdatePanSettingGamma2D())); //added
+
+    connect(ui.labelReferDose, SIGNAL(Mouse_Pressed_Right()), this, SLOT(SLT_MousePressedRightRef())); //added
+    connect(ui.labelCompDose, SIGNAL(Mouse_Pressed_Right()), this, SLOT(SLT_MousePressedRightComp())); //added
+    connect(ui.labelGammaMap3D, SIGNAL(Mouse_Pressed_Right()), this, SLOT(SLT_MousePressedRightGamma3D())); //added
+    connect(ui.labelGammaMap2D, SIGNAL(Mouse_Pressed_Right()), this, SLOT(SLT_MousePressedRightGamma2D())); //added
+
+    connect(ui.labelReferDose, SIGNAL(Mouse_Released_Right()), this, SLOT(SLT_MouseReleasedRightRef())); //added
+    connect(ui.labelCompDose, SIGNAL(Mouse_Released_Right()), this, SLOT(SLT_MouseReleasedRightComp())); //added
+    connect(ui.labelGammaMap3D, SIGNAL(Mouse_Released_Right()), this, SLOT(SLT_MouseReleasedRightGamma3D())); //added
+    connect(ui.labelGammaMap2D, SIGNAL(Mouse_Released_Right()), this, SLOT(SLT_MouseReleasedRightGamma2D())); //added    
 
 
     if (m_vColormapDose.size() < 1 || m_vColormapGamma.size() < 1 || m_vColormapGamma.size() < 1)
@@ -82,6 +102,11 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
     m_pTableModel = NULL;
 
     m_bGamma2DIsDone = false;
+
+    m_bMousePressedRightRef = false;
+    m_bMousePressedRightComp = false;
+    m_bMousePressedRightGamma3D = false;
+    m_bMousePressedRightGamma2D = false;
 }
 
 gamma_gui::~gamma_gui()
@@ -175,6 +200,8 @@ void gamma_gui::SLT_RunBatchGamma()
     m_strlistPath_Output_Failure.clear();
     m_strlistPath_Output_Report.clear();
 
+    m_vRefDose.clear();
+
     for (int i = 0; i < cntRef; i++)
     {
         QString strPathRef = m_strlistPath_RD_Ref.at(i);
@@ -185,7 +212,7 @@ void gamma_gui::SLT_RunBatchGamma()
 
         Gamma_parms parms;
         //Gamma param: should come from the UI
-
+        parms.b_ref_only_threshold = false;
         parms.mask_image_fn = "";
         //parms->reference_dose;
         parms.gamma_max = 2.0;
@@ -244,7 +271,7 @@ void gamma_gui::SLT_RunBatchGamma()
         if (ui.checkBox_gammamap_output->isChecked())
         {            
             //QString outputPath = dirPath + "\\" + baseName + "_gammamap_" + strSettingAbs + ".mha";
-            QString outputPath = dirPath + "\\" + baseName + "_gammamap"+ ".mha";
+            QString outputPath = dirPath + baseName + "_gammamap"+ ".mha";
             parms.out_image_fn = outputPath.toLocal8Bit().constData();
             m_strlistPath_Output_Gammamap.push_back(outputPath);
         }
@@ -252,24 +279,29 @@ void gamma_gui::SLT_RunBatchGamma()
         if (ui.checkBox_failuremap_output->isChecked())
         {
             //QString outputPath = dirPath + "\\" + baseName + "_failmap_" + strSettingAbs + ".mha";
-            QString outputPath = dirPath + "\\" + baseName + "_failmap" + ".mha";
+            QString outputPath = dirPath + baseName + "_failmap" + ".mha";
             parms.out_failmap_fn = outputPath.toLocal8Bit().constData();
             m_strlistPath_Output_Failure.push_back(outputPath);            
         }           
 
         //QString outputPath = dirPath + "\\" + baseName + "_report_" + strSettingAbs + ".txt";
-        QString outputPath = dirPath + "\\" + baseName + "_report" + ".txt";
+        QString outputPath = dirPath + baseName + "_report" + ".txt";
         parms.out_report_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Report.push_back(outputPath);
 
-        QString overallReport = GammaMain(&parms);
-        m_strlistBatchReport.push_back(overallReport);
+        float refDoseGy;
+        QString overallReport = GammaMain(&parms, refDoseGy);
+        m_strlistBatchReport.push_back(overallReport);        
+
+        m_vRefDose.push_back(refDoseGy);        
     }
+
+    SLT_LoadResults();
 
     //After the batch mode analysis, export the simpe report.    
     //Only when the number of files is > 1
-    /*if (cntRef == 1)
-        return;*/
+    if (cntRef == 1)
+        return;
         
     QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
 
@@ -294,12 +326,10 @@ void gamma_gui::SLT_RunBatchGamma()
         fout << m_strlistBatchReport.at(i).toLocal8Bit().constData() << endl;
     }
 
-    fout.close();
-
-    SLT_LoadResults();
+    fout.close();    
 }
 
-QString gamma_gui::GammaMain(Gamma_parms* parms)
+QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy)
 {
     QString reportResult;
     Gamma_dose_comparison gdc;
@@ -358,6 +388,7 @@ QString gamma_gui::GammaMain(Gamma_parms* parms)
     gdc.set_local_gamma(parms->b_local_gamma);//default: false
     gdc.set_compute_full_region(parms->b_compute_full_region);//default: false
     gdc.set_resample_nn(parms->b_resample_nn); //default: false
+    gdc.set_ref_only_threshold(parms->b_ref_only_threshold);
 
     if (parms->f_inherent_resample_mm > 0.0) {
         gdc.set_inherent_resample_mm(parms->f_inherent_resample_mm);
@@ -412,18 +443,21 @@ QString gamma_gui::GammaMain(Gamma_parms* parms)
     //if this is dcm, save the mha files
     if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
     {
-        QString newPath = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";
+        //QString newPath = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";
+        QString newPath = info_ref.absolutePath() + info_ref.completeBaseName() + ".mha";
         Plm_image* pImg = gdc.get_ref_image();
         pImg->save_image(newPath.toLocal8Bit().constData());
     }
 
     if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
     {
-        QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        //QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        QString newPath = info_comp.absolutePath() + info_comp.completeBaseName() + ".mha";
         Plm_image* pImg = gdc.get_comp_image();
         pImg->save_image(newPath.toLocal8Bit().constData());
     }
 
+    
     QString strRef_dose = QString::number(gdc.get_reference_dose(), 'f', 2);//Gy
     QString strVoxNumAnalyzed = QString::number(gdc.get_analysis_num_vox(), 'f', 2);
     QString strVoxNumPassed = QString::number(gdc.get_passed_num_vox(), 'f', 2);
@@ -439,7 +473,8 @@ QString gamma_gui::GammaMain(Gamma_parms* parms)
         + strVoxNumAnalyzed + "\t"
         + strVoxNumPassed + "\t"
         + strPassRate;
-
+    
+    refDoseGy = gdc.get_reference_dose();
     return reportResult;
 }
 
@@ -469,8 +504,9 @@ void gamma_gui::Load_FilesToMem()
 {
     int cntRef = m_strlistPath_RD_Ref.count();
     int cntComp = m_strlistPath_RD_Comp.count();
+    int cntGamma = m_strlistPath_Output_Gammamap.count();
 
-    if (cntRef*cntComp == 0 || cntRef != cntComp)
+    if (cntRef*cntComp == 0 || cntRef != cntComp || cntRef != cntGamma)
     {
         cout << "Error: number should be matched" << endl;
         return;
@@ -493,12 +529,14 @@ void gamma_gui::Load_FilesToMem()
     
         if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
         {
-            strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";            
+            //strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";            
+            strPath_ref = info_ref.absolutePath() + info_ref.completeBaseName() + ".mha";
         }
 
         if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
         {
-            strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+            //strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+            strPath_comp = info_comp.absolutePath() + info_comp.completeBaseName() + ".mha";
         }
 
         FloatImageType::Pointer spImgRef = FloatImageType::New();
@@ -527,7 +565,12 @@ void gamma_gui::SLT_LoadResults()
     SLT_UpdateComboContents();
     connect(ui.comboBoxCompareFile, SIGNAL(currentIndexChanged(int)), this, SLOT(SLT_DrawAll()));
 
-    SLT_DrawAll();
+
+    SLT_WhenSelectCombo(); //initialization
+
+    SLT_GoCenterPosRef();
+    SLT_GoCenterPosComp();
+    //SLT_DrawAll();
 }
 
 void gamma_gui::SLT_UpdateComboContents() //compare image based..
@@ -562,17 +605,17 @@ void gamma_gui::SLT_DrawAll()
         return;
     }
 
-    ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    //ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    //ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    //ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);    
+    //ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);    
 
 
     //Convert3DTo2D (float2D, get radio, probe pos from GUI)
@@ -607,6 +650,8 @@ void gamma_gui::SLT_DrawAll()
 
     float probePos2D_X =0.0;
     float probePos2D_Y = 0.0;
+
+    bool bYFlip = false;
     
     if (ui.radioButtonAxial->isChecked())
     {
@@ -623,6 +668,7 @@ void gamma_gui::SLT_DrawAll()
 
         probePos2D_X = probePosY;
         probePos2D_Y = probePosZ;  //YKDebug: may be reversed     
+        bYFlip = true;
     }
     else if (ui.radioButtonFrontal->isChecked())
     {
@@ -631,10 +677,14 @@ void gamma_gui::SLT_DrawAll()
 
         probePos2D_X = probePosX;
         probePos2D_Y = probePosZ;//YKDebug: may be reversed   
+        bYFlip = true;
     }
     
     QUTIL::Get2DFrom3DByPosition(spCurRef, m_spCurRef2D, curPlane, fixedPos, finalPos1);
     QUTIL::Get2DFrom3DByPosition(spCurComp, m_spCurComp2D, curPlane, fixedPos, finalPos2);
+
+  //  if (curPlane == PLANE_FRONTAL)
+    //    QUTIL::SaveFloatImage2D("D:\\testFrontal.mha", m_spCurRef2D);//it is flipped!
 
 
     if (spCurGamma)
@@ -642,22 +692,32 @@ void gamma_gui::SLT_DrawAll()
         QUTIL::Get2DFrom3DByPosition(spCurGamma, spCurGamma2DFrom3D, curPlane, fixedPos, finalPos3);
     }    
 
+    //Actually, frontal and sagittal image should be flipped for display purpose (in axial, Y is small to large, SAG and FRONTAL, Large to Small (head to toe direction)
+    //Let's not change original data itself due to massing up the origin. Only change the display image
+    //Point probe and profiles, other things works fine.
+
+
     //YKImage receives 2D float
-    m_pCurImageRef->UpdateFromItkImageFloat(m_spCurRef2D, GY2YKIMG_MAG, NON_NEG_SHIFT);
-    m_pCurImageComp->UpdateFromItkImageFloat(m_spCurComp2D, GY2YKIMG_MAG, NON_NEG_SHIFT);
+    m_pCurImageRef->UpdateFromItkImageFloat(m_spCurRef2D, GY2YKIMG_MAG, NON_NEG_SHIFT, bYFlip); //flip Y for display only
+    m_pCurImageComp->UpdateFromItkImageFloat(m_spCurComp2D, GY2YKIMG_MAG, NON_NEG_SHIFT, bYFlip);
+
+    //cout << "GAMMA2YKIMG_MAG= " << GAMMA2YKIMG_MAG << endl;
 
     if (spCurGamma2DFrom3D)
     {
-        m_pCurImageGamma3D->UpdateFromItkImageFloat(spCurGamma2DFrom3D, GAMMA2YKIMG_MAG, NON_NEG_SHIFT);    
+        m_pCurImageGamma3D->UpdateFromItkImageFloat(spCurGamma2DFrom3D, GAMMA2YKIMG_MAG, NON_NEG_SHIFT, bYFlip);
     }
 
+    
     if (m_spGamma2DResult)
     {
-        m_pCurImageGamma2D->UpdateFromItkImageFloat(m_spGamma2DResult, GAMMA2YKIMG_MAG, NON_NEG_SHIFT);
+        m_pCurImageGamma2D->UpdateFromItkImageFloat(m_spGamma2DResult, GAMMA2YKIMG_MAG, NON_NEG_SHIFT, bYFlip);
     }
 
     float doseGyNormRef = 0.01 * (ui.sliderNormRef->value());
     float doseGyNormComp = 0.01 *(ui.sliderNormComp->value());
+
+    //cout << "doseGyNormComp= " << doseGyNormRef << endl;
     //PixMap
 
     m_pCurImageRef->SetNormValueOriginal(doseGyNormRef);
@@ -785,15 +845,16 @@ void gamma_gui::SLT_DrawAll()
     //Update LineEdit using rounded fixed value
     if (curPlane == PLANE_AXIAL)
     {
-        ui.lineEdit_ProbePosZ->setText(QString("%1").arg(finalPos1));//finalPos1 is for all images
+        //ui.lineEdit_ProbePosZ->setText(QString("%1").arg(finalPos1));//finalPos1 is for all images
+        ui.lineEdit_ProbePosZ->setText(QString::number(finalPos1,'f', 1));
     }
     else if (curPlane == PLANE_SAGITTAL)
     {
-        ui.lineEdit_ProbePosX->setText(QString("%1").arg(finalPos1));
+        ui.lineEdit_ProbePosX->setText(QString::number(finalPos1, 'f', 1));
     }
     else if (curPlane == PLANE_FRONTAL)
     {
-        ui.lineEdit_ProbePosY->setText(QString("%1").arg(finalPos1));
+        ui.lineEdit_ProbePosY->setText(QString::number(finalPos1, 'f', 1));
     }
 
     ui.tableViewProfile->update();
@@ -1188,12 +1249,12 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
 
     if (bInitMinMax)
     {
-        float marginX = 10;
-        float marginY = 100;
+        //float marginX = 10;
+        //float marginY = 100;
         ui.lineEditXMin->setText(QString("%1").arg(minX));
         ui.lineEditXMax->setText(QString("%1").arg(maxX));
-        ui.lineEditYMin->setText(QString("%1").arg(minY));
-        ui.lineEditYMax->setText(QString("%1").arg(maxY + marginY));
+        //ui.lineEditYMin->setText(QString("%1").arg(minY));
+        //ui.lineEditYMax->setText(QString("%1").arg(maxY + marginY));
     }    
 
     double tmpXMin = ui.lineEditXMin->text().toDouble();
@@ -1286,7 +1347,8 @@ void gamma_gui::SLT_RunGamma2D()
     if (!tmpResult)
         cout << "Warning! Directory for 2D gamma already exists. files will be overwritten." << endl;
 
-    QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
+    //QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
+    QString strSavingFolder = crntDir.absolutePath() + subDirName;
 
     QDir dirSaving(strSavingFolder);
     if (!dirSaving.exists())
@@ -1315,6 +1377,7 @@ void gamma_gui::SLT_RunGamma2D()
     parms.gamma_max = 2.0;
     parms.b_compute_full_region = false;
     parms.b_resample_nn = false; //default: false
+    parms.b_ref_only_threshold = false;
 
     //From File List
     parms.ref_image_fn = tmpFilePathRef.toLocal8Bit().constData();
@@ -1361,35 +1424,33 @@ void gamma_gui::SLT_RunGamma2D()
 
     //QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";
 
-    QString strPathGamma2D = strSavingFolder + "\\" + "gamma2D" + ".mha";
+    QString strPathGamma2D = strSavingFolder + "/" + "gamma2D" + ".mha";
     if (ui.checkBox_gammamap_output->isChecked())
     {        
         parms.out_image_fn = strPathGamma2D.toLocal8Bit().constData();     
     }
 
-    QString strPathFailmap2D = strSavingFolder + "\\" + "fail2D" + ".mha";
+    QString strPathFailmap2D = strSavingFolder + "/" + "fail2D" + ".mha";
     if (ui.checkBox_failuremap_output->isChecked())
     {
         parms.out_failmap_fn = strPathFailmap2D.toLocal8Bit().constData();
     }
 
-    QString strPathReport = strSavingFolder + "\\" + "_report" + ".txt";
+    QString strPathReport = strSavingFolder + "/" + "text_report" + ".txt";
+    cout << "strPathReport= " << strPathReport.toLocal8Bit().constData() << endl;
+
     parms.out_report_fn = strPathReport.toLocal8Bit().constData();
 
-    QString overallReport = GammaMain(&parms); //report for a single case
+    float refDoseGy;
+    QString overallReport = GammaMain(&parms, refDoseGy); //report for a single case
     //Update GUI
 
     //Read gammap2D
 
     //m_spGamma2DResult;
-    QUTIL::LoadFloatImage2D(strPathGamma2D.toLocal8Bit().constData(), m_spGamma2DResult);
+    QUTIL::LoadFloatImage2D(strPathGamma2D.toLocal8Bit().constData(), m_spGamma2DResult);    
 
-
-    
-
-    //Update plainTextEditGammaResult    
-    
-
+    //Update plainTextEditGammaResult
     QFileInfo reportInfo = QFileInfo(strPathReport);
 
     if (!reportInfo.exists())
@@ -1613,5 +1674,437 @@ void gamma_gui::SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DTy
 
     fout.close();
 
+    return;
+}
+
+void gamma_gui::SLT_WhenSelectCombo()
+{
+    QComboBox* crntCombo = ui.comboBoxCompareFile;    
+    int curIdx = crntCombo->currentIndex(); //this should be basename    
+    int iCnt = crntCombo->count();
+    if (iCnt < 1)
+        return;
+
+    if (m_vRefDose.size() != iCnt)
+        return;
+
+    disconnect(ui.sliderNormRef, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
+    disconnect(ui.sliderNormComp, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
+
+    ui.sliderNormRef->setValue(qRound(m_vRefDose.at(curIdx) * 100)); //Gy to cGy
+    ui.sliderNormComp->setValue(qRound(m_vRefDose.at(curIdx) * 100)); //Gy to cGy
+
+    connect(ui.sliderNormRef, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
+    connect(ui.sliderNormComp, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
+
+    SLT_WhenChangePlane();
+    //SLT_DrawAll();
+}
+
+void gamma_gui::SLT_MouseWheelUpdateRef()
+{
+    if (ui.labelReferDose->m_pYK16Image == NULL||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+    {
+        return;
+    }
+    if (ui.checkBox_ScrollZoom->isChecked())
+    {
+        double oldZoom = ui.labelReferDose->m_pYK16Image->m_fZoom;
+        double fWeighting = 0.2;
+        float vZoomVal = oldZoom + ui.labelReferDose->m_iMouseWheelDelta * fWeighting;
+        ui.labelReferDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelCompDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelGammaMap3D->m_pYK16Image->SetZoom(vZoomVal);
+
+        if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+            ui.labelGammaMap2D->m_pYK16Image->SetZoom(vZoomVal);
+    }
+    else //change slice
+    {
+        double fWeighting = 1.0;
+        enPLANE curPlane;
+        float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
+        float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
+        float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
+
+        if (ui.radioButtonAxial->isChecked())
+        {
+            curPlane = PLANE_AXIAL;
+            probePosZ = probePosZ + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
+        }
+        else if (ui.radioButtonSagittal->isChecked())
+        {
+            curPlane = PLANE_SAGITTAL;
+            probePosX = probePosX + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));          
+        }
+        else if (ui.radioButtonFrontal->isChecked())
+        {
+            curPlane = PLANE_FRONTAL;
+            probePosY = probePosY + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
+        }        
+    }
+
+    SLT_DrawAll();
+}
+
+void gamma_gui::SLT_MouseWheelUpdateComp()
+{
+    if (ui.labelReferDose->m_pYK16Image == NULL ||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+    {
+        return;
+    }
+
+    if (ui.checkBox_ScrollZoom->isChecked())
+    {
+        double oldZoom = ui.labelCompDose->m_pYK16Image->m_fZoom;
+        double fWeighting = 0.2;
+        float vZoomVal = oldZoom + ui.labelCompDose->m_iMouseWheelDelta * fWeighting;
+
+        ui.labelReferDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelCompDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelGammaMap3D->m_pYK16Image->SetZoom(vZoomVal);
+
+        if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+            ui.labelGammaMap2D->m_pYK16Image->SetZoom(vZoomVal);
+
+    }
+    else //change slice
+    {
+        double fWeighting = 1.0;
+        enPLANE curPlane;
+        float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
+        float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
+        float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
+
+        if (ui.radioButtonAxial->isChecked())
+        {
+            curPlane = PLANE_AXIAL;
+            probePosZ = probePosZ + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
+        }
+        else if (ui.radioButtonSagittal->isChecked())
+        {
+            curPlane = PLANE_SAGITTAL;
+            probePosX = probePosX + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));
+        }
+        else if (ui.radioButtonFrontal->isChecked())
+        {
+            curPlane = PLANE_FRONTAL;
+            probePosY = probePosY + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
+        }
+    }
+
+    SLT_DrawAll();
+
+}
+
+void gamma_gui::SLT_MouseWheelUpdateGamma2D()
+{
+
+}
+
+void gamma_gui::SLT_MouseWheelUpdateGamma3D()
+{
+    if (ui.labelReferDose->m_pYK16Image == NULL ||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+    {
+        return;
+    }
+
+    if (ui.checkBox_ScrollZoom->isChecked())
+    {
+        double oldZoom = ui.labelGammaMap3D->m_pYK16Image->m_fZoom;
+        double fWeighting = 0.2;
+        float vZoomVal = oldZoom + ui.labelGammaMap3D->m_iMouseWheelDelta * fWeighting;
+
+        ui.labelReferDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelCompDose->m_pYK16Image->SetZoom(vZoomVal);
+        ui.labelGammaMap3D->m_pYK16Image->SetZoom(vZoomVal);
+
+        if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+            ui.labelGammaMap2D->m_pYK16Image->SetZoom(vZoomVal);
+
+    }
+    else //change slice
+    {
+        double fWeighting = 1.0;
+        enPLANE curPlane;
+        float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
+        float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
+        float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
+
+        if (ui.radioButtonAxial->isChecked())
+        {
+            curPlane = PLANE_AXIAL;
+            probePosZ = probePosZ + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
+        }
+        else if (ui.radioButtonSagittal->isChecked())
+        {
+            curPlane = PLANE_SAGITTAL;
+            probePosX = probePosX + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));
+        }
+        else if (ui.radioButtonFrontal->isChecked())
+        {
+            curPlane = PLANE_FRONTAL;
+            probePosY = probePosY + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+            ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
+        }
+    }
+
+    SLT_DrawAll();
+}
+
+void gamma_gui::SLT_MouseMoveUpdateRef()
+{
+
+}
+
+void gamma_gui::SLT_MouseMoveUpdateComp()
+{
+
+}
+
+void gamma_gui::SLT_MouseMoveUpdateGamma2D()
+{
+
+}
+
+void gamma_gui::SLT_MouseMoveUpdateGamma3D()
+{
+
+}
+
+void gamma_gui::SLT_RestoreZoomPan()
+{
+    if (ui.labelReferDose->m_pYK16Image == NULL ||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+    {
+        return;
+    }
+
+    ui.labelReferDose->m_pYK16Image->SetZoom(1.0);
+    ui.labelCompDose->m_pYK16Image->SetZoom(1.0);
+    ui.labelGammaMap3D->m_pYK16Image->SetZoom(1.0);
+
+    if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+        ui.labelGammaMap2D->m_pYK16Image->SetZoom(1.0);
+
+
+    ui.labelReferDose->m_pYK16Image->SetOffset(0,0);
+    ui.labelCompDose->m_pYK16Image->SetOffset(0, 0);
+    ui.labelGammaMap3D->m_pYK16Image->SetOffset(0, 0);
+
+    if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+        ui.labelGammaMap2D->m_pYK16Image->SetOffset(0, 0);
+}
+
+void gamma_gui::SLT_WhenChangePlane()
+{
+    ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);    
+
+    SLT_RestoreZoomPan();
+    SLT_DrawAll();
+}
+
+void gamma_gui::SLT_MousePressedRightRef()
+{    
+    m_bMousePressedRightRef = true;
+    WhenMousePressedRight(ui.labelReferDose);
+}
+
+void gamma_gui::WhenMousePressedRight(qyklabel* pWnd)
+{
+    if (pWnd->m_pYK16Image == NULL)
+        return;
+
+    m_ptPanStart.setX(pWnd->x);
+    m_ptPanStart.setY(pWnd->y);
+
+    m_ptOriginalDataOffset.setX(pWnd->m_pYK16Image->m_iOffsetX);
+    m_ptOriginalDataOffset.setY(pWnd->m_pYK16Image->m_iOffsetY);
+}
+
+
+void gamma_gui::SLT_MousePressedRightComp()
+{
+    m_bMousePressedRightComp = true;
+    WhenMousePressedRight(ui.labelCompDose);
+}
+
+void gamma_gui::SLT_MousePressedRightGamma3D()
+{
+    m_bMousePressedRightGamma3D = true;
+    WhenMousePressedRight(ui.labelGammaMap3D);
+}
+
+void gamma_gui::SLT_MousePressedRightGamma2D()
+{
+    m_bMousePressedRightGamma2D = true;
+    WhenMousePressedRight(ui.labelGammaMap2D);
+}
+
+void gamma_gui::SLT_MouseReleasedRightRef()
+{
+    m_bMousePressedRightRef = false;
+}
+
+void gamma_gui::SLT_MouseReleasedRightComp()
+{
+    m_bMousePressedRightComp = false;
+}
+
+void gamma_gui::SLT_MouseReleasedRightGamma3D()
+{
+    m_bMousePressedRightGamma3D = false;
+}
+
+void gamma_gui::SLT_MouseReleasedRightGamma2D()
+{
+    m_bMousePressedRightGamma2D = false;
+}
+
+
+void gamma_gui::UpdatePanCommon(qyklabel* qWnd)
+{
+    if (qWnd->m_pYK16Image == NULL)
+        return;
+
+    double dspWidth = qWnd->width();
+    double dspHeight = qWnd->height();
+
+    int dataWidth = qWnd->m_pYK16Image->m_iWidth;
+    int dataHeight = qWnd->m_pYK16Image->m_iHeight;
+    if (dataWidth*dataHeight == 0)
+        return;
+
+    int dataX = qWnd->GetDataPtFromMousePos().x();
+    int dataY = qWnd->GetDataPtFromMousePos().y();
+
+    ////Update offset information of dispImage
+    //GetOriginalDataPos (PanStart)
+    //offset should be 0.. only relative distance matters. offset is in realtime changing
+    QPoint ptDataPanStartRel = qWnd->View2DataExt(m_ptPanStart, dspWidth,
+        dspHeight, dataWidth, dataHeight, QPoint(0, 0), qWnd->m_pYK16Image->m_fZoom);
+
+    QPoint ptDataPanEndRel = qWnd->View2DataExt(QPoint(qWnd->x, qWnd->y), dspWidth,
+        dspHeight, dataWidth, dataHeight, QPoint(0, 0), qWnd->m_pYK16Image->m_fZoom);
+
+    //int dspOffsetX = pOverlapWnd->x - m_ptPanStart.x();
+    //int dspOffsetY = m_ptPanStart.y() - pOverlapWnd->y;
+
+    /*QPoint ptDataStart= pOverlapWnd->GetDataPtFromViewPt(m_ptPanStart.x(),  m_ptPanStart.y());
+    QPoint ptDataEnd= pOverlapWnd->GetDataPtFromViewPt(pOverlapWnd->x, pOverlapWnd->y);*/
+
+    int curOffsetX = ptDataPanEndRel.x() - ptDataPanStartRel.x();
+    int curOffsetY = ptDataPanEndRel.y() - ptDataPanStartRel.y();
+
+    int prevOffsetX = m_ptOriginalDataOffset.x();
+    int prevOffsetY = m_ptOriginalDataOffset.y();
+
+    //double fZoom = qWnd->m_pYK16Image->m_fZoom;
+    qWnd->m_pYK16Image->SetOffset(prevOffsetX - curOffsetX, prevOffsetY - curOffsetY);
+
+    //SLT_DrawAll();
+}
+
+void gamma_gui::SLT_UpdatePanSettingRef() //Mouse Move
+{
+    if (!m_bMousePressedRightRef)
+        return;
+
+    if (ui.labelReferDose->m_pYK16Image == NULL || 
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+        return;
+
+    UpdatePanCommon(ui.labelReferDose);
+    //Sync offset
+    int offsetX = ui.labelReferDose->m_pYK16Image->m_iOffsetX;
+    int offsetY = ui.labelReferDose->m_pYK16Image->m_iOffsetY;
+
+    ui.labelCompDose->m_pYK16Image->SetOffset(offsetX, offsetY);
+    ui.labelGammaMap3D->m_pYK16Image->SetOffset(offsetX, offsetY);
+
+    if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+        ui.labelGammaMap2D->m_pYK16Image->SetOffset(offsetX, offsetY);    
+
+    SLT_DrawAll();
+}
+
+
+void gamma_gui::SLT_UpdatePanSettingComp()
+{
+    if (!m_bMousePressedRightComp)
+        return;
+
+    if (ui.labelReferDose->m_pYK16Image == NULL ||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+        return;
+
+    UpdatePanCommon(ui.labelCompDose);
+    //Sync offset
+    int offsetX = ui.labelCompDose->m_pYK16Image->m_iOffsetX;
+    int offsetY = ui.labelCompDose->m_pYK16Image->m_iOffsetY;
+
+    ui.labelReferDose->m_pYK16Image->SetOffset(offsetX, offsetY);
+    ui.labelGammaMap3D->m_pYK16Image->SetOffset(offsetX, offsetY);
+
+    if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+        ui.labelGammaMap2D->m_pYK16Image->SetOffset(offsetX, offsetY);
+
+    SLT_DrawAll();
+}
+
+void gamma_gui::SLT_UpdatePanSettingGamma3D()
+{
+    if (!m_bMousePressedRightGamma3D)
+        return;
+
+    if (ui.labelReferDose->m_pYK16Image == NULL ||
+        ui.labelCompDose->m_pYK16Image == NULL ||
+        ui.labelGammaMap3D->m_pYK16Image == NULL)
+        return;
+
+    UpdatePanCommon(ui.labelGammaMap3D);
+    //Sync offset
+    int offsetX = ui.labelGammaMap3D->m_pYK16Image->m_iOffsetX;
+    int offsetY = ui.labelGammaMap3D->m_pYK16Image->m_iOffsetY;
+
+    ui.labelReferDose->m_pYK16Image->SetOffset(offsetX, offsetY);
+    ui.labelCompDose->m_pYK16Image->SetOffset(offsetX, offsetY);
+
+    if (ui.labelGammaMap2D->m_pYK16Image != NULL)
+        ui.labelGammaMap2D->m_pYK16Image->SetOffset(offsetX, offsetY);
+
+    SLT_DrawAll();
+
+}
+
+void gamma_gui::SLT_UpdatePanSettingGamma2D()
+{
     return;
 }

@@ -67,6 +67,8 @@ public:
         b_resample_nn = false;				
         b_interp_search = false;
 
+        b_ref_only_threshold = false;
+
         for (int i = 0; i < MAX_NUM_HISTOGRAM_BIN; i++)	{
             arr_gamma_histo[i] = 0;
         }
@@ -115,6 +117,7 @@ public:
     bool b_local_gamma;
     bool b_compute_full_region;
     float f_inherent_resample_mm;
+    bool b_ref_only_threshold;//this option is needed for a situation where a ref region is below threshold and comp region is above threshold.
 
     plm_long voxels_in_mask;
     plm_long voxels_in_image;
@@ -526,6 +529,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     //int reg_pixsize; 
     float level1, level2, level3, dr2, dd2, gg;
     float f0,f1,f2,f3;
+    float fixedlevel2;//corresponding position pixel value of level1 to apply threshold
 	
 
     ////interpolated voxel position (float) for interp-search
@@ -603,7 +607,7 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
     float gamma_comp_r3[4]; //r3: sub2-region moving point		
     float gamma_comp_rn[4]; //rn: normal_vector point (will give the smallest gamma value in gamma space)
 
-    float ref_dose_general;
+    float ref_dose_general;//in local gamma option, this should be a local dose, not a reference dose.
 
     float sum_up = 0.0;
     float sum_down = 0.0;
@@ -637,22 +641,33 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
             ref_dose_general = level1;
         else //global, default
             ref_dose_general = this->reference_dose;	//by default, this is coming from ref dose (max dose if not defined)
+                       
+        k1 = itk_1_iterator.GetIndex();
+        itk_1->TransformIndexToPhysicalPoint(k1, phys);
+        itk_2->TransformPhysicalPointToIndex(phys, k2);
 
+        
+        if (b_ref_only_threshold) //don't care the corresponding pixel value
+            fixedlevel2 = -1.0;            
+        else
+            fixedlevel2 = itk_2->GetPixel(k2);//just for comparison to corresponding value
+            
 
         //if this option is on, computation will be much faster because dose comparison will not be perforemd.
         if (!this->b_compute_full_region){
             if (this->have_analysis_thresh){
-                if (level1 < analysis_threshold_in_Gy){
+                //if (level1 < analysis_threshold_in_Gy){
+                if (level1 < analysis_threshold_in_Gy && fixedlevel2 < analysis_threshold_in_Gy){
                     gamma_img_iterator.Set (NoProcessGammaValue);//YK: is 0.0 Safe? how about -1.0?
                     ++gamma_img_iterator;
                     continue;//skip the rest of the loop. This point will not be counted in analysis
                 }			
             }
-        }
-		
-        k1=itk_1_iterator.GetIndex();
+        }		
+
+        /*k1=itk_1_iterator.GetIndex();
         itk_1->TransformIndexToPhysicalPoint( k1, phys );
-        itk_2->TransformPhysicalPointToIndex( phys, k2 );		
+        itk_2->TransformPhysicalPointToIndex( phys, k2 );		*/
 
         //k2 is the voxel index of the k1's physical (mm) position in img2
     
@@ -689,7 +704,8 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
                 (k2[1]-k1[1])*(k2[1]-k1[1])*f1 +
                 (k2[2]-k1[2])*(k2[2]-k1[2])*f2 ;
             //dd2: (dose diff./D)^2						
-            dd2 = ((level1 - level2) / reference_dose) * ((level1 - level2) / reference_dose) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            								
+            //dd2 = ((level1 - level2) / reference_dose) * ((level1 - level2) / reference_dose) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            								
+            dd2 = ((level1 - level2) / ref_dose_general) * ((level1 - level2) / ref_dose_general) * f3; // (if local gamma is on, {[(d1-d2)/d1]*100 (%) / tol_dose(%)}^2)            								
 
             gg = dr2 + dd2;
             // in this subregion, only minimum value is take.
@@ -781,7 +797,10 @@ Gamma_dose_comparison_private::do_gamma_analysis ()
 	
         /* Get statistics */
         if (this->have_analysis_thresh) {
-            if (level1 > analysis_threshold_in_Gy) {
+            //if (level1 > analysis_threshold_in_Gy) {            
+            /* include this voxel */
+            /*fixedlevel2 = -1 if include hig dose Comp is off*/
+            if (!(level1 < analysis_threshold_in_Gy && fixedlevel2 < analysis_threshold_in_Gy)){
                 this->analysis_num_vox ++;
                 if (gamma <= 1) {
                     this->analysis_num_pass ++;
@@ -898,6 +917,10 @@ void Gamma_dose_comparison_private::compose_report()
     std::string item;
 
     memset(itemStr, 0, iStrSize);
+    sprintf(itemStr, "%s\t%3.2f\n", "pass_rate(%)", analysis_num_pass / (float)analysis_num_vox*100.0);
+    str_gamma_report = str_gamma_report + std::string(itemStr);
+
+    memset(itemStr, 0, iStrSize);
     sprintf(itemStr, "%s\t%d\n", "interp_search", this->b_interp_search);
     str_gamma_report = str_gamma_report + std::string(itemStr);
 
@@ -911,7 +934,7 @@ void Gamma_dose_comparison_private::compose_report()
 	
     memset(itemStr, 0, iStrSize);
     sprintf( itemStr, "%s\t%d\n","compute_full_region", this->b_compute_full_region);
-    str_gamma_report= str_gamma_report+std::string(itemStr);
+    str_gamma_report= str_gamma_report+std::string(itemStr);    
 
     memset(itemStr, 0, iStrSize);
     sprintf(itemStr, "%s\t%d\n", "resample-nn", this->b_resample_nn);
@@ -924,6 +947,10 @@ void Gamma_dose_comparison_private::compose_report()
     memset(itemStr, 0, iStrSize);
     sprintf( itemStr, "%s\t%3.2f\n","inherent_resample(mm)", this->f_inherent_resample_mm);
     str_gamma_report= str_gamma_report+std::string(itemStr);
+
+    memset(itemStr, 0, iStrSize);
+    sprintf(itemStr, "%s\t%d\n", "ref-only-threshold", this->b_ref_only_threshold);
+    str_gamma_report = str_gamma_report + std::string(itemStr);
 
     memset(itemStr, 0, iStrSize);
     sprintf( itemStr, "%s\t%3.2f\n","reference_dose_Gy", this->reference_dose);
@@ -951,20 +978,20 @@ void Gamma_dose_comparison_private::compose_report()
     sprintf( itemStr, "%s\t%d\n","number_of_total_voxels", (int) this->voxels_in_image);
     str_gamma_report= str_gamma_report+std::string(itemStr);
 
-    memset(itemStr, 0, iStrSize);	
-    sprintf( itemStr, "%s\t%d\n","number_of_analysis_voxels", (int) this->analysis_num_vox);
-    str_gamma_report= str_gamma_report+std::string(itemStr);
-
-    memset(itemStr, 0, iStrSize);	
-    sprintf( itemStr, "%s\t%d\n","number_of_pass_voxels", (int) this->analysis_num_pass);
-    str_gamma_report= str_gamma_report+std::string(itemStr);
-
-    memset(itemStr, 0, iStrSize);	
-    sprintf( itemStr, "%s\t%3.2f\n","pass_rate(%)", analysis_num_pass/(float)analysis_num_vox*100.0);
-    str_gamma_report= str_gamma_report+std::string(itemStr);
+    memset(itemStr, 0, iStrSize);
+    sprintf(itemStr, "%s\t%d\n", "number_of_analysis_voxels", (int) this->analysis_num_vox);
+    str_gamma_report = str_gamma_report + std::string(itemStr);
 
     memset(itemStr, 0, iStrSize);
-    sprintf(itemStr, "###################___BEGIN GAMMA HISTOGRAM___###################\n");
+    sprintf(itemStr, "%s\t%d\n", "number_of_pass_voxels", (int) this->analysis_num_pass);
+    str_gamma_report = str_gamma_report + std::string(itemStr);
+
+    memset(itemStr, 0, iStrSize);
+    sprintf(itemStr, "%s\t%3.2f\n", "pass_rate(%)", analysis_num_pass / (float)analysis_num_vox*100.0);
+    str_gamma_report = str_gamma_report + std::string(itemStr);
+
+    memset(itemStr, 0, iStrSize);
+    sprintf(itemStr, "[BEGIN GAMMA HISTOGRAM]\n");
     str_gamma_report = str_gamma_report + std::string(itemStr);
 
     //print out histogram
@@ -981,7 +1008,7 @@ void Gamma_dose_comparison_private::compose_report()
     str_gamma_report = str_gamma_report + std::string(itemStr);
 
     memset(itemStr, 0, iStrSize);
-    sprintf(itemStr, "###################___END GAMMA HISTOGRAM___###################\n");
+    sprintf(itemStr, "[END GAMMA HISTOGRAM]\n");
     str_gamma_report = str_gamma_report + std::string(itemStr);
 }
 
@@ -1061,5 +1088,15 @@ Plm_image* Gamma_dose_comparison::get_ref_image()
 Plm_image* Gamma_dose_comparison::get_comp_image()
 {
     return d_ptr->img_in2;
+}
+
+bool Gamma_dose_comparison::is_ref_only_threshold()
+{
+    return d_ptr->b_ref_only_threshold;
+}
+
+void Gamma_dose_comparison::set_ref_only_threshold(bool b_ref_only_threshold)
+{
+    d_ptr->b_ref_only_threshold = b_ref_only_threshold;
 }
 

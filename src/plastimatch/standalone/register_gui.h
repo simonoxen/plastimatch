@@ -60,6 +60,8 @@ public:
     QStringList m_strlistPath_Output_Failure;
     QStringList m_strlistPath_Output_Report;
 
+    //vector<float> m_vdaf
+
 
 private:
     Ui::register_guiClass ui;

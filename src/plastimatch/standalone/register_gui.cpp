@@ -197,19 +197,19 @@ void register_gui::SLT_RunBatchGamma()
 
         if (ui.checkBox_gammamap_output->isChecked())
         {            
-            QString outputPath = dirPath + "\\" + baseName + "_gammamap_" + strSettingAbs + ".mha";
+            QString outputPath = dirPath + baseName + "_gammamap_" + strSettingAbs + ".mha";
             parms.out_image_fn = outputPath.toLocal8Bit().constData();
             m_strlistPath_Output_Gammamap.push_back(outputPath);
         }
 
         if (ui.checkBox_failuremap_output->isChecked())
         {
-            QString outputPath = dirPath + "\\" + baseName + "_failmap_" + strSettingAbs + ".mha";
+            QString outputPath = dirPath + baseName + "_failmap_" + strSettingAbs + ".mha";
             parms.out_failmap_fn = outputPath.toLocal8Bit().constData();
             m_strlistPath_Output_Failure.push_back(outputPath);            
         }           
 
-        QString outputPath = dirPath + "\\" + baseName + "_report_" + strSettingAbs + ".txt";
+        QString outputPath = dirPath + baseName + "_report_" + strSettingAbs + ".txt";
         parms.out_report_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Report.push_back(outputPath);
 

@@ -163,6 +163,8 @@ public:
     void set_resample_nn(bool b_resample_nn);
     bool is_interp_search();
     void set_interp_search(bool b_interp_search);
+    bool is_ref_only_threshold();
+    void set_ref_only_threshold(bool b_ref_only_threshold);
 };
 
 #endif

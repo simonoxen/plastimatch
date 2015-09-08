@@ -227,7 +227,7 @@ public:
 
 	void UpdateFromItkImage(UnsignedShortImageType::Pointer& spRefItkImg);
 	void UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkImg);
-        void UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkImg, float fIntenistyMag, float fIntensityOffset);
+        void UpdateFromItkImageFloat(FloatImageType2D::Pointer& spRefItkImg, float fIntenistyMag, float fIntensityOffset, bool bYFlip= false); 
         void UpdateToItkImageFloat(FloatImageType2D::Pointer& spRefItkImg); //to be implemented
 
 	void InvertImage();

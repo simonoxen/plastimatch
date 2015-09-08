@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1212</width>
+    <width>1225</width>
     <height>857</height>
    </rect>
   </property>
@@ -32,8 +32,8 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>281</width>
-      <height>191</height>
+      <width>311</width>
+      <height>151</height>
      </rect>
     </property>
     <property name="readOnly">
@@ -43,10 +43,10 @@
    <widget class="QPlainTextEdit" name="plainTextEdit_RD_Comp">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>330</x>
       <y>50</y>
-      <width>281</width>
-      <height>191</height>
+      <width>311</width>
+      <height>151</height>
      </rect>
     </property>
     <property name="readOnly">
@@ -136,7 +136,7 @@
       <string>Local gamma</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QRadioButton" name="radioButton_globalGamma">
@@ -150,6 +150,9 @@
      </property>
      <property name="text">
       <string>Global gamma</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLineEdit" name="lineEdit_refDoseInGy">
@@ -620,7 +623,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>6000</number>
+     <number>10000</number>
     </property>
     <property name="singleStep">
      <number>10</number>
@@ -645,7 +648,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>6000</number>
+     <number>10000</number>
     </property>
     <property name="singleStep">
      <number>10</number>
@@ -683,7 +686,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>1000</string>
+     <string>130</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEditYMin">
@@ -781,7 +784,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>6000</number>
+     <number>10000</number>
     </property>
     <property name="value">
      <number>200</number>
@@ -797,7 +800,7 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>6000</number>
+     <number>10000</number>
     </property>
     <property name="value">
      <number>200</number>
@@ -846,6 +849,9 @@
     </widget>
    </widget>
    <widget class="QCheckBox" name="checkBoxAutoAdjust">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>680</x>
@@ -981,13 +987,29 @@
      <string>apply</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBox_ScrollZoom">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>220</y>
+      <width>121</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>scroll_zoom</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1212</width>
+     <width>1225</width>
      <height>21</height>
     </rect>
    </property>
@@ -1248,7 +1270,7 @@
    <sender>radioButtonAxial</sender>
    <signal>toggled(bool)</signal>
    <receiver>gamma_guiClass</receiver>
-   <slot>SLT_DrawAll()</slot>
+   <slot>SLT_WhenChangePlane()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>991</x>
@@ -1264,7 +1286,7 @@
    <sender>radioButtonSagittal</sender>
    <signal>toggled(bool)</signal>
    <receiver>gamma_guiClass</receiver>
-   <slot>SLT_DrawAll()</slot>
+   <slot>SLT_WhenChangePlane()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1072</x>
@@ -1280,7 +1302,7 @@
    <sender>radioButtonFrontal</sender>
    <signal>toggled(bool)</signal>
    <receiver>gamma_guiClass</receiver>
-   <slot>SLT_DrawAll()</slot>
+   <slot>SLT_WhenChangePlane()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1146</x>
@@ -1424,7 +1446,7 @@
    <sender>comboBoxCompareFile</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>gamma_guiClass</receiver>
-   <slot>SLT_DrawAll()</slot>
+   <slot>SLT_WhenSelectCombo()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1152</x>
@@ -1498,5 +1520,7 @@
   <slot>SLT_DrawGraph()</slot>
   <slot>SLT_RunGamma2D()</slot>
   <slot>SLT_NormCompFromRefNorm()</slot>
+  <slot>SLT_WhenSelectCombo()</slot>
+  <slot>SLT_WhenChangePlane()</slot>
  </slots>
 </ui>
