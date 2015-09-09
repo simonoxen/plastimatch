@@ -201,18 +201,22 @@ do_xvi_archive (Xvi_archive_parms *parms)
             printf ("Error parsing transform string.\n");
             exit (1);
         }
-        xfp[0] = 1;
-        xfp[1] = 0;
-        xfp[2] = 0;
-        xfp[3] = 0;
-        xfp[4] = 1;
-        xfp[5] = 0;
-        xfp[6] = 0;
-        xfp[7] = 0;
-        xfp[8] = 1;
-        xfp[9] = - xvip[12] * 10;
-        xfp[10] = - xvip[13] * 10;
-        xfp[11] = - xvip[14] * 10;
+
+        // dicom rotation = [0 0 1; 0 1 0; -1 0 0] * xvi rotation
+        xfp[0] =   xvip[8];
+        xfp[1] =   xvip[9];
+        xfp[2] =   xvip[10];
+        xfp[3] =   xvip[4];
+        xfp[4] =   xvip[5];
+        xfp[5] =   xvip[6];
+        xfp[6] = - xvip[0];
+        xfp[7] = - xvip[1];
+        xfp[8] = - xvip[2];
+
+        // dicom translation = - 10 * dicom_rotation * xvi translation
+        xfp[9]  = -10 * (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+        xfp[10] = -10 * (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+        xfp[11] = -10 * (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
         xf->set_aff (xfp);
 
 #if defined (commentout)
@@ -225,8 +229,6 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xf, reference_study.get_rt_study_metadata (),
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
-
-        //break;
     }
 }
 
