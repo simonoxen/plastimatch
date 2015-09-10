@@ -63,10 +63,14 @@ Dcmtk_sro::save (
         UID_SpatialRegistrationStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
         sro_sop_instance_uid.c_str());
+
+    /* Content time is again tricky.  Which reference image should be used?
+       The below is correct for xvi_archive program, but could be made 
+       more general. */
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 
-        rsm->get_study_date());
+        rsm_reg->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_ContentTime, 
-        rsm->get_study_time());
+        rsm_reg->get_study_time());
 
     /* ReferencedSeriesSequence */
     DcmItem *rss_item = 0;
