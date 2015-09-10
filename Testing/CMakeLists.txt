@@ -317,6 +317,8 @@ endif ()
 ##   rectarr-02        Two rectangles, lower rect offset
 ##   rectarr-m-01      Upper mask for rectarr-01 and rectarr-02
 ##   rectarr-m-02      Lower mask for rectarr-01 and rectarr-02
+##   rectarr-03        Two rectangles, both centered (for testing gamma)
+##   rectarr-04        Two rectangles, lower rect offset (for testing gamma)
 ##   roi-1             left = 0, right = 1
 ##   rgc-1             rect range compensator for dose calculation
 ##   sphere-1          Uchar sphere, bg=0, fg=255
@@ -555,6 +557,23 @@ plm_add_test (
   )
 set_property (TEST rectarr-m-01 APPEND PROPERTY DEPENDS rectarr-01-a)
 set_property (TEST rectarr-m-02 APPEND PROPERTY DEPENDS rectarr-01-a)
+plm_add_test (
+  "rectarr-03-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rectarr-03-a.mha;--output-type;float;--pattern;rect;--dim;30 50 30;--background;0;--foreground;70;--rect-size;-5 5 -15 -5 -5 5;--origin;-14.5 -24.5 -14.5;--spacing;1 1 1"
+  )
+plm_add_test (
+  "rectarr-03"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--input;${PLM_BUILD_TESTING_DIR}/rectarr-03-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-03.mha;--output-type;float;--pattern;rect;--background;0;--foreground;50;--rect-size;-5 5 5 15 -5 5"
+  )
+plm_add_test (
+  "rectarr-04"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--input;${PLM_BUILD_TESTING_DIR}/rectarr-03-a.mha;--output;${PLM_BUILD_TESTING_DIR}/rectarr-04.mha;--output-type;float;--pattern;rect;--background;0;--foreground;50;--rect-size;-10 0 5 15 -5 5"
+  )
+set_property (TEST rectarr-03 APPEND PROPERTY DEPENDS rectarr-03-a)
+set_property (TEST rectarr-04 APPEND PROPERTY DEPENDS rectarr-03-a)
 plm_add_test (
   "rgc-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2144,6 +2163,8 @@ set_tests_properties (plm-mask-a-check PROPERTIES DEPENDS plm-mask-a-stats)
 ## -------------------------------------------------------------------------
 ## plm-gamma-a  centered and off-center rectangle, centered as reference
 ## plm-gamma-b  centered rectangles with different dosees
+## plm-gamma-c  analysis using dose threshold on both images
+## plm-gamma-d  analysis using dose threshold on ref only
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-gamma-a"
@@ -2184,6 +2205,35 @@ plmtest_check_interval ("plm-gamma-b-check"
 set_tests_properties (plm-gamma-b PROPERTIES DEPENDS "rect-12;rect-13")
 set_tests_properties (plm-gamma-b-stats PROPERTIES DEPENDS plm-gamma-b)
 set_tests_properties (plm-gamma-b-check PROPERTIES DEPENDS plm-gamma-b-stats)
+
+plm_add_test (
+  "plm-gamma-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-c.mha;${PLM_BUILD_TESTING_DIR}/rectarr-03.mha;${PLM_BUILD_TESTING_DIR}/rectarr-04.mha"
+  )
+plmtest_check_interval ("plm-gamma-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-gamma-c.stdout.txt"
+  "Pass rate = *([-0-9.]*)"
+  "90.6"
+  "90.8"
+  )
+set_tests_properties (plm-gamma-c PROPERTIES DEPENDS "rectarr-03;rectarr-04")
+set_tests_properties (plm-gamma-c-check PROPERTIES DEPENDS plm-gamma-c)
+
+plm_add_test (
+  "plm-gamma-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "gamma;--output;${PLM_BUILD_TESTING_DIR}/plm-gamma-d.mha;--ref-only-threshold;${PLM_BUILD_TESTING_DIR}/rectarr-03.mha;${PLM_BUILD_TESTING_DIR}/rectarr-04.mha"
+  )
+plmtest_check_interval ("plm-gamma-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-gamma-d.stdout.txt"
+  "Pass rate = *([-0-9.]*)"
+  "89.9"
+  "90.1"
+  )
+set_tests_properties (plm-gamma-d PROPERTIES DEPENDS "rectarr-03;rectarr-04")
+set_tests_properties (plm-gamma-d-check PROPERTIES DEPENDS plm-gamma-d)
+
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage

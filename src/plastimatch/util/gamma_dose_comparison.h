@@ -163,7 +163,14 @@ public:
     void set_resample_nn(bool b_resample_nn);
     bool is_interp_search();
     void set_interp_search(bool b_interp_search);
+
     bool is_ref_only_threshold();
+    /*! \brief By default, when analysis is limited to areas with 
+     dose higher than a percent threshold, this threshold is based 
+     on the dose in either reference or compare image.  
+     If set_ref_only_threshold() is called with a value of true, 
+     the analysis will only consider dose higher than the threshold 
+     in the compare image */
     void set_ref_only_threshold(bool b_ref_only_threshold);
 };
 
