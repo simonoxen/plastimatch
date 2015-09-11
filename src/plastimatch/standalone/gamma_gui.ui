@@ -57,9 +57,9 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>0</y>
+      <y>20</y>
       <width>501</width>
-      <height>171</height>
+      <height>141</height>
      </rect>
     </property>
     <property name="title">
@@ -104,7 +104,7 @@
       <string>Inherent resample</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox_Interp_search">
@@ -269,65 +269,17 @@
       <string>10.0</string>
      </property>
     </widget>
-    <widget class="QCheckBox" name="checkBox_gammamap_output">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>130</y>
-       <width>131</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Gamma map output</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_failuremap_output">
-     <property name="geometry">
-      <rect>
-       <x>150</x>
-       <y>130</y>
-       <width>161</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Failure map output</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
     <widget class="QPushButton" name="pushButton_RunBatchGamma">
      <property name="geometry">
       <rect>
-       <x>280</x>
-       <y>130</y>
+       <x>390</x>
+       <y>80</y>
        <width>101</width>
        <height>31</height>
       </rect>
      </property>
      <property name="text">
       <string>Run 3D Gamma</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_LoadResults">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>390</x>
-       <y>130</y>
-       <width>101</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Load Results</string>
      </property>
     </widget>
    </widget>
@@ -990,9 +942,9 @@
    <widget class="QCheckBox" name="checkBox_ScrollZoom">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>220</y>
-      <width>121</width>
+      <x>210</x>
+      <y>240</y>
+      <width>91</width>
       <height>17</height>
      </rect>
     </property>
@@ -1001,6 +953,45 @@
     </property>
     <property name="checked">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_24">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>210</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Working directory</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_WorkDir">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>210</y>
+      <width>461</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonSetWorkDir">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>210</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>set</string>
     </property>
    </widget>
   </widget>
@@ -1017,6 +1008,8 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionLoad_saved_results"/>
+    <addaction name="actionExport_simple_batch_report"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1024,8 +1017,15 @@
     </property>
     <addaction name="actionProfile_View"/>
    </widget>
+   <widget class="QMenu" name="menuTool">
+    <property name="title">
+     <string>Tool</string>
+    </property>
+    <addaction name="actionRename_RD_files"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuTool"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -1039,6 +1039,21 @@
   <action name="actionProfile_View">
    <property name="text">
     <string>Profile View</string>
+   </property>
+  </action>
+  <action name="actionRename_RD_files">
+   <property name="text">
+    <string>Rename RD files</string>
+   </property>
+  </action>
+  <action name="actionLoad_saved_results">
+   <property name="text">
+    <string>Load saved results</string>
+   </property>
+  </action>
+  <action name="actionExport_simple_batch_report">
+   <property name="text">
+    <string>Export simple batch report</string>
    </property>
   </action>
  </widget>
@@ -1097,8 +1112,8 @@
    <slot>SLT_RunBatchGamma()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>950</x>
-     <y>193</y>
+     <x>1060</x>
+     <y>163</y>
     </hint>
     <hint type="destinationlabel">
      <x>121</x>
@@ -1119,22 +1134,6 @@
     <hint type="destinationlabel">
      <x>597</x>
      <y>428</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_LoadResults</sender>
-   <signal>released()</signal>
-   <receiver>gamma_guiClass</receiver>
-   <slot>SLT_LoadResults()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1132</x>
-     <y>193</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1075</x>
-     <y>285</y>
     </hint>
    </hints>
   </connection>
@@ -1506,6 +1505,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionRename_RD_files</sender>
+   <signal>triggered()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLTM_RenameRDFilesByDICOMInfo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_saved_results</sender>
+   <signal>triggered()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLTM_LoadSavedWorkSpace()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonSetWorkDir</sender>
+   <signal>released()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLT_SetWorkDir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>142</x>
+     <y>253</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>275</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionExport_simple_batch_report</sender>
+   <signal>triggered()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLTM_ExportBatchReport()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>428</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_Load_RD_Ref()</slot>
@@ -1522,5 +1585,9 @@
   <slot>SLT_NormCompFromRefNorm()</slot>
   <slot>SLT_WhenSelectCombo()</slot>
   <slot>SLT_WhenChangePlane()</slot>
+  <slot>SLTM_RenameRDFilesByDICOMInfo()</slot>
+  <slot>SLTM_LoadSavedWorkSpace()</slot>
+  <slot>SLT_SetWorkDir()</slot>
+  <slot>SLTM_ExportBatchReport()</slot>
  </slots>
 </ui>

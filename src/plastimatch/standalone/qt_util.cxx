@@ -13,6 +13,8 @@
 #include <QtGui/QMainWindow>
 #include <QStandardItemModel>
 #include "gamma_gui.h"
+#include <QDir>
+#include <QMessageBox>
 
 void QUTIL::Set2DTo3D(FloatImage2DType::Pointer& spSrcImg2D, UShortImageType::Pointer& spTargetImg3D, int idx, enPLANE iDirection)
 {
@@ -1122,6 +1124,44 @@ VEC3D QUTIL::GetRGBValueFromTable(vector<VEC3D>& vRGBTable, float fMinGray, floa
         resultRGB = vRGBTable.at(numDiscret - 1);
     }
     return resultRGB;
+}
+
+QString QUTIL::GetTimeStampDirPath(QString& curDirPath, QString& preFix, QString& endFix)
+{
+    QDate curDate = QDate::currentDate();
+    QString strDateStamp = curDate.toString("YYMMDD");
+    QTime curTime = QTime::currentTime();
+    QString strTimeStamp = curTime.toString("hhmmss");
+    //QDir tmpPlmDir = QDir(curDirPath);
+
+  /*  if (!tmpPlmDir.exists())
+    {
+        cout << "Error! No curDirPath is available." << tmpPlmDir.absolutePath().toLocal8Bit().constData() << endl;
+        return;
+    }*/
+
+    QString strOutput = curDirPath + "\\" + preFix + strDateStamp+"_" +strTimeStamp + endFix;
+
+    return strOutput;
+}
+
+
+QString QUTIL::GetTimeStampDirName(QString& preFix, QString& endFix)
+{
+    QDate curDate = QDate::currentDate();
+    QString strDateStamp = curDate.toString("yyMMdd");
+    QTime curTime = QTime::currentTime();
+    QString strTimeStamp = curTime.toString("hhmmss");   
+
+    QString strOutput = preFix + strDateStamp + "_" + strTimeStamp + endFix;
+    return strOutput;
+}
+
+void QUTIL::ShowErrorMessage(QString str)
+{
+    QMessageBox msgBox;
+    msgBox.setText(str);
+    msgBox.exec();
 }
 
 //

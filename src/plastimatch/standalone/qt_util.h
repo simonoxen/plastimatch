@@ -41,6 +41,14 @@ namespace QUTIL{
     void LoadColorTable(const char* filePath, vector<VEC3D>& vRGBTable);
     VEC3D GetRGBValueFromTable(vector<VEC3D>& vRGBTable, float fMinGray, float fMaxGray, float fLookupGray);
 
+    
+    QString GetTimeStampDirPath(QString& curDirPath, QString& preFix = QString(""), QString& endFix = QString(""));
+
+    QString GetTimeStampDirName(QString& preFix = QString(""), QString& endFix = QString(""));
+
+    void ShowErrorMessage(QString str);
+
+
     //void UpdateTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3, QTableModel* pTableModel, QTableModel* pTableView);
     //void UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
         //QStandardItemModel* pTableModel, gamma_gui* pParent);

@@ -32,6 +32,14 @@
 #include <QStandardItemModel>
 #include <QClipboard>
 
+//#include "dcmtk_rt_study.h"
+#include "dcmtk_loader.h"
+#include "dcmtk_loader_p.h"
+#include "dcmtk_series.h"
+#include "dctagkey.h"
+#include "dcsequen.h"
+#include "dcitem.h"
+#include "dcdeftag.h"
 //#ifdef _DEBUG
 //const BOOL VistaStyle = FALSE;
 //#else
@@ -135,7 +143,7 @@ gamma_gui::~gamma_gui()
 
 void gamma_gui::SLT_Load_RD_Ref()
 {
-    QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", "/home", "3D dose file (*.dcm *.mha)");
+    QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", m_strPathInputDir, "3D dose file (*.dcm *.mha)");
 
     int iFileCnt = tmpList.size();
 
@@ -143,22 +151,26 @@ void gamma_gui::SLT_Load_RD_Ref()
         return;
 
     ui.plainTextEdit_RD_Ref->clear();
-    m_strlistPath_RD_Ref.clear();
+    m_strlistPath_RD_Original_Ref.clear();
     m_strlistFileBaseName_Ref.clear();
 
-    m_strlistPath_RD_Ref = tmpList;
+    m_strlistPath_RD_Original_Ref = tmpList;
 
     for (int i = 0; i < iFileCnt; i++)
     {
-        ui.plainTextEdit_RD_Ref->appendPlainText(m_strlistPath_RD_Ref.at(i)); //just for display
-        QFileInfo tmpInfo = QFileInfo(m_strlistPath_RD_Ref.at(i));
+        ui.plainTextEdit_RD_Ref->appendPlainText(m_strlistPath_RD_Original_Ref.at(i)); //just for display
+        QFileInfo tmpInfo = QFileInfo(m_strlistPath_RD_Original_Ref.at(i));
         m_strlistFileBaseName_Ref.push_back(tmpInfo.completeBaseName());
     }
+
+    QFileInfo finfo(m_strlistPath_RD_Original_Ref.at(0));
+    QDir crntDir = finfo.absoluteDir();
+    m_strPathInputDir = crntDir.absolutePath();
 }
 
 void gamma_gui::SLT_Load_RD_Comp()
 {
-    QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", "/home", "3D dose file (*.dcm *.mha)");
+    QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", m_strPathInputDir, "3D dose file (*.dcm *.mha)");
 
     int iFileCnt = tmpList.size();
 
@@ -166,28 +178,67 @@ void gamma_gui::SLT_Load_RD_Comp()
         return;
     
     ui.plainTextEdit_RD_Comp->clear();
-    m_strlistPath_RD_Comp.clear();
+    m_strlistPath_RD_Original_Comp.clear();
     m_strlistFileBaseName_Comp.clear();
 
-    m_strlistPath_RD_Comp = tmpList;
+    m_strlistPath_RD_Original_Comp = tmpList;
 
     for (int i = 0; i < iFileCnt; i++)
     {
-        ui.plainTextEdit_RD_Comp->appendPlainText(m_strlistPath_RD_Comp.at(i)); //just for display
+        ui.plainTextEdit_RD_Comp->appendPlainText(m_strlistPath_RD_Original_Comp.at(i)); //just for display
 
-        QFileInfo tmpInfo = QFileInfo(m_strlistPath_RD_Comp.at(i));
+        QFileInfo tmpInfo = QFileInfo(m_strlistPath_RD_Original_Comp.at(i));
 
         m_strlistFileBaseName_Comp.push_back(tmpInfo.completeBaseName());
-    }    
+    }
+
+    QFileInfo finfo(m_strlistPath_RD_Original_Comp.at(0));
+    QDir crntDir = finfo.absoluteDir();
+    m_strPathInputDir = crntDir.absolutePath();
+    
+
+
+
+    //Set workspace: default = subfolder of Compare image
+
+    //QMessageBox msgBox;
+    //QString strMsg = "Want to automatically make a workspace here?";
+    //msgBox.setText(strMsg);
+    //msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    //int res = msgBox.exec();
+    //if (res == QMessageBox::Yes)
+    //{
+    //    QFileInfo finfo(m_strlistPath_RD_Original_Comp.at(0));
+    //    QDir crntDir = finfo.absoluteDir();
+    //    QString strDirName= QUTIL::GetTimeStampDirName();
+    //    bool tmpResult = crntDir.mkdir(strDirName); //what if the directory exists?
+    //    //should be unique, no need of check tmpResult.
+
+    //    QString strWorkSpaceDir = crntDir.absolutePath() + "\\" + strDirName;
+    //    SetWorkDir(strWorkSpaceDir);        
+    //}
 }
 
 void gamma_gui::SLT_RunBatchGamma()
 {
-
     //number of batch should be matched
-    int cntRef = m_strlistPath_RD_Ref.count();
-    int cntComp = m_strlistPath_RD_Comp.count();
+    int cntRef = m_strlistPath_RD_Original_Ref.count();
+    int cntComp = m_strlistPath_RD_Original_Comp.count();
 
+    QDir tmpCheckDir(m_strPathDirWorkDir);
+
+
+    if (m_strPathDirWorkDir.isEmpty())
+    {
+        QUTIL::ShowErrorMessage("Error! No work space is specified. Set it first.");
+        return;
+    }
+
+    if (!tmpCheckDir.exists())
+    {
+        QUTIL::ShowErrorMessage("Error! Current work space doesn't exist. Set it again");
+        return;
+    }        
 
     if (cntRef*cntComp == 0 || cntRef != cntComp)
     {
@@ -195,17 +246,68 @@ void gamma_gui::SLT_RunBatchGamma()
         return;
     }
 
+    //Check the working directory. Subfolders..This should have no relavant subdirectories    
+    
+    QString strParamSet;
+    strParamSet.sprintf("_%dmm_%dp", ui.lineEdit_dta_tol->text().toInt(), ui.lineEdit_dose_tol->text().toInt());
+
+    float fResmp = ui.lineEdit_inhereResample->text().toFloat();
+
+    if (fResmp > 0 && ui.checkBox_inhereResample->isChecked())
+        strParamSet = strParamSet + "_rsmp" + QString::number(fResmp, 'd', 0);
+
+    if (ui.checkBox_Interp_search->isChecked())
+        strParamSet = strParamSet + "_interp";    
+
+
+    QString timeStamp = QUTIL::GetTimeStampDirName();
+
+    QString strSubRef = "DoseRef_" + timeStamp;
+    QString strSubComp = "DoseComp_"+ timeStamp;
+    QString strSubAnalysis = "Analysis_" + timeStamp + strParamSet;
+
+    //Create Folders
+
+    QDir crntWorkDir(m_strPathDirWorkDir);
+    crntWorkDir.mkdir(strSubRef);
+    crntWorkDir.mkdir(strSubComp);
+    crntWorkDir.mkdir(strSubAnalysis);
+
+    QString strPathDirReadRef = m_strPathDirWorkDir + "\\" + strSubRef;
+    QString strPathDirReadComp = m_strPathDirWorkDir + "\\" + strSubComp;
+    QString strPathDirAnalysis = m_strPathDirWorkDir + "\\" + strSubAnalysis;
+
+    m_strlistPath_RD_Read_Ref.clear();
+    m_strlistPath_RD_Read_Comp.clear();
+
     m_strlistBatchReport.clear();
     m_strlistPath_Output_Gammamap.clear();
     m_strlistPath_Output_Failure.clear();
     m_strlistPath_Output_Report.clear();
-
     m_vRefDose.clear();
+
+    QString dirPathFirstFileDir; //for saving workspace
+    QString dirPathFirstFileBase; //for saving workspace
 
     for (int i = 0; i < cntRef; i++)
     {
-        QString strPathRef = m_strlistPath_RD_Ref.at(i);
-        QString strPathComp = m_strlistPath_RD_Comp.at(i);
+        QString strPathRef = m_strlistPath_RD_Original_Ref.at(i);
+        QString strPathComp = m_strlistPath_RD_Original_Comp.at(i);
+
+        QFileInfo fInfoRef = QFileInfo(strPathRef);
+        QFileInfo fInfoComp = QFileInfo(strPathComp);        
+
+        QString baseNameRef = fInfoRef.completeBaseName();
+        QString baseNameComp = fInfoComp.completeBaseName();
+
+        if (i == 0) //first image location
+        {
+            //dirPathFirstFileDir = dirPath;
+            dirPathFirstFileBase = baseNameComp;
+        }
+        QString strPathBkupRef = strPathDirReadRef + "\\" + baseNameRef + ".mha";
+        QString strPathBkupComp = strPathDirReadComp + "\\" + baseNameComp + ".mha";
+
 
         if (strPathRef.length() < 2 || strPathComp.length() < 2)
             continue;//skip this pair
@@ -246,16 +348,7 @@ void gamma_gui::SLT_RunBatchGamma()
         parms.dose_tolerance = ui.lineEdit_dose_tol->text().toDouble() / 100.0;//gui input: 3% --> param: 0.03
         parms.f_analysis_threshold = ui.lineEdit_cutoff_dose->text().toDouble() / 100.0;
         
-        //Saving folder: comp folder. FileName Should Include dta, dose, local/global
-
-        QFileInfo fInfo = QFileInfo(strPathComp);
-        QString dirPath = fInfo.absolutePath();
-        QString baseName = fInfo.completeBaseName();
-
-        
- //       m_strlistPath_Output_Gammamap.clear();
-   //     m_strlistPath_Output_Failure.clear();
-     //   m_strlistPath_Output_Report.clear();
+        //Saving folder: comp folder. FileName Should Include dta, dose, local/global      
 
         QString strLocGlob;
 
@@ -268,48 +361,92 @@ void gamma_gui::SLT_RunBatchGamma()
             + QString::number(parms.dose_tolerance*100.0, 'f', 0) + "%_" + strLocGlob;
 
 
-        if (ui.checkBox_gammamap_output->isChecked())
-        {            
-            //QString outputPath = dirPath + "\\" + baseName + "_gammamap_" + strSettingAbs + ".mha";
-            QString outputPath = dirPath + baseName + "_gammamap"+ ".mha";
-            parms.out_image_fn = outputPath.toLocal8Bit().constData();
-            m_strlistPath_Output_Gammamap.push_back(outputPath);
-        }
+        QString outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_gammamap" + ".mha";
+        parms.out_image_fn = outputPath.toLocal8Bit().constData();
+        m_strlistPath_Output_Gammamap.push_back(outputPath);
+      
 
-        if (ui.checkBox_failuremap_output->isChecked())
-        {
+        //if (ui.checkBox_failuremap_output->isChecked())
+        //{
             //QString outputPath = dirPath + "\\" + baseName + "_failmap_" + strSettingAbs + ".mha";
-            QString outputPath = dirPath + baseName + "_failmap" + ".mha";
-            parms.out_failmap_fn = outputPath.toLocal8Bit().constData();
-            m_strlistPath_Output_Failure.push_back(outputPath);            
-        }           
+        outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_failmap" + ".mha";
+        parms.out_failmap_fn = outputPath.toLocal8Bit().constData();
+        m_strlistPath_Output_Failure.push_back(outputPath);
+        //}           
 
         //QString outputPath = dirPath + "\\" + baseName + "_report_" + strSettingAbs + ".txt";
-        QString outputPath = dirPath + baseName + "_report" + ".txt";
+        outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_report" + ".txt";
         parms.out_report_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Report.push_back(outputPath);
 
         float refDoseGy;
-        QString overallReport = GammaMain(&parms, refDoseGy);
-        m_strlistBatchReport.push_back(overallReport);        
+        QString overallReport = GammaMain(&parms, refDoseGy, strPathBkupRef, strPathBkupComp);        
+        m_strlistBatchReport.push_back(overallReport);
+
+        m_strlistPath_RD_Read_Ref.push_back(strPathBkupRef);
+        m_strlistPath_RD_Read_Comp.push_back(strPathBkupComp);
 
         m_vRefDose.push_back(refDoseGy);        
     }
+    //Save WorkSpace File for future loading
+
+    
+    //QString strPathGammaWorkSpace = m_strPathDirWorkDir + "\\" + dirPathFirstFileBase + "_" + strParamSet + "_" + QString("%1").arg(cntRef) + "cases.gws"; //gamma work space
+
+    QString strPathGammaWorkSpace = m_strPathDirWorkDir + "\\" + strSubAnalysis + ".gws"; //gamma work space
+    QString strFilePathReport = m_strPathDirWorkDir + "\\" + strSubAnalysis + "BatchReport.txt"; //gamma work space
+
+    SaveCurrentGammaWorkSpace(strPathGammaWorkSpace);
 
     SLT_LoadResults();
 
     //After the batch mode analysis, export the simpe report.    
     //Only when the number of files is > 1
-    if (cntRef == 1)
-        return;
-        
-    QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
+//    if (cntRef == 1)
+  //      return;    
 
-    if (fileName.length() < 1)
+    SaveBatchGamma3DSimpleReport(strFilePathReport);
+        
+        /*QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
+
+        if (fileName.length() < 1)
         return;
+
+        ofstream fout;
+        fout.open(fileName.toLocal8Bit().constData());
+        fout << "Reference_File\t"
+        << "Compare_File\t"
+        << "dta_tolerance[mm]\t"
+        << "dose_tolerance[%]\t"
+        << "doseCutoff[%]\t"
+        << "Local/Global\t"
+        << "Ref_dose[Gy]\t"
+        << "VoxNumAnalyzed\t"
+        << "VoxNumPassed\t"
+        << "GammaPassRate[%]" << endl;
+
+        for (int i = 0; i < cntRef; i++)
+        {
+        fout << m_strlistBatchReport.at(i).toLocal8Bit().constData() << endl;
+        }
+
+        fout.close();*/
+}
+
+void gamma_gui::SaveBatchGamma3DSimpleReport(QString& strFilePath)
+{
+    //QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
+
+    /*if (fileName.length() < 1)
+        return;*/
+    if (m_strlistBatchReport.count() < 1)
+    {
+        cout << "Error! No report is available" << endl;
+        return;
+    }        
 
     ofstream fout;
-    fout.open(fileName.toLocal8Bit().constData());
+    fout.open(strFilePath.toLocal8Bit().constData());
     fout << "Reference_File\t"
         << "Compare_File\t"
         << "dta_tolerance[mm]\t"
@@ -321,15 +458,29 @@ void gamma_gui::SLT_RunBatchGamma()
         << "VoxNumPassed\t"
         << "GammaPassRate[%]" << endl;
 
-    for (int i = 0; i < cntRef; i++)
+    int cnt = m_strlistBatchReport.count();
+
+    for (int i = 0; i < cnt; i++)
     {
         fout << m_strlistBatchReport.at(i).toLocal8Bit().constData() << endl;
     }
 
-    fout.close();    
+    fout.close();
 }
 
-QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy)
+
+void gamma_gui::SLTM_SaveBatchModeSimpleReport()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
+
+    if (fileName.length() < 1)
+        return;
+
+    SaveBatchGamma3DSimpleReport(fileName);
+}
+
+
+QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy, QString& strPathBkupRef, QString& strPathBkupComp)
 {
     QString reportResult;
     Gamma_dose_comparison gdc;
@@ -441,23 +592,28 @@ QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy)
         strLocalOrGlobal = "global";
 
     //if this is dcm, save the mha files
-    if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
+    //if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
+    //{
+        //QString newPath = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";        
+
+    if (!strPathBkupRef.isEmpty())
     {
-        //QString newPath = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";
-        QString newPath = info_ref.absolutePath() + info_ref.completeBaseName() + ".mha";
         Plm_image* pImg = gdc.get_ref_image();
-        pImg->save_image(newPath.toLocal8Bit().constData());
+        pImg->save_image(strPathBkupRef.toLocal8Bit().constData());
     }
+        
+    //}
 
-    if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
-    {
+    //if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
+    //{
         //QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
-        QString newPath = info_comp.absolutePath() + info_comp.completeBaseName() + ".mha";
-        Plm_image* pImg = gdc.get_comp_image();
-        pImg->save_image(newPath.toLocal8Bit().constData());
-    }
+        //QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
 
-    
+    if (!strPathBkupComp.isEmpty())
+    {
+        Plm_image* pImg = gdc.get_comp_image();
+        pImg->save_image(strPathBkupComp.toLocal8Bit().constData());
+    }    
     QString strRef_dose = QString::number(gdc.get_reference_dose(), 'f', 2);//Gy
     QString strVoxNumAnalyzed = QString::number(gdc.get_analysis_num_vox(), 'f', 2);
     QString strVoxNumPassed = QString::number(gdc.get_passed_num_vox(), 'f', 2);
@@ -502,8 +658,12 @@ void gamma_gui::SLT_DrawGammaMap2D()
 
 void gamma_gui::Load_FilesToMem()
 {
-    int cntRef = m_strlistPath_RD_Ref.count();
-    int cntComp = m_strlistPath_RD_Comp.count();
+    /*int cntRef = m_strlistPath_RD_Original_Ref.count();
+    int cntComp = m_strlistPath_RD_Original_Comp.count();*/
+
+    int cntRef = m_strlistPath_RD_Read_Ref.count();
+    int cntComp = m_strlistPath_RD_Read_Comp.count();
+
     int cntGamma = m_strlistPath_Output_Gammamap.count();
 
     if (cntRef*cntComp == 0 || cntRef != cntComp || cntRef != cntGamma)
@@ -520,24 +680,24 @@ void gamma_gui::Load_FilesToMem()
 
     for (int i = 0; i < cntRef; i++)
     {   
-        strPath_ref = m_strlistPath_RD_Ref.at(i);
-        strPath_comp = m_strlistPath_RD_Comp.at(i);
+        strPath_ref = m_strlistPath_RD_Read_Ref.at(i); //always readable mha format
+        strPath_comp = m_strlistPath_RD_Read_Comp.at(i);
         strPath_gamma = m_strlistPath_Output_Gammamap.at(i);
 
         QFileInfo info_ref = QFileInfo(strPath_ref);
         QFileInfo info_comp = QFileInfo(strPath_comp);
     
-        if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
-        {
-            //strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";            
-            strPath_ref = info_ref.absolutePath() + info_ref.completeBaseName() + ".mha";
-        }
+        //if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
+        //{
+        //    //strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";            
+        //    strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";
+        //}
 
-        if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
-        {
-            //strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
-            strPath_comp = info_comp.absolutePath() + info_comp.completeBaseName() + ".mha";
-        }
+        //if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
+        //{
+        //    //strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        //    strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        //}
 
         FloatImageType::Pointer spImgRef = FloatImageType::New();
         QUTIL::LoadFloatImage3D(strPath_ref.toLocal8Bit().constData(), spImgRef);
@@ -1295,7 +1455,7 @@ void gamma_gui::SLT_RunGamma2D()
     if (!m_spCurComp2D)
         return;
     //Find export folder.
-    if (m_strlistPath_RD_Comp.empty())
+    if (m_strlistPath_RD_Read_Comp.empty())
         return;
 
     if (m_strlistFileBaseName_Comp.empty())
@@ -1311,9 +1471,17 @@ void gamma_gui::SLT_RunGamma2D()
     if (curIdx < 0)
         return;
 
-    QString strPathOutputRoot = m_strlistPath_RD_Comp.at(curIdx);
-    QFileInfo fInfo(strPathOutputRoot);
-    QDir crntDir = fInfo.absolutePath();    
+    //QString strPathOutputRoot = m_strlistPath_RD_Comp.at(curIdx);
+    ////QString strPathOutputRoot = m_strPathDirWorkDir;
+    //QFileInfo fInfo(strPathOutputRoot);
+    //QDir crntDir = fInfo.absolutePath();  
+
+    QDir crntDir = QDir(m_strPathDirWorkDir);
+
+    if (!crntDir.exists())
+    {
+        QUTIL::ShowErrorMessage("Error! working space is not ready");
+    }
 
     //Get Current plane
     
@@ -1348,7 +1516,7 @@ void gamma_gui::SLT_RunGamma2D()
         cout << "Warning! Directory for 2D gamma already exists. files will be overwritten." << endl;
 
     //QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
-    QString strSavingFolder = crntDir.absolutePath() + subDirName;
+    QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
 
     QDir dirSaving(strSavingFolder);
     if (!dirSaving.exists())
@@ -1359,8 +1527,8 @@ void gamma_gui::SLT_RunGamma2D()
 
     /* From now on, the target folder is ready */
 
-    QString tmpFilePathRef = strSavingFolder + "/" + "Gamma2DRef.mha";
-    QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";    
+    QString tmpFilePathRef = strSavingFolder + "\\" + "Gamma2DRef.mha";
+    QString tmpFilePathComp = strSavingFolder + "\\" + "Gamma2DComp.mha";    
 
     //Save current 2D
     m_spCurRef2D;
@@ -1424,19 +1592,19 @@ void gamma_gui::SLT_RunGamma2D()
 
     //QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";
 
-    QString strPathGamma2D = strSavingFolder + "/" + "gamma2D" + ".mha";
-    if (ui.checkBox_gammamap_output->isChecked())
-    {        
+    QString strPathGamma2D = strSavingFolder + "\\" + "gamma2D" + ".mha";
+ //   if (ui.checkBox_gammamap_output->isChecked())
+   // {        
         parms.out_image_fn = strPathGamma2D.toLocal8Bit().constData();     
-    }
+   // }
 
-    QString strPathFailmap2D = strSavingFolder + "/" + "fail2D" + ".mha";
-    if (ui.checkBox_failuremap_output->isChecked())
-    {
+    QString strPathFailmap2D = strSavingFolder + "\\" + "fail2D" + ".mha";
+    //if (ui.checkBox_failuremap_output->isChecked())
+   // {
         parms.out_failmap_fn = strPathFailmap2D.toLocal8Bit().constData();
-    }
+   // }
 
-    QString strPathReport = strSavingFolder + "/" + "text_report" + ".txt";
+    QString strPathReport = strSavingFolder + "\\" + "text_report" + ".txt";
     cout << "strPathReport= " << strPathReport.toLocal8Bit().constData() << endl;
 
     parms.out_report_fn = strPathReport.toLocal8Bit().constData();
@@ -1476,12 +1644,13 @@ void gamma_gui::SLT_RunGamma2D()
     //SaveIBA Image format
 
     
-    QString IBAFilePathRef = strSavingFolder + "/" + strPlane + "_" + curBaseNameRef + ".OPG";
-    QString IBAFilePathComp = strSavingFolder + "/" + strPlane + "_" + curBaseNameComp + ".OPG";
+    QString IBAFilePathRef = strSavingFolder + "\\" + strPlane + "_" + curBaseNameRef + ".OPG";
+    QString IBAFilePathComp = strSavingFolder + "\\" + strPlane + "_" + curBaseNameComp + ".OPG";
     
     SaveDoseIBAGenericTXTFromItk(IBAFilePathRef.toLocal8Bit().constData(), m_spCurRef2D);
     SaveDoseIBAGenericTXTFromItk(IBAFilePathComp.toLocal8Bit().constData(), m_spCurComp2D);
-
+    
+    SLT_RestoreZoomPan();
     SLT_DrawAll();
 }
 
@@ -1867,7 +2036,7 @@ void gamma_gui::SLT_MouseWheelUpdateGamma3D()
 }
 
 void gamma_gui::SLT_MouseMoveUpdateRef()
-{
+{ 
 
 }
 
@@ -1888,12 +2057,26 @@ void gamma_gui::SLT_MouseMoveUpdateGamma3D()
 
 void gamma_gui::SLT_RestoreZoomPan()
 {
+  
+
     if (ui.labelReferDose->m_pYK16Image == NULL ||
         ui.labelCompDose->m_pYK16Image == NULL ||
         ui.labelGammaMap3D->m_pYK16Image == NULL)
     {
         return;
     }
+
+    ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+
+    ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
     ui.labelReferDose->m_pYK16Image->SetZoom(1.0);
     ui.labelCompDose->m_pYK16Image->SetZoom(1.0);
@@ -1913,17 +2096,17 @@ void gamma_gui::SLT_RestoreZoomPan()
 
 void gamma_gui::SLT_WhenChangePlane()
 {
-    ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    ///*ui.labelReferDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelReferDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    //ui.labelCompDose->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelCompDose->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
+    //ui.labelGammaMap3D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelGammaMap3D->setFixedHeight(DEFAULT_LABEL_HEIGHT);
 
-    ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
-    ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);    
+    //ui.labelGammaMap2D->setFixedWidth(DEFAULT_LABEL_WIDTH);
+    //ui.labelGammaMap2D->setFixedHeight(DEFAULT_LABEL_HEIGHT);   */ 
 
     SLT_RestoreZoomPan();
     SLT_DrawAll();
@@ -2107,4 +2290,494 @@ void gamma_gui::SLT_UpdatePanSettingGamma3D()
 void gamma_gui::SLT_UpdatePanSettingGamma2D()
 {
     return;
+}
+
+void gamma_gui::SLTM_RenameRDFilesByDICOMInfo()
+{
+    QStringList files = QFileDialog::getOpenFileNames(this, "Select one or more files to open",
+        m_strPathInputDir, "DICOM-RD files (*.dcm)");
+
+    int cnt = files.size();
+    if (cnt <= 0)
+        return;
+
+    QString strMsg = "Original file names will be gone. Backup is strongly recommended. Continue?";
+
+    QMessageBox msgBox;
+    msgBox.setText(strMsg);
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+
+    int res = msgBox.exec();
+
+    if (res == QMessageBox::Yes)
+    {
+
+    }
+        RenameFileByDCMInfo(files);
+}
+
+
+void gamma_gui::RenameFileByDCMInfo(QStringList& filenameList)
+{
+    int size = filenameList.size();
+
+    QString crntFilePath;
+    //Rt_study rt_study;
+
+    
+  
+    for (int a = 0; a < size; a++)
+    {
+        crntFilePath = filenameList.at(a);
+
+        //1) contructor
+        Dcmtk_loader dss(crntFilePath.toLocal8Bit().constData());
+        //2) parse directory: this will link dicome seriese to proper one (e.g. ds_dose)
+        dss.parse_directory();       
+
+        Dcmtk_series *pDcmSeries = dss.d_ptr->ds_rtdose; 
+
+        if (pDcmSeries == NULL)
+            continue;        
+       
+        //Pt name: 0010, 0010
+        QString strPtId = QString(pDcmSeries->get_cstr(DcmTagKey(0x0010, 0x0020)));
+        QString strRDType = QString(pDcmSeries->get_cstr(DcmTagKey(0x3004, 0x000A)));
+        //QString strFractionGroup = QString(pDcmSeries->get_cstr(DcmTagKey(0x300C, 0x0022)));
+        //QString strBeamNumberTmp = QString(pDcmSeries->get_cstr(DcmTagKey(0x300C, 0x0006)));
+
+        //long int iFractionGroup = 0;
+        //long int iBeamNumber = 0;
+
+        DcmSequenceOfItems *seqRefPlan = 0;        
+
+        bool rc = pDcmSeries->get_sequence(DcmTagKey(0x300c, 0x0002), seqRefPlan);
+        //rc = pDcmSeries->get_sequence(DcmTagKey(0x300C, 0x0020), seqFractionGroup);
+
+        long int iValBeamNumber = 0;
+        long int iValFractionGroupNumber = 0;
+        
+        if (rc)
+        {
+            //DcmSequenceOfItems *seqFractionGroup = 0;
+            int iNumOfRefPlanSeq = seqRefPlan->card();
+
+            for (unsigned long i = 0; i < iNumOfRefPlanSeq; i++)
+            {
+                OFCondition orc;
+
+                const char *strVal = 0;
+
+                DcmItem *itemRefPlan = seqRefPlan->getItem(i);
+
+                //orc = item->findAndGetString(DcmTagKey(0x0008, 0x1150), strVal);//it works!
+                /*orc = item->findAndGetLongInt(DcmTagKey(0x300C, 0x0022), iVal);*/
+                /*if (!orc.good()){
+                    continue;
+                    }*/
+                DcmSequenceOfItems *seqFractionGroup = 0;
+                //rc = pDcmSeries->get_sequence(DcmTagKey(0x300c, 0x0020), seqFractionGroup);//ReferencedFractionGroupSequence                
+                orc = itemRefPlan->findAndGetSequence(DCM_ReferencedFractionGroupSequence, seqFractionGroup);//ReferencedFractionGroupSequence                
+
+                if (orc.good())
+                {
+                    int iNumOfFractionGroup = seqFractionGroup->card();
+
+                    DcmItem *itemFractionGroup = 0;
+
+                    for (int j = 0; j < iNumOfFractionGroup; j++)
+                    {
+                        itemFractionGroup = seqFractionGroup->getItem(j);
+                        DcmSequenceOfItems *seqRefBeam = 0;
+
+                        orc = itemFractionGroup->findAndGetLongInt(DCM_ReferencedFractionGroupNumber, iValFractionGroupNumber);
+
+                        //cout << "Group Number changed = " << iValFractionGroupNumber << endl;
+
+                        if (!orc.good())
+                            cout << "error! refFraction group number is not found" << endl;
+
+                        orc = itemFractionGroup->findAndGetSequence(DCM_ReferencedBeamSequence, seqRefBeam);//ReferencedFractionGroupSequence                                                              
+
+                        if (!orc.good())
+                            continue;
+
+                        int iNumOfRefBeam = seqRefBeam->card();
+
+                        for (int k = 0; k < iNumOfRefBeam; k++)
+                        {
+                            DcmItem *itemBeam = 0;
+                            itemBeam = seqRefBeam->getItem(k);
+
+                            //orc = itemBeam->findAndGetLongInt(DcmTagKey(0x300C, 0x0006), iValBeamNumber);
+                            orc = itemBeam->findAndGetLongInt(DCM_ReferencedBeamNumber, iValBeamNumber);
+
+                            //cout << "iValBeamNumber changed = " << iValBeamNumber << endl;
+                        }
+                    }
+                }
+            }                //iVal
+        }
+
+
+        //long int iFractionGroup = 0;
+        //long int iBeamNumber = 0;
+
+        //cout << "iFractionGroup " << iValFractionGroupNumber << endl;
+        //cout << "iBeamNumber " << iValBeamNumber << endl;
+
+        QString strFractionGroupNumber;
+        strFractionGroupNumber = strFractionGroupNumber.sprintf("%02d", iValFractionGroupNumber);
+
+        QString strBeamNumber;
+        strBeamNumber = strBeamNumber.sprintf("%03d", iValBeamNumber);
+
+        QFileInfo fileInfo = QFileInfo(crntFilePath);
+        QDir dir = fileInfo.absoluteDir();
+
+        QString newBaseName = strPtId + "_" + strRDType + "_" + strFractionGroupNumber + "_" + strBeamNumber;
+        //QString extStr = fileInfo.completeSuffix();
+
+        QString newFileName = newBaseName.append(".").append("dcm");
+        QString newPath = dir.absolutePath() + "\\" + newFileName;
+
+        //cout << newPath.toLocal8Bit().constData() << endl;
+
+        //extract former part
+        QFile::rename(crntFilePath, newPath);
+    }// end of for,
+    
+    cout << "In total "<< size << " files were successfully renamed" << endl;
+
+}
+
+void gamma_gui::SaveCurrentGammaWorkSpace(QString& strPathGammaWorkSpace)
+{
+    ofstream fout;
+    fout.open(strPathGammaWorkSpace.toLocal8Bit().constData());
+
+    fout << "#GAMMA_WORK_SPACE_FILE V1.0#" << endl;
+
+    int cntItem1 = m_strlistPath_RD_Read_Ref.size();
+    int cntItem2 = m_strlistPath_RD_Read_Comp.size();
+    int cntItem3 = m_strlistFileBaseName_Ref.size();
+    int cntItem4 = m_strlistFileBaseName_Comp.size();
+
+    //int cntItem5 = m_strlistBatchReport.size();
+
+    int cntItem5 = m_strlistPath_Output_Gammamap.size();
+    int cntItem6 = m_strlistPath_Output_Failure.size();
+    int cntItem7 = m_strlistPath_Output_Report.size();
+    int cntItem8 = m_vRefDose.size();
+
+    if (cntItem1 < 1 ||
+        cntItem1 != cntItem2 ||
+        cntItem1 != cntItem3 ||
+        cntItem1 != cntItem4 ||
+        cntItem1 != cntItem5 ||
+        cntItem1 != cntItem6 ||
+        cntItem1 != cntItem7 ||
+        cntItem1 != cntItem8
+        )
+    {
+        cout << "Error! number of item doesn't match" << endl;
+        return;
+    }
+    
+    for (int i = 0; i < cntItem1; i++)
+    {
+        fout << endl;
+        fout << "ITEM_ID" << "\t" << i << endl;
+        fout << "RD_REF" << "\t" << m_strlistPath_RD_Read_Ref.at(i).toLocal8Bit().constData() << endl;
+        fout << "RD_COMP" << "\t" << m_strlistPath_RD_Read_Comp.at(i).toLocal8Bit().constData() << endl;
+        fout << "GAMMA_MAP" << "\t" << m_strlistPath_Output_Gammamap.at(i).toLocal8Bit().constData() << endl;
+        fout << "BASE_REF" << "\t" << m_strlistFileBaseName_Ref.at(i).toLocal8Bit().constData() << endl;
+        fout << "BASE_COMP" << "\t" << m_strlistFileBaseName_Comp.at(i).toLocal8Bit().constData() << endl;
+        fout << "GAMMA_FAILURE" << "\t" << m_strlistPath_Output_Failure.at(i).toLocal8Bit().constData() << endl;
+        fout << "GAMMA_REPORT" << "\t" << m_strlistPath_Output_Report.at(i).toLocal8Bit().constData() << endl;
+        fout << "REF_DOSE[Gy]" << "\t" << m_vRefDose.at(i) << endl;
+        fout << endl;
+    }
+
+    int numOfLinesInSimpleReport = m_strlistBatchReport.count();
+
+    fout << "#BATCH_SIMPLE_REPORT" << endl;
+    for (int i = 0; i < numOfLinesInSimpleReport; i++)
+    {
+        fout << m_strlistBatchReport.at(i).toLocal8Bit().constData() << endl;
+    }
+
+    fout.close();
+}
+
+
+bool gamma_gui::LoadGammaWorkSpace(QString& strPathGammaWorkSpace)
+{
+    ifstream fin;
+    fin.open(strPathGammaWorkSpace.toLocal8Bit().constData());
+
+    if (fin.fail())
+    {
+        cout << "Error occurred in file reading!" << endl;
+        return false;
+    }
+
+    //clear all the data
+    m_strlistPath_RD_Read_Ref.clear();
+    m_strlistPath_RD_Read_Comp.clear();
+
+    m_strlistPath_Output_Gammamap.clear();
+
+    m_strlistFileBaseName_Ref.clear();
+    m_strlistFileBaseName_Comp.clear();
+    
+    m_strlistPath_Output_Failure.clear();
+    m_strlistPath_Output_Report.clear();
+    m_vRefDose.clear();
+
+    m_strlistBatchReport.clear();
+
+    ////This will be also done in loading to mem
+    //m_vRefDoseImages.clear();
+    //m_vCompDoseImages.clear();
+    //m_vGammaMapImages.clear();
+
+    char str[MAX_LINE_LENGTH];
+
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+        QString tmpStr = QString(str);
+        QString trimmed;
+        if (tmpStr.contains("ITEM_ID")) //go into subloop
+        {
+            while (!fin.eof())
+            {
+                memset(str, 0, MAX_LINE_LENGTH);
+                fin.getline(str, MAX_LINE_LENGTH);
+                tmpStr = QString(str);
+
+                trimmed = tmpStr.trimmed(); //if any blank line found
+                if (trimmed.length() < 1)
+                    break;
+                
+                //parsing
+                QStringList strListTmp = tmpStr.split("\t");
+
+                if (tmpStr.contains("RD_REF") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistPath_RD_Read_Ref.push_back(strListTmp.at(1));                
+                else if (tmpStr.contains("RD_COMP") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistPath_RD_Read_Comp.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("GAMMA_MAP") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistPath_Output_Gammamap.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("BASE_REF") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistFileBaseName_Ref.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("BASE_COMP") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistFileBaseName_Comp.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("GAMMA_FAILURE") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistPath_Output_Failure.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("GAMMA_REPORT") && strListTmp.count() == 2) //go into subloop                
+                    m_strlistPath_Output_Report.push_back(strListTmp.at(1));
+                else if (tmpStr.contains("REF_DOSE[Gy]") && strListTmp.count() == 2) //go into subloop                
+                    m_vRefDose.push_back(strListTmp.at(1).toFloat());
+            }
+        }//end of ITEM
+
+        if (tmpStr.contains("BATCH_SIMPLE_REPORT"))
+        {
+            while (!fin.eof())
+            {
+                memset(str, 0, MAX_LINE_LENGTH);
+                fin.getline(str, MAX_LINE_LENGTH);
+                tmpStr = QString(str);
+
+                trimmed = tmpStr.trimmed(); //if any blank line found
+                if (trimmed.length() < 1)
+                    continue;
+
+                m_strlistBatchReport.push_back(tmpStr);
+            }
+        }
+    }
+  
+
+    //ui.plainTextEdit_RD_Comp->clear();
+    //m_strlistPath_RD_Comp.clear();
+    //m_strlistFileBaseName_Comp.clear();
+
+    //m_strlistPath_RD_Comp = tmpList;
+
+    //for (int i = 0; i < iFileCnt; i++)
+    //{
+    //    ui.plainTextEdit_RD_Comp->appendPlainText(m_strlistPath_RD_Comp.at(i)); //just for display
+
+    //    QFileInfo tmpInfo = QFileInfo(m_strlistPath_RD_Comp.at(i));
+
+    //    m_strlistFileBaseName_Comp.push_back(tmpInfo.completeBaseName());
+    //}
+
+
+    //cout << "File names are successfully loaded" << endl;
+    fin.close();
+
+    return true;
+}
+
+void gamma_gui::SLTM_LoadSavedWorkSpace()
+{
+    QString strPath = QFileDialog::getOpenFileName(this, "Select a gamma workspace file to open", m_strPathDirWorkDir, "AccuGamma workspace file (*.gws)");
+
+    if (strPath.length() <= 1)
+        return;
+
+    if (!LoadGammaWorkSpace(strPath)) //Only reading text files to fill up the vectors, without any auditing
+    {
+        QUTIL::ShowErrorMessage("Error! failed in loading workspace file");
+        return;
+    }       
+
+    QFileInfo fileInfo(strPath);
+    QDir dir = fileInfo.absoluteDir();
+    SetWorkDir(dir.absolutePath());
+
+    bool bOK = true;
+
+    QString strWorkDirPath = dir.absolutePath();
+
+    //1) Update the previous fileList and convert them according to current wo
+    
+    //rkspace
+    //Get current workspace directoroy
+
+    //QString ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCurrDirPath, QString& strDelim);
+
+    int cntItem0 = m_strlistPath_RD_Read_Ref.count();
+    int cntItem1 = m_strlistPath_RD_Read_Comp.count();
+    int cntItem2 = m_strlistPath_Output_Gammamap.count();
+    int cntItem3 = m_strlistPath_Output_Report.count();
+
+    int cntItem4 = m_strlistPath_Output_Failure.count(); //not mandatory
+
+
+    if (cntItem0 < 1 ||
+        cntItem0 != cntItem1 ||
+        cntItem0 != cntItem2 ||
+        cntItem0 != cntItem3
+        )
+    {
+        QUTIL::ShowErrorMessage("Error! Number of read files are not matching each other!");
+        cout << "RD_ref= " << cntItem0 << endl;
+        cout << "RD_comp= " << cntItem1 << endl;
+        cout << "Gamma= " << cntItem2 << endl;
+        cout << "TxtReport= " << cntItem3 << endl;        
+        cout << "Failure= " << cntItem4 << endl;
+        bOK = false;
+    }
+
+    int cnt = cntItem0;
+
+    if (!bOK)
+    {
+        SetWorkDir(QString(""));//roll back
+        return;
+    }
+
+    QString strDelimRef = "DoseRef_";
+    QString strDelimComp = "DoseComp_";
+    QString strDelimGamma = "Analysis_";
+    QString strDelimText = "Analysis_";
+    QString strDelimFail = "Analysis_";
+
+    QString originalPath;
+    QString newPath;
+    //Update file Path
+    for (int i = 0; i < cnt; i++)
+    {
+        originalPath = m_strlistPath_RD_Read_Ref.at(i);
+        newPath = ReplaceUpperDirOnly(originalPath, strWorkDirPath, strDelimRef);
+        m_strlistPath_RD_Read_Ref.replace(i, newPath);
+
+        originalPath = m_strlistPath_RD_Read_Comp.at(i);
+        newPath = ReplaceUpperDirOnly(originalPath, strWorkDirPath, strDelimComp);
+        m_strlistPath_RD_Read_Comp.replace(i, newPath);
+
+        originalPath = m_strlistPath_Output_Gammamap.at(i);
+        newPath = ReplaceUpperDirOnly(originalPath, strWorkDirPath, strDelimGamma);
+        m_strlistPath_Output_Gammamap.replace(i, newPath);
+
+        originalPath = m_strlistPath_Output_Report.at(i);
+        newPath = ReplaceUpperDirOnly(originalPath, strWorkDirPath, strDelimText);
+        m_strlistPath_Output_Report.replace(i, newPath);
+
+        originalPath = m_strlistPath_Output_Failure.at(i);
+        newPath = ReplaceUpperDirOnly(originalPath, strWorkDirPath, strDelimFail);
+        m_strlistPath_Output_Failure.replace(i, newPath);
+    }
+
+    SLT_LoadResults();
+}
+
+QString gamma_gui::ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCurrDirPath, QString& strDelim)
+{
+    QStringList strListPath = strOriginalPath.split("\\");
+    //if (strListPath.count() < 1)
+      //  strListPath = strOriginalPath.split("/");
+    int cnt = strListPath.count();
+    
+    int idx = 0;
+
+    int cntSecondary = 0;
+    for (int i = 0; i < cnt; i++)
+    {
+        if (strListPath.at(i).contains(strDelim))
+        {
+            idx = i;
+            cntSecondary++;
+        }            
+    }
+
+    if (cntSecondary > 1)
+    {
+        cout << "ERROR! strDelim should be shown once" << endl;
+        return strOriginalPath;
+    }     
+
+    QString strLower;
+    for (int i = idx; i < cnt; i++)
+    {
+        strLower = strLower + "\\" + strListPath.at(i);
+    }
+
+    QString newPath = strCurrDirPath + strLower;
+    return newPath;
+}
+
+void gamma_gui::SLT_SetWorkDir()
+{
+    //default: current one m_strPathDirWorkDir
+    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Gamma Work Directory"),
+        m_strPathDirWorkDir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    QDir dirIMAGES = QDir(dirPath);
+    if (!dirIMAGES.exists())
+        return;
+
+    SetWorkDir(dirPath);
+}
+
+void gamma_gui::SetWorkDir(QString& strPath)
+{
+    m_strPathDirWorkDir = strPath;
+    ui.lineEdit_WorkDir->setText(m_strPathDirWorkDir);
+}
+
+void gamma_gui::SLTM_ExportBatchReport()
+{
+    QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", m_strPathDirWorkDir, "report (*.txt)", 0, 0);
+
+    if (fileName.length() < 1)
+        return;
+
+    SaveBatchGamma3DSimpleReport(fileName); 
 }

@@ -32,7 +32,7 @@ public:
     ~gamma_gui(); 
     
     //QString GammaMain(Gamma_parms* parms);     
-    QString GammaMain(Gamma_parms* parms, float& refDoseGy);
+    QString GammaMain(Gamma_parms* parms, float& refDoseGy, QString& strPathBkupRef = QString(""), QString& strPathBkupComp = QString(""));
 
     void Load_FilesToMem();//all ref, comp, gamma map should be prepared    
     void UpdateProbePos(qyklabel* qlabel);    
@@ -45,6 +45,18 @@ public:
 
     void WhenMousePressedRight(qyklabel* pWnd);
     void UpdatePanCommon(qyklabel* qWnd);
+
+    void RenameFileByDCMInfo(QStringList& filenameList);
+
+    void SaveCurrentGammaWorkSpace(QString& strPathGammaWorkSpace);
+
+    bool LoadGammaWorkSpace(QString& strPathGammaWorkSpace);
+
+    void SaveBatchGamma3DSimpleReport(QString& strFilePath);
+
+    void SetWorkDir(QString& strPath);
+
+    QString ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCurrDirPath, QString& strDelim);
 
     public slots:        
         void SLT_Load_RD_Ref();
@@ -79,9 +91,7 @@ public:
 
         void SLT_GoCenterPosRef();
         void SLT_GoCenterPosComp();
-        void SLT_NormCompFromRefNorm();
-
-        
+        void SLT_NormCompFromRefNorm();        
 
         void SaveDoseIBAGenericTXTFromItk(QString strFilePath, FloatImage2DType::Pointer& spFloatDose);
 
@@ -112,9 +122,21 @@ public:
         void SLT_UpdatePanSettingGamma3D();
         void SLT_UpdatePanSettingGamma2D();
 
+        void SLTM_RenameRDFilesByDICOMInfo();
+
+        void SLTM_LoadSavedWorkSpace();
+        void SLTM_SaveBatchModeSimpleReport();
+
+        void SLT_SetWorkDir();
+
+        void SLTM_ExportBatchReport();
+
 public:    
-    QStringList m_strlistPath_RD_Ref;
-    QStringList m_strlistPath_RD_Comp;
+    QStringList m_strlistPath_RD_Original_Ref;
+    QStringList m_strlistPath_RD_Original_Comp;
+
+    QStringList m_strlistPath_RD_Read_Ref;
+    QStringList m_strlistPath_RD_Read_Comp;
 
     QStringList m_strlistFileBaseName_Ref;
     QStringList m_strlistFileBaseName_Comp;
@@ -124,6 +146,8 @@ public:
     QStringList m_strlistPath_Output_Gammamap;
     QStringList m_strlistPath_Output_Failure;
     QStringList m_strlistPath_Output_Report;
+
+    vector<float> m_vRefDose;
 
     //DlgGammaView* m_pView;    
 
@@ -149,7 +173,6 @@ public:
     vector<VEC3D> m_vColormapDose;
     vector<VEC3D> m_vColormapGamma;
 
-    vector<float> m_vRefDose;
     bool m_bGamma2DIsDone;
 
     bool m_bMousePressedRightRef;
@@ -159,6 +182,10 @@ public:
 
     QPoint m_ptPanStart;
     QPoint m_ptOriginalDataOffset;
+
+    QString m_strPathDirWorkDir;//this is for output
+
+    QString m_strPathInputDir;//this is for input DCM. initialized when Load Ref files or Load Comp files
 
 
 private:
