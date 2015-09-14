@@ -32,7 +32,7 @@ public:
     ~gamma_gui(); 
     
     //QString GammaMain(Gamma_parms* parms);     
-    QString GammaMain(Gamma_parms* parms, float& refDoseGy, QString& strPathBkupRef = QString(""), QString& strPathBkupComp = QString(""));
+    QString GammaMain(Gamma_parms* parms, float& refDoseGy, const QString& strPathBkupRef = QString(""), const QString& strPathBkupComp = QString(""));
 
     void Load_FilesToMem();//all ref, comp, gamma map should be prepared    
     void UpdateProbePos(qyklabel* qlabel);    
@@ -54,7 +54,7 @@ public:
 
     void SaveBatchGamma3DSimpleReport(QString& strFilePath);
 
-    void SetWorkDir(QString& strPath);
+    void SetWorkDir(const QString& strPath);
 
     QString ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCurrDirPath, QString& strDelim);
 

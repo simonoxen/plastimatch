@@ -260,9 +260,11 @@ if (QT4_FOUND)
     plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
 	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
-    plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
-	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    if (DCMTK_FOUND)
+	plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
+	    "${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
+	    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    endif ()
     plm_add_executable (register_gui "${REGISTER_GUI_SRC}" 
 	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
 	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})

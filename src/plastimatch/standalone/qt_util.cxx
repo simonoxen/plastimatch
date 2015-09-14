@@ -1126,7 +1126,7 @@ VEC3D QUTIL::GetRGBValueFromTable(vector<VEC3D>& vRGBTable, float fMinGray, floa
     return resultRGB;
 }
 
-QString QUTIL::GetTimeStampDirPath(QString& curDirPath, QString& preFix, QString& endFix)
+QString QUTIL::GetTimeStampDirPath(const QString& curDirPath, const QString& preFix, const QString& endFix)
 {
     QDate curDate = QDate::currentDate();
     QString strDateStamp = curDate.toString("YYMMDD");
@@ -1146,7 +1146,7 @@ QString QUTIL::GetTimeStampDirPath(QString& curDirPath, QString& preFix, QString
 }
 
 
-QString QUTIL::GetTimeStampDirName(QString& preFix, QString& endFix)
+QString QUTIL::GetTimeStampDirName(const QString& preFix, const QString& endFix)
 {
     QDate curDate = QDate::currentDate();
     QString strDateStamp = curDate.toString("yyMMdd");

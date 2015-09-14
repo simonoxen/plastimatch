@@ -36,10 +36,12 @@
 #include "dcmtk_loader.h"
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
-#include "dctagkey.h"
-#include "dcsequen.h"
-#include "dcitem.h"
-#include "dcdeftag.h"
+
+#include "dcmtk_config.h"
+#include "dcmtk/dcmdata/dctagkey.h"
+#include "dcmtk/dcmdata/dcsequen.h"
+#include "dcmtk/dcmdata/dcitem.h"
+#include "dcmtk/dcmdata/dcdeftag.h"
 //#ifdef _DEBUG
 //const BOOL VistaStyle = FALSE;
 //#else
@@ -480,7 +482,7 @@ void gamma_gui::SLTM_SaveBatchModeSimpleReport()
 }
 
 
-QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy, QString& strPathBkupRef, QString& strPathBkupComp)
+QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy, const QString& strPathBkupRef, const QString& strPathBkupComp)
 {
     QString reportResult;
     Gamma_dose_comparison gdc;
@@ -2766,7 +2768,7 @@ void gamma_gui::SLT_SetWorkDir()
     SetWorkDir(dirPath);
 }
 
-void gamma_gui::SetWorkDir(QString& strPath)
+void gamma_gui::SetWorkDir(const QString& strPath)
 {
     m_strPathDirWorkDir = strPath;
     ui.lineEdit_WorkDir->setText(m_strPathDirWorkDir);

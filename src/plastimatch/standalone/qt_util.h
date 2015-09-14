@@ -42,9 +42,9 @@ namespace QUTIL{
     VEC3D GetRGBValueFromTable(vector<VEC3D>& vRGBTable, float fMinGray, float fMaxGray, float fLookupGray);
 
     
-    QString GetTimeStampDirPath(QString& curDirPath, QString& preFix = QString(""), QString& endFix = QString(""));
+    QString GetTimeStampDirPath(const QString& curDirPath, const QString& preFix = QString(""), const QString& endFix = QString(""));
 
-    QString GetTimeStampDirName(QString& preFix = QString(""), QString& endFix = QString(""));
+    QString GetTimeStampDirName(const QString& preFix = QString(""), const QString& endFix = QString(""));
 
     void ShowErrorMessage(QString str);
 
