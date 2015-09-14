@@ -5,11 +5,29 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
+#include <string>
+#include <vector>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "print_and_exit.h"
 #include "xio_studyset.h"
+
+int Xio_studyset::gcd(int a, int b) {
+
+    // Euclidean algorithm
+
+    while (b != 0) {
+	int t = b;
+	b = a % b;
+	a = t;
+    }
+
+    return a;
+
+}
 
 Xio_studyset::Xio_studyset (const std::string& input_dir)
 {
@@ -46,58 +64,83 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
 	all_number_slices = 0;
     }
 
-    // Plastimatch only supports volumes with uniform voxel sizes
-    // If slice thickness is not uniform, extract the largest uniform chunk
+    // Workaround for multiple slice thickness
+    // Create volume with uniform voxel sizes by finding greatest common divisor of slice thicknesses,
+    // and duplicating slices to obtain a uniform Z axis.
 
-    float best_chunk_diff = 0.f;
-    int best_chunk_start = 0;
-    int best_chunk_len = 0;
+    // Get slices thicknesses from CT files
 
-    if (all_number_slices > 1) {
+    std::vector<float> slice_thickness;
 
-	float z_diff;
-	float this_chunk_diff = 0.f;
-	int this_chunk_start = 0;
-	int this_chunk_len = 0;
+    for (size_t i = 0; i < all_slices.size(); i++) {
 
-	for (int i = 1; i < all_number_slices; i++) {
-	    z_diff = all_slices[i].location - all_slices[i-1].location;
+	std::string ct_file = this->studyset_dir + "/" + all_slices[i].filename_scan;
+	std::string line;
 
-	    if (i == 1) {
-		// First chunk
-		this_chunk_start = best_chunk_start = 0;
-		this_chunk_diff = best_chunk_diff = z_diff;
-		this_chunk_len = best_chunk_len = 2;
-	    } else if (fabs (this_chunk_diff - z_diff) > 0.11) {
-		// Start a new chunk if difference in thickness is more than 0.1 millimeter
-		this_chunk_start = i - 1;
-		this_chunk_len = 2;
-		this_chunk_diff = z_diff;
-	    } else {
-		// Same thickness, increase size of this chunk
-		this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
-		    / (this_chunk_len + 1);
-		this_chunk_len++;
-
-		// Check if this chunk is now the best chunk
-		if (this_chunk_len > best_chunk_len) {
-		    best_chunk_start = this_chunk_start;
-		    best_chunk_len = this_chunk_len;
-		    best_chunk_diff = this_chunk_diff;
-		}
+	// Open file
+	std::ifstream ifs(ct_file.c_str(), std::ifstream::in);
+	if (ifs.fail()) {
+	    print_and_exit("Error opening CT file %s for read\n", ct_file.c_str());
+	} else {
+	    // Skip 14 lines
+	    for (int i = 0; i < 14; i++) {
+		getline(ifs, line);
 	    }
+
+	    getline(ifs, line);
+
+	    int dummy;
+	    float highres_thickness;
+
+	    if (sscanf(line.c_str(), "%d,%g", &dummy, &highres_thickness) != 2) {
+		print_and_exit("Error parsing slice thickness (%s)\n", line.c_str());
+	    }
+
+	    slice_thickness.push_back(highres_thickness);
 	}
-    } else {
-	best_chunk_start = 0;
-	best_chunk_len = 1;
-	best_chunk_diff = 0;
+	
     }
 
-    // Extract best chunk
-    number_slices = best_chunk_len;
-    thickness = best_chunk_diff;
-    for (int i = 0; i < best_chunk_len; i++) {
-	slices.push_back(all_slices[best_chunk_start + i]);
+    // Find greatest common divisor
+
+    std::vector<int> slice_thickness_int;
+    int slice_thickness_gcd = 1;
+
+    for (size_t i = 0; i < all_slices.size(); i++) {
+	// 1/1000 mm resolution
+	int rounded_thickness = static_cast<int> (slice_thickness[i] * 1000.);
+	if (rounded_thickness == 0) rounded_thickness = 1;
+	slice_thickness_int.push_back(rounded_thickness);
+    }
+
+    if (all_slices.size() == 1) {
+	slice_thickness_gcd = slice_thickness_int[0];
+    }
+    else if (all_slices.size() > 0) {
+	slice_thickness_gcd = gcd(slice_thickness_int[0], slice_thickness_int[1]);
+	for (size_t i = 2; i < all_slices.size(); i++) {
+		slice_thickness_gcd = gcd(slice_thickness_gcd, slice_thickness_int[i]);
+	}
+    }
+
+    // Build new slice list, determining duplication needed for each slice
+
+    thickness = slice_thickness_gcd / 1000.;
+    number_slices = 0;
+
+    if (all_slices.size() > 0) {
+	float location = all_slices[0].location - (slice_thickness[0] / 2.) + (thickness / 2.);
+
+	for (size_t i = 0; i < all_slices.size(); i++) {
+	    int duplicate = slice_thickness_int[i] / slice_thickness_gcd;
+
+	    for (int j = 0; j < duplicate; j++) {
+		    Xio_studyset_slice slice(all_slices[i].filename_scan, location);
+		    slices.push_back(slice);
+		    location += thickness;
+		    number_slices++;
+	    }
+	}
     }
 
     // Initialize pixel spacing to zero.  This get set when the 

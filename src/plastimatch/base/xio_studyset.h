@@ -46,6 +46,9 @@ public:
 public:
     Xio_studyset (const std::string& studyset_dir);
     ~Xio_studyset ();
+
+private:
+    int gcd(int, int);
 };
 
 #endif
