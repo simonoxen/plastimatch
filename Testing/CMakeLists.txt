@@ -59,6 +59,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-rigid-a.txt"
   "plm-reg-itk-rigid-b.txt"
+  "plm-reg-itk-similarity.txt"
   "plm-reg-itk-bspline.txt"
   "plm-reg-process-a.txt"
   "plm-reg-trans-a.txt"
@@ -428,6 +429,13 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
+
+plm_add_test (
+  "rect-2s"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--spacing;13.158 13.158 13.158;--rect-size; 200 200 200;--output;${PLM_BUILD_TESTING_DIR}/rect-2s.mha"
+  )
+
 plm_add_test (
   "rect-3"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2343,6 +2351,45 @@ set_tests_properties (plm-reg-itk-rigid-a-stats-2 PROPERTIES
   DEPENDS plm-reg-itk-rigid-a)
 set_tests_properties (plm-reg-itk-rigid-a-check-2 PROPERTIES 
   DEPENDS plm-reg-itk-rigid-a-stats-2)
+
+plm_add_test (
+  "plm-reg-itk-similarity"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-similarity.txt"
+  )
+plm_add_test (
+  "plm-reg-itk-similarity-stats-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-similarity-intermediate-img.mha"
+  )
+plmtest_check_interval ("plm-reg-itk-similarity-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-similarity-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-981.3"
+  "-981.1"
+  )
+plm_add_test (
+  "plm-reg-itk-similarity-stats-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-itk-similarity-img.mha"
+  )
+plmtest_check_interval ("plm-reg-itk-similarity-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-similarity-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-940.8"
+  "-940.5"
+  )
+
+set_tests_properties (plm-reg-itk-similarity PROPERTIES
+  DEPENDS "rect-2s;rect-2")
+set_tests_properties (plm-reg-itk-similarity-stats-1 PROPERTIES
+  DEPENDS plm-reg-itk-similarity)
+set_tests_properties (plm-reg-itk-similarity-check-1 PROPERTIES
+  DEPENDS plm-reg-itk-similaritystats-1)
+set_tests_properties (plm-reg-itk-similarity-stats-2 PROPERTIES
+  DEPENDS plm-reg-itk-similarity)
+set_tests_properties (plm-reg-itk-similarity-check-2 PROPERTIES
+  DEPENDS plm-reg-itk-similarity-stats-2)
 
 plm_add_test (
   "plm-reg-itk-rigid-b"

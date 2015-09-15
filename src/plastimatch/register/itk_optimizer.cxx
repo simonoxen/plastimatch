@@ -494,7 +494,7 @@ set_optimization_scales_versor (
 	rotation_scale = 1.0;
 	translation_scale = 1.0;
     } else {
-        rotation_scale = 1.0;
+        rotation_scale = 1.0 / (double) stage->rotation_scale_factor;
         translation_scale = 1.0 / (double) stage->translation_scale_factor;
     }
 
@@ -516,7 +516,7 @@ set_optimization_scales_quaternion (
     double rotation_scale, translation_scale;
     itk::Array<double> optimizerScales(7);
 
-    rotation_scale = 1.0;
+    rotation_scale = 1.0 / (double) stage->rotation_scale_factor;
     translation_scale = 1.0 / (double) stage->translation_scale_factor;
 
     /* GCS FIX: Changing the scale fudge_factor is one way to avoid 
@@ -564,6 +564,27 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 }
 
 void
+set_optimization_scales_similarity (RegistrationType::Pointer registration,
+                Stage_parms* stage)
+{
+    itk::Array<double> optimizerScales(7);
+
+    const double rotation_scale = 1.0 / (double) stage->rotation_scale_factor;
+    const double translation_scale = 1.0/ (double) stage->translation_scale_factor;
+    const double scaling_scale = 1.0/ (double) stage->scaling_scale_factor;
+
+    optimizerScales[0] =  rotation_scale;
+    optimizerScales[1] =  rotation_scale;
+    optimizerScales[2] =  rotation_scale;
+    optimizerScales[3] =  translation_scale;
+    optimizerScales[4] =  translation_scale;
+    optimizerScales[5] =  translation_scale;
+    optimizerScales[6] =  scaling_scale;
+
+    registration->GetOptimizer()->SetScales(optimizerScales);
+}
+
+void
 Itk_registration_private::set_optimization ()
 {
     if (stage->xform_type == STAGE_TRANSFORM_QUATERNION)
@@ -572,7 +593,8 @@ Itk_registration_private::set_optimization ()
     }
     else if (stage->optim_type == OPTIMIZATION_VERSOR
 	&& (stage->xform_type == STAGE_TRANSFORM_TRANSLATION
-	    || stage->xform_type == STAGE_TRANSFORM_AFFINE))
+        || stage->xform_type == STAGE_TRANSFORM_AFFINE
+        || stage->xform_type == STAGE_TRANSFORM_SIMILARITY))
     {
 	stage->optim_type = OPTIMIZATION_RSG;
     }
@@ -588,11 +610,11 @@ Itk_registration_private::set_optimization ()
 	set_optimization_amoeba(registration,stage);
 	break;
     case OPTIMIZATION_ONEPLUSONE:
-        set_optimization_oneplusone(registration,stage);
-        break;
+    set_optimization_oneplusone(registration,stage);
+    break;
     case OPTIMIZATION_FRPR:
-        set_optimization_frpr(registration,stage);
-        break;
+    set_optimization_frpr(registration,stage);
+    break;
     case OPTIMIZATION_RSG:
 	set_optimization_rsg(registration,stage);
 	break;
@@ -625,6 +647,9 @@ Itk_registration_private::set_optimization ()
     case STAGE_TRANSFORM_AFFINE:
 	set_optimization_scales_affine (registration, stage);
 	break;
+    case STAGE_TRANSFORM_SIMILARITY:
+    set_optimization_scales_similarity (registration, stage);
+    break;
     case STAGE_TRANSFORM_BSPLINE:
 	/* LBFGS/LBFGSB only. No optimizer scales. */
 	break;

@@ -364,6 +364,7 @@ Registration::do_registration_stage (
     case STAGE_TRANSFORM_NONE:
     case STAGE_TRANSFORM_VERSOR:
     case STAGE_TRANSFORM_QUATERNION:
+    case STAGE_TRANSFORM_SIMILARITY:
     case STAGE_TRANSFORM_AFFINE:
         xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         break;

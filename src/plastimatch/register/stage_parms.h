@@ -26,6 +26,7 @@ enum Stage_transform_type {
     STAGE_TRANSFORM_VERSOR,
     STAGE_TRANSFORM_QUATERNION,
     STAGE_TRANSFORM_AFFINE,
+    STAGE_TRANSFORM_SIMILARITY,
     STAGE_TRANSFORM_BSPLINE,
     STAGE_TRANSFORM_VECTOR_FIELD
 };
@@ -153,6 +154,8 @@ public:
     float min_step;
     float rsg_grad_tol;
     float translation_scale_factor;
+    int rotation_scale_factor;
+    float scaling_scale_factor;
     /*OnePlusOne evvolutionary optimizer*/
     float opo_epsilon;
     float opo_initial_search_rad;

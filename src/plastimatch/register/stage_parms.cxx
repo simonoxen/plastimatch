@@ -77,6 +77,8 @@ Stage_parms::Stage_parms ()
     min_step = 0.001;
     rsg_grad_tol = 0.0001;
     translation_scale_factor = 1000.0;
+    rotation_scale_factor = 1;
+    scaling_scale_factor = 10;
     /*OnePlusOne evolutionary optimizer*/
     opo_initial_search_rad=1.01;
     opo_epsilon=1e-7;
@@ -190,6 +192,8 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     min_step = s.min_step;
     rsg_grad_tol = s.rsg_grad_tol;
     translation_scale_factor = s.translation_scale_factor;
+    rotation_scale_factor = s.rotation_scale_factor;
+    scaling_scale_factor = s.scaling_scale_factor;
 
     /*OnePlusOne optmizer*/
     opo_epsilon=s.opo_epsilon;

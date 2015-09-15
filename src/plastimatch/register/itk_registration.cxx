@@ -179,6 +179,10 @@ Itk_registration_private::set_best_xform ()
         xf_best->set_aff (
             registration->GetTransform()->GetParameters());
         break;
+    case STAGE_TRANSFORM_SIMILARITY:
+        xf_best->set_similarity (
+            registration->GetTransform()->GetParameters());
+        break;
     case STAGE_TRANSFORM_BSPLINE: {
         /* GCS FIX: The B-spline method still gives the last xform, 
            not the best xform  */
@@ -570,6 +574,19 @@ set_transform_affine (
     registration->SetTransform (xf_out->get_aff());
 }
 
+void
+set_transform_similarity (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    const Xform *xf_in,
+    Stage_parms* stage)
+{
+    Plm_image_header pih;
+    pih.set_from_itk_image (registration->GetFixedImage());
+    xform_to_similarity (xf_out, xf_in, &pih);
+    registration->SetTransform (xf_out->get_similarity());
+}
+
 static void
 set_transform_bspline (
     RegistrationType::Pointer registration,
@@ -600,6 +617,9 @@ Itk_registration_private::set_transform ()
         break;
     case STAGE_TRANSFORM_QUATERNION:
         set_transform_quaternion (registration, xf_out, xf_in, stage);
+        break;
+    case STAGE_TRANSFORM_SIMILARITY:
+        set_transform_similarity (registration, xf_out, xf_in, stage);
         break;
     case STAGE_TRANSFORM_AFFINE:
         set_transform_affine (registration, xf_out, xf_in, stage);

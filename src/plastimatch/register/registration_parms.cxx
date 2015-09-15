@@ -396,6 +396,9 @@ Registration_parms::set_key_value (
         else if (val == "affine") {
             stage->xform_type = STAGE_TRANSFORM_AFFINE;
         }
+        else if (val == "similarity") {
+            stage->xform_type = STAGE_TRANSFORM_SIMILARITY;
+        }
         else if (val == "bspline") {
             stage->xform_type = STAGE_TRANSFORM_BSPLINE;
         }
@@ -653,6 +656,18 @@ Registration_parms::set_key_value (
     else if (key == "translation_scale_factor") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->translation_scale_factor) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "rotation_scale_factor") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%d", &stage->rotation_scale_factor) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "scaling_scale_factor") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f", &stage->scaling_scale_factor) != 1) {
             goto error_exit;
         }
     }

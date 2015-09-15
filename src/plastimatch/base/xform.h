@@ -11,6 +11,7 @@
 #include "itkAffineTransform.h"
 #include "itkBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
+#include "itkSimilarity3DTransform.h"
 
 #include "itk_image_type.h"
 #include "smart_pointer.h"
@@ -32,7 +33,8 @@ enum Xform_type {
     XFORM_ITK_TPS               = 6,
     XFORM_ITK_VECTOR_FIELD      = 7,
     XFORM_GPUIT_BSPLINE         = 8,
-    XFORM_GPUIT_VECTOR_FIELD    = 9
+    XFORM_GPUIT_VECTOR_FIELD    = 9,
+    XFORM_ITK_SIMILARITY        = 10
 };
 
 /* itk basic transforms */
@@ -40,6 +42,7 @@ typedef itk::TranslationTransform < double, 3 > TranslationTransformType;
 typedef itk::VersorRigid3DTransform < double > VersorTransformType;
 typedef itk::QuaternionRigidTransform < double > QuaternionTransformType;
 typedef itk::AffineTransform < double, 3 > AffineTransformType;
+typedef itk::Similarity3DTransform<double> SimilarityTransformType;
 
 /* itk B-spline transforms */
 const unsigned int SplineDimension = 3;
@@ -75,6 +78,7 @@ public:
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
     TpsTransformType::Pointer m_itk_tps;
+    SimilarityTransformType::Pointer m_similarity;
 
 public:
     void clear ();
@@ -88,6 +92,7 @@ public:
     VersorTransformType::Pointer get_vrs () const;
     QuaternionTransformType::Pointer get_quat () const;
     AffineTransformType::Pointer get_aff () const;
+    SimilarityTransformType::Pointer get_similarity() const;
     BsplineTransformType::Pointer get_itk_bsp () const;
     TpsTransformType::Pointer get_itk_tps () const;
     DeformationFieldType::Pointer get_itk_vf () const;
@@ -104,6 +109,8 @@ public:
     void set_quat (QuaternionTransformType::Pointer quat);
     void set_aff (const itk::Array<double>& aff);
     void set_aff (AffineTransformType::Pointer aff);
+    void set_similarity(SimilarityTransformType::Pointer sim);
+    void set_similarity(const itk::Array<double>& sim);
     void set_itk_bsp (BsplineTransformType::Pointer bsp);
     void set_itk_tps (TpsTransformType::Pointer tps);
     void set_itk_vf (DeformationFieldType::Pointer vf);
@@ -141,6 +148,8 @@ PLMBASE_API void xform_to_vrs (
 PLMBASE_API void xform_to_quat (
     Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API void xform_to_aff (
+    Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_similarity (
     Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Volume* vf,              /* Input */

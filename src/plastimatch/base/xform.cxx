@@ -75,6 +75,7 @@ Xform& Xform::operator= (const Xform& xf) {
     m_trn = xf.m_trn;
     m_vrs = xf.m_vrs;
     m_quat = xf.m_quat;
+    m_similarity = xf.m_similarity;
     m_aff = xf.m_aff;
     m_itk_vf = xf.m_itk_vf;
     m_itk_bsp = xf.m_itk_bsp;
@@ -94,6 +95,7 @@ Xform::clear ()
     m_vrs = 0;
     m_quat = 0;
     m_aff = 0;
+    m_similarity= 0;
     m_itk_bsp = 0;
     m_itk_tps = 0;
     m_itk_vf = 0;
@@ -137,6 +139,16 @@ Xform::get_aff () const
         print_and_exit ("Typecast error in get_aff()\n");
     }
     return m_aff;
+}
+
+
+SimilarityTransformType::Pointer
+Xform::get_similarity() const
+{
+    if (m_type != XFORM_ITK_SIMILARITY) {
+        print_and_exit ("Typecast error in get_similarity()\n");
+    }
+    return m_similarity;
 }
 
 BsplineTransformType::Pointer
@@ -252,6 +264,23 @@ Xform::set_aff (const itk::Array<double>& aff)
     XfType::Pointer transform = XfType::New ();
     transform->SetParametersByValue (aff);
     this->set_aff (transform);
+}
+
+void
+Xform::set_similarity(SimilarityTransformType::Pointer sim)
+{
+    clear ();
+    m_type = XFORM_ITK_SIMILARITY;
+    m_similarity = sim;
+}
+
+void
+Xform::set_similarity (const itk::Array<double>& sim)
+{
+    typedef SimilarityTransformType XfType;
+    XfType::Pointer transform = XfType::New ();
+    transform->SetParametersByValue (sim);
+    this->set_similarity (transform);
 }
 
 void
@@ -502,6 +531,9 @@ Xform::save (const char* fn)
     case XFORM_ITK_AFFINE:
         itk_xform_save (this->get_aff(), fn);
         break;
+    case XFORM_ITK_SIMILARITY:
+        itk_xform_save (this->get_similarity(), fn);
+        break;
     case XFORM_ITK_BSPLINE:
         itk_xform_save (this->get_itk_bsp(), fn);
         break;
@@ -572,6 +604,13 @@ init_affine_default (Xform *xf_out)
     xf_out->set_aff (aff);
 }
 
+static void
+init_similarity_default (Xform *xf_out)
+{
+    SimilarityTransformType::Pointer sim = SimilarityTransformType::New();
+    xf_out->set_similarity (sim);
+}
+
 void
 xform_itk_bsp_init_default (Xform *xf)
 {
@@ -596,6 +635,13 @@ xform_trn_to_aff (Xform *xf_out, const Xform* xf_in)
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
+void
+xform_trn_to_sim (Xform *xf_out, const Xform* xf_in)
+{
+    init_similarity_default (xf_out);
+    xf_out->get_similarity()->SetOffset(xf_in->get_trn()->GetOffset());
+}
+
 static void
 xform_vrs_to_quat (Xform *xf_out, const Xform* xf_in)
 {
@@ -618,6 +664,30 @@ xform_vrs_to_aff (Xform *xf_out, const Xform* xf_in)
     xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetMatrix());
 #endif
     xf_out->get_aff()->SetOffset(xf_in->get_vrs()->GetOffset());
+}
+
+static void
+xform_vrs_to_sim (Xform *xf_out, const Xform* xf_in)
+{
+    init_similarity_default (xf_out);
+#if ITK_VERSION_MAJOR == 3
+    xf_out->get_similarity()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
+#else /* ITK 4 */
+    xf_out->get_similarity()->SetMatrix(xf_in->get_vrs()->GetMatrix());
+#endif
+    xf_out->get_similarity()->SetOffset(xf_in->get_vrs()->GetOffset());
+}
+
+void
+xform_sim_to_aff (Xform *xf_out, const Xform* xf_in)
+{
+    init_affine_default (xf_out);
+#if ITK_VERSION_MAJOR == 3
+    xf_out->get_aff()->SetMatrix(xf_in->get_similarity()->GetRotationMatrix());
+#else /* ITK 4 */
+    xf_out->get_aff()->SetMatrix(xf_in->get_similarity()->GetMatrix());
+#endif
+    xf_out->get_aff()->SetOffset(xf_in->get_similarity()->GetOffset());
 }
 
 /* -----------------------------------------------------------------------
@@ -1523,6 +1593,7 @@ xform_to_quat (
         *xf_out = *xf_in;
         break;
     case XFORM_ITK_AFFINE:
+    case XFORM_ITK_SIMILARITY:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
@@ -1552,12 +1623,51 @@ xform_to_aff (
     case XFORM_ITK_VERSOR:
         xform_vrs_to_aff (xf_out, xf_in);
         break;
+    case XFORM_ITK_SIMILARITY:
+        xform_sim_to_aff (xf_out, xf_in);
+        break;
     case XFORM_ITK_QUATERNION:
         print_and_exit ("Sorry, couldn't convert to aff\n");
         break;
     case XFORM_ITK_AFFINE:
         *xf_out = *xf_in;
         break;
+    case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
+    case XFORM_ITK_VECTOR_FIELD:
+        print_and_exit ("Sorry, couldn't convert to aff\n");
+        break;
+    case XFORM_GPUIT_BSPLINE:
+    case XFORM_GPUIT_VECTOR_FIELD:
+        print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+        break;
+    default:
+        print_and_exit ("Program error.  Bad xform type.\n");
+        break;
+    }
+}
+
+void
+xform_to_similarity (
+    Xform *xf_out,
+    const Xform *xf_in,
+    Plm_image_header *pih)
+{
+    switch (xf_in->m_type) {
+    case XFORM_NONE:
+        init_similarity_default (xf_out);
+        break;
+    case XFORM_ITK_TRANSLATION:
+        xform_trn_to_sim (xf_out, xf_in);
+        break;
+    case XFORM_ITK_VERSOR:
+        xform_vrs_to_sim(xf_out,xf_in);
+        break;
+    case XFORM_ITK_SIMILARITY:
+        *xf_out = *xf_in;
+        break;
+    case XFORM_ITK_QUATERNION:
+    case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
@@ -1709,6 +1819,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
         break;
     case XFORM_ITK_AFFINE:
         vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
+        break;
+    case XFORM_ITK_SIMILARITY:
+        vf = xform_itk_any_to_itk_vf (xf_in->get_similarity(), pih);
         break;
     case XFORM_ITK_BSPLINE:
         vf = xform_itk_bsp_to_itk_vf (xf_in, pih);
