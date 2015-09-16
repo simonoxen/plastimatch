@@ -83,7 +83,7 @@ void QUTIL::Set2DTo3D(FloatImage2DType::Pointer& spSrcImg2D, UShortImageType::Po
     {
         /*QFileInfo crntFileInfo(arrYKImage[i].m_strFilePath);
         QString crntFileName = crntFileInfo.fileName();
-        QString crntPath = strSavingFolder + "\\" + crntFileName;*/
+        QString crntPath = strSavingFolder + "/" + crntFileName;*/
         //Search matching slice using slice iterator for m_spProjCTImg  
         if (i == idx)
         {
@@ -212,7 +212,7 @@ void QUTIL::Get2DFrom3DByIndex(UShortImageType::Pointer& spSrcImg3D, UShortImage
     {
         /*QFileInfo crntFileInfo(arrYKImage[i].m_strFilePath);
         QString crntFileName = crntFileInfo.fileName();
-        QString crntPath = strSavingFolder + "\\" + crntFileName;*/
+        QString crntPath = strSavingFolder + "/" + crntFileName;*/
         //Search matching slice using slice iterator for m_spProjCTImg	
         //cout << "Get2DFrom3D: Slide= " << i  << " ";
 
@@ -337,7 +337,7 @@ void QUTIL::Get2DFrom3DByIndex(FloatImageType::Pointer& spSrcImg3D, FloatImage2D
     {
         /*QFileInfo crntFileInfo(arrYKImage[i].m_strFilePath);
         QString crntFileName = crntFileInfo.fileName();
-        QString crntPath = strSavingFolder + "\\" + crntFileName;*/
+        QString crntPath = strSavingFolder + "/" + crntFileName;*/
         //Search matching slice using slice iterator for m_spProjCTImg	
         //cout << "Get2DFrom3D: Slide= " << i  << " ";
 
@@ -1140,7 +1140,7 @@ QString QUTIL::GetTimeStampDirPath(const QString& curDirPath, const QString& pre
         return;
     }*/
 
-    QString strOutput = curDirPath + "\\" + preFix + strDateStamp+"_" +strTimeStamp + endFix;
+    QString strOutput = curDirPath + "/" + preFix + strDateStamp+"_" +strTimeStamp + endFix;
 
     return strOutput;
 }
@@ -1162,6 +1162,47 @@ void QUTIL::ShowErrorMessage(QString str)
     QMessageBox msgBox;
     msgBox.setText(str);
     msgBox.exec();
+}
+
+void QUTIL::CreateItkDummyImg(FloatImageType::Pointer& spTarget, int sizeX, int sizeY, int sizeZ, float fillVal)
+{
+    FloatImageType::IndexType idxStart;
+    idxStart[0] = 0;
+    idxStart[1] = 0;
+    idxStart[2] = 0;
+
+    FloatImageType::SizeType size3D;
+    size3D[0] = sizeX;
+    size3D[1] = sizeY;
+    size3D[2] = sizeZ;
+
+    FloatImageType::SpacingType spacing3D;
+    spacing3D[0] = 1;
+    spacing3D[1] = 1;
+    spacing3D[2] = 1;
+
+    FloatImageType::PointType origin3D;
+    
+    origin3D[0] = size3D[0] * spacing3D[0] / -2.0;
+    origin3D[1] = size3D[1] * spacing3D[1] / -2.0;
+
+    FloatImageType::RegionType region;
+    region.SetSize(size3D);
+    region.SetIndex(idxStart);
+
+    //spTargetImg2D is supposed to be empty.
+    if (spTarget)
+    {
+        cout << "something is here in target image. is it gonna be overwritten?" << endl;
+    }
+
+    spTarget = FloatImageType::New();
+    spTarget->SetRegions(region);
+    spTarget->SetSpacing(spacing3D);
+    spTarget->SetOrigin(origin3D);
+
+    spTarget->Allocate();
+    spTarget->FillBuffer(fillVal);
 }
 
 //

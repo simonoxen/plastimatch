@@ -381,22 +381,6 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>pushButton_RunBatchGamma</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_RunBatchGamma()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>105</x>
-     <y>416</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>121</x>
-     <y>418</y>
-    </hint>
-   </hints>
-  </connection>
  </connections>
  <slots>
   <slot>SLT_Load_RD_Ref()</slot>

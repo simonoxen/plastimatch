@@ -1,4 +1,4 @@
-﻿#include "gamma_gui.h"
+#include "gamma_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
@@ -6,33 +6,20 @@
 #include <fstream>
 #include "YK16GrayImage.h"
 
-#include "mha_io.h"
-#include "nki_io.h"
-//#include "volume.h"
 #include "plm_image.h"
 #include "rt_study_metadata.h"
-
-//added for gamma_gui
-#include <QFileInfo>
-
 #include "gamma_dose_comparison.h"
+
+#include <QFileInfo>
 #include "logfile.h"
-#include "plm_clp.h"
-#include "plm_image.h"
-#include "plm_math.h"
 #include "pcmd_gamma.h"
 #include "print_and_exit.h"
-
 #include "plm_file_format.h"
 #include "rt_study.h"
-//#include "DlgGammaView.h"
-
 #include "qt_util.h"
-
 #include <QStandardItemModel>
 #include <QClipboard>
 
-//#include "dcmtk_rt_study.h"
 #include "dcmtk_loader.h"
 #include "dcmtk_loader_p.h"
 #include "dcmtk_series.h"
@@ -42,11 +29,6 @@
 #include "dcmtk/dcmdata/dcsequen.h"
 #include "dcmtk/dcmdata/dcitem.h"
 #include "dcmtk/dcmdata/dcdeftag.h"
-//#ifdef _DEBUG
-//const BOOL VistaStyle = FALSE;
-//#else
-//const BOOL VistaStyle = TRUE;
-//#endif
 
 
 gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
@@ -117,6 +99,10 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
     m_bMousePressedRightComp = false;
     m_bMousePressedRightGamma3D = false;
     m_bMousePressedRightGamma2D = false;
+
+    QUTIL::CreateItkDummyImg(m_spDummyLowMemImg, 10, 10, 10, 1.0);   
+
+    m_iLastLoadedIndex = -1;
 }
 
 gamma_gui::~gamma_gui()
@@ -197,28 +183,6 @@ void gamma_gui::SLT_Load_RD_Comp()
     QFileInfo finfo(m_strlistPath_RD_Original_Comp.at(0));
     QDir crntDir = finfo.absoluteDir();
     m_strPathInputDir = crntDir.absolutePath();
-    
-
-
-
-    //Set workspace: default = subfolder of Compare image
-
-    //QMessageBox msgBox;
-    //QString strMsg = "Want to automatically make a workspace here?";
-    //msgBox.setText(strMsg);
-    //msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-    //int res = msgBox.exec();
-    //if (res == QMessageBox::Yes)
-    //{
-    //    QFileInfo finfo(m_strlistPath_RD_Original_Comp.at(0));
-    //    QDir crntDir = finfo.absoluteDir();
-    //    QString strDirName= QUTIL::GetTimeStampDirName();
-    //    bool tmpResult = crntDir.mkdir(strDirName); //what if the directory exists?
-    //    //should be unique, no need of check tmpResult.
-
-    //    QString strWorkSpaceDir = crntDir.absolutePath() + "\\" + strDirName;
-    //    SetWorkDir(strWorkSpaceDir);        
-    //}
 }
 
 void gamma_gui::SLT_RunBatchGamma()
@@ -275,9 +239,9 @@ void gamma_gui::SLT_RunBatchGamma()
     crntWorkDir.mkdir(strSubComp);
     crntWorkDir.mkdir(strSubAnalysis);
 
-    QString strPathDirReadRef = m_strPathDirWorkDir + "\\" + strSubRef;
-    QString strPathDirReadComp = m_strPathDirWorkDir + "\\" + strSubComp;
-    QString strPathDirAnalysis = m_strPathDirWorkDir + "\\" + strSubAnalysis;
+    QString strPathDirReadRef = m_strPathDirWorkDir + "/" + strSubRef;
+    QString strPathDirReadComp = m_strPathDirWorkDir + "/" + strSubComp;
+    QString strPathDirAnalysis = m_strPathDirWorkDir + "/" + strSubAnalysis;
 
     m_strlistPath_RD_Read_Ref.clear();
     m_strlistPath_RD_Read_Comp.clear();
@@ -307,8 +271,8 @@ void gamma_gui::SLT_RunBatchGamma()
             //dirPathFirstFileDir = dirPath;
             dirPathFirstFileBase = baseNameComp;
         }
-        QString strPathBkupRef = strPathDirReadRef + "\\" + baseNameRef + ".mha";
-        QString strPathBkupComp = strPathDirReadComp + "\\" + baseNameComp + ".mha";
+        QString strPathBkupRef = strPathDirReadRef + "/" + baseNameRef + ".mha";
+        QString strPathBkupComp = strPathDirReadComp + "/" + baseNameComp + ".mha";
 
 
         if (strPathRef.length() < 2 || strPathComp.length() < 2)
@@ -338,12 +302,24 @@ void gamma_gui::SLT_RunBatchGamma()
         if (ui.radioButton_localGamma->isChecked())
         {
             parms.b_local_gamma = true;
-            parms.reference_dose = 0.0;
         }
         else
         {
             parms.b_local_gamma = false;
-            parms.reference_dose = ui.lineEdit_refDoseInGy->text().toDouble();
+
+        }
+
+        float inputRefDose = ui.lineEdit_refDoseInGy->text().toFloat();
+
+        if (inputRefDose <= 0) //blank
+        {
+            parms.have_reference_dose = false;
+            parms.reference_dose = 0.0;
+        }
+        else
+        {
+            parms.have_reference_dose = true;
+            parms.reference_dose = inputRefDose;
         }
 
         parms.dta_tolerance = ui.lineEdit_dta_tol->text().toDouble();
@@ -363,21 +339,21 @@ void gamma_gui::SLT_RunBatchGamma()
             + QString::number(parms.dose_tolerance*100.0, 'f', 0) + "%_" + strLocGlob;
 
 
-        QString outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_gammamap" + ".mha";
+        QString outputPath = strPathDirAnalysis + "/" + baseNameComp + "_gammamap" + ".mha";
         parms.out_image_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Gammamap.push_back(outputPath);
       
 
         //if (ui.checkBox_failuremap_output->isChecked())
         //{
-            //QString outputPath = dirPath + "\\" + baseName + "_failmap_" + strSettingAbs + ".mha";
-        outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_failmap" + ".mha";
+            //QString outputPath = dirPath + "/" + baseName + "_failmap_" + strSettingAbs + ".mha";
+        outputPath = strPathDirAnalysis + "/" + baseNameComp + "_failmap" + ".mha";
         parms.out_failmap_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Failure.push_back(outputPath);
         //}           
 
-        //QString outputPath = dirPath + "\\" + baseName + "_report_" + strSettingAbs + ".txt";
-        outputPath = strPathDirAnalysis + "\\" + baseNameComp + "_report" + ".txt";
+        //QString outputPath = dirPath + "/" + baseName + "_report_" + strSettingAbs + ".txt";
+        outputPath = strPathDirAnalysis + "/" + baseNameComp + "_report" + ".txt";
         parms.out_report_fn = outputPath.toLocal8Bit().constData();
         m_strlistPath_Output_Report.push_back(outputPath);
 
@@ -393,12 +369,14 @@ void gamma_gui::SLT_RunBatchGamma()
     //Save WorkSpace File for future loading
 
     
-    //QString strPathGammaWorkSpace = m_strPathDirWorkDir + "\\" + dirPathFirstFileBase + "_" + strParamSet + "_" + QString("%1").arg(cntRef) + "cases.gws"; //gamma work space
+    //QString strPathGammaWorkSpace = m_strPathDirWorkDir + "/" + dirPathFirstFileBase + "_" + strParamSet + "_" + QString("%1").arg(cntRef) + "cases.gws"; //gamma work space
 
-    QString strPathGammaWorkSpace = m_strPathDirWorkDir + "\\" + strSubAnalysis + ".gws"; //gamma work space
-    QString strFilePathReport = m_strPathDirWorkDir + "\\" + strSubAnalysis + "BatchReport.txt"; //gamma work space
+    QString strPathGammaWorkSpace = m_strPathDirWorkDir + "/" + strSubAnalysis + ".gws"; //gamma work space
+    QString strFilePathReport = m_strPathDirWorkDir + "/" + strSubAnalysis + "BatchReport.txt"; //gamma work space
 
     SaveCurrentGammaWorkSpace(strPathGammaWorkSpace);
+
+    cout << cntRef << " analysis were successfully done!" << endl;
 
     SLT_LoadResults();
 
@@ -596,7 +574,7 @@ QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy, const QString
     //if this is dcm, save the mha files
     //if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
     //{
-        //QString newPath = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";        
+        //QString newPath = info_ref.absolutePath() + "/" + info_ref.completeBaseName() + ".mha";        
 
     if (!strPathBkupRef.isEmpty())
     {
@@ -608,8 +586,8 @@ QString gamma_gui::GammaMain(Gamma_parms* parms, float& refDoseGy, const QString
 
     //if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
     //{
-        //QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
-        //QString newPath = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        //QString newPath = info_comp.absolutePath() + "/" + info_comp.completeBaseName() + ".mha";
+        //QString newPath = info_comp.absolutePath() + "/" + info_comp.completeBaseName() + ".mha";
 
     if (!strPathBkupComp.isEmpty())
     {
@@ -677,6 +655,8 @@ void gamma_gui::Load_FilesToMem()
     m_vRefDoseImages.clear();
     m_vCompDoseImages.clear();
     m_vGammaMapImages.clear();
+
+    m_iLastLoadedIndex = -1;
     
     QString strPath_ref, strPath_comp, strPath_gamma;
 
@@ -691,42 +671,54 @@ void gamma_gui::Load_FilesToMem()
     
         //if (info_ref.suffix() == "dcm" || info_ref.suffix() == "DCM")
         //{
-        //    //strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";            
-        //    strPath_ref = info_ref.absolutePath() + "\\" + info_ref.completeBaseName() + ".mha";
+        //    //strPath_ref = info_ref.absolutePath() + "/" + info_ref.completeBaseName() + ".mha";            
+        //    strPath_ref = info_ref.absolutePath() + "/" + info_ref.completeBaseName() + ".mha";
         //}
 
         //if (info_comp.suffix() == "dcm" || info_comp.suffix() == "DCM")
         //{
-        //    //strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
-        //    strPath_comp = info_comp.absolutePath() + "\\" + info_comp.completeBaseName() + ".mha";
+        //    //strPath_comp = info_comp.absolutePath() + "/" + info_comp.completeBaseName() + ".mha";
+        //    strPath_comp = info_comp.absolutePath() + "/" + info_comp.completeBaseName() + ".mha";
         //}
 
+        bool bLowMem = ui.checkBox_low_mem->isChecked();       
+
+
         FloatImageType::Pointer spImgRef = FloatImageType::New();
-        QUTIL::LoadFloatImage3D(strPath_ref.toLocal8Bit().constData(), spImgRef);
-        m_vRefDoseImages.push_back(spImgRef);
-        //m_spRefDoseImages = spImgRef;
-
         FloatImageType::Pointer spImgComp = FloatImageType::New();
-        QUTIL::LoadFloatImage3D(strPath_comp.toLocal8Bit().constData(), spImgComp);
-        m_vCompDoseImages.push_back(spImgComp);
-        //m_spCompDoseImages = spImgComp;
-
-
         FloatImageType::Pointer spImgGamma = FloatImageType::New();
-        QUTIL::LoadFloatImage3D(strPath_gamma.toLocal8Bit().constData(), spImgGamma);
-        m_vGammaMapImages.push_back(spImgGamma);
-        //m_spGammaMapImages = spImgGamma;
+
+
+
+        if (bLowMem)
+        {
+            spImgRef = m_spDummyLowMemImg;
+            spImgComp = m_spDummyLowMemImg;
+            spImgGamma = m_spDummyLowMemImg;
+        }         
+        else
+        {
+            QUTIL::LoadFloatImage3D(strPath_ref.toLocal8Bit().constData(), spImgRef);
+            QUTIL::LoadFloatImage3D(strPath_comp.toLocal8Bit().constData(), spImgComp);
+            QUTIL::LoadFloatImage3D(strPath_gamma.toLocal8Bit().constData(), spImgGamma);
+        }
+
+        m_vRefDoseImages.push_back(spImgRef);        
+        m_vCompDoseImages.push_back(spImgComp);
+        m_vGammaMapImages.push_back(spImgGamma);        
     }    
 }
 
 void gamma_gui::SLT_LoadResults()
-{
+{    
+    cout << "Loading image data... please wait" << endl;        
     Load_FilesToMem();    
+    cout << "Dose and Gamma data are successfully loaded" << endl;
 
-    disconnect(ui.comboBoxCompareFile, SIGNAL(currentIndexChanged(int)), this, SLOT(SLT_DrawAll()));
+    disconnect(ui.comboBoxCompareFile, SIGNAL(currentIndexChanged(int)), this, SLOT(SLT_WhenSelectCombo()));
     SLT_UpdateComboContents();
-    connect(ui.comboBoxCompareFile, SIGNAL(currentIndexChanged(int)), this, SLOT(SLT_DrawAll()));
 
+    connect(ui.comboBoxCompareFile, SIGNAL(currentIndexChanged(int)), this, SLOT(SLT_WhenSelectCombo()));        
 
     SLT_WhenSelectCombo(); //initialization
 
@@ -736,7 +728,7 @@ void gamma_gui::SLT_LoadResults()
 }
 
 void gamma_gui::SLT_UpdateComboContents() //compare image based..
-{
+{    
     QComboBox* crntCombo = ui.comboBoxCompareFile;
     crntCombo->clear();    
 
@@ -744,10 +736,10 @@ void gamma_gui::SLT_UpdateComboContents() //compare image based..
 
     for (int i = 0; i < cntComp; i++)
     {
-        crntCombo->addItem(m_strlistFileBaseName_Comp.at(i));
-    }
+        //SLT_WHenComboSelect should be disconnected here
+        crntCombo->addItem(m_strlistFileBaseName_Comp.at(i));        
+    }    
 }
-
 void gamma_gui::SLT_DrawAll()
 {
     //Get combo box selection
@@ -763,7 +755,7 @@ void gamma_gui::SLT_DrawAll()
     if (m_vRefDoseImages.size() != iCnt ||
         m_vCompDoseImages.size() != iCnt)
     {
-        cout << "Error! iCnt not matching" << endl;
+        cout << "Error! iCnt not matching in DrawAll" << endl;
         return;
     }
 
@@ -992,7 +984,8 @@ void gamma_gui::SLT_DrawAll()
 
     if (m_pTableModel == NULL)
     {
-        cout << "TableModel is NULL" << endl;
+
+        //cout << "TableModel is NULL" << endl;
     }
 
     if (m_pTableModel != NULL)
@@ -1517,8 +1510,8 @@ void gamma_gui::SLT_RunGamma2D()
     if (!tmpResult)
         cout << "Warning! Directory for 2D gamma already exists. files will be overwritten." << endl;
 
-    //QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
-    QString strSavingFolder = crntDir.absolutePath() + "\\" + subDirName;
+    //QString strSavingFolder = crntDir.absolutePath() + "/" + subDirName;
+    QString strSavingFolder = crntDir.absolutePath() + "/" + subDirName;
 
     QDir dirSaving(strSavingFolder);
     if (!dirSaving.exists())
@@ -1529,8 +1522,8 @@ void gamma_gui::SLT_RunGamma2D()
 
     /* From now on, the target folder is ready */
 
-    QString tmpFilePathRef = strSavingFolder + "\\" + "Gamma2DRef.mha";
-    QString tmpFilePathComp = strSavingFolder + "\\" + "Gamma2DComp.mha";    
+    QString tmpFilePathRef = strSavingFolder + "/" + "Gamma2DRef.mha";
+    QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";    
 
     //Save current 2D
     m_spCurRef2D;
@@ -1563,13 +1556,25 @@ void gamma_gui::SLT_RunGamma2D()
 
     if (ui.radioButton_localGamma->isChecked())
     {
-        parms.b_local_gamma = true;
-        parms.reference_dose = 0.0;
+
+        parms.b_local_gamma = true;        
     }
     else
     {
-        parms.b_local_gamma = false;
-        parms.reference_dose = ui.lineEdit_refDoseInGy->text().toDouble();
+
+        parms.b_local_gamma = false;        
+    }
+
+    float inputRefDose = ui.lineEdit_refDoseInGy->text().toFloat();
+
+    if (inputRefDose <= 0) //blank
+    {
+        parms.have_reference_dose = false;
+    }
+    else
+    {
+        parms.have_reference_dose = true;
+        parms.reference_dose = inputRefDose;
     }
 
     parms.dta_tolerance = ui.lineEdit_dta_tol->text().toDouble();
@@ -1594,19 +1599,19 @@ void gamma_gui::SLT_RunGamma2D()
 
     //QString tmpFilePathComp = strSavingFolder + "/" + "Gamma2DComp.mha";
 
-    QString strPathGamma2D = strSavingFolder + "\\" + "gamma2D" + ".mha";
+    QString strPathGamma2D = strSavingFolder + "/" + "gamma2D" + ".mha";
  //   if (ui.checkBox_gammamap_output->isChecked())
    // {        
         parms.out_image_fn = strPathGamma2D.toLocal8Bit().constData();     
    // }
 
-    QString strPathFailmap2D = strSavingFolder + "\\" + "fail2D" + ".mha";
+    QString strPathFailmap2D = strSavingFolder + "/" + "fail2D" + ".mha";
     //if (ui.checkBox_failuremap_output->isChecked())
    // {
         parms.out_failmap_fn = strPathFailmap2D.toLocal8Bit().constData();
    // }
 
-    QString strPathReport = strSavingFolder + "\\" + "text_report" + ".txt";
+    QString strPathReport = strSavingFolder + "/" + "text_report" + ".txt";
     cout << "strPathReport= " << strPathReport.toLocal8Bit().constData() << endl;
 
     parms.out_report_fn = strPathReport.toLocal8Bit().constData();
@@ -1646,8 +1651,8 @@ void gamma_gui::SLT_RunGamma2D()
     //SaveIBA Image format
 
     
-    QString IBAFilePathRef = strSavingFolder + "\\" + strPlane + "_" + curBaseNameRef + ".OPG";
-    QString IBAFilePathComp = strSavingFolder + "\\" + strPlane + "_" + curBaseNameComp + ".OPG";
+    QString IBAFilePathRef = strSavingFolder + "/" + strPlane + "_" + curBaseNameRef + ".OPG";
+    QString IBAFilePathComp = strSavingFolder + "/" + strPlane + "_" + curBaseNameComp + ".OPG";
     
     SaveDoseIBAGenericTXTFromItk(IBAFilePathRef.toLocal8Bit().constData(), m_spCurRef2D);
     SaveDoseIBAGenericTXTFromItk(IBAFilePathComp.toLocal8Bit().constData(), m_spCurComp2D);
@@ -1856,8 +1861,33 @@ void gamma_gui::SLT_WhenSelectCombo()
     if (iCnt < 1)
         return;
 
-    if (m_vRefDose.size() != iCnt)
+
+    if (m_vRefDose.size() != iCnt ||
+        m_strlistPath_RD_Read_Ref.size() != iCnt ||
+        m_strlistPath_RD_Read_Comp.size() != iCnt ||
+        m_strlistPath_Output_Gammamap.size() != iCnt)
+    {
+        cout << "Error! SLT_WhenSelectCombo file count doesn't match!" << endl;
+
+        cout << "crntComboCnt " << iCnt << endl;
+        cout << "m_vRefDose " << m_vRefDose.size() << endl;
+        cout << "m_strlistPath_RD_Read_Ref " << m_strlistPath_RD_Read_Ref.size() << endl;
+        cout << "m_strlistPath_RD_Read_Comp " << m_strlistPath_RD_Read_Comp.size() << endl;
+        cout << "m_strlistPath_Output_Gammamap " << m_strlistPath_Output_Gammamap.size() << endl;
+
         return;
+    }
+        
+    if (m_vRefDoseImages.size() != iCnt ||
+        m_vCompDoseImages.size() != iCnt ||
+        m_vGammaMapImages.size() != iCnt)
+    {
+        cout << "Error! ItkImage Pointer count doesn't match!" << endl;
+        return;
+    }
+
+
+    
 
     disconnect(ui.sliderNormRef, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
     disconnect(ui.sliderNormComp, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
@@ -1868,7 +1898,46 @@ void gamma_gui::SLT_WhenSelectCombo()
     connect(ui.sliderNormRef, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
     connect(ui.sliderNormComp, SIGNAL(valueChanged(int)), this, SLOT(SLT_DrawAll()));
 
-    SLT_WhenChangePlane();
+
+    QString strPath_ref = m_strlistPath_RD_Read_Ref.at(curIdx); //always readable mha format
+    QString strPath_comp = m_strlistPath_RD_Read_Comp.at(curIdx);
+    QString strPath_gamma = m_strlistPath_Output_Gammamap.at(curIdx);
+
+    QFileInfo info_ref = QFileInfo(strPath_ref);
+    QFileInfo info_comp = QFileInfo(strPath_comp); 
+
+    bool bLowMem = ui.checkBox_low_mem->isChecked();
+
+    if (bLowMem)
+    {
+        /*FloatImageType::Pointer spImgRef = m_vRefDoseImages.at(curIdx);
+        FloatImageType::Pointer spImgComp = m_vCompDoseImages.at(curIdx);
+        FloatImageType::Pointer spImgGamma = m_vGammaMapImages.at(curIdx);       */
+        cout << "Loading image from file. Index= " << curIdx << endl;
+        
+        QUTIL::LoadFloatImage3D(strPath_ref.toLocal8Bit().constData(), m_vRefDoseImages.at(curIdx));
+        QUTIL::LoadFloatImage3D(strPath_comp.toLocal8Bit().constData(), m_vCompDoseImages.at(curIdx));
+        QUTIL::LoadFloatImage3D(strPath_gamma.toLocal8Bit().constData(), m_vGammaMapImages.at(curIdx));
+
+
+        if (m_iLastLoadedIndex >= 0)
+        {
+            m_vRefDoseImages.at(m_iLastLoadedIndex) = m_spDummyLowMemImg;
+            m_vCompDoseImages.at(m_iLastLoadedIndex) = m_spDummyLowMemImg;
+            m_vGammaMapImages.at(m_iLastLoadedIndex) = m_spDummyLowMemImg;
+        }
+
+        m_iLastLoadedIndex = curIdx;
+    }
+    else
+    {
+        //do nothing
+    }
+
+
+  
+
+    SLT_WhenChangePlane(); //RestorePanZoom + DrawAll
     //SLT_DrawAll();
 }
 
@@ -2441,7 +2510,7 @@ void gamma_gui::RenameFileByDCMInfo(QStringList& filenameList)
         //QString extStr = fileInfo.completeSuffix();
 
         QString newFileName = newBaseName.append(".").append("dcm");
-        QString newPath = dir.absolutePath() + "\\" + newFileName;
+        QString newPath = dir.absolutePath() + "/" + newFileName;
 
         //cout << newPath.toLocal8Bit().constData() << endl;
 
@@ -2722,7 +2791,7 @@ void gamma_gui::SLTM_LoadSavedWorkSpace()
 
 QString gamma_gui::ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCurrDirPath, QString& strDelim)
 {
-    QStringList strListPath = strOriginalPath.split("\\");
+    QStringList strListPath = strOriginalPath.split("/");
     //if (strListPath.count() < 1)
       //  strListPath = strOriginalPath.split("/");
     int cnt = strListPath.count();
@@ -2748,7 +2817,7 @@ QString gamma_gui::ReplaceUpperDirOnly(QString& strOriginalPath, QString& strCur
     QString strLower;
     for (int i = idx; i < cnt; i++)
     {
-        strLower = strLower + "\\" + strListPath.at(i);
+        strLower = strLower + "/" + strListPath.at(i);
     }
 
     QString newPath = strCurrDirPath + strLower;
@@ -2767,6 +2836,7 @@ void gamma_gui::SLT_SetWorkDir()
 
     SetWorkDir(dirPath);
 }
+
 
 void gamma_gui::SetWorkDir(const QString& strPath)
 {

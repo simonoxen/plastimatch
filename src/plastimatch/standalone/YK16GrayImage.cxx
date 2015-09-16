@@ -2689,59 +2689,13 @@ QColor YK16GrayImage::GetColorFromDosePerc(float percVal) //to be edited to use 
 
 QColor YK16GrayImage::GetColorFromGamma(float gammaVal)
 {    
-       /* int baseRed = 50;
-     int baseBlue = 55;
-
-     if (gammaVal <= 1.0)
-     {
-     blueVal = baseBlue + (int)(200 - 200 * gammaVal);
-     if (blueVal < 50)
-     blueVal = baseBlue;
-     greenVal = 0;
-     redVal = 0;
-     }
-     else if (gammaVal > 1.0 && gammaVal < 2.0)
-     {
-     blueVal = 0;
-     greenVal = 0;
-     redVal = baseRed + (gammaVal - 1.0)*200;
-     }
-     else
-     {
-     blueVal = 0;
-     greenVal = 0;
-     redVal = 255;
-     }*/
-
-
-    QColor color;
+   QColor color;
     int blueVal, greenVal, redVal;
 
     if (m_vColorTable.empty())
         return color;
 
-    float minVal;
-    float maxVal;
-
     VEC3D curVal; 
-
-    //if (gammaVal < 1.0)
-    //{
-    //    minVal = 0.0;
-    //    maxVal = 1.0; //120%
-    //    
-    //}
-    //else if (gammaVal >= 1.0 && gammaVal <= 2.0)
-    //{
-    //    minVal = 1.0;
-    //    maxVal = 2.0; //120%        
-    //    curVal = QUTIL::GetRGBValueFromTable(m_vColorTableGammaHigh, minVal, maxVal, gammaVal);
-    //}
-    //else
-    //{
-    //    curVal = { 1.0, 1.0, 1.0 };
-    //}   
-
     curVal = QUTIL::GetRGBValueFromTable(m_vColorTable, 0.0, 2.0, gammaVal);
 
     redVal = qRound(curVal.x * 255);
@@ -2780,10 +2734,6 @@ unsigned short YK16GrayImage::GetCrosshairPixelData()
 
 float YK16GrayImage::GetCrosshairOriginalData()
 {
-    //YKTMP
- //   cout << "GetCrosshairPixelData() " << GetCrosshairPixelData() << endl;
-   // cout << "MagnificationFactor= " << this->m_fIntensityMag << endl;
-
     return GetOriginalIntensityVal(GetCrosshairPixelData());
 }
 
@@ -2797,25 +2747,3 @@ float YK16GrayImage::GetCrosshairPercData()
     else
         return 0.0;
 }
-
-//void YK16GrayImage::SetColorTableGammaLow(vector<VEC3D>& vInputColorTable)
-//{
-//    if (vInputColorTable.empty())
-//        return;
-//
-//    m_vColorTableGammaLow.clear();
-//
-//    m_vColorTableGammaLow = vInputColorTable; //deep copy?
-//
-//}
-//
-//void YK16GrayImage::SetColorTableGammaHigh(vector<VEC3D>& vInputColorTable)
-//{
-//    if (vInputColorTable.empty())
-//        return;
-//
-//    m_vColorTableGammaHigh.clear();
-//
-//    m_vColorTableGammaHigh = vInputColorTable; //deep copy?
-//
-//}

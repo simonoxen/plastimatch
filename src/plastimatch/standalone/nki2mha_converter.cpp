@@ -90,7 +90,7 @@ QString nki2mha_converter::CorrectSingle_NKI2MHA(const char* filePath)
     QString extName = "mha";
 
     QString newFileName = baseName.append(endFix).append(".").append(extName);
-    QString newPath = dir.absolutePath() + "\\" + newFileName;	
+    QString newPath = dir.absolutePath() + "/" + newFileName;
 
     write_mha(newPath.toLocal8Bit().constData(), v);	
 
@@ -249,7 +249,7 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
     QString baseName = srcFileInfo.completeBaseName();	
 
     baseName.append(endFix);	
-    QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+    QString newDirPath = dir.absolutePath() + "/" + baseName;	
 
     QDir dirNew(newDirPath);
     if (!dirNew.exists()){
@@ -283,11 +283,11 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath, QString 
   QString baseName = srcFileInfo.completeBaseName();	
 
   //baseName.append(endFix);	
-  //QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+  
 
 
   //baseName.append(endFix);	
-  //QString newDirPath = dir.absolutePath() + "\\" + baseName;
+  
   QString dirName;
 
   if (patientID.length() > 1)
@@ -295,7 +295,7 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath, QString 
   else
 	dirName = baseName;    
 
-  QString newDirPath = dir.absolutePath() + "\\" + dirName;
+  QString newDirPath = dir.absolutePath() + "/" + dirName;
 
   QDir dirNew(newDirPath);
   if (!dirNew.exists()){
@@ -333,7 +333,7 @@ QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath)
     QString baseName = srcFileInfo.completeBaseName();	
 
     baseName.append(endFix);	
-    QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+    QString newDirPath = dir.absolutePath() + "/" + baseName;	
 
     QDir dirNew(newDirPath);
     if (!dirNew.exists()){
@@ -371,7 +371,7 @@ QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath, QString 
   QString baseName = srcFileInfo.completeBaseName();	
 
   //baseName.append(endFix);	
-  //QString newDirPath = dir.absolutePath() + "\\" + baseName;
+  //QString newDirPath = dir.absolutePath() + "/" + baseName;
   QString dirName;
 
   if (patientID.length() > 1)
@@ -379,7 +379,7 @@ QString nki2mha_converter::CorrectSingle_MHA2DCM( const char* filePath, QString 
   else
 	dirName = baseName;    
   
-  QString newDirPath = dir.absolutePath() + "\\" + dirName;
+  QString newDirPath = dir.absolutePath() + "/" + dirName;
 
 
   QDir dirNew(newDirPath);
@@ -417,7 +417,7 @@ QString nki2mha_converter::CorrectSingle_NKI2RAW( const char* filePath )
     QString baseName = srcFileInfo.completeBaseName();	
 
     baseName.append(endFix);	
-    QString newDirPath = dir.absolutePath() + "\\" + baseName;	
+    QString newDirPath = dir.absolutePath() + "/" + baseName;	
 
     QDir dirNew(newDirPath);
     if (!dirNew.exists()){

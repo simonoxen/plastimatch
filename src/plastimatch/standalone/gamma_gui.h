@@ -29,19 +29,15 @@ class gamma_gui : public QMainWindow
 
 public:
     gamma_gui(QWidget *parent = 0, Qt::WFlags flags = 0);
-    ~gamma_gui(); 
+    ~gamma_gui();     
     
-    //QString GammaMain(Gamma_parms* parms);     
     QString GammaMain(Gamma_parms* parms, float& refDoseGy, const QString& strPathBkupRef = QString(""), const QString& strPathBkupComp = QString(""));
 
     void Load_FilesToMem();//all ref, comp, gamma map should be prepared    
     void UpdateProbePos(qyklabel* qlabel);    
 
     void UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
-        float fNorm1, float fNorm2, float fNorm3, float fMag1, float fMag2, float fMag3);
-    //fNorm: Gy value, fNorm3 = 1.0;
-    //fMag1,2 for dose, 100.0
-    //fMag3: for gamma, 100.0    
+    float fNorm1, float fNorm2, float fNorm3, float fMag1, float fMag2, float fMag3);    
 
     void WhenMousePressedRight(qyklabel* pWnd);
     void UpdatePanCommon(qyklabel* qWnd);
@@ -155,6 +151,8 @@ public:
     vector<FloatImageType::Pointer> m_vCompDoseImages;
     vector<FloatImageType::Pointer> m_vGammaMapImages;
 
+    //checkBox_low_mem
+    FloatImageType::Pointer m_spDummyLowMemImg;
 
     FloatImage2DType::Pointer m_spCurRef2D;
     FloatImage2DType::Pointer m_spCurComp2D;
@@ -186,6 +184,8 @@ public:
     QString m_strPathDirWorkDir;//this is for output
 
     QString m_strPathInputDir;//this is for input DCM. initialized when Load Ref files or Load Comp files
+
+    int m_iLastLoadedIndex;
 
 
 private:
