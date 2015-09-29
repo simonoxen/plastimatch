@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Platimatch gamma gui (bug report to: ykpark@mgh.harvard.edu)</string>
+   <string>Plastimatch EasyGamma3D (bug report to: ykpark@mgh.harvard.edu)</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="pushButton_Open_RD_Ref">
@@ -68,7 +68,7 @@
     <widget class="QLineEdit" name="lineEdit_inhereResample">
      <property name="geometry">
       <rect>
-       <x>140</x>
+       <x>150</x>
        <y>30</y>
        <width>31</width>
        <height>21</height>
@@ -81,7 +81,7 @@
     <widget class="QLabel" name="label_6">
      <property name="geometry">
       <rect>
-       <x>180</x>
+       <x>190</x>
        <y>30</y>
        <width>31</width>
        <height>16</height>
@@ -96,7 +96,7 @@
       <rect>
        <x>10</x>
        <y>30</y>
-       <width>131</width>
+       <width>141</width>
        <height>17</height>
       </rect>
      </property>
@@ -117,7 +117,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Interpolated_search</string>
+      <string>Interp-search</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -1063,6 +1063,9 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionProfile_View">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Profile View</string>
    </property>
