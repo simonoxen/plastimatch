@@ -588,6 +588,8 @@ Plm_image_header::get_index (const FloatPoint3DType& pos) const
     for (int d1 = 0; d1 < 3; d1++) {
         tmp[d1] = pos[d1] - m_origin[d1];
         idx[d1] = 0;
+    }
+    for (int d1 = 0; d1 < 3; d1++) {
         for (int d2 = 0; d2 < 3; d2++) {
             idx[d1] += tmp[d2] * proj[d1*3+d2];
         }
