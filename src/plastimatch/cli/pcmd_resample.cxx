@@ -52,6 +52,7 @@ public:
 	m_have_origin = false;
 	m_have_spacing = false;
 	m_have_subsample = false;
+	m_have_direction_cosines = false;
 	default_val = 0.0;
 	have_default_val = false;
 	adjust = 0;
