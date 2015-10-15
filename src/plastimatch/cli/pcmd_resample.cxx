@@ -156,21 +156,33 @@ resample_main (Resample_parms* parms)
 	plm_image.m_itk_uchar 
 	    = do_resample_itk (parms, plm_image.m_itk_uchar);
 	break;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	plm_image.m_itk_char 
+	    = do_resample_itk (parms, plm_image.m_itk_char);
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	plm_image.m_itk_ushort 
+	    = do_resample_itk (parms, plm_image.m_itk_ushort);
+	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	plm_image.m_itk_short 
 	    = do_resample_itk (parms, plm_image.m_itk_short);
-	break;
-    case PLM_IMG_TYPE_ITK_LONG:
-	plm_image.m_itk_int32 
-	    = do_resample_itk (parms, plm_image.m_itk_int32);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	plm_image.m_itk_uint32 
 	    = do_resample_itk (parms, plm_image.m_itk_uint32);
 	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	plm_image.m_itk_int32 
+	    = do_resample_itk (parms, plm_image.m_itk_int32);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	plm_image.m_itk_float 
 	    = do_resample_itk (parms, plm_image.m_itk_float);
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	plm_image.m_itk_double 
+	    = do_resample_itk (parms, plm_image.m_itk_double);
 	break;
     default:
 	print_and_exit ("Unhandled image type in resample_main()\n");

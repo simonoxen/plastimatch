@@ -317,24 +317,30 @@ subsample_image (T& image, int x_sampling_rate,
 template PLMBASE_API DeformationFieldType::Pointer vector_resample_image (const DeformationFieldType::Pointer&, const Plm_image_header*);
 
 template PLMBASE_API UCharImageType::Pointer resample_image (UCharImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
-template PLMBASE_API ShortImageType::Pointer resample_image (ShortImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
+template PLMBASE_API CharImageType::Pointer resample_image (CharImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
 template PLMBASE_API UShortImageType::Pointer resample_image (UShortImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
-template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
+template PLMBASE_API ShortImageType::Pointer resample_image (ShortImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
 template PLMBASE_API UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
+template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
+template PLMBASE_API DoubleImageType::Pointer resample_image (DoubleImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);
 
 template PLMBASE_API UCharImageType::Pointer resample_image (UCharImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
-template PLMBASE_API ShortImageType::Pointer resample_image (ShortImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+template PLMBASE_API CharImageType::Pointer resample_image (CharImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API UShortImageType::Pointer resample_image (UShortImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
-template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+template PLMBASE_API ShortImageType::Pointer resample_image (ShortImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+template PLMBASE_API Int32ImageType::Pointer resample_image (Int32ImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
+template PLMBASE_API DoubleImageType::Pointer resample_image (DoubleImageType::Pointer&, const Plm_image_header&, float default_val, int interp_lin);
 
 template PLMBASE_API FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float spacing[3]);
 
 template PLMBASE_API UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
-template PLMBASE_API ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
+template PLMBASE_API CharImageType::Pointer subsample_image (CharImageType::Pointer&, int, int, int, float);
 template PLMBASE_API UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
-template PLMBASE_API Int32ImageType::Pointer subsample_image (Int32ImageType::Pointer&, int, int, int, float);
+template PLMBASE_API ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
 template PLMBASE_API UInt32ImageType::Pointer subsample_image (UInt32ImageType::Pointer&, int, int, int, float);
+template PLMBASE_API Int32ImageType::Pointer subsample_image (Int32ImageType::Pointer&, int, int, int, float);
 template PLMBASE_API FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);
+template PLMBASE_API DoubleImageType::Pointer subsample_image (DoubleImageType::Pointer&, int, int, int, float);
