@@ -295,27 +295,22 @@ Dcmtk_loader::image_load ()
        Don't load these. */
     if (samp_per_pix != 1) {
         lprintf ("Sorry, couldn't load image: samp_per_pix\n");
-	//return pli;
         return;
     }
     if (strcmp (phot_interp, "MONOCHROME2")) {
         lprintf ("Sorry, couldn't load image: phot_interp\n");
-	//return pli;
         return;
     }
-    if (bits_alloc != 16) {
+    if (bits_alloc != 16 && bits_alloc != 8) {
         lprintf ("Sorry, couldn't load image: bits_alloc\n");
-	//return pli;
         return;
     }
     if (bits_stored != high_bit + 1) {
         lprintf ("Sorry, couldn't load image: bits_stored/high_bit\n");
-	//return pli;
         return;
     }
     if (pixel_rep != 0 && pixel_rep != 1) {
         lprintf ("Sorry, couldn't load image: pixel_rep\n");
-	//return pli;
         return;
     }
 
@@ -343,9 +338,7 @@ Dcmtk_loader::image_load ()
 	}
 
 	/* Load the slice image data into volume */
-	const uint16_t* pixel_data;
 	df = (*best_slice_it).get();
-	unsigned long length;
 
 #if defined (commentout)
 	lprintf ("Loading slice z=%f at location z=%f\n",
@@ -354,7 +347,15 @@ Dcmtk_loader::image_load ()
 
         /* GCS FIX: This should probably use DicomImage::getOutputData()
            cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
-	rc = df->get_uint16_array (DCM_PixelData, &pixel_data, &length);
+	const uint8_t* pixel_data_8;
+	const uint16_t* pixel_data_16;
+	unsigned long length;
+        rc = 0;
+        if (bits_alloc == 8) {
+            rc = df->get_uint8_array (DCM_PixelData, &pixel_data_8, &length);
+        } else if (bits_alloc == 16) {
+            rc = df->get_uint16_array (DCM_PixelData, &pixel_data_16, &length);
+        }
 	if (!rc) {
 	    print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
 	}
@@ -364,9 +365,16 @@ Dcmtk_loader::image_load ()
 	}
 
         /* Apply slope and offset */
-        for (plm_long j = 0; j < (plm_long) length; j++) {
-            img[j] = rescale_slope * (int16_t) pixel_data[j] 
-                + rescale_intercept;
+        if (bits_alloc == 8) {
+            for (plm_long j = 0; j < (plm_long) length; j++) {
+                img[j] = rescale_slope * (int8_t) pixel_data_8[j] 
+                    + rescale_intercept;
+            }
+        } else if (bits_alloc == 16) {
+            for (plm_long j = 0; j < (plm_long) length; j++) {
+                img[j] = rescale_slope * (int16_t) pixel_data_16[j] 
+                    + rescale_intercept;
+            }
         }
 	img += length;
 

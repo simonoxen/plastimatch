@@ -35,6 +35,8 @@ public:
     bool get_uint16 (const DcmTagKey& tag_key, uint16_t* val) const;
     bool get_float (const DcmTagKey& tag_key, float* val) const;
     bool get_ds_float (const DcmTagKey& tag_key, float* val) const;
+    bool get_uint8_array (const DcmTagKey& tag_key, 
+	const uint8_t** val, unsigned long* count) const;
     bool get_uint16_array (const DcmTagKey& tag_key, 
 	const uint16_t** val, unsigned long* count) const;
     bool get_int16_array (const DcmTagKey& tag_key, 

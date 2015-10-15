@@ -111,6 +111,19 @@ Dcmtk_file::get_ds_float (const DcmTagKey& tag_key, float* val) const
 }
 
 bool
+Dcmtk_file::get_uint8_array (const DcmTagKey& tag_key, 
+    const uint8_t** val, unsigned long* count) const
+{
+    const Uint8* foo;
+    OFCondition rc = d_ptr->m_dfile->getDataset()->findAndGetUint8Array (
+	tag_key, foo, count, OFFalse);
+    if (val) {
+        *val = foo;
+    }
+    return rc.good();
+}
+
+bool
 Dcmtk_file::get_int16_array (const DcmTagKey& tag_key, 
     const int16_t** val, unsigned long* count) const
 {
