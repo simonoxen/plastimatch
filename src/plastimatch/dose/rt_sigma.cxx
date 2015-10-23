@@ -395,9 +395,12 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
 
 void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy, int* margins)
 {
-    /* Method of the Hong's algorithm - See Hong's paper */
+		/* There are two methods for computing the beam spread due to a range compensator */
+    /* Method1 rc_MC_model:  Hong's algorithm (Highland)- See Hong's paper */
+		/* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
-    /* sigma = sigma_srm * (zPOI - zmax_rgc + rgc - rgc_effective) */
+		double PMMA_density = 1.19;
+		double STPR_PMMA = 0.98;
     
     if (energy < 1)
     {
@@ -406,22 +409,21 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     }
 
     /* Range value in lucite extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
-    double range = 10 * getrange(energy);
-    
-    /* lucite sigma0 (in rads) computing- From the figure A2 of the Hong's paper (be careful, in this paper the fit shows sigma0^2)*/
-    double sigma0;
-    if (range > 150)
-    {
-        sigma0 = 0.05464 + 5.8348E-6 * range -5.21006E-9 * range * range;
-    }
-    else 
-    {
-        sigma0 = 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;;
-    }
-	sigma0 = sigma0/0.915; // MD Fix... works only the hong's test
+    double range = 10 * getrange((double) energy);
+
+		/* Theta0 computation */
+		double theta0 = 0;
+
+		if (beam->get_rc_MC_model() != 'y')
+		{
+				theta0 = get_theta0_Highland(range);
+		}
+		else
+		{
+				theta0 = get_theta0_MC(energy);
+		}
 
     /* sigma calculation and length computations */
-    
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
     float* rc_img = (float*) beam->get_aperture()->get_range_compensator_volume ()->img;
@@ -445,15 +447,19 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 
     double rc_over_range;
     double rc_eff;
-    double sigma_srm;
+    double theta_srm;
     double sigma_max = 0;
 
-    float z_POI;
-    float z_eff;
+    float POI;
+    float l_eff;
     double sigma;
 
     /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     double nrm[3] = {0,0,0};
+		
+		/* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
+    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
+    vec3_normalize1(nrm);
 
     if (margins[0] == 0 && margins[1] == 0)
     {
@@ -461,37 +467,45 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
         {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
 			if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
-            {
-                rc_over_range = rc_img[i] *1.19 *0.98 / range; // energy is >1, so range > 0 (range is in water: rho * WER)
+            {      
+                Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
+	        
+                proj = -vec3_dot(ray_data->ray, nrm);
+								if (proj == 0) 
+								{ 
+										printf("error: some rays are perpendicular to the beam axis \n");
+										return;
+								}
+
+                dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
+
+                rc_over_range =  rc_img[i] / proj * PMMA_density * STPR_PMMA / range; // energy is >1, so range > 0 (range is in water: rho * WER)
 	
                 if (rc_over_range < 1)
                 {
-                    sigma_srm = sigma0 * rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
-
-                    /* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
-                    rc_eff = get_rc_eff(rc_over_range);
-        
-                    Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
-	        
-                    /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
-                    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
-                    vec3_normalize1(nrm);
-	        
-                    proj = -vec3_dot(ray_data->ray, nrm);
-                    dist_cp = vec3_dist(ray_data->cp, beam->get_source_position()) * proj;
+										if (beam->get_rc_MC_model() != 'y')
+										{
+												theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+												rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[i];
+										}
+										else
+										{
+												theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+												rc_eff = get_scat_or_MC(rc_over_range) * rc_img[i];
+										}
 	
                     for (int j = 0; j < dim[2]; j++)
                     {
                         idx = dim[0]*dim[1]*j + i;
                         if ( rgl_img[idx] < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
                         {
-                            z_POI = proj * (dist_cp + (float) j * sigma_vol->get_vol()->spacing[2]);
-                            z_eff = beam->get_aperture()->get_distance() + proj * rc_eff;
+                            POI = dist_cp + (float) j * sigma_vol->get_vol()->spacing[2] - beam->get_aperture()->get_distance() / proj;
+                            l_eff = rc_eff * proj;
 	            
-                            /* sigma = sigma_srm * (z_POI- z_eff) */
-                            if (z_POI - z_eff >= 0)
+                            /* sigma = sigma_srm * (z_POI + z_eff) */
+                            if (POI + l_eff >= 0)
                             {
-                                sigma = sigma_srm * (z_POI - z_eff);
+                                sigma = theta_srm * (POI + l_eff);
                             }
                             else
                             {
@@ -530,35 +544,44 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                 /* calculation of sigma_srm, see graph A3 from the Hong's paper */
                 if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[idx2d_sm] > 0))
                 {
-                    rc_over_range = rc_img[idx2d_sm] / range; // energy is >1, so range > 0
+										Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
+	        
+										proj = -vec3_dot(ray_data->ray, nrm);
+
+										if (proj == 0) 
+										{ 
+												printf("error: some rays are perpendicular to the beam axis \n");
+												return;
+										}
+
+										dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
+                    rc_over_range = rc_img[idx2d_sm] / proj * PMMA_density * STPR_PMMA / range; // energy is >1, so range > 0
+
                     if (rc_over_range < 1)
                     {
-                        sigma_srm = sigma0 * rc_over_range * ( 0.26232 + 0.64298 * rc_over_range + 0.0952393 * rc_over_range * rc_over_range);
-
-                        /* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
-                        rc_eff = get_rc_eff(rc_over_range);
-        
-                        Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
-	        
-                        /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
-                        vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
-                        vec3_normalize1(nrm);
-	        
-                        proj = -vec3_dot(ray_data->ray, nrm);
-                        dist_cp = vec3_dist(ray_data->cp, beam->get_source_position()) * proj;
+												if (beam->get_rc_MC_model() != 'y')
+												{
+														theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+														rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[idx2d_sm];
+												}
+												else
+												{
+														theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+														rc_eff = get_scat_or_MC(rc_over_range) * rc_img[idx2d_sm];
+												}
 
                         for (int k = 0; k < dim[2]; k++)
                         {
                             idx = dim[0]*dim[1]*k + idx2d_lg;
                             if ( (rgl_img[idx] + rc_img[idx2d_sm]) < range +10) // +10 because we calculate sigma_rg_compensator a little bit farther after the range to be sure (+1 cm)
                             {
-                                z_POI = proj * (dist_cp + (float) k * sigma_vol->get_vol()->spacing[2]);
-                                z_eff = beam->get_aperture()->get_distance() + proj * rc_eff;
+                                POI = dist_cp + (float) k * sigma_vol->get_vol()->spacing[2] - beam->get_aperture()->get_distance() / proj;
+                                l_eff =  rc_eff * proj;
 		            
                                 /* sigma = sigma_srm * (z_POI- z_eff) */
-                                if (z_POI - z_eff >= 0)
+                                if (POI + l_eff >= 0)
                                 {
-                                    sigma = sigma_srm * (z_POI - z_eff);
+                                    sigma = theta_srm * (POI - l_eff);
                                 }
                                 else
                                 {
@@ -587,36 +610,4 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 	
     printf("Sigma range compensator computed - sigma_rc_max = %lg mm.\n", sigma_max);
     return;
-}
-
-double get_rc_eff(double rc_over_range) /* Values from the table A3 of the Hong's algorithm */
-{
-    if (rc_over_range >= 0 && rc_over_range < 0.5)
-    {
-        return rc_over_range * ( 0.49 + 0.060 / 0.5 * rc_over_range );
-    }
-    else if (rc_over_range >= 0.5 && rc_over_range <0.8)
-    {
-        return rc_over_range * ( 0.55 + 0.085 / 0.3 * (rc_over_range-0.5) );
-    }
-    else if (rc_over_range >= 0.8 && rc_over_range <0.9)
-    {
-        return rc_over_range * (0.635 + 0.055 / 0.1 * (rc_over_range-0.8) );
-    }
-    else if (rc_over_range >= 0.9 && rc_over_range <0.95)
-    {
-        return rc_over_range * (0.690 + (rc_over_range-0.9) );
-    }
-    else if (rc_over_range >= 0.95 && rc_over_range <= 1)
-    {
-        return rc_over_range * (0.740 + 0.26/0.05 * (rc_over_range-0.95) );
-    }
-    else if (rc_over_range > 1)
-    {
-        return 1;
-    }
-    else
-    {
-        return 0;
-    }
 }

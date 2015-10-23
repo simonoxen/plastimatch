@@ -17,6 +17,4 @@ void compute_sigma_source(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan
 
 void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam* beam, float energy, int* margins);
 
-double get_rc_eff(double rc_over_range);
-
 #endif

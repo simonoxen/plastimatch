@@ -106,6 +106,11 @@ public:
       as minimum and maximum depth (in mm) */
     void set_sobp_prescription_min_max (float d_min, float d_max);
 
+		/*! \brief Get "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
+    char get_rc_MC_model () const;
+    /*! \brief Set "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
+    void set_rc_MC_model (char rc_MC_model);
+
     /* Set source size in mm */
     void set_source_size(float source_size);
 

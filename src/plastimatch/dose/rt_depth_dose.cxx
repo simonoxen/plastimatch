@@ -145,12 +145,14 @@ Rt_depth_dose::load_txt (const char* fn)
     FILE* fp = fopen (fn, "r");
 
     while (fgets (linebuf, 128, fp)) {
-        float range, dose, dose_int;
+        float range, dose;
+				float dose_int =0;
 
         if (2 != sscanf (linebuf, "%f %f", &range, &dose)) {
             break;
         }
 
+				dose_int += dose;
         this->num_samples++;
         this->d_lut = (float*) realloc (
                         this->d_lut,
@@ -159,13 +161,13 @@ Rt_depth_dose::load_txt (const char* fn)
         this->e_lut = (float*) realloc (
                         this->e_lut,
                         this->num_samples * sizeof(float));
-		this->f_lut = (float*) realloc (
+				this->f_lut = (float*) realloc (
 						this->f_lut,
 						this->num_samples * sizeof(float));
 
         this->d_lut[this->num_samples-1] = range;
         this->e_lut[this->num_samples-1] = dose;
-		this->f_lut[this->num_samples-1] = dose_int;
+				this->f_lut[this->num_samples-1] = dose_int;
         this->dmax = range;         /* Assume entries are sorted */
     }
 

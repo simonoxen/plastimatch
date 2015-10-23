@@ -453,6 +453,13 @@ Rt_parms::set_key_value (
             }
             rt_beam->set_aperture_spacing (ap_spacing);
         }
+				else if (key == "range_comp_mc_model") {
+            if (val.length() >= 1) {
+                rt_beam->set_rc_MC_model (val[0]);
+            } else {
+                goto error_exit;
+            } 
+        }
         else if (key == "source_size") {
             float source_size;
             if (sscanf (val.c_str(), "%f", &source_size) != 1) {

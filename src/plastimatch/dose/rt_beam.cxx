@@ -44,6 +44,7 @@ public:
     float z_max;
     float z_step;
 
+		char rc_MC_model;
     float source_size;
 
     Aperture::Pointer aperture;
@@ -103,6 +104,7 @@ public:
         this->z_max = 100.f;
         this->z_step = 1.f;
 
+				this->rc_MC_model = 'n';
         this->source_size = 0.f;
 
         aperture = Aperture::New();
@@ -458,6 +460,18 @@ Rt_beam::set_sobp_prescription_min_max (float d_min, float d_max)
     d_ptr->sobp->set_prescription_min_max (
         d_ptr->prescription_d_min - d_ptr->proximal_margin,
         d_ptr->prescription_d_max + d_ptr->distal_margin);
+}
+
+void
+Rt_beam::set_rc_MC_model (char rc_MC_model)
+{
+    d_ptr->rc_MC_model = rc_MC_model;
+}
+
+char
+Rt_beam::get_rc_MC_model (void) const
+{
+    return d_ptr->rc_MC_model;
 }
 
 void
