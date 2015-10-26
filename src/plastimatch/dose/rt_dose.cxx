@@ -831,8 +831,7 @@ compute_dose_ray_desplanques (
     Rpl_volume* ct_rpl_volume, 
     Rt_beam* beam, 
     Volume::Pointer final_dose_volume, 
-    const Rt_depth_dose* ppp, 
-    float normalization_dose)
+    const Rt_depth_dose* ppp)
 {
     if (ppp->weight <= 0)
     {
@@ -861,8 +860,6 @@ compute_dose_ray_desplanques (
     double tmp[3] = {0.0f, 0.0f, 0.0f};
 
     double PB_density = 1/(rpl_volume->get_aperture()->get_spacing(0) * rpl_volume->get_aperture()->get_spacing(1));
-
-    double dose_norm = get_dose_norm('f', ppp->E0, PB_density); //the Hong algorithm has no PB density, everything depends on the number of sectors
 
     double ct_density = 0;
     double WER = 0;
@@ -1006,7 +1003,7 @@ compute_dose_ray_desplanques (
                         idx_room = ijk_ct[0] + (ct_vol->dim[0] * (ijk_ct[1] + ct_vol->dim[1] * ijk_ct[2]));
                         if (ijk_ct[0] < 0 || ijk_ct[1] < 0 || ijk_ct[2] < 0 || ijk_ct[0] >= ct_vol->dim[0] || ijk_ct[1] >= ct_vol->dim[1] || ijk_ct[2] >= ct_vol->dim[2])
                         {
-                            WER = 0.88; // pixel outside of the CT = air
+                            WER = 0.88; // pixel outside of the CT = air, MD Fix: external constant
                         }
                         else
                         {
@@ -1030,12 +1027,10 @@ compute_dose_ray_desplanques (
                         }
                         // SOBP is weighted by the weight of the 
                         // pristine peak
-                        img[idx] += normalization_dose 
-                            * central_axis_dose 
+                        img[idx] += central_axis_dose 
                             * WER // dose = dose_w * WER
                             * off_axis_factor 
-                            * (float) ppp->weight 
-                            / dose_norm;
+                            * (float) ppp->weight;
                     }			
                 }
             }
@@ -1116,8 +1111,7 @@ compute_dose_ray_sharp (
     Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
     const Rt_depth_dose* ppp, 
-    const int* margins, 
-    float normalization_dose
+    const int* margins
 )
 {
     int ap_ij_lg[2] = {0,0};
@@ -1141,9 +1135,6 @@ compute_dose_ray_sharp (
     float off_axis_factor = 0;
 
     double PB_density = 1 / (rpl_volume->get_aperture()->get_spacing(0) * rpl_volume->get_aperture()->get_spacing(1));
-
-    double dose_norm = get_dose_norm ('g', ppp->E0, PB_density);
-    //the Hong algorithm has no PB density, everything depends on the number of sectors
 
     int idx2d_sm = 0;
     int idx2d_lg = 0;
@@ -1324,12 +1315,10 @@ compute_dose_ray_sharp (
                             WER = compute_PrWER_from_HU(ct_img[ijk_ct[2] * dim_ct[0]*dim_ct[1] + ijk_ct[1] * dim_ct[0] + ijk_ct[0] ] );
                         }
 
-                        rpl_dose_img[idx3d_travel] += normalization_dose 
-                            * central_axis_dose 
+                        rpl_dose_img[idx3d_travel] += central_axis_dose 
                             * WER
                             * off_axis_factor 
-                            * (float) ppp->weight 
-                            / dose_norm; 
+                            * (float) ppp->weight;
                     } //for j1
                 } //for i1
             } // for k
@@ -1352,8 +1341,6 @@ void compute_dose_ray_shackleford (
     double xyz_travel[4] = {0,0,0,1};
     double tmp_xy[4] = {0,0,0,1};
     double tmp_cst = 0;
-
-    double dose_norm = get_dose_norm('h', ppp->E0, 1); //the Hong algorithm has no PB density, everything depends on the number of sectors
 
     int idx = 0;
 	
@@ -1443,12 +1430,11 @@ void compute_dose_ray_shackleford (
                                 // * is normalized to a radius =1, 
                                 // need to be adapted to a 3_sigma 
                                 // radius circle
-                                dose_img[idx] += 
-                                    plan->get_normalization_dose() 
-                                    * central_sector_dose
+                                dose_img[idx] +=  
+                                    central_sector_dose
                                     * compute_PrWER_from_HU(HU)
                                     * get_off_axis(radius, dr, sigma_3/3) 
-                                    * ppp->weight / dose_norm; 
+                                    * ppp->weight; 
                             }
                         }
                     }

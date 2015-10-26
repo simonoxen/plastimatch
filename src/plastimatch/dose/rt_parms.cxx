@@ -289,7 +289,21 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%f", &norm_dose) != 1) {
                 goto error_exit;
             }
+						if (norm_dose <= 0) {
+							goto error_exit;
+						}
             d_ptr->rt_plan->set_normalization_dose (norm_dose);
+						d_ptr->rt_plan->set_have_dose_norm(true);
+        }
+				else if (key == "ref_dose_point") {
+            float rdp[3];
+            int rc = sscanf (val.c_str(), "%f %f %f", 
+                &rdp[0], &rdp[1], &rdp[2]);
+            if (rc != 3) {
+                goto error_exit;
+            }
+            d_ptr->rt_plan->set_ref_dose_point (rdp);
+						d_ptr->rt_plan->set_have_ref_dose_point(true);
         }
         else {
             goto error_exit;

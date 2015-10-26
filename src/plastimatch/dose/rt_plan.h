@@ -69,6 +69,22 @@ public:
     void set_normalization_dose (float normalization_dose);
     float get_normalization_dose ();
 
+    /* Get the position of the beam isocenter in world coordinates. */
+    const float* get_ref_dose_point () const;
+    /* Get the x, y, or z coordinate of the beam source 
+      in world coordinates. */
+    float get_ref_dose_point (int dim) const;
+    /* Set the position of the beam isocenter in world coordinates. */
+    void set_ref_dose_point (const float rdp[3]);
+    /* Set the position of the beam isocenter in world coordinates. */
+    void set_ref_dose_point (const double rdp[3]);
+
+		/* Set / Get the declaration of the normalization conditions*/
+		void set_have_ref_dose_point(bool have_rdp);
+		bool get_have_ref_dose_point();
+		void set_have_dose_norm(bool have_dose_norm);
+		bool get_have_dose_norm();
+
     /* Compute dose */
     void propagate_target_to_beams ();
     bool prepare_beam_for_calc (Rt_beam *beam);

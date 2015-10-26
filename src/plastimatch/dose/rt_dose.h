@@ -58,8 +58,7 @@ void compute_dose_ray_desplanques (
     Rpl_volume* ct_vol_density, 
     Rt_beam* beam, 
     Volume::Pointer final_dose_volume, 
-    const Rt_depth_dose* ppp, 
-    float normalization_dose
+    const Rt_depth_dose* ppp
 );
 void compute_dose_ray_sharp (
     const Volume::Pointer ct_vol, 
@@ -70,8 +69,7 @@ void compute_dose_ray_sharp (
     Rpl_volume* rpl_dose_volume, 
     const Aperture::Pointer ap, 
     const Rt_depth_dose* ppp, 
-    const int* margins, 
-    float normalization_dose
+    const int* margins
 );
 void compute_dose_ray_shackleford (
     Volume::Pointer dose_volume, 
@@ -84,7 +82,7 @@ void compute_dose_ray_shackleford (
     int theta_sample
 );
 
-double get_dose_norm(char flavor, double energy, double PB_density);
+double get_dose_norm(char flavor, double energy, double PB_density); /* MD Fix: Is that still useful? */
 void add_rcomp_length_to_rpl_volume(Rt_beam* beam);
 
 #endif

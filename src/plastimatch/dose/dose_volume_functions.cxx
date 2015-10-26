@@ -246,3 +246,67 @@ double get_off_axis(double radius, double dr, double sigma)
     return M_PI / 8.0 * sigma * ( exp(- (radius - dr)*(radius -dr) / (2 * sigma * sigma)) -  exp(- (radius + dr)*(radius + dr) / (2 * sigma * sigma)));
 }
 
+/* MD Fix: don't consider any cosines directions */
+void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose)
+{
+	int idx = 0;
+	double norm = 0;
+	int ijk_max[3] = {0,0,0};
+
+	float* img = (float*) dose_volume->img;
+
+	for(int i = 0; i < dose_volume->dim[0]; i++)
+	{
+			for(int j = 0; j < dose_volume->dim[1]; j++)
+			{
+					for(int k = 0; k < dose_volume->dim[2]; k++)
+					{
+							idx = i + (dose_volume->dim[0] * (j + dose_volume->dim[1] * k));
+
+							if (img[idx] > norm)
+							{
+									norm = img[idx];
+									ijk_max[0] = i;
+									ijk_max[1] = j;
+									ijk_max[2] = k;
+							}
+					}
+			}
+	}
+	if (norm > 0)
+	{
+				for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
+				{
+						img[i] = img[i] / norm * dose;
+				}
+
+				printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\n", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
+				printf("Dose normalized at the maximum to ");
+	}
+	else
+	{
+			printf("Dose is null in the entire volume. Please check your input conditions.\n");
+	}
+}
+
+/* MD Fix: don't consider any cosines directions */
+void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp)
+{
+		double norm = dose_volume->get_ijk_value(rdp_ijk);
+		float* img = (float*) dose_volume->img;
+
+		if (norm > 0)
+		{
+				for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
+				{
+						img[i] = img[i] / norm * dose;
+				}
+				printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\n", rdp[0], rdp[1], rdp[2], norm);
+				printf("Dose normalized at the reference dose point to ");
+		}
+		else
+		{
+				printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
+				dose_normalization_to_dose(dose_volume, dose);
+		}
+}
