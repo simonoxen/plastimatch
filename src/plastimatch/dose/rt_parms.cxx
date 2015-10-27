@@ -305,6 +305,13 @@ Rt_parms::set_key_value (
             d_ptr->rt_plan->set_ref_dose_point (rdp);
 						d_ptr->rt_plan->set_have_ref_dose_point(true);
         }
+				else if (key == "non_normalized_dose") {
+            if (val.length() >= 1) {
+                d_ptr->rt_plan->set_non_norm_dose (val[0]);
+            } else {
+                goto error_exit;
+            } 
+        }
         else {
             goto error_exit;
         }

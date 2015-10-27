@@ -38,6 +38,7 @@ public:
 		bool have_rdp;
 		bool have_dose_norm;
     float normalization_dose; // dose prescription
+		char non_norm_dose;
     float depth_dose_max;
 
     /* Filenames for input and output images */
@@ -66,8 +67,9 @@ public:
         this->rdp[2] = 0.f;
 				this->have_rdp = false;
 				this->have_dose_norm = false;
-        normalization_dose = 100.f;
-        depth_dose_max = 1.f;
+        this->normalization_dose = 100.f;
+				this->non_norm_dose = 'n';
+        this->depth_dose_max = 1.f;
         
         patient = Plm_image::New();
         target = Plm_image::New();
@@ -295,6 +297,18 @@ bool
 Rt_plan::get_have_dose_norm()
 {
 		return d_ptr->have_dose_norm;
+}
+
+char 
+Rt_plan::get_non_norm_dose () const
+{
+    return d_ptr->non_norm_dose;
+}
+    
+void 
+Rt_plan::set_non_norm_dose (char non_norm_dose)
+{
+  d_ptr->non_norm_dose = non_norm_dose;
 }
 
 void
@@ -720,32 +734,48 @@ Rt_plan::compute_dose (Rt_beam *beam)
     }
 
 		/* Dose normalization process*/
-		if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
+		if (this->get_non_norm_dose() != 'y')
 		{
-				float rdp_ijk[3] = {0,0,0};
-				float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
-				rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
-				rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
-				rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
-			
-				if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
+				if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
 				{
-						printf("Dose normalized to the dose reference point.\n");
-						dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp); // if no normalization dose, norm_dose = 1 by default
-						if (this->get_have_dose_norm())
+						float rdp_ijk[3] = {0,0,0};
+						float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
+						rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
+						rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
+						rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
+			
+						if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
 						{
-								printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+								printf("Dose normalized to the dose reference point.\n");
+								dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp); // if no normalization dose, norm_dose = 1 by default
+								if (this->get_have_dose_norm())
+								{
+										printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+								}
+								else
+								{
+										printf("%lg x 100%%.\n", beam->get_beam_weight());
+								}
+								printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
 						}
 						else
 						{
-								printf("%lg x 100%%.\n", beam->get_beam_weight());
+								printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
+								dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose());
+								if (this->get_have_dose_norm())
+								{
+										printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+								}
+								else
+								{
+										printf("%lg x 100%%.\n", beam->get_beam_weight());
+								}
+								printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
 						}
-						printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
 				}
-				else
-				{
-						printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
-						dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose());
+				else // case 2: no red dose point defined
+				{				
+						dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose()); // normalization_dose = 1 if no dose_prescription is set
 						if (this->get_have_dose_norm())
 						{
 								printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
@@ -757,18 +787,12 @@ Rt_plan::compute_dose (Rt_beam *beam)
 						printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
 				}
 		}
-		else // case 2: no red dose point defined
-		{				
-				dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose()); // normalization_dose = 1 if no dose_prescription is set
-				if (this->get_have_dose_norm())
+		else // raw dose, dose not normalized
+		{
+				for (int i = 0; i < dose_vol->dim[0] * dose_vol->dim[1] * dose_vol->dim[2]; i++)
 				{
-						printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+						dose_img[i] *= beam->get_beam_weight();
 				}
-				else
-				{
-						printf("%lg x 100%%.\n", beam->get_beam_weight());
-				}
-				printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
 		}
 
     Plm_image::Pointer dose = Plm_image::New();
@@ -944,20 +968,27 @@ Rt_plan::compute_plan ()
     }
 
 		/* normalization of the dose volume to 1 at the max if no dose reference point is set */
-		if (!this->get_have_ref_dose_point())
+		if (this->get_non_norm_dose() != 'y')
 		{
-				if (this->get_have_dose_norm())
+				if (!this->get_have_ref_dose_point())
 				{
-						printf("No reference dose point.\n");
-						dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
-						printf("%lg Gy.\nBeam weights are accounted", this->get_normalization_dose());
+						if (this->get_have_dose_norm())
+						{
+								printf("No reference dose point.\n");
+								dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
+								printf("%lg Gy.\nBeam weights are accounted", this->get_normalization_dose());
+						}
+						else
+						{
+								printf("No reference dose point and no dose prescription.\n");
+								dose_normalization_to_dose(dose_vol, 100);
+								printf("100%% on the total dose volume.\n Beam weights are accounted.\n");
+						}
 				}
-				else
-				{
-						printf("No reference dose point and no dose prescription.\n");
-						dose_normalization_to_dose(dose_vol, 100);
-						printf("100%% on the total dose volume.\n Beam weights are accounted.\n");
-				}
+		}
+		else 
+		{
+				printf("Raw dose computed, the dose is not normalized.\nOnly the beam weights are considered.\n");
 		}
 
     /* Save dose output */

@@ -85,6 +85,11 @@ public:
 		void set_have_dose_norm(bool have_dose_norm);
 		bool get_have_dose_norm();
 
+		/*! \brief Get the "non normalized" dose option */
+    char get_non_norm_dose () const;
+    /*! \brief Set "non normalized" dose option */
+    void set_non_norm_dose (char non_norm_dose);
+
     /* Compute dose */
     void propagate_target_to_beams ();
     bool prepare_beam_for_calc (Rt_beam *beam);
