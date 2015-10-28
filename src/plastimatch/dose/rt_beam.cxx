@@ -60,6 +60,8 @@ public:
     std::string sigma_out;
     std::string wed_out;
 
+		std::string beam_line_type;
+
     /* When a new sobp is created from an existing sobp, 
        the peaks are copied (not manual).  Modifications of 
        an implicitly defined sobp (by adding a peak) will 
@@ -118,6 +120,8 @@ public:
         this->range_compensator_out = "";
         this->sigma_out = "";
         this->wed_out = "";
+
+				this->beam_line_type = "passive";
 
         this->have_copied_peaks = false;
 		this->have_manual_peaks = false;
@@ -792,6 +796,25 @@ void
 Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
 {
     d_ptr->have_manual_peaks = have_manual_peaks;
+}
+
+void 
+Rt_beam::set_beam_line_type(std::string str)
+{
+		if (str == "active")
+		{
+				d_ptr->beam_line_type = str;
+		}
+		else
+		{
+				d_ptr->beam_line_type = "passive";
+		}
+}
+
+std::string
+Rt_beam::get_beam_line_type()
+{
+		return d_ptr->beam_line_type;
 }
 
 bool 

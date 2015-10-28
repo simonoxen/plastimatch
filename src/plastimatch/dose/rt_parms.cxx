@@ -329,6 +329,9 @@ Rt_parms::set_key_value (
                 goto error_exit;
             } 
         }
+				else if (key == "beam_line") {
+            rt_beam->set_beam_line_type (val);
+        }
         else if (key == "homo_approx") {
             if (val.length() >= 1) {
                 rt_beam->set_homo_approx (val[0]);

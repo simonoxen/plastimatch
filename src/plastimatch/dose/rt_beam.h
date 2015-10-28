@@ -6,6 +6,7 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include <vector>
 
 #include "aperture.h"
 #include "rpl_volume.h"
@@ -208,8 +209,11 @@ public:
     void set_have_copied_peaks(bool have_copied_peaks);
     bool get_have_copied_peaks();
 
-	void set_have_manual_peaks(bool have_manual_peaks);
-	bool get_have_manual_peaks();
+		void set_have_manual_peaks(bool have_manual_peaks);
+		bool get_have_manual_peaks();
+
+		void set_beam_line_type(std::string str);
+    std::string get_beam_line_type();
 
     void copy_sobp(Rt_sobp::Pointer sobp);
 
@@ -229,6 +233,9 @@ public:
 
     /* aperture 3D volume to avoid artefacts*/
     Rpl_volume* aperture_vol;
+
+		/* particle number map for active scanning systems */
+		 std::vector<double> num_particles;
 
 private:
     bool load_xio (const char* fn);

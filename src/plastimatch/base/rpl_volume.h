@@ -73,12 +73,12 @@ public:
     double get_max_wed ();
     double get_min_wed ();
 
-	void compute_rpl_ct_density (); // compute density volume
-	void compute_rpl_HU ();	// compute HU volume
+		void compute_rpl_ct_density (); // compute density volume
+		void compute_rpl_HU ();	// compute HU volume
     void compute_rpl_void ();	// compute void volume
 
-	void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
-	void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
+		void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
+		void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
 
     double compute_farthest_penetrating_ray_on_nrm(float range); // return the distance from aperture to the farthest which rg_lenght > range
 
@@ -88,7 +88,7 @@ public:
     void compute_beam_modifiers (Volume *seg_vol, float background);
     void compute_aperture (Volume *tgt_vol, float background);
 
-	void compute_volume_aperture(Aperture::Pointer ap);
+		void compute_volume_aperture(Aperture::Pointer ap);
 
     void apply_beam_modifiers ();
 

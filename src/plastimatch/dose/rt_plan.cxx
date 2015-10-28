@@ -452,6 +452,23 @@ Rt_plan::compute_dose (Rt_beam *beam)
     double time_dose_misc = 0.0;
     double time_dose_reformat = 0.0;
 
+		/* Definition of the fluence map, for passive scattering the map is homogeneous */
+		/* if (beam->get_beam_line_type() == "passive")
+		{ */
+				for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
+				{
+					beam->num_particles.push_back(1);
+				}
+		/*
+		}
+		else
+		{
+				for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
+				{
+					beam->num_particles.push_back(fluence[i]);
+				}
+		} */
+
     printf ("Computing rpl_ct\n");
     beam->rpl_ct_vol_HU->compute_rpl_HU ();
 
@@ -865,49 +882,52 @@ Rt_plan::compute_plan ()
         if (!this->prepare_beam_for_calc (beam)) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-        if (beam->get_range_compensator_in() !="")
-        {
-            Plm_image::Pointer rgc = Plm_image::New (beam->get_range_compensator_in(), PLM_IMG_TYPE_ITK_FLOAT);
-            beam->get_aperture()->set_range_compensator_image(beam->get_range_compensator_in().c_str());
-            beam->get_aperture()->set_range_compensator_volume(rgc->get_volume_float());
-        }
-        else
-        {
-            /* handle auto-generated beam modifiers */
-            if (d_ptr->target_fn != "") {
-                printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
-                this->set_target (d_ptr->target_fn);
-                beam->compute_beam_modifiers ();
-                beam->apply_beam_modifiers ();
-            }
-        }
+				if (beam->get_beam_line_type() == "passive")
+				{
+						if (beam->get_range_compensator_in() !="")
+						{
+								Plm_image::Pointer rgc = Plm_image::New (beam->get_range_compensator_in(), PLM_IMG_TYPE_ITK_FLOAT);
+								beam->get_aperture()->set_range_compensator_image(beam->get_range_compensator_in().c_str());
+								beam->get_aperture()->set_range_compensator_volume(rgc->get_volume_float());
+						}
+						else
+						{
+								/* handle auto-generated beam modifiers */
+								if (d_ptr->target_fn != "") {
+										printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
+										this->set_target (d_ptr->target_fn);
+										beam->compute_beam_modifiers ();
+										beam->apply_beam_modifiers ();
+								}
+						}
 	
-        /* generate depth dose curve, might be manual peaks or 
-           optimized based on prescription, or automatic based on target */
+						/* generate depth dose curve, might be manual peaks or 
+							 optimized based on prescription, or automatic based on target */
 
-        /* Extension of the limits of the PTV - add margins */
+						/* Extension of the limits of the PTV - add margins */
 
-        beam->set_proximal_margin (beam->get_proximal_margin());
-        /* MDFIX: is it twice the same operation?? */
-        beam->set_distal_margin (beam->get_distal_margin());
+						beam->set_proximal_margin (beam->get_proximal_margin());
+						/* MDFIX: is it twice the same operation?? */
+						beam->set_distal_margin (beam->get_distal_margin());
 
-        if ((beam->get_have_copied_peaks() == false && beam->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_have_manual_peaks() == true)) {
-            /* Manually specified, so do not optimize */
-            if (!beam->generate ()) {
-                return PLM_ERROR;
-            }
-        } else if (d_ptr->target_fn != "" && !beam->get_have_prescription()) {
-            /* Optimize based on target volume */
-            Rpl_volume *rpl_vol = beam->rpl_vol;
-            beam->set_sobp_prescription_min_max (
-                rpl_vol->get_min_wed(), rpl_vol->get_max_wed());
-            beam->optimize_sobp ();
-        } else {
-            /* Optimize based on manually specified range and modulation */
-            beam->set_sobp_prescription_min_max (
-                beam->get_prescription_min(), beam->get_prescription_max());
-            beam->optimize_sobp ();
-        }
+						if ((beam->get_have_copied_peaks() == false && beam->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_have_manual_peaks() == true)) {
+								/* Manually specified, so do not optimize */
+								if (!beam->generate ()) {
+										return PLM_ERROR;
+								}
+						} else if (d_ptr->target_fn != "" && !beam->get_have_prescription()) {
+								/* Optimize based on target volume */
+								Rpl_volume *rpl_vol = beam->rpl_vol;
+								beam->set_sobp_prescription_min_max (
+										rpl_vol->get_min_wed(), rpl_vol->get_max_wed());
+								beam->optimize_sobp ();
+						} else {
+								/* Optimize based on manually specified range and modulation */
+								beam->set_sobp_prescription_min_max (
+										beam->get_prescription_min(), beam->get_prescription_max());
+								beam->optimize_sobp ();
+						}
+				}
 
         /* Generate dose */
         this->set_debug (true);
@@ -920,7 +940,7 @@ Rt_plan::compute_plan ()
             ap->save_image (beam->get_aperture_out().c_str());
         }
 
-        if (beam->get_range_compensator_out() != "") {
+        if (beam->get_range_compensator_out() != "" && beam->get_beam_line_type() == "passive") {
             Rpl_volume *rpl_vol = beam->rpl_vol;
             Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
             rc->save_image (beam->get_range_compensator_out().c_str());

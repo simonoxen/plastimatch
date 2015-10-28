@@ -1027,7 +1027,7 @@ compute_dose_ray_desplanques (
                         }
                         // SOBP is weighted by the weight of the 
                         // pristine peak
-                        img[idx] += central_axis_dose 
+                        img[idx] += beam->num_particles[i] * central_axis_dose 
                             * WER // dose = dose_w * WER
                             * off_axis_factor 
                             * (float) ppp->weight;
@@ -1209,7 +1209,6 @@ compute_dose_ray_sharp (
         lateral_minimal_step[k] = (rpl_volume->get_front_clipping_plane() + rpl_volume->get_aperture()->get_distance() + (double) k) * minimal_lateral / rpl_volume->get_aperture()->get_distance();
         lateral_step_x[k] = (rpl_volume->get_front_clipping_plane() + rpl_volume->get_aperture()->get_distance() + (double) k) * ap->get_spacing(0) / rpl_volume->get_aperture()->get_distance();
         lateral_step_y[k] = (rpl_volume->get_front_clipping_plane() + rpl_volume->get_aperture()->get_distance() + (double) k) * ap->get_spacing(1) / rpl_volume->get_aperture()->get_distance();
-        //printf("%d: %lg %lg %lg\n", k, lateral_minimal_step[k], lateral_step_x[k], lateral_step_y[k]);
     }
 
     /* calculation of the dose in the rpl_volume */
@@ -1232,7 +1231,7 @@ compute_dose_ray_sharp (
 
             if (beam->get_aperture()->have_range_compensator_image())
             {
-                range_comp = rc_img[idx2d_sm] * 1.19 * 0.98; // Lucite Material: d * rho * WER
+                range_comp = rc_img[idx2d_sm] * 1.19 * 0.98; // Lucite Material: d * rho * WER, MD Fix
             }
             else
             {
@@ -1256,7 +1255,7 @@ compute_dose_ray_sharp (
                 STPR = compute_PrSTPR_from_HU(ct_rpl_img[idx3d_sm]);
 
                 rg_length = range_comp + rpl_img[idx3d_sm];
-                central_axis_dose = ppp->lookup_energy_integration(rg_length, ct_density * rpl_volume->get_vol()->spacing[2]) * STPR;
+                central_axis_dose = beam->num_particles[idx2d_sm] * ppp->lookup_energy_integration(rg_length, ct_density * rpl_volume->get_vol()->spacing[2]) * STPR;
 
                 if (central_axis_dose <= 0) // no dose on the axis, no dose scattered
                 {
@@ -1293,10 +1292,6 @@ compute_dose_ray_sharp (
                         {
                             off_axis_factor = 1;
                         }
-                        /*else if (radius >= sigma_x3)
-                          {
-                          off_axis_factor = 0;
-                          } */
                         else
                         {
                             off_axis_factor = double_gaussian_interpolation(central_ray_xyz, travel_ray_xyz, sigma, lateral_step);
@@ -1308,7 +1303,7 @@ compute_dose_ray_sharp (
                         find_ijk_pixel(ijk_ct, xyz_room, ct_vol);
                         if (ijk_ct[0] < 0 || ijk_ct[0] >= dim_ct[0] || ijk_ct[1] < 0 || ijk_ct[1] >= dim_ct[1] || ijk_ct[2] < 0 || ijk_ct[2] >= dim_ct[2] )
                         {
-                            WER = .88;
+                            WER = .88; //MD Fix
                         }
                         else
                         {
