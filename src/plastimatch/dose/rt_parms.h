@@ -37,7 +37,6 @@ public:
     void append_peak ();
 
 protected:
-    void handle_end_of_section (int section);
     void parse_config (const char* config_fn);
 };
 

@@ -166,74 +166,6 @@ Rt_parms::append_peak ()
         d_ptr->max_depth, d_ptr->weight);
 }
 
-#if defined (commentout)
-void 
-save_beam_parameters(int i, int section)
-{
-    /* SETTINGS */
-    if (section == 2)
-    {
-        d_ptr->rt_plan->beam_storage[i]->set_aperture_out(d_ptr->output_aperture_fn);			
-        d_ptr->rt_plan->beam_storage[i]->set_proj_dose_out(d_ptr->output_proj_dose_fn);
-        d_ptr->rt_plan->beam_storage[i]->set_proj_img_out(d_ptr->output_proj_img_fn);
-        d_ptr->rt_plan->beam_storage[i]->set_range_compensator_out(d_ptr->output_range_compensator_fn);
-        d_ptr->rt_plan->beam_storage[i]->set_sigma_out(d_ptr->output_sigma_fn.c_str());
-        d_ptr->rt_plan->beam_storage[i]->set_wed_out(d_ptr->output_wed_fn.c_str());
-        d_ptr->rt_plan->beam_storage[i]->set_particle_type(d_ptr->part);
-        d_ptr->rt_plan->beam_storage[i]->set_detail(d_ptr->detail);
-        d_ptr->rt_plan->beam_storage[i]->set_beamWeight(d_ptr->beam_weight);
-        d_ptr->rt_plan->beam_storage[i]->set_source_position(d_ptr->src);
-        d_ptr->rt_plan->beam_storage[i]->set_isocenter_position(d_ptr->isocenter);
-        d_ptr->rt_plan->beam_storage[i]->set_sobp_prescription_min_max(d_ptr->prescription_min, d_ptr->prescription_max);
-        d_ptr->rt_plan->beam_storage[i]->get_aperture()->set_distance(d_ptr->ap_offset);
-        if (d_ptr->ap_have_origin) 
-        {
-            d_ptr->rt_plan->beam_storage[i]->get_aperture()->set_origin(d_ptr->ap_origin);
-        }
-        d_ptr->rt_plan->beam_storage[i]->get_aperture()->set_dim(d_ptr->ires);
-        d_ptr->rt_plan->beam_storage[i]->get_aperture()->set_spacing(d_ptr->ap_spacing);
-        d_ptr->rt_plan->beam_storage[i]->set_source_size(d_ptr->source_size);
-
-#if defined (commentout)
-        /* GCS TODO: This logic belongs elsewhere */
-        if (d_ptr->target_fn == "") 
-        {
-            if (d_ptr->ap_filename != "") 
-            {
-                d_ptr->rt_plan->beam_storage[i]->set_aperture_in(d_ptr->ap_filename.c_str());
-            }
-            if (d_ptr->rc_filename != "") 
-            {
-                d_ptr->rt_plan->beam_storage[i]->set_range_compensator_in (d_ptr->rc_filename.c_str());
-            }
-        }
-#endif
-        d_ptr->rt_plan->beam_storage[i]->set_smearing(d_ptr->smearing);
-        d_ptr->rt_plan->beam_storage[i]->set_proximal_margin(d_ptr->proximal_margin);
-        d_ptr->rt_plan->beam_storage[i]->set_distal_margin(d_ptr->distal_margin);
-        d_ptr->rt_plan->beam_storage[i]->set_have_prescription(d_ptr->have_prescription);
-        d_ptr->rt_plan->beam_storage[i]->set_photon_energy(d_ptr->photon_energy);
-    }
-
-    /* PEAKS */
-    else if (section == 3)
-    {
-        if (d_ptr->bragg_curve =="")
-        {
-            d_ptr->rt_plan->beam_storage[i]->set_have_manual_peaks(
-                d_ptr->have_manual_peaks);
-            d_ptr->rt_plan->beam_storage[i]->add_peak(
-                d_ptr->E0, d_ptr->spread, d_ptr->depth_res, 
-                d_ptr->max_depth, d_ptr->weight);
-        }
-        else
-        {
-            printf("ERROR: bragg curve already defined by bragg_curve file - impossible to optimize a SOBP from peaks");
-        }
-    }
-}
-#endif
-
 Plm_return_code
 Rt_parms::set_key_value (
     const std::string& section,
@@ -566,54 +498,6 @@ error_exit:
         key.c_str(), val.c_str());
     return PLM_ERROR;
 }
-
-#if defined (commentout_TODO)
-void
-Rt_parms::handle_end_of_section (int section)
-{
-    switch (section) {
-    case 0:
-        /* Reading before [PLAN] */
-        break;
-    case 1:
-        /* [PLAN] */
-        d_ptr->rt_plan->set_debug(d_ptr->debug);
-        /* The other parameters are set at the beginning of the dose calculation */
-        break;
-
-    case 2:
-        /* [BEAM] */
-        Rt_beam* new_beam;
-        new_beam = new Rt_beam;
-
-        d_ptr->beam_number++; /* initialized to -1, at first run on the beam, beam_number = 0 */
-        d_ptr->rt_plan->beam_storage.push_back(new_beam);
-
-        d_ptr->sobp = Rt_sobp::New();
-        /* We save the beam data, only the changes will be updated in the other sections */
-        this->save_beam_parameters(d_ptr->beam_number, 2);
-
-        d_ptr->have_manual_peaks = false;
-        d_ptr->ap_have_origin = false;
-        d_ptr->have_prescription = false;
-
-        d_ptr->output_aperture_fn= "";
-        d_ptr->output_proj_dose_fn = "";
-        d_ptr->output_proj_img_fn = "";
-        d_ptr->output_range_compensator_fn = "";
-        d_ptr->output_sigma_fn = "";
-        d_ptr->output_wed_fn = "";
-        d_ptr->ap_filename= "";
-        d_ptr->rc_filename = "";
-        break;
-    case 3:
-        /* [PEAK] */
-        d_ptr->have_manual_peaks = true;
-        this->save_beam_parameters(d_ptr->beam_number, section);
-        break;
-    }
-}
-#endif
 
 Plm_return_code
 Rt_parms::parse_args (int argc, char** argv)

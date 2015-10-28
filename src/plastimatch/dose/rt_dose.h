@@ -10,42 +10,8 @@
 #include "plmdose_config.h"
 #include "plm_image.h"
 
-PLMDOSE_API
-Plm_image::Pointer
-proton_dose_compute (Rt_plan::Pointer& scene);
-
 double
 dose_direct (
-    double* ct_xyz,             /* voxel to dose */
-    Rt_beam* beam
-);
-double
-dose_debug (
-    double* ct_xyz,             /* voxel to dose */
-    Rt_beam* beam
-);
-double
-dose_scatter (
-    double* ct_xyz,
-    plm_long* ct_ijk,            // DEBUG
-    Rt_beam* beam
-);
-double
-dose_hong (
-    double* ct_xyz,
-    plm_long* ct_ijk,            // DEBUG
-    Rt_beam* beam
-);
-
-double
-dose_hong_maxime (
-    double* ct_xyz,
-    plm_long* ct_ijk,            // DEBUG
-    Rt_beam* beam
-);
-
-double
-dose_hong_sharp (
     double* ct_xyz,             /* voxel to dose */
     Rt_beam* beam
 );
@@ -82,7 +48,6 @@ void compute_dose_ray_shackleford (
     int theta_sample
 );
 
-double get_dose_norm(char flavor, double energy, double PB_density); /* MD Fix: Is that still useful? */
 void add_rcomp_length_to_rpl_volume(Rt_beam* beam);
 
 #endif

@@ -727,18 +727,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
                     case 'a':
                         dose = dose_direct (ct_xyz, beam);
                         break;
-                    case 'b':
-                        dose = dose_scatter (ct_xyz, ct_ijk, beam); 
-                        break;
-                    case 'c':
-                        dose = dose_hong (ct_xyz, ct_ijk, beam);
-                        break;
-                    case 'd':
-                        dose = dose_debug (ct_xyz, beam);
-                        break;
-                    case 'e':
-                        dose = dose_hong_maxime (ct_xyz, ct_ijk, beam);
-                        break;
                     }
 
                     /* Insert the dose into the dose volume */

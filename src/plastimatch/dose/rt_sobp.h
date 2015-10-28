@@ -134,7 +134,7 @@ public:
     /* get peaks - not a pointer */
     std::vector<const Rt_depth_dose*> getPeaks();
     /* Weight optimizer */
-    void Optimizer (int num_peaks);
+    void Optimizer (int num_peaks); // MD Fix: Optimizers 1 & 2 to be deleted
     void Optimizer2 (int num_peaks);
 	void Optimizer3 ();
 

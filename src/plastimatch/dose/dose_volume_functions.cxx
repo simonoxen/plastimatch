@@ -201,11 +201,6 @@ find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
     xyz[2] = volume->origin[2] + ijk[2]*volume->spacing[2];
 }
 
-double distance(const std::vector< std::vector<double> >& v, int i1, int i2)
-{
-    return sqrt( (v[i1][0]-v[i2][0])*(v[i1][0]-v[i2][0]) + (v[i1][1]-v[i2][1])*(v[i1][1]-v[i2][1]) + (v[i1][2]-v[i2][2])*(v[i1][2]-v[i2][2]) );
-}
-
 double erf_gauss(double x)
 {
     /* constant */

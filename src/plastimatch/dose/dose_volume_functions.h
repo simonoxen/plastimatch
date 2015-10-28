@@ -20,8 +20,6 @@ void find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_
 void find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k, float z_spacing);
 void find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk);
 
-double distance(const std::vector< std::vector <double> >&, int, int); // Is this useful??
-
 double erf_gauss(double x);
 double double_gaussian_interpolation(double* gaussian_center, double* pixel_center, double sigma, double* spacing);
 

@@ -78,9 +78,6 @@ public:
     /*! \brief Set "homo_approx" parameter of dose calculation algorithm */
     void set_homo_approx (char homo_approx);
 
-    /*! \brief Get maximum depth (in mm) in SOBP curve */
-    double get_sobp_maximum_depth ();
-
     /*! \brief Get Sobp */
     Rt_sobp::Pointer get_sobp();
 

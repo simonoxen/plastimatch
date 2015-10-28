@@ -376,12 +376,6 @@ Rt_beam::set_homo_approx (char homo_approx)
   d_ptr->homo_approx = homo_approx;
 }
 
-double 
-Rt_beam::get_sobp_maximum_depth ()
-{
-    return d_ptr->sobp->get_maximum_depth ();
-}
-
 Rt_sobp::Pointer
 Rt_beam::get_sobp()
 {

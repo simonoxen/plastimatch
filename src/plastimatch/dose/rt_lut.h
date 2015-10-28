@@ -26,8 +26,6 @@ extern const double lookup_proton_stop_water[][2];
 
 extern const double lookup_proton_dose_max_bragg[][2];
 
-extern const double lookup_off_axis[][2];
-
 /* declaration of a matrix that contains the depth of the max for each energy */
 extern const int max_depth_proton[];
 

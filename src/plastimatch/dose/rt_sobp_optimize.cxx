@@ -275,7 +275,7 @@ void Rt_sobp::Optimizer2 (int num_peaks)
 }
 
 // Maxime Desplanques's better optimizer to get the optimized weights 
-// for pristine peaks -- working also for beams with different sigmaE
+// for pristine peaks -- working also for beams with different energy stragglings
 void Rt_sobp::Optimizer3 ()
 {
     int num_samples = d_ptr->num_samples;
@@ -426,4 +426,3 @@ double cost_function_calculation (
 
     return f_tot; //we return the fcost value
 }
-
