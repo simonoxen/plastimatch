@@ -31,6 +31,9 @@ particle_type_parse (const std::string& s)
     else if (s == "C") {
         return PARTICLE_TYPE_C;
     }
+		else if (s == "N") {
+        return PARTICLE_TYPE_N;
+    }
     else if (s == "O") {
         return PARTICLE_TYPE_O;
     }
@@ -55,6 +58,8 @@ particle_type_string (Particle_type p)
         return "Boron";
     case PARTICLE_TYPE_C:			// carbon
         return "Carbon";
+	case PARTICLE_TYPE_N:			// nitrogen
+		return "Nitrogen";
     case PARTICLE_TYPE_O:			// oxygen
         return "Oxygen";
     default:

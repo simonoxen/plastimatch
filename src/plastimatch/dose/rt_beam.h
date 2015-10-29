@@ -31,7 +31,6 @@ public:
 
 public:
     /*! \name Inputs */
-    ///@{
     /*! \brief Load PDD from XiO or txt file */
     bool load (const char* fn);
 
@@ -118,19 +117,13 @@ public:
     /*! \brief Request debugging information to be written to directory */
     void set_debug (const std::string& dir);
 
-    ///@}
-
     /*! \name Execution */
-    ///@{
     void optimize_sobp ();          /* automatically create, weigh peaks */
     bool generate ();               /* use manually weighted peaks */
-    ///@}
 
     /*! \name Outputs */
-    ///@{
     void dump (const char* dir);     /* Print debugging information */
     float lookup_sobp_dose (float depth);
-    ///@}
 
     /* This computes the aperture and range compensator */
     void compute_beam_modifiers ();
@@ -206,10 +199,10 @@ public:
     void set_have_copied_peaks(bool have_copied_peaks);
     bool get_have_copied_peaks();
 
-		void set_have_manual_peaks(bool have_manual_peaks);
-		bool get_have_manual_peaks();
+	void set_have_manual_peaks(bool have_manual_peaks);
+	bool get_have_manual_peaks();
 
-		void set_beam_line_type(std::string str);
+	void set_beam_line_type(std::string str);
     std::string get_beam_line_type();
 
     void copy_sobp(Rt_sobp::Pointer sobp);
@@ -231,13 +224,12 @@ public:
     /* aperture 3D volume to avoid artefacts*/
     Rpl_volume* aperture_vol;
 
-		/* particle number map for active scanning systems */
-		 std::vector<double> num_particles;
+	/* particle number map for active scanning systems */
+	std::vector<double> num_particles;
 
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);
-
 };
 
 #endif

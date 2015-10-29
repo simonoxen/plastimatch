@@ -34,11 +34,11 @@ class Rt_plan_private {
 public:
     bool debug;
 
-		float rdp[3];
-		bool have_rdp;
-		bool have_dose_norm;
+	float rdp[3];
+	bool have_rdp;
+	bool have_dose_norm;
     float normalization_dose; // dose prescription
-		char non_norm_dose;
+	char non_norm_dose;
     float depth_dose_max;
 
     /* Filenames for input and output images */
@@ -62,13 +62,13 @@ public:
     Rt_plan_private ()
     {
         debug = false;
-				this->rdp[0] = 0.f;
+		this->rdp[0] = 0.f;
         this->rdp[1] = 0.f;
         this->rdp[2] = 0.f;
-				this->have_rdp = false;
-				this->have_dose_norm = false;
+		this->have_rdp = false;
+		this->have_dose_norm = false;
         this->normalization_dose = 100.f;
-				this->non_norm_dose = 'n';
+		this->non_norm_dose = 'n';
         this->depth_dose_max = 1.f;
         
         patient = Plm_image::New();
@@ -278,25 +278,25 @@ Rt_plan::set_ref_dose_point (const double* rdp)
 void 
 Rt_plan::set_have_ref_dose_point(bool have_rdp)
 {
-		d_ptr->have_rdp = have_rdp;
+	d_ptr->have_rdp = have_rdp;
 }
 
 bool
 Rt_plan::get_have_ref_dose_point()
 {
-		return d_ptr->have_rdp;
+	return d_ptr->have_rdp;
 }
 
 void 
 Rt_plan::set_have_dose_norm(bool have_dose_norm)
 {
-		d_ptr->have_dose_norm = have_dose_norm;
+	d_ptr->have_dose_norm = have_dose_norm;
 }
 
 bool
 Rt_plan::get_have_dose_norm()
 {
-		return d_ptr->have_dose_norm;
+	return d_ptr->have_dose_norm;
 }
 
 char 
@@ -308,7 +308,7 @@ Rt_plan::get_non_norm_dose () const
 void 
 Rt_plan::set_non_norm_dose (char non_norm_dose)
 {
-  d_ptr->non_norm_dose = non_norm_dose;
+	d_ptr->non_norm_dose = non_norm_dose;
 }
 
 void
@@ -338,8 +338,7 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         beam->get_aperture()->get_center(),
         beam->get_aperture()->get_spacing(),
         beam->get_step_length());
-        
-    if (!beam->rpl_vol) return false;
+	if (!beam->rpl_vol) return false;
 
     /* building the ct_density_vol */
     beam->rpl_ct_vol_HU = new Rpl_volume;
@@ -452,22 +451,22 @@ Rt_plan::compute_dose (Rt_beam *beam)
     double time_dose_misc = 0.0;
     double time_dose_reformat = 0.0;
 
-		/* Definition of the fluence map, for passive scattering the map is homogeneous */
-		/* if (beam->get_beam_line_type() == "passive")
-		{ */
-				for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
-				{
-					beam->num_particles.push_back(1);
-				}
-		/*
-		}
-		else
+	/* Definition of the fluence map, for passive scattering the map is homogeneous */
+	/* if (beam->get_beam_line_type() == "passive")
+	{ */
+	for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
+	{
+		beam->num_particles.push_back(1);
+	}
+	/*
+	}
+	else
+	{
+		for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
 		{
-				for (int i = 0; i < beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1); i++)
-				{
-					beam->num_particles.push_back(fluence[i]);
-				}
-		} */
+			beam->num_particles.push_back(fluence[i]);
+		}
+	} */
 
     printf ("Computing rpl_ct\n");
     beam->rpl_ct_vol_HU->compute_rpl_HU ();
@@ -510,7 +509,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
             if (beam->get_flavor() == 'f') // Desplanques' algorithm
             {
-                range = 10 * getrange(ppp->E0); // range in mm
+                range = 10 * get_proton_range(ppp->E0); // range in mm
                 dose_volume_create(dose_volume_tmp, sigma_max, beam->rpl_vol, range);
                 compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, rpl_vol, sigma_vol, beam->rpl_ct_vol_HU, beam, dose_vol, ppp);
             }
@@ -532,7 +531,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
                     beam->rpl_dose_vol->get_aperture()->set_center(new_center);
                     beam->rpl_dose_vol->get_aperture()->set_dim(new_dim);
-
                     beam->rpl_dose_vol->get_aperture()->set_distance(beam->rpl_vol->get_aperture()->get_distance());
                     beam->rpl_dose_vol->get_aperture()->set_spacing(beam->rpl_vol->get_aperture()->get_spacing());
 
@@ -549,7 +547,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
                     beam->rpl_dose_vol->set_ct(beam->rpl_vol->get_ct());
                     beam->rpl_dose_vol->set_ct_limit(beam->rpl_vol->get_ct_limit());
                     beam->rpl_dose_vol->compute_ray_data();
-				
                     beam->rpl_dose_vol->set_front_clipping_plane(beam->rpl_vol->get_front_clipping_plane());
                     beam->rpl_dose_vol->set_back_clipping_plane(beam->rpl_vol->get_back_clipping_plane());
                 }
@@ -564,7 +561,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
                     beam->rpl_ct_vol_HU, beam, beam->rpl_dose_vol, beam->get_aperture(), 
                     ppp, margins);
                 time_dose_calc += timer.report ();
-
                 timer.start ();
                 dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
                 time_dose_reformat += timer.report ();
@@ -572,7 +568,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
             if (beam->get_flavor() == 'h') // Shackleford's algorithm
             {
-
                 /* Calculating the pixel-margins of the aperture to take into account the scattering*/
                 margin = (float) 3 * (*sigma_max)/(beam->get_aperture()->get_distance()+beam->rpl_vol->get_front_clipping_plane()) * beam->get_aperture()->get_distance()+1;
                 margins[0] = ceil (margin/vec3_len(beam->rpl_vol->get_proj_volume()->get_incr_c()));
@@ -610,8 +605,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 beam->rpl_ct_vol_HU_lg->compute_rpl_HU();
 
                 beam->sigma_vol_lg->get_aperture()->set_center(new_center);
-                beam->sigma_vol_lg->get_aperture()->set_dim(new_dim);
-				
+                beam->sigma_vol_lg->get_aperture()->set_dim(new_dim);	
                 beam->sigma_vol_lg->get_aperture()->set_distance(beam->rpl_vol->get_aperture()->get_distance());
                 beam->sigma_vol_lg->get_aperture()->set_spacing(beam->rpl_vol->get_aperture()->get_spacing());
                 beam->sigma_vol_lg->set_geometry (beam->get_source_position(), beam->get_isocenter_position(), beam->get_aperture()->vup, beam->get_aperture()->get_distance(), beam->rpl_vol_lg->get_aperture()->get_dim(), beam->rpl_vol_lg->get_aperture()->get_center(), beam->get_aperture()->get_spacing(), beam->get_step_length());
@@ -625,22 +619,17 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 if (beam->get_aperture()->have_aperture_image() == true)
                 {
                     beam->aperture_vol = new Rpl_volume;
-
                     beam->aperture_vol->get_aperture()->set_center(beam->get_aperture()->get_center());
                     beam->aperture_vol->get_aperture()->set_dim(beam->get_aperture()->get_dim());
-				
                     beam->aperture_vol->get_aperture()->set_distance(beam->rpl_vol->get_aperture()->get_distance());
                     beam->aperture_vol->get_aperture()->set_spacing(beam->rpl_vol->get_aperture()->get_spacing());
-
                     beam->aperture_vol->set_geometry (beam->get_source_position(), beam->get_isocenter_position(), beam->get_aperture()->vup, beam->get_aperture()->get_distance(), beam->rpl_vol->get_aperture()->get_dim(), beam->rpl_vol->get_aperture()->get_center(), beam->get_aperture()->get_spacing(), beam->get_step_length());
-
                     beam->aperture_vol->set_ct(beam->rpl_vol->get_ct());
                     beam->aperture_vol->set_ct_limit(beam->rpl_vol->get_ct_limit());
                     beam->aperture_vol->compute_ray_data();
                     beam->aperture_vol->set_front_clipping_plane(beam->rpl_vol->get_front_clipping_plane());
                     beam->aperture_vol->set_back_clipping_plane(beam->rpl_vol->get_back_clipping_plane());
                     beam->aperture_vol->compute_rpl_void();
-
                     beam->aperture_vol->compute_volume_aperture(beam->get_aperture());
                 }
 
@@ -656,11 +645,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
     }
     if (beam->get_flavor() == 'a') // pull algorithm
     {     
-        /* if (this->get_debug()) {
-           rpl_vol->save ("beam_debug/depth_vol.mha");
-           beam->dump ("beam_debug");
-           }*/
-
         /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, if there is a range compensator */
         if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
         {
@@ -673,19 +657,15 @@ Rt_plan::compute_dose (Rt_beam *beam)
             beam->aperture_vol = new Rpl_volume;
             beam->aperture_vol->get_aperture()->set_center(beam->get_aperture()->get_center());
             beam->aperture_vol->get_aperture()->set_dim(beam->get_aperture()->get_dim());
-			
             beam->aperture_vol->get_aperture()->set_distance(beam->rpl_vol->get_aperture()->get_distance());
             beam->aperture_vol->get_aperture()->set_spacing(beam->rpl_vol->get_aperture()->get_spacing());
-			
             beam->aperture_vol->set_geometry (beam->get_source_position(), beam->get_isocenter_position(), beam->get_aperture()->vup, beam->get_aperture()->get_distance(), beam->rpl_vol->get_aperture()->get_dim(), beam->rpl_vol->get_aperture()->get_center(), beam->get_aperture()->get_spacing(), beam->get_step_length());
-
             beam->aperture_vol->set_ct(beam->rpl_vol->get_ct());
             beam->aperture_vol->set_ct_limit(beam->rpl_vol->get_ct_limit());
             beam->aperture_vol->compute_ray_data();
             beam->aperture_vol->set_front_clipping_plane(beam->rpl_vol->get_front_clipping_plane());
             beam->aperture_vol->set_back_clipping_plane(beam->rpl_vol->get_back_clipping_plane());
             beam->aperture_vol->compute_rpl_void();
-
             beam->aperture_vol->compute_volume_aperture(beam->get_aperture());
         }
 
@@ -697,15 +677,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
         for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
             for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
                 for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                    double dose = 0.0;
 
-                    bool voxel_debug = false;
-#if defined (commentout)
-                    if (ct_ijk[2] == 60 && ct_ijk[1] == 44 && ct_ijk[0] == 5) {
-                        voxel_debug = true;
-                    }
-#endif
-	
+                    double dose = 0.0;
+					bool voxel_debug = false;
+
                     /* Transform vol index into space coords */
                     ct_xyz[0] = (double) (ct_vol->origin[0] + ct_ijk[0] * ct_vol->spacing[0]);
                     ct_xyz[1] = (double) (ct_vol->origin[1] + ct_ijk[1] * ct_vol->spacing[1]);
@@ -738,67 +713,67 @@ Rt_plan::compute_dose (Rt_beam *beam)
         display_progress ((float)idx, (float)ct_vol->npix);
     }
 
-		/* Dose normalization process*/
-		if (this->get_non_norm_dose() != 'y')
+	/* Dose normalization process*/
+	if (this->get_non_norm_dose() != 'y')
+	{
+		if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
 		{
-				if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
-				{
-						float rdp_ijk[3] = {0,0,0};
-						float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
-						rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
-						rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
-						rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
+			float rdp_ijk[3] = {0,0,0};
+			float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
+			rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
+			rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
+			rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
 			
-						if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
-						{
-								printf("Dose normalized to the dose reference point.\n");
-								dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp); // if no normalization dose, norm_dose = 1 by default
-								if (this->get_have_dose_norm())
-								{
-										printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-								}
-								else
-								{
-										printf("%lg x 100%%.\n", beam->get_beam_weight());
-								}
-								printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-						}
-						else
-						{
-								printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
-								dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose());
-								if (this->get_have_dose_norm())
-								{
-										printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-								}
-								else
-								{
-										printf("%lg x 100%%.\n", beam->get_beam_weight());
-								}
-								printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-						}
-				}
-				else // case 2: no red dose point defined
-				{				
-						dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose()); // normalization_dose = 1 if no dose_prescription is set
-						if (this->get_have_dose_norm())
-						{
-								printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-						}
-						else
-						{
-								printf("%lg x 100%%.\n", beam->get_beam_weight());
-						}
-						printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-				}
-		}
-		else // raw dose, dose not normalized
-		{
-				for (int i = 0; i < dose_vol->dim[0] * dose_vol->dim[1] * dose_vol->dim[2]; i++)
+			if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
+			{
+				printf("Dose normalized to the dose reference point.\n");
+				dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp); // if no normalization dose, norm_dose = 1 by default
+				if (this->get_have_dose_norm())
 				{
-						dose_img[i] *= beam->get_beam_weight();
+					printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
 				}
+				else
+				{
+					printf("%lg x 100%%.\n", beam->get_beam_weight());
+				}
+				printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+			}
+			else
+			{
+				printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
+				dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose());
+				if (this->get_have_dose_norm())
+				{
+					printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+				}
+				else
+				{
+					printf("%lg x 100%%.\n", beam->get_beam_weight());
+				}
+				printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+			}
 		}
+		else // case 2: no red dose point defined
+		{				
+			dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose()); // normalization_dose = 1 if no dose_prescription is set
+			if (this->get_have_dose_norm())
+			{
+				printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+			}
+			else
+			{
+				printf("%lg x 100%%.\n", beam->get_beam_weight());
+			}
+			printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+		}
+	}
+	else // raw dose, dose not normalized
+	{
+		for (int i = 0; i < dose_vol->dim[0] * dose_vol->dim[1] * dose_vol->dim[2]; i++)
+		{
+			dose_img[i] *= beam->get_beam_weight();
+		}
+	}
 
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
@@ -833,32 +808,11 @@ Rt_plan::compute_plan ()
         print_and_exit ("Error: Unable to load patient volume.\n");
     }
     this->set_patient (ct);
-
-#if defined (commentout_TODO)
-    /* Check if the target prescription or the peaks (SOBP) were set 
-       for all the beams */
-    for (int i = 0; i < d_ptr->beam_number; i++)
-    {
-        if (d_ptr->have_manual_peaks == true 
-            && d_ptr->have_prescription == true)
-        {
-            fprintf (stderr, "\n** ERROR beam %d: SOBP generation from prescribed distance and manual peaks insertion are incompatible. Please select only one of the two options.\n", d_ptr->beam_number);
-            return PLM_ERROR;
-        }
-        if (d_ptr->have_manual_peaks == false && d_ptr->have_prescription == false && d_ptr->target_fn == "") {
-            fprintf (stderr, "\n** ERROR beam %d: No prescription made, please use the functions prescription_min & prescription_max, or manually created peaks .\n", d_ptr->beam_number);
-            return PLM_ERROR;
-        }
-    }
-#endif
-
     this->print_verif ();
 
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
-            
     plm_long dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};
-                
     float* total_dose_img = (float*) dose_vol->img;
 
     for (size_t i = 0; i < d_ptr->beam_storage.size(); i++)
@@ -870,52 +824,54 @@ Rt_plan::compute_plan ()
         if (!this->prepare_beam_for_calc (beam)) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-				if (beam->get_beam_line_type() == "passive")
-				{
-						if (beam->get_range_compensator_in() !="")
-						{
-								Plm_image::Pointer rgc = Plm_image::New (beam->get_range_compensator_in(), PLM_IMG_TYPE_ITK_FLOAT);
-								beam->get_aperture()->set_range_compensator_image(beam->get_range_compensator_in().c_str());
-								beam->get_aperture()->set_range_compensator_volume(rgc->get_volume_float());
-						}
-						else
-						{
-								/* handle auto-generated beam modifiers */
-								if (d_ptr->target_fn != "") {
-										printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
-										this->set_target (d_ptr->target_fn);
-										beam->compute_beam_modifiers ();
-										beam->apply_beam_modifiers ();
-								}
-						}
-	
-						/* generate depth dose curve, might be manual peaks or 
-							 optimized based on prescription, or automatic based on target */
-
-						/* Extension of the limits of the PTV - add margins */
-
-						beam->set_proximal_margin (beam->get_proximal_margin());
-						/* MDFIX: is it twice the same operation?? */
-						beam->set_distal_margin (beam->get_distal_margin());
-
-						if ((beam->get_have_copied_peaks() == false && beam->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_have_manual_peaks() == true)) {
-								/* Manually specified, so do not optimize */
-								if (!beam->generate ()) {
-										return PLM_ERROR;
-								}
-						} else if (d_ptr->target_fn != "" && !beam->get_have_prescription()) {
-								/* Optimize based on target volume */
-								Rpl_volume *rpl_vol = beam->rpl_vol;
-								beam->set_sobp_prescription_min_max (
-										rpl_vol->get_min_wed(), rpl_vol->get_max_wed());
-								beam->optimize_sobp ();
-						} else {
-								/* Optimize based on manually specified range and modulation */
-								beam->set_sobp_prescription_min_max (
-										beam->get_prescription_min(), beam->get_prescription_max());
-								beam->optimize_sobp ();
-						}
+		if (beam->get_beam_line_type() == "passive")
+		{
+			if (beam->get_range_compensator_in() !="")
+			{
+				Plm_image::Pointer rgc = Plm_image::New (beam->get_range_compensator_in(), PLM_IMG_TYPE_ITK_FLOAT);
+				beam->get_aperture()->set_range_compensator_image(beam->get_range_compensator_in().c_str());
+				beam->get_aperture()->set_range_compensator_volume(rgc->get_volume_float());
+			}
+			else
+			{
+				/* handle auto-generated beam modifiers */
+				if (d_ptr->target_fn != "") {
+					printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
+					this->set_target (d_ptr->target_fn);
+					beam->compute_beam_modifiers ();
+					beam->apply_beam_modifiers ();
 				}
+			}
+	
+			/* generate depth dose curve, might be manual peaks or 
+			optimized based on prescription, or automatic based on target */
+
+			/* Extension of the limits of the PTV - add margins */
+			beam->set_proximal_margin (beam->get_proximal_margin());
+		
+			/* MDFIX: is it twice the same operation?? */
+			beam->set_distal_margin (beam->get_distal_margin());
+
+			if ((beam->get_have_copied_peaks() == false && beam->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_have_manual_peaks() == true)) {
+		
+				/* Manually specified, so do not optimize */
+				if (!beam->generate ()) {
+					return PLM_ERROR;
+				}
+			} 
+			else if (d_ptr->target_fn != "" && !beam->get_have_prescription()) {
+				/* Optimize based on target volume */
+				Rpl_volume *rpl_vol = beam->rpl_vol;
+				beam->set_sobp_prescription_min_max (
+				rpl_vol->get_min_wed(), rpl_vol->get_max_wed());
+				beam->optimize_sobp ();
+			} else {
+				/* Optimize based on manually specified range and modulation */
+				beam->set_sobp_prescription_min_max (
+				beam->get_prescription_min(), beam->get_prescription_max());
+				beam->optimize_sobp ();
+			}
+		}
 
         /* Generate dose */
         this->set_debug (true);
@@ -975,32 +931,31 @@ Rt_plan::compute_plan ()
         }
     }
 
-		/* normalization of the dose volume to 1 at the max if no dose reference point is set */
-		if (this->get_non_norm_dose() != 'y')
+	/* normalization of the dose volume to 1 at the max if no dose reference point is set */
+	if (this->get_non_norm_dose() != 'y')
+	{
+		if (!this->get_have_ref_dose_point())
 		{
-				if (!this->get_have_ref_dose_point())
-				{
-						if (this->get_have_dose_norm())
-						{
-								printf("No reference dose point.\n");
-								dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
-								printf("%lg Gy.\nBeam weights are accounted", this->get_normalization_dose());
-						}
-						else
-						{
-								printf("No reference dose point and no dose prescription.\n");
-								dose_normalization_to_dose(dose_vol, 100);
-								printf("100%% on the total dose volume.\n Beam weights are accounted.\n");
-						}
-				}
+			if (this->get_have_dose_norm())
+			{
+				printf("No reference dose point.\n");
+				dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
+				printf("%lg Gy.\nBeam weights are accounted", this->get_normalization_dose());
+			}
+			else
+			{
+				printf("No reference dose point and no dose prescription.\n");
+				dose_normalization_to_dose(dose_vol, 100);
+				printf("100%% on the total dose volume.\n Beam weights are accounted.\n");
+			}
 		}
-		else 
-		{
-				printf("Raw dose computed, the dose is not normalized.\nOnly the beam weights are considered.\n");
-		}
+	}
+	else 
+	{
+		printf("Raw dose computed, the dose is not normalized.\nOnly the beam weights are considered.\n");
+	}
 
     /* Save dose output */
-
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
     this->set_dose(dose);
@@ -1071,8 +1026,6 @@ Rt_plan::print_verif ()
     printf("\n part_type: "); for (int i = 0; i < num_beams; i++) {printf("%d ** ", d_ptr->beam_storage[i]->get_particle_type());}
     printf("\n detail: "); for (int i = 0; i < num_beams; i++) {printf("%d ** ", d_ptr->beam_storage[i]->get_detail());}
     printf("\n beam_weight: "); for (int i = 0; i < num_beams; i++) {printf("%g ** ", d_ptr->beam_storage[i]->get_beam_weight());}
-    //printf("\n max_depth: "); for (int i = 0; i < num_beams; i++) { printf("P%d %d",i, d_ptr->beam_storage[i]->get_sobp()->get_num_peaks()); for (int j = 0; j < d_ptr->beam_storage[i]->get_sobp()->get_num_peaks(); j++) { printf(" %lg ** ", d_ptr->beam_storage[i]->get_sobp()->get_depth_dose()[j]->dmax);}}
-    //printf("\n depth_res: "); for (int i = 0; i < num_beams; i++) { printf("P%d ",i); for (int j = 0; j < d_ptr->beam_storage[i]->get_sobp()->get_num_peaks(); j++) { printf("%lg ** ", d_ptr->beam_storage[i]->get_sobp()->get_depth_dose()[j]->dres);}}
 
     printf("\n \n [GEOMETRY & APERTURE]");
     printf("\n source: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg %lg ** ", d_ptr->beam_storage[i]->get_source_position()[0], d_ptr->beam_storage[i]->get_source_position()[1], d_ptr->beam_storage[i]->get_source_position()[2]);}

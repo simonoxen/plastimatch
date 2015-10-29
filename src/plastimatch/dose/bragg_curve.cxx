@@ -30,11 +30,10 @@ bragg_curve (
 {
     doublereal v, x, dv[100], dp[100], pdd;
     doublereal D_v_1, D_v_2;
-    double p = 1.77;
-    double alpha = 0.0022;
+    double p = particle_parameters[0][1];
+    double alpha = particle_parameters[0][0];
     double R_0 = alpha * pow (E_0, p);
     double sigma_mono = 0.012 * pow (R_0, 0.935);
-    //double sigma_E0 = 0.01 * E_0;
     double epsilon = 0.1;
 
     double sigma_squared = sigma_mono * sigma_mono 
@@ -87,5 +86,5 @@ double bragg_curve_norm (
     double z            /* in mm */
 )
 {
-		return bragg_curve(E_0, sigma_E0, z)/ get_dose_max(E_0);
+		return bragg_curve(E_0, sigma_E0, z)/ get_proton_dose_max(E_0);
 }

@@ -5,6 +5,7 @@
 #include "dose_volume_functions.h"
 #include "proj_volume.h"
 #include "ray_data.h"
+#include "rt_lut.h"
 
 void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
 {
@@ -45,7 +46,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
         if (i != 2)
         {   
             spacing[i] = 1;
-            //spacing[i] = volume->get_aperture()->get_spacing(i); would be better...? pblm of lost lateral scattering for high resolution....
+            //spacing[i] = volume->get_aperture()->get_spacing(i); // MD Fix
             dim[i] = (plm_long) (2*abs(first_pixel[i]/spacing[i])+1);
         }
         else
@@ -54,9 +55,7 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
             dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/spacing[i] + 1);
         }
     }
-
     npix = dim[0]*dim[1]*dim[2];
-
     dose_volume->create(dim, origin, spacing, dc, PT_FLOAT,1);
 }
 
@@ -124,8 +123,8 @@ dose_volume_reconstruction (
                 ct_xyz[2] = (double) (dose_vol->origin[2] + ct_ijk[2] * dose_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
                 idx = volume_index (dose_vol->dim, ct_ijk);
-
                 dose = rpl_dose_vol->get_rgdepth(ct_xyz);
+
                 if (dose <= 0) {
                     continue;
                 }
@@ -176,8 +175,6 @@ find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offse
     xyz_ray_center[0] = z_axis_offset * ray[0];
     xyz_ray_center[1] = z_axis_offset * ray[1];
     xyz_ray_center[2] = z_axis_offset * ray[2];
-
-    return;
 }
 
 void 
@@ -186,11 +183,9 @@ find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k,
     float alpha = 0.0f;
 
     xyz_ray_center[2] = z_axis_offset+(double)k * z_spacing;
-
     alpha = xyz_ray_center[2] /(double) ray[2];
     xyz_ray_center[0] = alpha * ray[0];
     xyz_ray_center[1] = alpha * ray[1];
-    return;
 }
 
 void 
@@ -203,23 +198,13 @@ find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
 
 double erf_gauss(double x)
 {
-    /* constant */
-    double a1 =  0.254829592;
-    double a2 = -0.284496736;
-    double a3 =  1.421413741;
-    double a4 = -1.453152027;
-    double a5 =  1.061405429;
-    double p  =  0.3275911;
-
-    /* save the sign of x */
     int sign = 1;
     if (x < 0) {sign = -1;}
     x = fabs(x);
 
     /* erf interpolation */
-    double t = 1.0/(1.0 + p*x);
-    double y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
-
+    double t = 1.0/(1.0 + ERF_P*x);
+    double y = 1.0 - (((((ERF_A5*t + ERF_A4)*t) + ERF_A3)*t + ERF_A2)*t + ERF_A1)*t*exp(-x*x);
     return sign*y;
 }
 
@@ -231,8 +216,8 @@ double double_gaussian_interpolation(double* gaussian_center, double* pixel_cent
     double y2 = y1 + spacing[1];
 
     double z = .25 
-        * (erf_gauss((x2-gaussian_center[0])/(sigma*1.4142135)) - erf_gauss((x1-gaussian_center[0])/(sigma*1.4142135)))
-        * (erf_gauss((y2-gaussian_center[1])/(sigma*1.4142135)) - erf_gauss((y1-gaussian_center[1])/(sigma*1.4142135)));
+        * (erf_gauss((x2-gaussian_center[0])/(sigma*M_SQRT2)) - erf_gauss((x1-gaussian_center[0])/(sigma*M_SQRT2)))
+        * (erf_gauss((y2-gaussian_center[1])/(sigma*M_SQRT2)) - erf_gauss((y1-gaussian_center[1])/(sigma*M_SQRT2)));
     return z;
 }
 
@@ -247,61 +232,57 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose)
 	int idx = 0;
 	double norm = 0;
 	int ijk_max[3] = {0,0,0};
-
 	float* img = (float*) dose_volume->img;
 
 	for(int i = 0; i < dose_volume->dim[0]; i++)
 	{
-			for(int j = 0; j < dose_volume->dim[1]; j++)
+		for(int j = 0; j < dose_volume->dim[1]; j++)
+		{
+			for(int k = 0; k < dose_volume->dim[2]; k++)
 			{
-					for(int k = 0; k < dose_volume->dim[2]; k++)
-					{
-							idx = i + (dose_volume->dim[0] * (j + dose_volume->dim[1] * k));
+				idx = i + (dose_volume->dim[0] * (j + dose_volume->dim[1] * k));
 
-							if (img[idx] > norm)
-							{
-									norm = img[idx];
-									ijk_max[0] = i;
-									ijk_max[1] = j;
-									ijk_max[2] = k;
-							}
-					}
+				if (img[idx] > norm)
+				{
+					norm = img[idx];
+					ijk_max[0] = i;
+					ijk_max[1] = j;
+					ijk_max[2] = k;
+				}
 			}
+		}
 	}
 	if (norm > 0)
 	{
-				for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
-				{
-						img[i] = img[i] / norm * dose;
-				}
-
-				printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\n", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
-				printf("Dose normalized at the maximum to ");
+		for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
+		{
+			img[i] = img[i] / norm * dose;
+		}
+		printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
 	}
 	else
 	{
-			printf("Dose is null in the entire volume. Please check your input conditions.\n");
+		printf("Dose is null in the entire volume. Please check your input conditions.\n");
 	}
 }
 
 /* MD Fix: don't consider any cosines directions */
 void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp)
 {
-		double norm = dose_volume->get_ijk_value(rdp_ijk);
-		float* img = (float*) dose_volume->img;
+	double norm = dose_volume->get_ijk_value(rdp_ijk);
+	float* img = (float*) dose_volume->img;
 
-		if (norm > 0)
+	if (norm > 0)
+	{
+		for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
 		{
-				for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
-				{
-						img[i] = img[i] / norm * dose;
-				}
-				printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\n", rdp[0], rdp[1], rdp[2], norm);
-				printf("Dose normalized at the reference dose point to ");
+			img[i] = img[i] / norm * dose;
 		}
-		else
-		{
-				printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
-				dose_normalization_to_dose(dose_volume, dose);
-		}
+		printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
+	}
+	else
+	{
+		printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
+		dose_normalization_to_dose(dose_volume, dose);
+	}
 }

@@ -170,7 +170,6 @@ Rt_depth_dose::load_txt (const char* fn)
 				this->f_lut[this->num_samples-1] = dose_int;
         this->dmax = range;         /* Assume entries are sorted */
     }
-
     fclose (fp);
     return true;
 }
@@ -225,7 +224,6 @@ Rt_depth_dose::dump (const char* fn) const
     for (int i=0; i<this->num_samples; i++) {
        fprintf (fp, "%3.2f %3.2f\n", this->d_lut[i], this->e_lut[i]);
     }
-
     fclose (fp);
 }
 
@@ -285,6 +283,5 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
 	{
 		energy -= this->f_lut[num_samples-1];
 	}
-
 	return energy;  
 }

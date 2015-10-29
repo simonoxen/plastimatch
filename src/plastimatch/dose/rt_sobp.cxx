@@ -47,8 +47,7 @@ void
 Rt_sobp::add_peak (Rt_depth_dose* depth_dose)
 {
     d_ptr->depth_dose.push_back (depth_dose);
-
-    /* GCS FIX: This should probably update the max depth too */
+    /* GCS FIX: This should probably update the max depth too - (MD Fix)*/
 }
 
 void
@@ -58,54 +57,59 @@ Rt_sobp::add_peak (double E0, double spread,
     switch(d_ptr->particle_type)
     {
     case PARTICLE_TYPE_P:			// proton
-    {
-        printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
-            (float) E0, (float) spread, (float) weight,
-            (float) dres, (float) dmax);
-        Rt_depth_dose *depth_dose = new Rt_depth_dose (
-            E0, spread, dres, dmax, weight);
-        d_ptr->depth_dose.push_back (depth_dose);
+		{
+			printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n", 
+				(float) E0, (float) spread, (float) weight,
+				(float) dres, (float) dmax);
+			Rt_depth_dose *depth_dose = new Rt_depth_dose (
+				E0, spread, dres, dmax, weight);
+			d_ptr->depth_dose.push_back (depth_dose);
 
-	/* Update maximum */
-	if (dmax > d_ptr->dmax) {
-            d_ptr->dmax = dmax;
-            break;
-        }
-    }
-    case PARTICLE_TYPE_HE:			// helium
-    {
-        //to be implemented
-    }
-    break;
+			/* Update maximum */
+			if (dmax > d_ptr->dmax) {
+				d_ptr->dmax = dmax;
+				break;
+			}
+		}
+	case PARTICLE_TYPE_HE:			// helium
+		{
+			//to be implemented
+		}
+		break;
     case PARTICLE_TYPE_LI:			// lithium
-    {
-        //to be implemented
-    }
-    break;
+		{
+			//to be implemented
+		}
+		break;
     case PARTICLE_TYPE_BE:			// berilium
-    {
-        //to be implemented
-    }
-    break;
+		{
+			//to be implemented
+		}
+		break;
     case PARTICLE_TYPE_B:			// bore
-    {
-        //to be implemented
-    }
-    break;
+		{
+			//to be implemented
+		}
+		break;
     case PARTICLE_TYPE_C:			// carbon
-    {
-        //to be implemented
-    }
-    break;
+		{
+			//to be implemented
+		}
+		break;
+	case PARTICLE_TYPE_N:			// nitrogen
+		{
+			//to be implemented
+		}
+		break;
     case PARTICLE_TYPE_O:			// oxygen
-    {
-        //to be implemented
-    }
-    break;
+		{
+			//to be implemented
+		}
+		break;
     default:
-    {
-        //to be implemented
-    }
+		{
+			//to be implemented
+		}
     }
 }
 
@@ -175,7 +179,6 @@ Rt_sobp::lookup_energy (
         // we wen't past the end of the lookup table
         energy = 0.0f;
     }
-
     return energy;   
 }
 

@@ -72,9 +72,7 @@ void Rt_sobp::Optimizer (int num_peaks)
     std::vector<int> energies (num_peaks,0);
     std::vector<double> init_vector (d_ptr->num_samples,0);
 
-
     cf.depth_dose.push_back(init_vector);
-
     printf("\n %d Mono-energetic BP used: ", cf.num_peaks);
 
     energies[0]= d_ptr->E_min;
@@ -94,7 +92,6 @@ void Rt_sobp::Optimizer (int num_peaks)
     {
         cf.depth_dose[0][j] = cf.depth_dose[0][j] / E_max;
     }
-
 
     for (int i=1; i < cf.num_peaks-1; i++)
     {
@@ -127,7 +124,6 @@ void Rt_sobp::Optimizer (int num_peaks)
         cf.depth_dose[cf.num_peaks-1][j] = bragg_curve(energies[cf.num_peaks-1],1,d_ptr->d_lut[j]);
     }
 
-
     for (int i = 0; i < d_ptr->num_samples ; i++) // creation of the two intervals that represents the inner part of the sobp and the outer part
     {
         cf.depth_in.push_back(0);
@@ -147,7 +143,6 @@ void Rt_sobp::Optimizer (int num_peaks)
 
     /* Create optimizer object */
     vnl_amoeba nm (cf);
-
 
     /* Set some optimizer parameters */
     nm.set_x_tolerance (0.0001);
@@ -174,7 +169,6 @@ void Rt_sobp::Optimizer (int num_peaks)
     }
 
     d_ptr->num_samples = d_ptr->depth_dose[0]->num_samples;
-
     this->generate();
 }
 
@@ -297,7 +291,6 @@ void Rt_sobp::Optimizer3 ()
     }
     printf("\n");
 
-
     for (int i = 0; i < num_peaks; i++)
     {
         for (int j = 0; j < num_samples; j++)
@@ -314,7 +307,7 @@ void Rt_sobp::Optimizer3 ()
         }
         else
         {
-            weight[i] = 1.0 - d_ptr->e_lut[get_depth_max(energies[i])];
+            weight[i] = 1.0 - d_ptr->e_lut[get_proton_depth_max(energies[i])];
             if (weight[i] < 0)
             {
                 weight[i] = 0;
@@ -331,7 +324,7 @@ void Rt_sobp::Optimizer3 ()
     {
         for (int i = 0; i < num_peaks; i++)
         {
-            weight[i] = weight[i] / d_ptr->e_lut[get_depth_max(energies[i])];
+            weight[i] = weight[i] / d_ptr->e_lut[get_proton_depth_max(energies[i])];
         }
 
         for (int j = 0 ; j < num_samples; j++)
@@ -418,11 +411,5 @@ double cost_function_calculation (
             f_tot = 2* f_tot;
         }
     }
-    /*printf("\n f_tot = %lg", f_tot);
-      for (int i = 0; i < num_peaks; i++)
-      {
-      printf (" %lg ", weights[i]);
-      }*/
-
     return f_tot; //we return the fcost value
 }

@@ -59,7 +59,6 @@ public:
     /* [PROJ VOLUME] */
     float sinogram;
     int sinogram_res;
-
 };
 
 #endif

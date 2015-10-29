@@ -137,7 +137,6 @@ public:
     void Optimizer (int num_peaks); // MD Fix: Optimizers 1 & 2 to be deleted
     void Optimizer2 (int num_peaks);
 	void Optimizer3 ();
-
 };
 
 #endif

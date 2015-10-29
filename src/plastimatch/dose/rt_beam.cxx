@@ -23,28 +23,22 @@ public:
     char flavor;
     char homo_approx;
     Particle_type part;
-
     float photon_energy; // energy for mono-energetic beams
-
     float beamWeight;
 
     Rt_sobp::Pointer sobp;
-
     std::string debug_dir;
 
     float smearing;
-
     float prescription_d_min;
     float prescription_d_max;
     float proximal_margin;
     float distal_margin;
-
     double step_length;
     float z_min;
     float z_max;
     float z_step;
-
-		char rc_MC_model;
+	char rc_MC_model;
     float source_size;
 
     Aperture::Pointer aperture;
@@ -59,8 +53,7 @@ public:
     std::string range_compensator_out;
     std::string sigma_out;
     std::string wed_out;
-
-		std::string beam_line_type;
+	std::string beam_line_type;
 
     /* When a new sobp is created from an existing sobp, 
        the peaks are copied (not manual).  Modifications of 
@@ -85,43 +78,33 @@ public:
         this->flavor = 'a';
         this->homo_approx = 'n';
         this->part = PARTICLE_TYPE_P;
-
         this->photon_energy = 6.f; 
-
         this->beamWeight = 1.f;
-
         this->sobp = Rt_sobp::New();
-
         this->debug_dir = "";
-
         this->smearing = 0.f;
-
         this->prescription_d_min = 0.f;
         this->prescription_d_max = 0.f;
         this->proximal_margin = 0.f;
         this->distal_margin = 0.f;
-
         this->step_length = 1.0;
         this->z_min = 0.f;
         this->z_max = 100.f;
         this->z_step = 1.f;
-
-				this->rc_MC_model = 'n';
+		this->rc_MC_model = 'n';
         this->source_size = 0.f;
 
         aperture = Aperture::New();
 
         this->aperture_in = "";
         this->range_compensator_in = "";
-
         this->aperture_out = "";
         this->proj_dose_out = "";
         this->proj_img_out = "";
         this->range_compensator_out = "";
         this->sigma_out = "";
         this->wed_out = "";
-
-				this->beam_line_type = "passive";
+		this->beam_line_type = "passive";
 
         this->have_copied_peaks = false;
 		this->have_manual_peaks = false;
@@ -141,28 +124,21 @@ public:
         this->flavor = rtbp->flavor;
         this->homo_approx = rtbp->homo_approx;
         this->part = rtbp->part;
-
         this->photon_energy = rtbp->photon_energy;
-
-        this->beamWeight = rtbp->beamWeight;
+		this->beamWeight = rtbp->beamWeight;
 
         /* Copy the sobp object */
         this->sobp = Rt_sobp::New (rtbp->sobp);
-
         this->debug_dir = rtbp->debug_dir;
-
         this->smearing = rtbp->smearing;
-
         this->prescription_d_min = rtbp->prescription_d_min;
         this->prescription_d_max = rtbp->prescription_d_max;
         this->proximal_margin = rtbp->proximal_margin;
         this->distal_margin = rtbp->distal_margin;
-
         this->step_length = rtbp->step_length;
         this->z_min = rtbp->z_min;
         this->z_max = rtbp->z_max;
         this->z_step = rtbp->z_step;
-
         this->source_size = rtbp->source_size;
 
         /* Copy the aperture object */
@@ -170,7 +146,6 @@ public:
 
         this->aperture_in = rtbp->aperture_in;
         this->range_compensator_in = rtbp->range_compensator_in;
-
         this->aperture_out = rtbp->aperture_out;
         this->proj_dose_out = rtbp->proj_dose_out;
         this->proj_img_out = rtbp->proj_img_out;
@@ -205,7 +180,6 @@ Rt_beam::Rt_beam ()
     {    
         this->rpl_ct_vol_HU = new Rpl_volume();
         this->sigma_vol = new Rpl_volume();
-
         this->rpl_vol_lg = new Rpl_volume();
         this->rpl_ct_vol_HU_lg = new Rpl_volume();
         this->sigma_vol_lg = new Rpl_volume();
@@ -216,12 +190,10 @@ Rt_beam::Rt_beam ()
     {    
         this->rpl_ct_vol_HU = new Rpl_volume();
         this->sigma_vol = new Rpl_volume();
-
         this->rpl_vol_lg = new Rpl_volume();
         this->rpl_ct_vol_HU_lg = new Rpl_volume();
         this->sigma_vol_lg = new Rpl_volume();
         this->rpl_dose_vol = new Rpl_volume();
-
         this->aperture_vol = new Rpl_volume();
     }
 }
@@ -373,7 +345,7 @@ Rt_beam::get_homo_approx () const
 void 
 Rt_beam::set_homo_approx (char homo_approx)
 {
-  d_ptr->homo_approx = homo_approx;
+	d_ptr->homo_approx = homo_approx;
 }
 
 Rt_sobp::Pointer
@@ -795,14 +767,14 @@ Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
 void 
 Rt_beam::set_beam_line_type(std::string str)
 {
-		if (str == "active")
-		{
-				d_ptr->beam_line_type = str;
-		}
-		else
-		{
-				d_ptr->beam_line_type = "passive";
-		}
+	if (str == "active")
+	{
+		d_ptr->beam_line_type = str;
+	}
+	else
+	{
+		d_ptr->beam_line_type = "passive";
+	}
 }
 
 std::string
@@ -917,7 +889,6 @@ Rt_beam::load_txt (const char* fn)
         this->e_lut[this->num_samples-1] = dose;
         this->dmax = range;         /* Assume entries are sorted */
     }
-
     fclose (fp);
 #endif
     return true;

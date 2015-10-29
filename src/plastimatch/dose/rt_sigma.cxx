@@ -83,7 +83,6 @@ void compute_sigmas (
         }
     }
     printf("Global sigma computed - Global sigma_max = %lg mm.\n", *sigma_max);
-
     return;
 }
 
@@ -105,7 +104,6 @@ void compute_sigma_pt (
     {
         sigma_max = compute_sigma_pt_hetero(sigma_vol, rpl_volume, ct_vol, energy);
     }
-
     printf("Sigma patient computed - sigma_pt_max = %lg mm.\n", sigma_max);
     return;
 }
@@ -118,6 +116,7 @@ float compute_sigma_pt_homo (
     float sigma_max = 0;
     int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
     int dim_rpl = rpl_vol->get_vol()->dim[0] * rpl_vol->get_vol()->dim[1] * rpl_vol->get_vol()->dim[2];
+
     if (dim != dim_rpl)
     {
         printf("Error: rpl_vol & sigma_vol have different dimensions. Sigma volume not built\n");
@@ -127,19 +126,18 @@ float compute_sigma_pt_homo (
     /* At this time, sigma_vol contains the range length, WITHOUT range compensator */
     float* sigma_volume = (float*) sigma_vol->get_vol()->img;
     float* rpl_img = (float*) rpl_vol->get_vol()->img;
-
     unsigned char* ap_img = NULL;
+
+	double x_over_range = 0;
 	
     if (rpl_vol->get_aperture()->have_aperture_image())
     {
         ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
-    }
-
-    double x_over_range = 0;
+    } 
 
     /*  Hong method to calculate the sigma value for homogeneous medium */
     /* Range value in water extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
-    double range = 10 * getrange(energy);
+    double range = 10 * get_proton_range(energy);
     
     /* Sigma0 value from the Hong fit - See paper Hong "A pencil beam algorithm for proton dose calculation" - sigma in mm: x10 */
     double sigma0 = 0.02275 * range + 1.2085E-6 * range * range;
@@ -175,7 +173,6 @@ float compute_sigma_pt_homo (
                 {
                     sigma_max = sigma_volume[i];
                 }
-
                 sigma_volume[i] *= sigma_volume[i]; // We return sigma^2 to sigma_vol
             }
         }
@@ -195,6 +192,7 @@ float compute_sigma_pt_hetero (
     float* rpl_img = (float*) rgl_vol->get_vol()->img;
     float* ct_img = (float*) ct_vol->get_vol()->img;
     unsigned char* ap_img = 0;
+
     if (rgl_vol->get_aperture()->have_aperture_image())
     {
         ap_img = (unsigned char*) rgl_vol->get_aperture()->get_aperture_volume()->img;
@@ -210,17 +208,18 @@ float compute_sigma_pt_hetero (
     float spacing = sigma_vol->get_vol()->spacing[2]/10; // in cm to correspond to the Highland formula
 
     float E = energy;
-    float mc2 = 939.4f;                       /* proton mass at rest (MeV) */
-    float c = 299792458.0f;                   /* speed of light (m/s2) */
-    float p = 0.0;                            /* Proton momentum (passed in) */
-    float v = 0.0;                            /* Proton velocity (passed in) */
-    float function_to_be_integrated;          /* right term to be integrated in the Highland equation */
-    float inverse_rad_length_integrated = 0;  /* and left part */
+	float mc2 = (float) PROTON_REST_MASS;		/* proton mass at rest (MeV) */
+    float c = (float) LIGHT_SPEED;						/* speed of light (m/s) */
+    float p = 0.0;								/* Proton momentum (passed in) */
+    float v = 0.0;								/* Proton velocity (passed in) */
+    float function_to_be_integrated;			/* right term to be integrated in the Highland equation */
+    float inverse_rad_length_integrated = 0;	/* and left part */
 
     float sum = 0.0;		                      /* integration expressions, right part of equation */
     float POI_depth = 0.0;                          /* depth of the point of interest (where is calculated the sigma value)in cm - centered at the pixel center */
     float pixel_depth = 0.0;                        /* depth of the contributing pixel to total sigma (in cm) - center between 2 pixels, the difference in rglength comes from the center of the previous pixel to the center of this pixel */
     float step = 0.0;                               /* step of integration, will depends on the radiologic length */
+
     /* initializiation of all the rays on which the integration will be done */
     printf ("sigma_img: %d %d %d\n", (int) sigma_vol->get_vol()->dim[0], 
         (int) sigma_vol->get_vol()->dim[1], (int) sigma_vol->get_vol()->dim[2]);
@@ -240,7 +239,6 @@ float compute_sigma_pt_hetero (
             }
     
             //Now we can compute the sigma rays!!!!
-  
             /* Step 1: the sigma is filled with zeros, so we let them = 0 as long as rg_length is 0, meaning the ray is out of the physical volume */
             /* we mark the first pixel in the volume, and the calculations will start with this one */
       
@@ -264,7 +262,7 @@ float compute_sigma_pt_hetero (
             std::vector<double> stop_cache (dim[2], 0);
 
             E = energy; // we set the energy of the particles to the nominal energy for this ray
-      
+
             for (int s = first_non_null_loc; s < dim[2]; s++)
             {
                 p = sqrt(2*E*mc2+E*E)/c; // in MeV.s.m-1
@@ -272,7 +270,7 @@ float compute_sigma_pt_hetero (
                 pv_cache[s] = p * v;
 
                 inv_rad_len[s] = 1.0f / compute_X0_from_HU(HU_ray[s]);
-                stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * getstop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
+                stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * get_proton_stop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
 
                 sum = 0;
                 inverse_rad_length_integrated = 0;
@@ -296,7 +294,6 @@ float compute_sigma_pt_hetero (
               
                     function_to_be_integrated = pow(((POI_depth - pixel_depth)/pv_cache[t]),2) * inv_rad_len[t]; //i in cm
                     sum += function_to_be_integrated*step;
-
                     inverse_rad_length_integrated += step * inv_rad_len[t];
   
                     /* energy is updated after passing through dz */
@@ -329,7 +326,6 @@ float compute_sigma_pt_hetero (
                 {
                     sigma_max = sigma_ray[s];
                 }
-
                 sigma_img[dim[0]*dim[1]*s + apert_idx] = sigma_ray[s] * sigma_ray[s]; // We want to have sigma^2 to make a quadratic sum of the sigmas            
             }
         }
@@ -340,10 +336,8 @@ float compute_sigma_pt_hetero (
 void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
-
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     float* rgl_img = (float*) rpl_volume->get_vol()->img;
-
     unsigned char* ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
 
     int idx = 0;
@@ -358,8 +352,7 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
     vec3_normalize1(nrm);
 
     plm_long dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
-
-    float range = getrange(energy);
+    float range = get_proton_range(energy);
 
     for (int i = 0; i < dim[0] * dim[1]; i++)
     {
@@ -395,12 +388,10 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
 
 void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy, int* margins)
 {
-		/* There are two methods for computing the beam spread due to a range compensator */
+	/* There are two methods for computing the beam spread due to a range compensator */
     /* Method1 rc_MC_model:  Hong's algorithm (Highland)- See Hong's paper */
-		/* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
+	/* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
-		double PMMA_density = 1.19;
-		double STPR_PMMA = 0.98;
     
     if (energy < 1)
     {
@@ -409,19 +400,19 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     }
 
     /* Range value in lucite extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
-    double range = 10 * getrange((double) energy);
+    double range = 10 * get_proton_range((double) energy);
 
-		/* Theta0 computation */
-		double theta0 = 0;
+	/* Theta0 computation */
+	double theta0 = 0;
 
-		if (beam->get_rc_MC_model() != 'y')
-		{
-				theta0 = get_theta0_Highland(range);
-		}
-		else
-		{
-				theta0 = get_theta0_MC(energy);
-		}
+	if (beam->get_rc_MC_model() != 'y')
+	{
+			theta0 = get_theta0_Highland(range);
+	}
+	else
+	{
+			theta0 = get_theta0_MC(energy);
+	}
 
     /* sigma calculation and length computations */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
@@ -453,11 +444,9 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     float POI;
     float l_eff;
     double sigma;
-
-    /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     double nrm[3] = {0,0,0};
 		
-		/* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
+	/* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 
@@ -471,28 +460,27 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                 Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
 	        
                 proj = -vec3_dot(ray_data->ray, nrm);
-								if (proj == 0) 
-								{ 
-										printf("error: some rays are perpendicular to the beam axis \n");
-										return;
-								}
+				if (proj == 0) 
+				{ 
+					printf("error: some rays are perpendicular to the beam axis \n");
+					return;
+				}
 
                 dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
-
-                rc_over_range =  rc_img[i] / proj * PMMA_density * STPR_PMMA / range; // energy is >1, so range > 0 (range is in water: rho * WER)
+                rc_over_range =  rc_img[i] / proj * PMMA_DENSITY * PMMA_STPR / range; // energy is >1, so range > 0 (range is in water: rho * WER)
 	
                 if (rc_over_range < 1)
                 {
-										if (beam->get_rc_MC_model() != 'y')
-										{
-												theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
-												rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[i];
-										}
-										else
-										{
-												theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
-												rc_eff = get_scat_or_MC(rc_over_range) * rc_img[i];
-										}
+					if (beam->get_rc_MC_model() != 'y')
+					{
+						theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+						rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[i];
+					}
+					else
+					{
+						theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+						rc_eff = get_scat_or_MC(rc_over_range) * rc_img[i];
+					}
 	
                     for (int j = 0; j < dim[2]; j++)
                     {
@@ -544,31 +532,31 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                 /* calculation of sigma_srm, see graph A3 from the Hong's paper */
                 if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[idx2d_sm] > 0))
                 {
-										Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
+					Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
 	        
-										proj = -vec3_dot(ray_data->ray, nrm);
+					proj = -vec3_dot(ray_data->ray, nrm);
 
-										if (proj == 0) 
-										{ 
-												printf("error: some rays are perpendicular to the beam axis \n");
-												return;
-										}
+					if (proj == 0) 
+					{ 
+						printf("error: some rays are perpendicular to the beam axis \n");
+						return;
+					}
 
-										dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
-                    rc_over_range = rc_img[idx2d_sm] / proj * PMMA_density * STPR_PMMA / range; // energy is >1, so range > 0
+					dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
+                    rc_over_range = rc_img[idx2d_sm] / proj * PMMA_DENSITY * PMMA_STPR / range; // energy is >1, so range > 0
 
                     if (rc_over_range < 1)
                     {
-												if (beam->get_rc_MC_model() != 'y')
-												{
-														theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
-														rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[idx2d_sm];
-												}
-												else
-												{
-														theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
-														rc_eff = get_scat_or_MC(rc_over_range) * rc_img[idx2d_sm];
-												}
+						if (beam->get_rc_MC_model() != 'y')
+						{
+							theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+							rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[idx2d_sm];
+						}
+						else
+						{
+							theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+							rc_eff = get_scat_or_MC(rc_over_range) * rc_img[idx2d_sm];
+						}
 
                         for (int k = 0; k < dim[2]; k++)
                         {
@@ -606,8 +594,7 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                 }
             }
         }
-    }
-	
+    }	
     printf("Sigma range compensator computed - sigma_rc_max = %lg mm.\n", sigma_max);
     return;
 }

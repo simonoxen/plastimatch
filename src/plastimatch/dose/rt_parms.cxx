@@ -221,13 +221,13 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%f", &norm_dose) != 1) {
                 goto error_exit;
             }
-						if (norm_dose <= 0) {
-							goto error_exit;
-						}
+			if (norm_dose <= 0) {
+				goto error_exit;
+			}
             d_ptr->rt_plan->set_normalization_dose (norm_dose);
-						d_ptr->rt_plan->set_have_dose_norm(true);
+			d_ptr->rt_plan->set_have_dose_norm(true);
         }
-				else if (key == "ref_dose_point") {
+		else if (key == "ref_dose_point") {
             float rdp[3];
             int rc = sscanf (val.c_str(), "%f %f %f", 
                 &rdp[0], &rdp[1], &rdp[2]);
@@ -235,9 +235,9 @@ Rt_parms::set_key_value (
                 goto error_exit;
             }
             d_ptr->rt_plan->set_ref_dose_point (rdp);
-						d_ptr->rt_plan->set_have_ref_dose_point(true);
+			d_ptr->rt_plan->set_have_ref_dose_point(true);
         }
-				else if (key == "non_normalized_dose") {
+		else if (key == "non_normalized_dose") {
             if (val.length() >= 1) {
                 d_ptr->rt_plan->set_non_norm_dose (val[0]);
             } else {
@@ -261,7 +261,7 @@ Rt_parms::set_key_value (
                 goto error_exit;
             } 
         }
-				else if (key == "beam_line") {
+		else if (key == "beam_line") {
             rt_beam->set_beam_line_type (val);
         }
         else if (key == "homo_approx") {
@@ -278,8 +278,6 @@ Rt_parms::set_key_value (
             }
             rt_beam->set_step_length (step_length);
         }
-
-
         else if (key == "aperture_out") {
             rt_beam->set_aperture_out (val);
         }
@@ -409,7 +407,7 @@ Rt_parms::set_key_value (
             }
             rt_beam->set_aperture_spacing (ap_spacing);
         }
-				else if (key == "range_comp_mc_model") {
+		else if (key == "range_comp_mc_model") {
             if (val.length() >= 1) {
                 rt_beam->set_rc_MC_model (val[0]);
             } else {
@@ -493,7 +491,7 @@ Rt_parms::set_key_value (
     print_and_exit ("Unknown section value: %s\n", section.c_str());
     return PLM_ERROR;
 
-error_exit:
+	error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", 
         key.c_str(), val.c_str());
     return PLM_ERROR;
@@ -518,7 +516,6 @@ Rt_parms::parse_args (int argc, char** argv)
     if (!argv[i]) {
         print_usage ();
     }
-
     Rt_parms_parser rpp (this);
     return rpp.parse_config_file (argv[i]);
 }

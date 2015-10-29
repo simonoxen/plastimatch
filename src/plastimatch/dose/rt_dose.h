@@ -47,7 +47,6 @@ void compute_dose_ray_shackleford (
     int radius_sample, 
     int theta_sample
 );
-
 void add_rcomp_length_to_rpl_volume(Rt_beam* beam);
 
 #endif

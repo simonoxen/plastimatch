@@ -5,9 +5,9 @@
 
 #include "rt_lut.h"
 
-double getrange(double energy)
+double get_proton_range(double energy)
 {
-    int i_lo = 0, i_hi = 110;
+    int i_lo = 0, i_hi = PROTON_TABLE_SIZE;
     double energy_lo = lookup_proton_range_water[i_lo][0];
     double range_lo = lookup_proton_range_water[i_lo][1];
     double energy_hi = lookup_proton_range_water[i_hi][0];
@@ -39,9 +39,9 @@ double getrange(double energy)
         (energy-energy_lo) * (range_hi-range_lo) / (energy_hi-energy_lo);
 }
 
-double getstop (double energy)
+double get_proton_stop (double energy)
 {
-    int i_lo = 0, i_hi = 110;
+    int i_lo = 0, i_hi = PROTON_TABLE_SIZE;
     double energy_lo = lookup_proton_stop_water[i_lo][0];
     double stop_lo = lookup_proton_stop_water[i_lo][1];
     double energy_hi = lookup_proton_stop_water[i_hi][0];
@@ -73,9 +73,9 @@ double getstop (double energy)
         (energy-energy_lo) * (stop_hi-stop_lo) / (energy_hi-energy_lo);
 }
 
-double get_dose_max(double E0)
+double get_proton_dose_max(double E0)
 {
-    if (E0 < 0 || E0 > 255)
+    if (E0 < 0 || E0 > PROTON_E_MAX)
     {
         return 1;
     }
@@ -86,14 +86,14 @@ double get_dose_max(double E0)
     return lookup_proton_dose_max_bragg[E0_floor][0] + rest * (lookup_proton_dose_max_bragg[E0_floor+1][0]-lookup_proton_dose_max_bragg[E0_floor][0]);
 }
 
-int get_depth_max(double E0)
+int get_proton_depth_max(double E0)
 {
     int E0_floor = floorf(E0); 
     if (E0 < 0)
     {
         return 0;
     }
-    else if (E0 >255)
+    else if (E0 >PROTON_E_MAX)
     {
         return 40000;
     }
@@ -105,36 +105,36 @@ int get_depth_max(double E0)
 
 double get_theta0_Highland(double range)
 {
-		/* lucite sigma0 (in rads) computing- From the figure A2 of the Hong's paper (be careful, in this paper the fit shows sigma0^2)*/
-		if (range > 150)
-		{
-				return 0.05464 + 5.8348E-6 * range -5.21006E-9 * range * range;
-		}
-		else 
-		{
-				return 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;
-		}
+	/* lucite sigma0 (in rads) computing- From the figure A2 of the Hong's paper (be careful, in this paper the fit shows sigma0^2)*/
+	if (range > 150)
+	{
+		return 0.05464 + 5.8348E-6 * range -5.21006E-9 * range * range;
+	}
+	else 
+	{
+		return 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;
+	}
 }
 
 double get_theta0_MC(float energy)
 {
-		return 4.742E-6 * energy * energy -1.918E-3 * energy + 1.158;
+	return 4.742E-6 * energy * energy -1.918E-3 * energy + 1.158;
 }
 
 double get_theta_rel_Highland(double rc_over_range)
 {
-		return rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
+	return rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
 }
 
 double get_theta_rel_MC(double rc_over_range)
 {
-		return 3.833E-2 * pow(rc_over_range, 0.657) + 2.118E-2 * pow(rc_over_range, 6.528);
+	return 3.833E-2 * pow(rc_over_range, 0.657) + 2.118E-2 * pow(rc_over_range, 6.528);
 }
 
 double get_scat_or_Highland(double rc_over_range)
 {
-		/* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
-		if (rc_over_range >= 0 && rc_over_range < 0.5)
+	/* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
+	if (rc_over_range >= 0 && rc_over_range < 0.5)
     {
         return 1 - (0.49 + 0.060 / 0.5 * rc_over_range);
     }
@@ -166,7 +166,7 @@ double get_scat_or_Highland(double rc_over_range)
 
 double get_scat_or_MC(double rc_over_range)
 {
-		return 0.023 * rc_over_range + 0.332;
+	return 0.023 * rc_over_range + 0.332;
 }
 
 double compute_X0_from_HU(double CT_HU)
@@ -684,11 +684,12 @@ extern const double lookup_proton_dose_max_bragg[][2] = { // [0]: dose max, [1]:
 17.9424,	39650,
 };
 
-/* matrix that contains the alpha and p parameters Range = f(E, alpha, p)
+/* matrix that contains the alpha and p parameters from equation: Range = f(E, alpha, p)
     First line is proton, second line is He... */
 
 extern const double particle_parameters[][2] = {
     0.0022, 1.77,   //P
+	/* To be updated to the right values for ions */
     0.0022, 1.77,   //HE
     0.0022, 1.77,   //LI
     0.0022, 1.77,   //BE

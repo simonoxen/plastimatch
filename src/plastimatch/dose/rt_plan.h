@@ -79,13 +79,13 @@ public:
     /* Set the position of the beam isocenter in world coordinates. */
     void set_ref_dose_point (const double rdp[3]);
 
-		/* Set / Get the declaration of the normalization conditions*/
-		void set_have_ref_dose_point(bool have_rdp);
-		bool get_have_ref_dose_point();
-		void set_have_dose_norm(bool have_dose_norm);
-		bool get_have_dose_norm();
+	/* Set / Get the declaration of the normalization conditions*/
+	void set_have_ref_dose_point(bool have_rdp);
+	bool get_have_ref_dose_point();
+	void set_have_dose_norm(bool have_dose_norm);
+	bool get_have_dose_norm();
 
-		/*! \brief Get the "non normalized" dose option */
+	/*! \brief Get the "non normalized" dose option */
     char get_non_norm_dose () const;
     /*! \brief Set "non normalized" dose option */
     void set_non_norm_dose (char non_norm_dose);
