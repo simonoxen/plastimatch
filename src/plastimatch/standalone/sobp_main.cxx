@@ -80,13 +80,14 @@ int main (int argc, char* argv[])
     {
         sscanf (argv[3], "%d", &Emin);
         sscanf (argv[4], "%d", &Emax);
-        sobp.SetMinMaxDepths(Emin, Emax);
+		sobp.SetMinMaxEnergies(Emin, Emax);
     }
 
-    sobp.printparameters();
-    sobp.Optimizer(sobp.optimizer_num_peaks());
+	sobp.printparameters();
+    sobp.Optimizer();
 
-    sobp.print_sobp_curve();
+
+    //sobp.print_sobp_curve();
 
     return 0;
 }

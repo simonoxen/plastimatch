@@ -86,9 +86,8 @@ double get_proton_dose_max(double E0)
     return lookup_proton_dose_max_bragg[E0_floor][0] + rest * (lookup_proton_dose_max_bragg[E0_floor+1][0]-lookup_proton_dose_max_bragg[E0_floor][0]);
 }
 
-int get_proton_depth_max(double E0)
+int get_proton_depth_max(int E0)
 {
-    int E0_floor = floorf(E0); 
     if (E0 < 0)
     {
         return 0;
@@ -99,7 +98,7 @@ int get_proton_depth_max(double E0)
     }
     else
     {
-        return lookup_proton_dose_max_bragg[E0_floor][1];
+        return lookup_proton_dose_max_bragg[E0][1];
     }
 }
 

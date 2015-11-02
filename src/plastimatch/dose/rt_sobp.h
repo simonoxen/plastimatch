@@ -37,8 +37,6 @@ public:
     ~Rt_sobp ();
 
     void set_resolution (double dres, int num_samples);
-    void set_energyResolution(double eres);
-    double get_energyResolution();
 
     /* set the type of particle (proton, helium ions, carbon ions...)*/
     void SetParticleType(Particle_type particle_type);
@@ -80,8 +78,8 @@ public:
     void set_dose_lut(float* d_lut, float* e_lut, int num_samples);
     float* get_d_lut();
     float* get_e_lut();
-    void set_dres(double dres);
-    double get_dres();
+    void set_dres(int dres);
+    int get_dres();
     void set_num_samples(int num_samples);
     int get_num_samples();
     void set_eres(int eres);
@@ -113,9 +111,6 @@ public:
 
     size_t get_num_peaks();
 
-    /* Compute number of peaks used when doing automatic peak selection. */
-    int optimizer_num_peaks ();
-
     /* set the minimal and maximal energy to buld the sobp peak */
     void SetMinMaxEnergies(int new_E_min, int new_E_max);
     /* set the minimal and maximal energy to buld the sobp peak and energy step */
@@ -134,9 +129,7 @@ public:
     /* get peaks - not a pointer */
     std::vector<const Rt_depth_dose*> getPeaks();
     /* Weight optimizer */
-    void Optimizer (int num_peaks); // MD Fix: Optimizers 1 & 2 to be deleted
-    void Optimizer2 (int num_peaks);
-	void Optimizer3 ();
+	void Optimizer ();
 };
 
 #endif

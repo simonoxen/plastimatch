@@ -940,7 +940,7 @@ Rt_plan::compute_plan ()
 			{
 				printf("No reference dose point.\n");
 				dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
-				printf("%lg Gy.\nBeam weights are accounted", this->get_normalization_dose());
+				printf("%lg Gy.\nBeam weights are accounted\n", this->get_normalization_dose());
 			}
 			else
 			{

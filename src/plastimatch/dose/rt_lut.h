@@ -9,7 +9,7 @@
 double get_proton_range(double energy);
 double get_proton_stop(double energy);
 double get_proton_dose_max(double E0);
-int get_proton_depth_max(double E0);
+int get_proton_depth_max(int E0);
 
 /* Range compensator functions, Highland-based definition or Monte Carlo based definition */
 double get_theta0_Highland(double range);

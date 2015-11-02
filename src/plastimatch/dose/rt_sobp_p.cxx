@@ -31,10 +31,11 @@ Rt_sobp_private::Rt_sobp_private (Particle_type particle_type)
 {
     d_lut = new float[0];
     e_lut = new float[0];
-    dres = 1.0;
+	f_lut = new float[0];
+    dres = 0.1;
 	dose_max = 1.f;
     num_samples = 0;
-    eres = 2.0;
+    eres = 1.0;
     E_min = 0;
     E_max = 0;
     dmin = 0.0;
@@ -49,6 +50,7 @@ Rt_sobp_private::Rt_sobp_private (const Rt_sobp_private* rsp)
 {
     d_lut = new float[0];
     e_lut = new float[0];
+	f_lut = new float[0];
     dres = rsp->dres;
 	dose_max = 1.f;
     num_samples = rsp->num_samples;

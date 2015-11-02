@@ -120,18 +120,6 @@ Rt_sobp::set_prescription_min_max (float d_min, float d_max)
     d_ptr->prescription_dmax = d_max;
 }
 
-void 
-Rt_sobp::set_energyResolution(double eres)
-{
-    d_ptr->eres = eres;
-}
-
-double 
-Rt_sobp::get_energyResolution()
-{
-    return d_ptr->eres;
-}
-
 void
 Rt_sobp::optimize ()
 {	
@@ -139,7 +127,7 @@ Rt_sobp::optimize ()
         d_ptr->prescription_dmin,
         d_ptr->prescription_dmax,
         d_ptr->dres);
-    this->Optimizer3 ();
+    this->Optimizer ();
 }
 
 float
@@ -310,20 +298,16 @@ Rt_sobp::get_e_lut()
 }
 
 void 
-Rt_sobp::set_dres(double dres)
+Rt_sobp::set_dres(int dres)
 {
-    if (dres != 0)
-    {
-        d_ptr->dres = dres;
-        d_ptr->num_samples = d_ptr->dmax / dres;
-    }
-    else
-    {
-        printf("the depth resolution for depth dose cannot be null\n");
-    }
+    if (dres > 0)
+	{
+		d_ptr->eres = dres;
+	}
+	else {printf("***WARNING*** Depth resolution must be positive. Depth resolution unchanged");}
 }
 
-double
+int
 Rt_sobp::get_dres()
 {
     return d_ptr->dres;
@@ -344,7 +328,11 @@ Rt_sobp::get_num_samples()
 void 
 Rt_sobp::set_eres(int eres)
 {
-    d_ptr->eres = eres;
+	if (eres > 0)
+	{
+		d_ptr->eres = eres;
+	}
+	else {printf("***WARNING*** Energy resolution must be positive. Energy resolution unchanged");}
 }
 
 int 
@@ -357,12 +345,6 @@ size_t
 Rt_sobp::get_num_peaks()
 {
     return d_ptr->depth_dose.size();
-}
-
-int 
-Rt_sobp::optimizer_num_peaks ()
-{
-    return (int)(((d_ptr->E_max - d_ptr->E_min) / d_ptr->eres) + 1);
 }
 
 void 
@@ -594,6 +576,7 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max) // set the sobp pa
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
         d_ptr->f_lut[d_ptr->num_samples-1] = 0;
     }
+	d_ptr->num_peaks = (d_ptr->E_max - d_ptr->E_min) / d_ptr->eres + 1;
 }
 
 void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // set the sobp parameters by introducing the min and max energies
@@ -646,11 +629,14 @@ void Rt_sobp::SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step) // s
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
         d_ptr->f_lut[d_ptr->num_samples-1] = 0;
+
+		d_ptr->num_peaks = (d_ptr->E_max - d_ptr->E_min) / d_ptr->eres + 1;
     }
 }
 
 void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp parameters by introducing the proximal and distal distances
 {
+
     if (new_z_max <= 0 || new_z_min <= 0)
     {
         printf("Error: The depth min and max of the Sobp must be positive!\n");
@@ -678,12 +664,11 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp 
         {
             d_ptr->num_samples++;
         }
-
         if (d_ptr->d_lut) delete[] d_ptr->d_lut;
         d_ptr->d_lut = new float[d_ptr->num_samples];
         if (d_ptr->e_lut) delete[] d_ptr->e_lut;
         d_ptr->e_lut = new float[d_ptr->num_samples];
-        if (d_ptr->f_lut) delete[] d_ptr->f_lut;
+		if (d_ptr->f_lut) delete[] d_ptr->f_lut;
         d_ptr->f_lut = new float[d_ptr->num_samples];
 
         for (int i = 0; i < d_ptr->num_samples-1; i++)
@@ -692,11 +677,11 @@ void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max) // set the sobp 
             d_ptr->e_lut[i] = 0;
             d_ptr->f_lut[i] = 0;
         }
-
         d_ptr->d_lut[d_ptr->num_samples-1] = d_ptr->dend;
         d_ptr->e_lut[d_ptr->num_samples-1] = 0;
         d_ptr->f_lut[d_ptr->num_samples-1] = 0;
     }
+	d_ptr->num_peaks = (d_ptr->E_max - d_ptr->E_min) / d_ptr->eres + 1;
 }
 
 void Rt_sobp::SetMinMaxDepths(float new_z_min, float new_z_max, float new_step) // set the sobp parameters by introducing the proximal and distal distances
