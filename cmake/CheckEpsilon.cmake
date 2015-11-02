@@ -7,5 +7,4 @@ macro (CHECK_EPSILON OUT_VAR)
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/cmake/test_eps.cxx
     RUN_OUTPUT_VARIABLE ${OUT_VAR})
-  #message (STATUS "Checking epsilon: ${OUT_VAR}")
 endmacro ()
