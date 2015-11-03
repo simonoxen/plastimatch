@@ -19,6 +19,7 @@ print_usage (void)
 	"Usage: drr [options] [infile]\n"
 	"Options:\n"
 	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
+	" -y angle          Gantry angle for source\n"
 	" -a num            Generate num equally spaced angles\n"
 	" -N angle          Difference between neighboring angles (in degrees)\n"
 	" -nrm \"x y z\"      Set the normal vector for the panel\n"
@@ -52,13 +53,15 @@ drr_opts_init (Drr_options* options)
     options->image_resolution[1] = 128;
     options->image_size[0] = 600;
     options->image_size[1] = 600;
+    options->have_image_center = 0;
+    options->have_image_window = 0;
     options->isocenter[0] = 0.0f;
     options->isocenter[1] = 0.0f;
     options->isocenter[2] = 0.0f;
-    options->have_image_center = 0;
-    options->have_image_window = 0;
-    options->have_angle_diff = 0;
+
+    options->start_angle = 0.f;
     options->num_angles = 1;
+    options->have_angle_diff = 0;
     options->angle_diff = 1.0f;
 
     options->have_nrm = 0;
@@ -155,6 +158,13 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-O")) {
 	    if (++i >= argc) { print_usage(); }
 	    options->output_prefix = strdup (argv[i]);
+	}
+	else if (!strcmp (argv[i], "-y")) {
+	    if (++i >= argc) { print_usage(); }
+	    rc = sscanf (argv[i], "%g" , &options->start_angle);
+	    if (rc != 1) {
+		print_usage ();
+	    }
 	}
 	else if (!strcmp (argv[i], "-a")) {
 	    if (++i >= argc) { print_usage(); }

@@ -203,7 +203,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     /* Otherwise, loop through camera angles */
     else {
 	for (a = 0; a < options->num_angles; a++) {
-	    double angle = a * options->angle_diff;
+	    double angle = options->start_angle + a * options->angle_diff;
 	    double cam[3];
 	    double nrm[3];
 
