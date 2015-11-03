@@ -893,6 +893,14 @@ xform_any_to_itk_bsp_nobulk (
     bsp_out->SetParametersByValue (bsp_coeff);
 }
 
+/* GCS 2015-10-30.  It is not well defined whether this function 
+   should set extend the bsp such 
+   (a) the "image region" of the bsp covers the roi
+   or 
+   (b) the bsp grid covers the roi
+   The existing implementation seems to be the latter.  The code should 
+   be reviewed to ensure that callers understand this. */
+
 /* GCS Jun 3, 2008.  When going from a lower image resolution to a 
     higher image resolution, the origin pixel moves outside of the 
     valid region defined by the bspline grid.  To fix this, we re-form 
@@ -904,21 +912,25 @@ itk_bsp_extend_to_region (
     const Plm_image_header* pih, 
     const RegionType* roi)
 {
-    int d, old_idx;
     unsigned long i, j, k;
     int extend_needed = 0;
     BsplineTransformType::Pointer bsp = xf->get_itk_bsp();
     BsplineTransformType::OriginType bsp_origin = bsp->GetGridOrigin();
     BsplineTransformType::RegionType bsp_region = bsp->GetGridRegion();
     BsplineTransformType::RegionType::SizeType bsp_size = bsp->GetGridRegion().GetSize();
+    BsplineTransformType::SpacingType bsp_spacing = bsp->GetGridSpacing();
+    BsplineTransformType::DirectionType bsp_direction = bsp->GetGridDirection();
+    Plm_image_header bsp_pih (bsp_region, bsp_origin, bsp_spacing, 
+        bsp_direction);
 
     /* # of control points to "extend before" and "extend after" 
        existing grid */
     int eb[3], ea[3];
 
+#if PLM_CONFIG_LEGACY_BSPLINE_EXTEND
     /* Figure out if we need to extend the bspline grid.  If so, compute 
        ea & eb, as well as new values of bsp_region and bsp_origin. */
-    for (d = 0; d < 3; d++) {
+    for (int d = 0; d < 3; d++) {
         float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
         float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
         float new_roi_origin = pih->origin(d) + roi->GetIndex()[d] * pih->spacing(d);
@@ -938,8 +950,47 @@ itk_bsp_extend_to_region (
             extend_needed = 1;
         }
     }
-    if (extend_needed) {
 
+#else
+    /* Figure out if we need to extend the bspline grid.  If so, compute 
+       ea & eb, as well as new values of bsp_region and bsp_origin. */
+    float new_roi_origin_idx[3], new_roi_corner_idx[3];
+    for (int d = 0; d < 3; d++) {
+        new_roi_origin_idx[d] = 1.f;
+        new_roi_corner_idx[d] = roi->GetSize()[d] - 1;
+    }
+    FloatPoint3DType new_roi_origin = pih->get_position (new_roi_origin_idx);
+    FloatPoint3DType new_roi_corner = pih->get_position (new_roi_corner_idx);
+    FloatPoint3DType new_roi_origin_idx_in_old = 
+        bsp_pih.get_index (new_roi_origin);
+    FloatPoint3DType new_roi_corner_idx_in_old = 
+        bsp_pih.get_index (new_roi_corner);
+    for (int d = 0; d < 3; d++) {
+        eb[d] = ea[d] = 0;
+        new_roi_origin_idx_in_old[d] = floorf (new_roi_origin_idx_in_old[d]);
+        new_roi_corner_idx_in_old[d] = ceilf (new_roi_corner_idx_in_old[d]);
+        if (new_roi_origin_idx_in_old[d] < 1) {
+            eb[d] = 1 - (int) new_roi_origin_idx_in_old[d];
+            new_roi_corner_idx[d] -= eb[d];
+            extend_needed = 1;
+        }
+        if (new_roi_corner_idx_in_old[d] > bsp_size[d] - 1) {
+            ea[d] = new_roi_corner_idx_in_old[d] - (bsp_size[d] - 1);
+            extend_needed = 1;
+        }
+    }
+
+    if (extend_needed) {
+        /* Figure out new origin */
+        bsp_origin = bsp_pih.get_position (new_roi_corner_idx);
+        /* Figure out new size */
+        for (int d = 0; d < 3; d++) {
+            bsp_size[d] += eb[d] + ea[d];
+        }
+    }
+#endif
+
+    if (extend_needed) {
         /* Allocate new parameter array */
         BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
         BsplineTransformType::RegionType old_region = bsp->GetGridRegion();
@@ -947,13 +998,14 @@ itk_bsp_extend_to_region (
         bsp_new->SetGridOrigin (bsp_origin);
         bsp_new->SetGridRegion (bsp_region);
         bsp_new->SetGridSpacing (bsp->GetGridSpacing());
+        bsp_new->SetGridDirection (bsp->GetGridDirection());
 
         /* Copy current parameters in... */
         const unsigned int num_parms = bsp_new->GetNumberOfParameters();
         BsplineTransformType::ParametersType bsp_coeff;
         bsp_coeff.SetSize (num_parms);
         bsp_coeff.Fill (0.f);
-        for (old_idx = 0, d = 0; d < 3; d++) {
+        for (int old_idx = 0, d = 0; d < 3; d++) {
             for (k = 0; k < old_region.GetSize()[2]; k++) {
                 for (j = 0; j < old_region.GetSize()[1]; j++) {
                     for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {

@@ -11,15 +11,17 @@ project (src_plastimatch)
 
 # Plastimatch software configuration options
 option (PLM_CONFIG_ALT_DCOS "Use alternative direction cosines rules" OFF)
-option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
-option (PLM_CONFIG_USE_SS_IMAGE_VEC
-  "Save structure sets as ITK UCHAR VEC images (in development)" ON)
 option (PLM_CONFIG_CLANG_COMPLETE "Generate .clang_complete for hipster Vim-ers" OFF)
 option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registration algorithm" ON)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
+option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
+option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
+  "Use legacy code for extending b-spline domain" ON)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
+option (PLM_CONFIG_USE_SS_IMAGE_VEC
+  "Save structure sets as ITK UCHAR VEC images (in development)" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries

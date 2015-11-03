@@ -36,6 +36,8 @@ public:
     Plm_image_header (plm_long dim[3], float origin[3], float spacing[3]);
     Plm_image_header (plm_long dim[3], float origin[3], float spacing[3],
         float direction_cosines[9]);
+    Plm_image_header (const RegionType& region, const OriginType& origin,
+        const SpacingType& spacing, const DirectionType& direction);
     Plm_image_header (Plm_image *pli);
     Plm_image_header (const Plm_image& pli);
     Plm_image_header (const Plm_image::Pointer& pli);

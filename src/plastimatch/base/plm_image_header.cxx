@@ -50,6 +50,13 @@ Plm_image_header::Plm_image_header (
     this->set_from_gpuit (dim, origin, spacing, direction_cosines);
 }
 
+Plm_image_header::Plm_image_header (
+    const RegionType& region, const OriginType& origin,
+    const SpacingType& spacing, const DirectionType& direction)
+{
+    this->set (region, origin,spacing, direction);
+}
+
 Plm_image_header::Plm_image_header (Plm_image *pli) 
 {
     d_ptr = new Plm_image_header_private;

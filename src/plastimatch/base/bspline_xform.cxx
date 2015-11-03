@@ -365,6 +365,8 @@ bspline_xform_initialize
     float *A, *B, *C;
 
     logfile_printf ("bspline_xform_initialize\n");
+
+    bxf->dc.set (direction_cosines);
     for (d = 0; d < 3; d++) {
         /* copy input parameters over */
         bxf->img_origin[d] = img_origin[d];
@@ -373,7 +375,6 @@ bspline_xform_initialize
         bxf->roi_offset[d] = roi_offset[d];
         bxf->roi_dim[d] = roi_dim[d];
         bxf->vox_per_rgn[d] = vox_per_rgn[d];
-        bxf->dc.set (direction_cosines);
 
         /* grid spacing is in mm */
         bxf->grid_spac[d] = bxf->vox_per_rgn[d] * fabs (bxf->img_spacing[d]);

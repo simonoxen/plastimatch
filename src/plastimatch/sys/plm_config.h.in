@@ -52,10 +52,11 @@
 
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
-#cmakedefine PLM_CONFIG_USE_PATCHED_ITK 1
-#cmakedefine PLM_CONFIG_USE_SS_IMAGE_VEC 1
 #cmakedefine PLM_CONFIG_ALT_DCOS 1
 #cmakedefine PLM_CONFIG_KEYHOLIZE 1
+#cmakedefine PLM_CONFIG_LEGACY_BSPLINE_EXTEND 1
+#cmakedefine PLM_CONFIG_USE_SS_IMAGE_VEC 1
+#cmakedefine PLM_CONFIG_USE_PATCHED_ITK 1
 
 /* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
