@@ -56,6 +56,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-roi-e.txt"
   "plm-reg-stiffness-a.txt"
   "plm-reg-multi-a.txt"
+  "plm-reg-multi-b.txt"
   "plm-reg-dv-itk-translation.txt"
   "plm-reg-itk-rigid-a.txt"
   "plm-reg-itk-rigid-b.txt"
@@ -3231,6 +3232,7 @@ set_tests_properties (plm-bsp-dcos-f-check PROPERTIES
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 6)
 ##   plm-reg-multi-a      versor, then demons
+##   plm-reg-multi-b      two b-spline stages
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-reg-multi-a"
@@ -3255,6 +3257,30 @@ set_tests_properties (plm-reg-multi-a-stats PROPERTIES
   DEPENDS plm-reg-multi-a)
 set_tests_properties (plm-reg-multi-a-check PROPERTIES 
   DEPENDS plm-reg-multi-a-stats)
+
+plm_add_test (
+  "plm-reg-multi-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-b.txt"
+  )
+plm_add_test (
+  "plm-reg-multi-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-reg-multi-b-img.nrrd"
+  )
+plmtest_check_interval (
+  "plm-reg-multi-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-multi-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-987"
+  "-984"
+  )
+set_tests_properties (plm-reg-multi-b PROPERTIES 
+  DEPENDS "rect-2;sphere-2")
+set_tests_properties (plm-reg-multi-b-stats PROPERTIES 
+  DEPENDS plm-reg-multi-b)
+set_tests_properties (plm-reg-multi-b-check PROPERTIES 
+  DEPENDS plm-reg-multi-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 7) - check default value

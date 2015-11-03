@@ -17,7 +17,7 @@ option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
-  "Use legacy code for extending b-spline domain" ON)
+  "Use legacy code for extending b-spline domain" OFF)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
 option (PLM_CONFIG_USE_SS_IMAGE_VEC
