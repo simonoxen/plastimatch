@@ -24,9 +24,7 @@ set (PLMDOSE_LIBRARY_SRC
   rt_parms.cxx
   rt_plan.cxx  
   rt_sigma.cxx
-  rt_sobp.cxx rt_sobp.h 
-  rt_sobp_p.cxx rt_sobp_p.h
-  rt_sobp_optimize.cxx 
+  rt_sobp.cxx
   wed_parms.cxx
   )
 

@@ -14,8 +14,159 @@
 #include "print_and_exit.h"
 #include "rt_depth_dose.h"
 #include "rt_sobp.h"
-#include "rt_sobp_p.h"
 #include "string_util.h"
+
+class Rt_sobp_private {
+public:
+    std::vector<const Rt_depth_dose*> depth_dose;
+
+    float* d_lut;               /* depth array (mm) */
+    float* e_lut;               /* energy array (MeV) */
+	float* f_lut;				/* integrated energy array (MeV) */
+    double dres;
+	float dose_max;
+    int num_samples;	        /* number of depths */
+
+    int eres;			/* energy resolution */
+    int num_peaks;		/* number of peaks */
+
+    std::vector<double> sobp_weight;
+
+    int E_min;			/* lower energy */
+    int E_max;			/* higher energy */
+
+    float dmin;			/* lower depth */
+    float dmax;			/* higher depth */
+    float dend;			/* end of the depth array */
+
+    /* p  & alpha are parameters that bind depth and energy 
+       according to ICRU */
+    Particle_type particle_type;
+    double p;			
+    double alpha;
+
+    float prescription_dmin;
+    float prescription_dmax;
+
+public:
+    Rt_sobp_private ()
+	{
+		d_lut = new float[0];
+		e_lut = new float[0];
+		f_lut = new float[0];
+		dres = .01;
+		dose_max = 1.f;
+		num_samples = 0;
+		eres = 1.0;
+		E_min = 0;
+		E_max = 0;
+		dmin = 0.0;
+		dmax = 0.0;
+		dend = 0.0;
+		prescription_dmin = 50.f;
+		prescription_dmax = 100.f;
+		set_particle_type (PARTICLE_TYPE_P);
+	}
+    Rt_sobp_private (Particle_type)
+	{
+		d_lut = new float[0];
+		e_lut = new float[0];
+		f_lut = new float[0];
+		dres = .01;
+		dose_max = 1.f;
+		num_samples = 0;
+		eres = 1.0;
+		E_min = 0;
+		E_max = 0;
+		dmin = 0.0;
+		dmax = 0.0;
+		dend = 0.0;
+		prescription_dmin = 50.f;
+		prescription_dmax = 100.f;
+		set_particle_type (PARTICLE_TYPE_P);
+	}
+    Rt_sobp_private (const Rt_sobp_private* rsp)
+	{
+		d_lut = new float[0];
+		e_lut = new float[0];
+		f_lut = new float[0];
+		dres = rsp->dres;
+		dose_max = 1.f;
+		num_samples = rsp->num_samples;
+		eres = rsp->eres;
+		E_min = rsp->E_min;
+		E_max = rsp->E_max;
+		dmin = rsp->dmin;
+		dmax = rsp->dmax;
+		dend = rsp->dend;
+		prescription_dmin = rsp->prescription_dmin;
+		prescription_dmax = rsp->prescription_dmax;
+		set_particle_type (rsp->particle_type);
+	}
+    ~Rt_sobp_private ()
+	{
+		if (d_lut) delete[] d_lut;
+		if (e_lut) delete[] e_lut;
+		if (f_lut) delete[] f_lut;
+		clear_peaks ();
+	}
+public:
+    void set_particle_type (Particle_type)
+	{
+		this->particle_type = particle_type;
+		switch (particle_type) {
+		case PARTICLE_TYPE_P:
+			alpha = particle_parameters[0][0];
+			p = particle_parameters[0][1];
+			break;
+		case PARTICLE_TYPE_HE:
+			alpha = particle_parameters[1][0];
+			p = particle_parameters[1][1];
+			lprintf ("data for helium particle are not available - based on proton beam data");
+			break;
+		case PARTICLE_TYPE_LI:
+			alpha = particle_parameters[2][0];
+			p = particle_parameters[2][1];
+			lprintf ("data for lithium particle type are not available - based on proton beam data");
+			break;
+		case PARTICLE_TYPE_BE:
+			alpha = particle_parameters[3][0];
+			p = particle_parameters[3][1];
+			lprintf ("data for berilium particle type are not available - based on proton beam data");
+			break;
+		case PARTICLE_TYPE_B:
+			alpha = particle_parameters[4][0];
+			p = particle_parameters[4][1];
+			lprintf ("data for bore particle type are not available - based on proton beam data");
+			break;
+		case PARTICLE_TYPE_C:
+			alpha = particle_parameters[5][0];
+			p = particle_parameters[5][1];
+			lprintf ("data for carbon particle type are not available - based on proton beam data");
+			break;
+		case PARTICLE_TYPE_O:
+			alpha = particle_parameters[7][0];
+			p = particle_parameters[7][1];
+			lprintf ("data for oxygen particle type are not available - based on proton beam data");
+			break;
+		default:
+			alpha = particle_parameters[0][0];
+			p = particle_parameters[0][1];
+			particle_type = PARTICLE_TYPE_P;
+			lprintf ("particle not found - proton beam chosen");
+			break;
+		}
+	}
+	void clear_peaks ()
+	{
+		std::vector<const Rt_depth_dose*>::iterator it;
+		for (it = depth_dose.begin(); it != depth_dose.end(); ++it) {
+			delete *it;
+		}
+		depth_dose.clear();
+		sobp_weight.clear();
+	}
+};
 
 Rt_sobp::Rt_sobp ()
 {
@@ -765,4 +916,119 @@ std::vector<const Rt_depth_dose*>
 Rt_sobp::getPeaks()
 {
     return d_ptr->depth_dose;
+}
+
+void Rt_sobp::Optimizer ()
+{
+    d_ptr->num_peaks = (int)(((d_ptr->E_max - d_ptr->E_min) / d_ptr->eres) + 1);
+
+	double depth_maximum = 0;
+	int idx_maximum = 0;
+
+    std::vector<int> energies (d_ptr->num_peaks,0);
+    std::vector<double> weight (d_ptr->num_peaks, 0);
+  
+    std::vector<double> init_vector (d_ptr->num_samples, 0);
+    std::vector< std::vector<double> > depth_dose (d_ptr->num_peaks, init_vector);
+
+    printf("\n %d Mono-energetic BP used:\n", d_ptr->num_peaks);
+
+    /* updating the energies in the table) */
+    for (int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        energies[i]= d_ptr->E_min + i * d_ptr->eres;
+        printf("%d ", energies[i]);
+    }
+    printf("\n");
+
+    for (int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        for (int j = 0; j < d_ptr->num_samples; j++)
+        {
+            depth_dose[i][j] = bragg_curve_norm((double)energies[i],1,(double)d_ptr->d_lut[j]);
+        }
+    }
+	
+    for (int i = d_ptr->num_peaks -1 ; i >= 0; i--)
+    {
+        if (i == d_ptr->num_peaks - 1)
+        {
+            weight[i] = 1.0;
+        }
+        else
+        {
+			/* Find depth max in mm*/
+			depth_maximum = (double) get_proton_depth_max(energies[i]) / (100 * d_ptr->dres);
+			idx_maximum = (int) depth_maximum;
+
+			if (depth_maximum - (double) ((int) depth_maximum) > 0.5 &&  idx_maximum < d_ptr->num_samples)
+			{
+				idx_maximum++;
+			}
+            weight[i] = 1.0 - d_ptr->e_lut[idx_maximum];
+            if (weight[i] < 0)
+            {
+                weight[i] = 0;
+            }
+        }
+        for (int j = 0; j < d_ptr->num_samples; j++)
+        {
+            d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+        }
+    }
+
+	double mean_sobp = 0;
+	double mean_count = 0;
+	for (int i = 0; i < d_ptr->num_samples; i++)
+	{
+		if (d_ptr->d_lut[i] >= d_ptr->dmin && d_ptr->d_lut[i] <= d_ptr->dmax)
+		{
+			mean_sobp += d_ptr->e_lut[i];
+			mean_count++;
+		}
+	}
+	if (mean_count == 0)
+	{
+		printf("***WARNING*** The dose is null in the target interval\n");
+		return;
+	}
+
+	/* SOBP norm and reset the depth dose*/
+	for (int j = 0; j< d_ptr->num_samples; j++)
+	{
+		d_ptr->e_lut[j] =0;
+	}
+
+	for(int i = 0; i < d_ptr->num_peaks; i++)
+	{
+		weight[i] = weight[i] / mean_sobp * mean_count;
+		for (int j = 0; j < d_ptr->num_samples; j++)
+        {
+            d_ptr->e_lut[j] += weight[i] * depth_dose[i][j];
+        }
+	}
+
+    while (!d_ptr->depth_dose.empty())
+    {
+        d_ptr->depth_dose.pop_back();
+    }
+
+    d_ptr->num_peaks = d_ptr->num_peaks;
+    for(int i = 0; i < d_ptr->num_peaks; i++)
+    {
+        this->add_peak ((double)energies[i],1, d_ptr->dres, 
+            (double)d_ptr->dend, weight[i]);
+        d_ptr->sobp_weight.push_back(weight[i]);
+    }
+
+    /* look for the max */
+    double dose_max = 0;
+    for(int i = d_ptr->num_samples-1; i >=0; i--)
+    {
+        if (d_ptr->e_lut[i] > dose_max)
+        {
+            dose_max = d_ptr->e_lut[i];
+        }
+    }
+    this->SetDoseMax(dose_max);
 }

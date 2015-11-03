@@ -17,6 +17,7 @@
 #include "plmdose_config.h"
 #include <stdio.h>
 #include <vector>
+#include "logfile.h"
 #include "particle_type.h"
 #include "plmdose_config.h"
 #include "plm_config.h"
