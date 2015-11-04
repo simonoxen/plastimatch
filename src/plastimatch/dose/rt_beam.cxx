@@ -794,7 +794,7 @@ Rt_beam::copy_sobp(Rt_sobp::Pointer sobp)
 {
     d_ptr->sobp->set_dose_lut(sobp->get_d_lut(), sobp->get_e_lut(), sobp->get_num_samples()); /* copy also num_samples */
     d_ptr->sobp->set_dres(sobp->get_dres());
-    d_ptr->sobp->set_eres(sobp->get_eres());
+    d_ptr->sobp->set_energy_resolution (sobp->get_energy_resolution());
     d_ptr->sobp->set_E_min(sobp->get_E_min());
     d_ptr->sobp->set_E_max(sobp->get_E_max());
     d_ptr->sobp->set_dmin(sobp->get_dmin());

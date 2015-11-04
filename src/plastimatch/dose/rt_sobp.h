@@ -83,12 +83,12 @@ public:
     int get_dres();
     void set_num_samples(int num_samples);
     int get_num_samples();
-    void set_eres(int eres);
-    int get_eres();
-    void set_E_min(int E_min);
-    int get_E_min();
-    void set_E_max(int E_max);
-    int get_E_max();
+    void set_energy_resolution (float eres);
+    float get_energy_resolution ();
+    void set_E_min (float E_min);
+    float get_E_min();
+    void set_E_max (float E_max);
+    float get_E_max();
     void set_dmin(float dmin);
     float get_dmin();
     void set_dmax(float dmax);
@@ -113,15 +113,15 @@ public:
     size_t get_num_peaks();
 
     /* set the minimal and maximal energy to buld the sobp peak */
-    void SetMinMaxEnergies(int new_E_min, int new_E_max);
+    void SetMinMaxEnergies(float new_E_min, float new_E_max);
     /* set the minimal and maximal energy to buld the sobp peak and energy step */
-    void SetMinMaxEnergies(int new_E_min, int new_E_max, int new_step); 
+    void SetMinMaxEnergies(float new_E_min, float new_E_max, float new_step); 
     /* set the minimal and maximal depth covered by the sobp */
     void SetMinMaxDepths(float new_z_min, float new_z_max);
     /* set the minimal and maximal depth covered by the sobp */
     void SetMinMaxDepths(float new_z_min, float new_z_max, float new_step);
     /* set the energy step only */
-    void SetEnergyStep(int new_step);
+    void SetEnergyStep(float new_step);
     /* set energy step */
     void SetDepthStep(float new_step);
 	/* set/get the dose max of the normalized SOBP */
