@@ -516,6 +516,16 @@ itk_xform_load (Xform *xf, const char* fn)
 }
 
 void
+Xform::save_gpuit_vf (const char* fn)
+{
+    //write_mha (fn, this->get_gpuit_vf().get());
+
+    DeformationFieldType::Pointer itk_vf = 
+        xform_gpuit_vf_to_itk_vf (this->get_gpuit_vf().get(), 0);
+    itk_image_save (itk_vf, fn);
+}
+
+void
 Xform::save (const char* fn)
 {
     switch (this->m_type) {
@@ -544,7 +554,7 @@ Xform::save (const char* fn)
         bspline_xform_save (this->get_gpuit_bsp(), fn);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
-        write_mha (fn, this->get_gpuit_vf().get());
+        this->save_gpuit_vf (fn);
         break;
     case XFORM_NONE:
         print_and_exit ("Error trying to save null transform\n");

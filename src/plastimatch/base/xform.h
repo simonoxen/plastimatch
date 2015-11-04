@@ -124,6 +124,9 @@ public:
 
     void print ();
 
+protected:
+    void save_gpuit_vf (const char* fn);
+
 public:
     Xform& operator= (const Xform& xf);
 };
