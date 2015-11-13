@@ -1513,6 +1513,123 @@ Mabs::compute_dmap (
     return dmap_image;
 }
 
+
+void
+Mabs::no_voting (
+    const std::string& atlas_id,
+    const std::string& label_output_dir
+)
+{
+    Plm_timer timer;
+   
+    /* Set up files & directories for this job */
+    std::string atlas_input_path;
+    atlas_input_path = string_format ("%s/%s",
+        d_ptr->preprocessed_dir.c_str(), atlas_id.c_str());
+    lprintf ("atlas_input_path: %s\n",
+        atlas_input_path.c_str());
+    std::string atlas_output_path;
+    atlas_output_path = string_format ("%s/%s",
+        d_ptr->output_dir.c_str(), atlas_id.c_str());
+    lprintf ("atlas_output_path: %s\n",
+        atlas_output_path.c_str());
+    std::string curr_output_dir;
+    curr_output_dir = string_format ("%s/%s",
+        atlas_output_path.c_str(),
+        d_ptr->registration_id.c_str());
+    lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
+
+    /* Load xform */
+    timer.start();
+    std::string xf_fn = string_format ("%s/%s",
+        curr_output_dir.c_str(),
+        "xf.txt");
+    lprintf ("Loading xform: %s\n", xf_fn.c_str());
+    Xform::Pointer xf = xform_load (xf_fn);
+    d_ptr->time_io += timer.report();
+
+    /* Loop through structures for this atlas image */
+    std::set<std::string>::const_iterator it;
+    for (it = d_ptr->parms->structure_set.begin ();
+         it != d_ptr->parms->structure_set.end (); it++)
+    {
+        const std::string& mapped_name = *it;
+        lprintf ("Segmenting structure: %s\n", mapped_name.c_str());
+
+        /* Load original structure */
+        timer.start();
+        std::string atlas_struct_fn;
+        atlas_struct_fn = string_format ("%s/structures/%s.nrrd", 
+                atlas_input_path.c_str(), mapped_name.c_str());
+        Plm_image::Pointer atlas_struct = 
+                plm_image_load_native (atlas_struct_fn);
+        d_ptr->time_io += timer.report();
+        if (!atlas_struct) {
+                lprintf ("Atlas %s doesn't have structure %s\n",
+                    atlas_id.c_str(), mapped_name.c_str());
+                continue;
+        }
+
+        /* Warp structure */
+        timer.start();
+        Plm_image::Pointer warped_structure = Plm_image::New();
+        Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
+        lprintf ("Warping atlas structure.\n");
+        plm_warp (warped_structure, 0, xf, 
+                &fixed_pih, 
+                atlas_struct,
+                0, 0, 0);
+        d_ptr->time_warp_str += timer.report();
+        
+        /* Save warped structure */        
+        std::string final_segmentation_img_fn = string_format (
+            "%s/%s_novoting.nrrd", label_output_dir.c_str(), 
+            mapped_name.c_str());
+
+        itk_image_save (warped_structure->itk_uchar(),
+            final_segmentation_img_fn.c_str());
+        
+        /* If required compute statistics */
+        std::string atl_name = basename (d_ptr->output_dir);
+        std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
+            d_ptr->preprocessed_dir.c_str(), atl_name.c_str(),
+            mapped_name.c_str());
+
+        Plm_image::Pointer ref_stru = 
+            plm_image_load_native (ref_stru_fn);
+
+        if (!ref_stru) {
+            /* User is not running train, so no statistics */
+            continue;
+        }
+       
+        
+        /* Compute Dice, etc. */
+        std::string stats_string = d_ptr->stats.compute_statistics (
+            "segmentation", /* Not used yet */
+            ref_stru->itk_uchar(),
+            warped_structure->itk_uchar());
+        std::string seg_log_string = string_format (
+            "target=%s,reg=%s,struct=%s,"
+            "%s\n",
+            d_ptr->ref_id.c_str(),
+            d_ptr->registration_id.c_str(),
+            mapped_name.c_str(),
+            stats_string.c_str());
+        lprintf ("%s", seg_log_string.c_str());
+
+        /* Update seg_dice file */
+        std::string seg_dice_log_fn = string_format (
+            "%s/seg_dice.csv",
+            d_ptr->mabs_train_dir.c_str());
+        FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
+        fprintf (fp, "%s", seg_log_string.c_str());
+        fclose (fp);
+    
+    }
+        
+}
+
 void
 Mabs::gaussian_segmentation_vote (
     const std::string& atlas_id,
@@ -1825,16 +1942,21 @@ Mabs::staple_segmentation_label (
              = d_ptr->staple_map.begin(); 
          staple_it != d_ptr->staple_map.end(); staple_it++)
     {
+       
         const std::string& mapped_name = staple_it->first;
         std::string atl_name = basename (d_ptr->output_dir);
+
+        /* Find fusion weights for this structure */
+        const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
 
         std::string ref_stru_fn = string_format ("%s/%s/structures/%s.nrrd",
             d_ptr->preprocessed_dir.c_str(), atl_name.c_str(),
             mapped_name.c_str());
 
         std::string final_segmentation_img_fn = string_format (
-            "%s/%s_staple.nrrd", label_output_dir.c_str(), 
-            mapped_name.c_str());
+            "%s/%s_staple_%.9f.nrrd", label_output_dir.c_str(), 
+            mapped_name.c_str(),
+            msw->confidence_weight);
 
         printf("Structure %s \n", final_segmentation_img_fn.c_str());
         staple_it->second->run();
@@ -1850,9 +1972,6 @@ Mabs::staple_segmentation_label (
             continue;
         }
        
-        /* Find fusion weights for this structure */
-        const Mabs_seg_weights* msw = seg_weights.find (mapped_name);
-        
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
             "segmentation", /* Not used yet */
@@ -1884,6 +2003,19 @@ Mabs::staple_segmentation_label (
 void
 Mabs::run_segmentation (const Mabs_seg_weights_list& seg_weights)
 {
+    
+    /* Just one atlas and no voting option selected */
+    if (d_ptr->parms->fusion_criteria == "none" && d_ptr->parms->atlases_from_ranking == 1) {
+
+        std::string atlas_id = basename (*d_ptr->atlas_list.begin());
+        std::string label_output_dir =
+            string_format ("%s/segmentations", d_ptr->output_dir.c_str());
+
+        no_voting(atlas_id, label_output_dir);
+
+        return;
+    }
+
     /* Clear out internal structures */
     d_ptr->clear_vote_map ();
     d_ptr->clear_staple_map ();
@@ -1937,6 +2069,18 @@ Mabs::run_segmentation (const Mabs_seg_weights_list& seg_weights)
 void
 Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
 {
+    /* Just one atlas and no voting option selected */
+    if (d_ptr->parms->fusion_criteria == "none" && d_ptr->parms->atlases_from_ranking == 1) {
+
+        std::string atlas_id = basename (*d_ptr->atlas_list.begin());
+        std::string label_output_dir =
+            string_format ("%s/segmentations", d_ptr->output_dir.c_str());
+
+        no_voting(atlas_id, label_output_dir);
+
+        return;
+    }
+
     /* Clear out internal structures */
     d_ptr->clear_vote_map ();
     d_ptr->clear_staple_map ();

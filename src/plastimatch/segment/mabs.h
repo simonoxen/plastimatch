@@ -36,6 +36,11 @@ protected:
     void run_segmentation (const Mabs_seg_weights_list& seg_weights);
     void run_segmentation_train (const Mabs_seg_weights& seg_weights);
     void run_segmentation_train_loop ();
+    
+    void no_voting (
+        const std::string& atlas_id,
+        const std::string& label_output_dir);
+
     void gaussian_segmentation_vote (
         const std::string& atlas_id,
         const Mabs_seg_weights_list& seg_weights

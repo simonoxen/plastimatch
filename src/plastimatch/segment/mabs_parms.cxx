@@ -235,10 +235,12 @@ Mabs_parms_parser::set_key_value (
             else if (val == "staple" || val == "STAPLE" || val == "Staple") {
                 mp->fusion_criteria = "staple";
             }
-
             else if (val == "gaussian,staple" || val == "GAUSSIAN,STAPLE" || val == "Gaussian,Staple" ||
-                val == "staple,gaussian" || val == "STAPLE,GAUSSIAN" || val == "Staple,Gaussian") {
+                     val == "staple,gaussian" || val == "STAPLE,GAUSSIAN" || val == "Staple,Gaussian") {
                 mp->fusion_criteria = "gaussian_and_staple";
+            }
+            else if (val == "none" || val == "NONE" || val == "None") {
+                mp->fusion_criteria = "none";
             }
         }
         else if (key == "distance_map_algorithm") {
