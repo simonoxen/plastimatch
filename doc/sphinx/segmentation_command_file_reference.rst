@@ -141,7 +141,7 @@ All the possible parameters are listed below:
    * - fusion_criteria
      - TRAINING
      - gaussian
-     - "gaussian", "staple" and "gaussian,staple"
+     - "gaussian", "staple", "gaussian,staple" and "none"
      - Labels fusion criterion
    * - distance_map_algorithm
      - TRAINING
