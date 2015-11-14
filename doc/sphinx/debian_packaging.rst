@@ -33,9 +33,15 @@ Setting up a build system for the first time
 
      debcheckout --git-track='*' --user <username> git://git.debian.org/debian-med/plastimatch.git
 
+   There may be other ways to do this, such as::
+
+     gbp clone ssh://<username>@git.debian.org/git/debian-med/plastimatch.git
+
+   What is the difference between the above?
+
 #. Link the helper scripts to the debian plastimatch directory::
 
-     TBD
+     # This may not be needed any longer
      cd debian-med/plastimatch
      ln -s ~/work/plastimatch/extra/debian/* .
 
@@ -47,9 +53,37 @@ Setting up a build system for the first time
    See this link for an explanation https://wiki.ubuntu.com/PbuilderHowto, 
    but use the sid distribution instead of squeeze.
 
+#. Initial setup of pbuilder environment::
+
+     sudo apt-get install debian-archive-keyring
+     git-pbuilder create
+
+   See this link for more information https://wiki.debian.org/git-pbuilder
+
 
 Step 1: Preliminary testing
 ---------------------------
+The preliminary testing is performed to make sure that the upstream 
+tarball has everything it needs.
+
+#. Run gbp buildpackage to create the dsc::
+
+     gbp buildpackage --git-ignore-new -uc -us -j16
+
+   All the junk that gbp buildpackage makes, such as the orig.tar.gz and the 
+   dsc file, gets put in the parent directory.
+
+#. If you want to clean the git directory, you can run::
+
+     debuild clean
+
+#. Test with pbuilder::
+
+     gbp buildpackage --git-pbuilder --git-ignore-new -j16
+
+
+Step 1: Preliminary testing (obsolete version)
+----------------------------------------------
 The preliminary testing is performed to make sure that the upstream 
 tarball has everything it needs.
 
