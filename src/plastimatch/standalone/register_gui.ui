@@ -6,335 +6,635 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>780</width>
-    <height>743</height>
+    <width>1062</width>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Platimatch register gui (bug report to: ykpark@mgh.harvard.edu)</string>
+   <string>RegiAid - Plastimatch</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="pushButton_Open_RD_Ref">
+   <widget class="QWidget" name="horizontalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>0</y>
+      <width>541</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pushButton_SetDefaultDir">
+       <property name="text">
+        <string>set</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditDefaultDirPath"/>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>40</y>
-      <width>121</width>
+      <y>50</y>
+      <width>1041</width>
+      <height>591</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Data pool</string>
+     </attribute>
+     <widget class="QTableView" name="tableView_main">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>240</y>
+        <width>511</width>
+        <height>311</height>
+       </rect>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>511</width>
+        <height>91</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Que single</string>
+      </property>
+      <widget class="QLabel" name="label_6">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Fixed</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>20</y>
+         <width>61</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Moving</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_8">
+       <property name="geometry">
+        <rect>
+         <x>270</x>
+         <y>20</y>
+         <width>91</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Command file</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_Fixed">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="duplicatesEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_Moving">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>50</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_Command">
+       <property name="geometry">
+        <rect>
+         <x>270</x>
+         <y>50</y>
+         <width>111</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_QueSingle">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>30</y>
+         <width>81</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Que</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>110</y>
+        <width>511</width>
+        <height>81</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Que multiple</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_QueByLine">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>111</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Que all lines</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_QueByPermutation">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Que with permutation</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="pushButton_UpdateFileList">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>200</y>
+        <width>171</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Apply Update And Rename</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_SortSelected">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>200</y>
+        <width>141</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Sort Selected Column</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>10</y>
+        <width>341</width>
+        <height>551</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Command file</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_CopyCommand">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>71</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Copy to</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_NumOfCopy">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>30</y>
+         <width>31</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>1</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_10">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>30</y>
+         <width>41</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>files</string>
+       </property>
+      </widget>
+      <widget class="QPlainTextEdit" name="plainTextEdit">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>100</y>
+         <width>321</width>
+         <height>441</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>71</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Text Editor</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_SaveCommandText">
+       <property name="geometry">
+        <rect>
+         <x>80</x>
+         <y>60</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_ClearCommandFiles">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>20</y>
+         <width>71</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Clear all</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Que</string>
+     </attribute>
+     <widget class="QTableView" name="tableView_que">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>671</width>
+        <height>381</height>
+       </rect>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SingleSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+     </widget>
+     <widget class="QPlainTextEdit" name="plainTextEdit_Que">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>700</x>
+        <y>50</y>
+        <width>321</width>
+        <height>501</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4">
+      <property name="geometry">
+       <rect>
+        <x>700</x>
+        <y>20</y>
+        <width>141</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Command File Viewer</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>410</y>
+        <width>151</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Edit Que</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_ClearQue">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>60</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Clear all</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_RemoveSel">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>20</y>
+         <width>101</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Remove selected</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>180</x>
+        <y>410</y>
+        <width>301</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Run Que</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_RunSelected">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Run selected</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_RunAll_Seq">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Run-all Sequentially</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_RunAll_MultiThread">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Run-all Multi-Thread</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_MaxNumberThread">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>120</y>
+         <width>41</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>4</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>101</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Number of threads</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_TotalProcTimeSeq">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>60</y>
+         <width>51</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>150</x>
+         <y>60</y>
+         <width>81</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Total time (s)</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>150</x>
+         <y>90</y>
+         <width>81</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Total time (s)</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="lineEdit_TotalProcTimeMT">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>90</y>
+         <width>51</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="geometry">
+       <rect>
+        <x>490</x>
+        <y>410</y>
+        <width>191</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Review</string>
+      </property>
+      <widget class="QPushButton" name="pushButton_OpenSelectedOutput">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>20</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Open selected output</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_CopyTableToClipboard">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>50</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Copy To Clipboard</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Load RD Ref</string>
+     <string>Working directory</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_RunBatchGamma">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>660</y>
-      <width>101</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Run 3D Gamma</string>
-    </property>
-   </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit_RD_Ref">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>371</width>
-      <height>281</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPlainTextEdit" name="plainTextEdit_RD_Comp">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>80</y>
-      <width>371</width>
-      <height>281</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>380</y>
-      <width>421</width>
-      <height>261</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Gamma parameters</string>
-    </property>
-    <widget class="QLineEdit" name="lineEdit_inhereResample">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>30</y>
-       <width>31</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>1</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>30</y>
-       <width>31</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>mm</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_inhereResample">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>121</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Inherent resample</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_Interp_search">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>121</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Interpolated_search</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="radioButton_localGamma">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>90</y>
-       <width>82</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Local gamma</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QRadioButton" name="radioButton_globalGamma">
-     <property name="geometry">
-      <rect>
-       <x>120</x>
-       <y>90</y>
-       <width>111</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Global gamma</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_refDoseInGy">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>110</y>
-       <width>41</width>
-       <height>21</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_7">
-     <property name="geometry">
-      <rect>
-       <x>270</x>
-       <y>110</y>
-       <width>121</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>(blank = use dmax)</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_8">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>110</y>
-       <width>81</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Ref. dose [Gy]</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_dta_tol">
-     <property name="geometry">
-      <rect>
-       <x>80</x>
-       <y>150</y>
-       <width>41</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>3.0</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_9">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>150</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>DTA [mm]</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_10">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>150</y>
-       <width>81</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Dose diff [%]</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_dose_tol">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>150</y>
-       <width>41</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>3.0</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_11">
-     <property name="geometry">
-      <rect>
-       <x>270</x>
-       <y>150</y>
-       <width>81</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Cut-off dose[%]</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="lineEdit_cutoff_dose">
-     <property name="geometry">
-      <rect>
-       <x>370</x>
-       <y>150</y>
-       <width>41</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>10.0</string>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_gammamap_output">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>190</y>
-       <width>131</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Gamma map output</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-    <widget class="QCheckBox" name="checkBox_failuremap_output">
-     <property name="geometry">
-      <rect>
-       <x>180</x>
-       <y>190</y>
-       <width>161</width>
-       <height>17</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Failure map output</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QPushButton" name="pushButton_Open_RD_Comp">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>40</y>
-      <width>121</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Load RD to compare</string>
-    </property>
-   </widget>
+   <zorder>tabWidget</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
+   <zorder>label_9</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>780</width>
+     <width>1062</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionLoad_fixed_images"/>
+    <addaction name="actionLoad_moving_images"/>
+    <addaction name="actionLoad_command_files"/>
+    <addaction name="actionSave_Que_Table_To_Text"/>
+   </widget>
+   <widget class="QMenu" name="menuView_2">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionVolume_Viewer"/>
+   </widget>
+   <addaction name="menuView"/>
+   <addaction name="menuView_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -345,46 +645,380 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionVolume_Viewer">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Volume Viewer</string>
+   </property>
+  </action>
+  <action name="actionLoad_fixed_images">
+   <property name="text">
+    <string>Load fixed images</string>
+   </property>
+  </action>
+  <action name="actionLoad_moving_images">
+   <property name="text">
+    <string>Load moving images</string>
+   </property>
+  </action>
+  <action name="actionLoad_command_files">
+   <property name="text">
+    <string>Load command files</string>
+   </property>
+  </action>
+  <action name="actionSave_Que_Table_To_Text">
+   <property name="text">
+    <string>Save que table to text file</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton_Open_RD_Comp</sender>
+   <sender>pushButton_SetDefaultDir</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
-   <slot>SLT_Load_RD_Comp()</slot>
+   <slot>SLT_SetDefaultDir()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>485</x>
-     <y>86</y>
+     <x>131</x>
+     <y>64</y>
     </hint>
     <hint type="destinationlabel">
-     <x>544</x>
-     <y>85</y>
+     <x>103</x>
+     <y>76</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_Open_RD_Ref</sender>
+   <sender>pushButton_SaveCommandText</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
-   <slot>SLT_Load_RD_Ref()</slot>
+   <slot>SLT_SaveCommandText()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>84</x>
-     <y>94</y>
+     <x>722</x>
+     <y>205</y>
     </hint>
     <hint type="destinationlabel">
-     <x>155</x>
-     <y>93</y>
+     <x>682</x>
+     <y>700</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_QueSingle</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_AddSingleToQue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>507</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>568</x>
+     <y>180</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_QueByLine</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_AddMultipleToQueByLine()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>49</x>
+     <y>263</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>8</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_QueByPermutation</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_AddMultipleToQueByPermu()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>204</x>
+     <y>267</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>6</x>
+     <y>261</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_fixed_images</sender>
+   <signal>triggered()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_LoadFixedFiles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>434</x>
+     <y>352</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_moving_images</sender>
+   <signal>triggered()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_LoadMovingFiles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>434</x>
+     <y>352</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_command_files</sender>
+   <signal>triggered()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_LoadCommandFiles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>434</x>
+     <y>352</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_CopyCommand</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_CopyCommandFile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>622</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>570</x>
+     <y>284</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_ClearCommandFiles</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_ClearCommandFiles()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>792</x>
+     <y>165</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>897</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_UpdateFileList</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_UpdateFileList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>491</x>
+     <y>319</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>572</x>
+     <y>349</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_SortSelected</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_SortSelectedColumn()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>305</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>913</x>
+     <y>71</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_ClearQue</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_ClearQueAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>96</x>
+     <y>597</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>6</x>
+     <y>658</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_RemoveSel</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_RemoveSelectedQue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>142</x>
+     <y>565</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>167</x>
+     <y>688</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_RunSelected</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_RunSingleSelected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>302</x>
+     <y>555</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>323</x>
+     <y>680</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_RunAll_Seq</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_RunBatchSequential()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>314</x>
+     <y>584</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>484</x>
+     <y>675</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_RunAll_MultiThread</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_RunBatchMultiThread()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>236</x>
+     <y>625</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>105</x>
+     <y>678</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_OpenSelectedOutput</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_OpenSelectedOutputDir()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>654</x>
+     <y>548</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>666</x>
+     <y>680</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_CopyTableToClipboard</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_CopyTableQueToClipboard()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>604</x>
+     <y>588</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>635</x>
+     <y>677</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave_Que_Table_To_Text</sender>
+   <signal>triggered()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLTM_ExportQueResult()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>530</x>
+     <y>350</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <slots>
-  <slot>SLT_Load_RD_Ref()</slot>
-  <slot>SLT_Load_RD_Comp()</slot>
-  <slot>SLT_RunBatchGamma()</slot>
+  <slot>SLT_SetDefaultDir()</slot>
+  <slot>SLT_LoadFixedFiles()</slot>
+  <slot>SLT_LoadMovingFiles()</slot>
+  <slot>SLT_LoadCommandFiles()</slot>
+  <slot>SLT_ReadCommandFile(QModelIndex)</slot>
+  <slot>SLT_SaveCommandText()</slot>
+  <slot>SLT_AddSingleToQue()</slot>
+  <slot>SLT_AddMultipleToQueByLine()</slot>
+  <slot>SLT_AddMultipleToQueByPermu()</slot>
+  <slot>SLT_CopyCommandFile()</slot>
+  <slot>SLT_ClearCommandFiles()</slot>
+  <slot>SLT_UpdateFileList()</slot>
+  <slot>SLT_SortSelectedColumn()</slot>
+  <slot>SLT_ClearQueAll()</slot>
+  <slot>SLT_RemoveSelectedQue()</slot>
+  <slot>SLT_RunSingleSelected()</slot>
+  <slot>SLT_RunBatchSequential()</slot>
+  <slot>SLT_RunBatchMultiThread()</slot>
+  <slot>SLT_OpenSelectedOutputDir()</slot>
+  <slot>SLT_CopyTableQueToClipboard()</slot>
+  <slot>SLTM_ExportQueResult()</slot>
  </slots>
 </ui>

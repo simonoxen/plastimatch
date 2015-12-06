@@ -6,7 +6,8 @@
 //#include "itkImageFileReader.h"
 //#include "itkImageFileWriter.h"
 
-
+#include <QString>
+#include <QFileInfo>
 
 #define DEFAULT_LABEL_SIZE1 512
 #define DEFAULT_LABEL_SIZE2 256
@@ -55,6 +56,78 @@ enum enRegisterOption{
     PLAST_GRADIENT,
     PLAST_AFFINE,
     PLAST_BSPLINE,
+};
+
+
+enum enUpdateDirection{
+    GUI2DATA = 0,
+    DATA2GUI,    
+};
+
+
+#define DEFAULT_NUM_COLUMN_MAIN 3
+#define DEFAULT_MAXNUM_MAIN 50
+#define DEFAULT_NUM_COLUMN_QUE 7
+#define DEFAULT_MAXNUM_QUE 200
+
+
+enum enStatus{
+    ST_NOT_STARTED = 0,
+    ST_PENDING,
+    ST_ERROR,
+    ST_DONE,
+};
+
+
+enum enPlmCommandInfo{
+    PLM_OUTPUT_DIR_PATH = 0,    
+    PLM_TEMP1,
+    PLM_TEMP2,
+};
+
+
+class CRegiQueString {
+public:
+    QString m_quePathFixed; //file name with extention
+    QString m_quePathMoving;
+    QString m_quePathCommand;
+    int m_iStatus; //0: not started, 1: pending, 2: done
+    double m_fProcessingTime; //sec
+    double m_fScore;
+
+public:
+    CRegiQueString(){ m_iStatus = ST_NOT_STARTED; m_fScore = 0.0; m_fProcessingTime = 0.0; }
+    ~CRegiQueString(){ ; }
+    QString GetStrFixed(){
+        QFileInfo fInfo(m_quePathFixed);
+        return fInfo.fileName();
+    }
+    QString GetStrMoving(){
+        QFileInfo fInfo(m_quePathMoving);
+        return fInfo.fileName();
+    }
+    QString GetStrCommand(){
+        QFileInfo fInfo(m_quePathCommand);
+        return fInfo.fileName();
+    }
+
+    QString GetStrStatus(){
+        if (m_iStatus == ST_NOT_STARTED)
+            return QString("Wait");
+        else if (m_iStatus == ST_PENDING)
+            return QString("Pending");
+        else if (m_iStatus == ST_DONE)
+            return QString("Done");
+        else return QString("");
+    }
+
+    QString GetStrScore(){
+        return QString::number(m_fScore, 'f', 2);
+    }
+
+    QString GetStrTime(){
+        return QString::number(m_fProcessingTime, 'f', 2);
+    }
 };
 
 

@@ -1459,48 +1459,60 @@ bool YK16GrayImage::ConstituteFromTwo( YK16GrayImage& YKImg1,YK16GrayImage& YKIm
     //Filtering
     if (YKImg1.IsEmpty() || YKImg2.IsEmpty() || YKImg1.m_iWidth != YKImg2.m_iWidth || YKImg1.m_iHeight != YKImg2.m_iHeight
         || YKImg1.m_iWidth * YKImg1.m_iHeight == 0)
-        return false;    
+        return false;
 
+
+    if (m_enSplitOption < 0)
+    {
+        cout << "ConstituteFromTwo cannot be carried out due to the wrong split option" << endl;
+        return false;
+    }
 
     int width = YKImg1.m_iWidth;
     int height = YKImg1.m_iHeight;
 
-    CreateImage(width, height, 0);
-
     int centerX = m_ptSplitCenter.x(); //data index
     int centerY = m_ptSplitCenter.y();
 
-    int i,j;
+    //bool bPreserveInfo = true;
+    //CreateImage(width, height, 0, bPreserveInfo);//tracking data should be reserved
+    CloneImage(YKImg1); //copy all the tracking data as well //EXCEPT for Split center!!!!
+
+    //restore split center after clone
+    m_ptSplitCenter.setX(centerX);
+    m_ptSplitCenter.setY(centerY);
+
+    int i, j;
     switch (m_enSplitOption)
     {
     case PRI_LEFT_TOP:
-        for (i = 0 ; i<centerY ; i++)
+        for (i = 0; i < centerY; i++)
         {
-            for (j = 0 ; j<centerX ; j++)
+            for (j = 0; j < centerX; j++)
             {
                 m_pData[width*i + j] = YKImg1.m_pData[width*i + j];
             }
         }
 
-        for (i = centerY ; i<height ; i++)
+        for (i = centerY; i < height; i++)
         {
-            for (j = centerX ; j<width ; j++)
+            for (j = centerX; j < width; j++)
             {
                 m_pData[width*i + j] = YKImg1.m_pData[width*i + j];
             }
         }
 
-        for (i = 0 ; i < centerY ; i++)
+        for (i = 0; i < centerY; i++)
         {
-            for (j = centerX ; j<width ; j++)
+            for (j = centerX; j < width; j++)
             {
                 m_pData[width*i + j] = YKImg2.m_pData[width*i + j];
             }
         }
 
-        for (i = centerY ; i<height ; i++)
+        for (i = centerY; i < height; i++)
         {
-            for (j = 0 ; j<centerX ; j++)
+            for (j = 0; j < centerX; j++)
             {
                 m_pData[width*i + j] = YKImg2.m_pData[width*i + j];
             }

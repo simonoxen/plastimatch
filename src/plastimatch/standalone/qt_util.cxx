@@ -1205,6 +1205,16 @@ void QUTIL::CreateItkDummyImg(FloatImageType::Pointer& spTarget, int sizeX, int 
     spTarget->FillBuffer(fillVal);
 }
 
+void QUTIL::PrintStrList(QStringList& strList)
+{
+    int size = strList.count();
+
+    for (int i = 0; i < size; i++)
+    {
+        cout << strList.at(i).toLocal8Bit().constData() << endl;
+    }
+}
+
 //
 //void QUTIL::UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
 //    QStandardItemModel* pTableModel, gamma_gui* pParent)

@@ -29,7 +29,6 @@ struct BADPIXELMAP{
 	int ReplPixY;
 };
 
-
 class CContourROI
 {
 public: 
