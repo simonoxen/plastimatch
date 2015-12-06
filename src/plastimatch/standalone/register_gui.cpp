@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <QFile>
 #include <QTimer>
 #include <QTextStream>
