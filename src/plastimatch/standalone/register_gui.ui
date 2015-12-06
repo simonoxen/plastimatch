@@ -46,7 +46,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -201,21 +201,21 @@
         </rect>
        </property>
        <property name="text">
-        <string>Que with permutation</string>
+        <string>Que permutation</string>
        </property>
       </widget>
      </widget>
      <widget class="QPushButton" name="pushButton_UpdateFileList">
       <property name="geometry">
        <rect>
-        <x>340</x>
+        <x>320</x>
         <y>200</y>
-        <width>171</width>
+        <width>191</width>
         <height>31</height>
        </rect>
       </property>
       <property name="text">
-       <string>Apply Update And Rename</string>
+       <string>Apply deleting / renaming</string>
       </property>
      </widget>
      <widget class="QPushButton" name="pushButton_SortSelected">
@@ -228,7 +228,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Sort Selected Column</string>
+       <string>Sort column</string>
       </property>
      </widget>
      <widget class="QGroupBox" name="groupBox_3">
@@ -308,7 +308,7 @@
       <widget class="QPushButton" name="pushButton_SaveCommandText">
        <property name="geometry">
         <rect>
-         <x>80</x>
+         <x>90</x>
          <y>60</y>
          <width>101</width>
          <height>31</height>
@@ -398,8 +398,8 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>60</y>
-         <width>101</width>
+         <y>50</y>
+         <width>111</width>
          <height>31</height>
         </rect>
        </property>
@@ -412,12 +412,12 @@
         <rect>
          <x>20</x>
          <y>20</y>
-         <width>101</width>
+         <width>111</width>
          <height>31</height>
         </rect>
        </property>
        <property name="text">
-        <string>Remove selected</string>
+        <string>Remove selection</string>
        </property>
       </widget>
      </widget>
@@ -443,7 +443,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Run selected</string>
+        <string>Run selection</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_RunAll_Seq">
@@ -456,7 +456,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Run-all Sequentially</string>
+        <string>Run sequentially</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_RunAll_MultiThread">
@@ -469,13 +469,13 @@
         </rect>
        </property>
        <property name="text">
-        <string>Run-all Multi-Thread</string>
+        <string>Run multi-thread</string>
        </property>
       </widget>
       <widget class="QLineEdit" name="lineEdit_MaxNumberThread">
        <property name="geometry">
         <rect>
-         <x>110</x>
+         <x>130</x>
          <y>120</y>
          <width>41</width>
          <height>21</height>
@@ -490,7 +490,7 @@
         <rect>
          <x>10</x>
          <y>120</y>
-         <width>101</width>
+         <width>111</width>
          <height>21</height>
         </rect>
        </property>
@@ -573,7 +573,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Open selected output</string>
+        <string>Open selection</string>
        </property>
       </widget>
       <widget class="QPushButton" name="pushButton_CopyTableToClipboard">
