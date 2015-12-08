@@ -702,8 +702,8 @@ void Rt_sobp::SetMinMaxEnergies (
         d_ptr->E_max = new_E_min;
     }
 
-    d_ptr->dmin = (10*d_ptr->alpha)*pow(d_ptr->E_min, d_ptr->p);
-    d_ptr->dmax = (10*d_ptr->alpha)*pow(d_ptr->E_max, d_ptr->p)+1;
+    d_ptr->dmin = (10*d_ptr->alpha)*pow((double)d_ptr->E_min, d_ptr->p);
+    d_ptr->dmax = (10*d_ptr->alpha)*pow((double)d_ptr->E_max, d_ptr->p)+1;
     d_ptr->dend = d_ptr->dmax + 20;
     d_ptr->num_samples = (int)((d_ptr->dend/d_ptr->dres)+1);
     if ((d_ptr->num_samples-1)*d_ptr->dres < d_ptr->dend)
