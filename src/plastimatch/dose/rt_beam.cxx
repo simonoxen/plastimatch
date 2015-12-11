@@ -2,9 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmdose_config.h"
+#include "proj_volume.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <string_util.h>
 #include <math.h>
 
 #include "bragg_curve.h"
@@ -19,27 +21,19 @@ public:
 
     double source[3];
     double isocenter[3];
-    int detail;
     char flavor;
     char homo_approx;
-    Particle_type part;
-    float photon_energy; // energy for mono-energetic beams
+
     float beamWeight;
 
-    Rt_sobp::Pointer sobp;
+    Rt_mebs::Pointer mebs;
     std::string debug_dir;
 
     float smearing;
-    float prescription_d_min;
-    float prescription_d_max;
-    float proximal_margin;
-    float distal_margin;
-    double step_length;
-    float z_min;
-    float z_max;
-    float z_step;
 	char rc_MC_model;
     float source_size;
+
+	float step_length;
 
     Aperture::Pointer aperture;
     Plm_image::Pointer target;
@@ -55,14 +49,6 @@ public:
     std::string wed_out;
 	std::string beam_line_type;
 
-    /* When a new sobp is created from an existing sobp, 
-       the peaks are copied (not manual).  Modifications of 
-       an implicitly defined sobp (by adding a peak) will 
-       delete any existing peaks. */
-    bool have_copied_peaks;
-	bool have_manual_peaks;
-    bool have_prescription;
-
 public:
     Rt_beam_private ()
     {
@@ -74,25 +60,16 @@ public:
         this->isocenter[0] = 0.f;
         this->isocenter[1] = 0.f;
         this->isocenter[2] = 0.f;
-        this->detail = 1;
         this->flavor = 'a';
         this->homo_approx = 'n';
-        this->part = PARTICLE_TYPE_P;
-        this->photon_energy = 6.f; 
+
         this->beamWeight = 1.f;
-        this->sobp = Rt_sobp::New();
+        this->mebs = Rt_mebs::New();
         this->debug_dir = "";
         this->smearing = 0.f;
-        this->prescription_d_min = 0.f;
-        this->prescription_d_max = 0.f;
-        this->proximal_margin = 0.f;
-        this->distal_margin = 0.f;
-        this->step_length = 1.0;
-        this->z_min = 0.f;
-        this->z_max = 100.f;
-        this->z_step = 1.f;
 		this->rc_MC_model = 'n';
         this->source_size = 0.f;
+		this->step_length = 1.f;
 
         aperture = Aperture::New();
 
@@ -105,10 +82,6 @@ public:
         this->sigma_out = "";
         this->wed_out = "";
 		this->beam_line_type = "passive";
-
-        this->have_copied_peaks = false;
-		this->have_manual_peaks = false;
-        this->have_prescription = false;
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
     {
@@ -120,26 +93,15 @@ public:
         this->isocenter[0] = rtbp->isocenter[0];
         this->isocenter[1] = rtbp->isocenter[1];
         this->isocenter[2] = rtbp->isocenter[2];
-        this->detail = rtbp->detail;
         this->flavor = rtbp->flavor;
         this->homo_approx = rtbp->homo_approx;
-        this->part = rtbp->part;
-        this->photon_energy = rtbp->photon_energy;
-		this->beamWeight = rtbp->beamWeight;
 
-        /* Copy the sobp object */
-        this->sobp = Rt_sobp::New (rtbp->sobp);
+        /* Copy the mebs object */
+        this->mebs = Rt_mebs::New (rtbp->mebs);
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
-        this->prescription_d_min = rtbp->prescription_d_min;
-        this->prescription_d_max = rtbp->prescription_d_max;
-        this->proximal_margin = rtbp->proximal_margin;
-        this->distal_margin = rtbp->distal_margin;
-        this->step_length = rtbp->step_length;
-        this->z_min = rtbp->z_min;
-        this->z_max = rtbp->z_max;
-        this->z_step = rtbp->z_step;
         this->source_size = rtbp->source_size;
+		this->step_length = rtbp->step_length;
 
         /* Copy the aperture object */
         aperture = Aperture::New (rtbp->aperture);
@@ -152,9 +114,6 @@ public:
         this->range_compensator_out = rtbp->range_compensator_out;
         this->sigma_out = rtbp->sigma_out;
         this->wed_out = rtbp->wed_out;
-
-        this->have_copied_peaks = true;
-        this->have_prescription = rtbp->have_prescription;
     }
 };
 
@@ -164,11 +123,6 @@ Rt_beam::Rt_beam ()
     this->rpl_vol = new Rpl_volume();
 
     /* Creation of the volumes useful for dose calculation */
-
-    if (this->get_flavor() == 'a')
-    {    
-        this->aperture_vol = new Rpl_volume();
-    }
 
     if (this->get_flavor() == 'f')
     {    
@@ -194,7 +148,6 @@ Rt_beam::Rt_beam ()
         this->rpl_ct_vol_HU_lg = new Rpl_volume();
         this->sigma_vol_lg = new Rpl_volume();
         this->rpl_dose_vol = new Rpl_volume();
-        this->aperture_vol = new Rpl_volume();
     }
 }
 
@@ -212,7 +165,6 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     this->rpl_ct_vol_HU_lg = 0;
     this->sigma_vol_lg = 0;
     this->rpl_dose_vol = 0;
-    this->aperture_vol = 0;
 }
 
 Rt_beam::~Rt_beam ()
@@ -296,34 +248,6 @@ Rt_beam::set_isocenter_position (const double* position)
     }
 }
 
-void
-Rt_beam::add_peak (
-    double E0,                      /* initial ion energy (MeV) */
-    double spread,                  /* beam energy sigma (MeV) */
-    double dres,                    /* spatial resolution of bragg curve (mm)*/
-    double dmax,                    /* maximum w.e.d. (mm) */
-    double weight)
-{
-    if (d_ptr->have_copied_peaks == true) {
-        d_ptr->sobp->clear_peaks ();
-    }
-    d_ptr->have_copied_peaks = false;
-
-    d_ptr->sobp->add_peak (E0, spread, dres, dmax, weight);
-}
-
-int
-Rt_beam::get_detail (void) const
-{
-    return d_ptr->detail;
-}
-
-void
-Rt_beam::set_detail (int detail)
-{
-    d_ptr->detail = detail;
-}
-
 char
 Rt_beam::get_flavor (void) const
 {
@@ -348,10 +272,10 @@ Rt_beam::set_homo_approx (char homo_approx)
 	d_ptr->homo_approx = homo_approx;
 }
 
-Rt_sobp::Pointer
-Rt_beam::get_sobp()
+Rt_mebs::Pointer
+Rt_beam::get_mebs()
 {
-	return d_ptr->sobp;
+	return d_ptr->mebs;
 }
 
 float
@@ -364,72 +288,6 @@ void
 Rt_beam::set_beam_weight (float beamWeight)
 {
     d_ptr->beamWeight = beamWeight;
-}
-
-float 
-Rt_beam::get_proximal_margin()
-{
-    return d_ptr->proximal_margin;
-}
-	
-float 
-Rt_beam::get_distal_margin()
-{
-    return d_ptr->distal_margin;
-}
-
-float 
-Rt_beam::get_prescription_min()
-{
-    return d_ptr->prescription_d_min;
-}
-
-void
-Rt_beam::set_prescription_min (float prescription_min)
-{
-    d_ptr->prescription_d_min = prescription_min;
-    d_ptr->have_prescription = true;
-}
-
-float 
-Rt_beam::get_prescription_max()
-{
-    return d_ptr->prescription_d_max;
-}
-
-void
-Rt_beam::set_prescription_max (float prescription_max)
-{
-    d_ptr->prescription_d_max = prescription_max;
-    d_ptr->have_prescription = true;
-}
-
-void
-Rt_beam::set_proximal_margin (float proximal_margin)
-{
-    d_ptr->proximal_margin = proximal_margin;
-    d_ptr->sobp->set_prescription_min_max (
-        d_ptr->prescription_d_min - d_ptr->proximal_margin,
-        d_ptr->prescription_d_max + d_ptr->distal_margin);
-}
-
-void
-Rt_beam::set_distal_margin (float distal_margin)
-{
-    d_ptr->distal_margin = distal_margin;
-    d_ptr->sobp->set_prescription_min_max (
-        d_ptr->prescription_d_min - d_ptr->proximal_margin,
-        d_ptr->prescription_d_max + d_ptr->distal_margin);
-}
-
-void 
-Rt_beam::set_sobp_prescription_min_max (float d_min, float d_max)
-{
-    d_ptr->prescription_d_min = d_min;
-    d_ptr->prescription_d_max = d_max;
-    d_ptr->sobp->set_prescription_min_max (
-        d_ptr->prescription_d_min - d_ptr->proximal_margin,
-        d_ptr->prescription_d_max + d_ptr->distal_margin);
 }
 
 void
@@ -463,45 +321,200 @@ Rt_beam::set_debug (const std::string& dir)
 }
 
 void
-Rt_beam::optimize_sobp ()
-{
-    d_ptr->sobp->optimize ();
-}
-
-bool
-Rt_beam::generate ()
-{
-    return d_ptr->sobp->generate ();
-}
-
-void
 Rt_beam::dump (const char* dir)
 {
-    d_ptr->sobp->dump (dir);
+    d_ptr->mebs->dump (dir);
 }
 
-float
-Rt_beam::lookup_sobp_dose (
-    float depth
-)
+void 
+Rt_beam::compute_prerequisites_beam_tools(std::string target)
 {
-    return d_ptr->sobp->lookup_energy(depth);
+	if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
+	{
+		printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
+		printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+		this->compute_beam_data_from_spot_map();
+		return;
+	}
+
+	/* The priority gets to spot map > manual peaks > dose prescription > target */
+	if (d_ptr->mebs->get_have_particle_number_map() == true)
+	{
+		printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+		this->compute_beam_data_from_spot_map();
+		return;
+	}
+	if (d_ptr->mebs->get_have_manual_peaks() == true)
+	{
+		printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
+		this->get_mebs()->set_have_manual_peaks(true);
+		this->compute_beam_data_from_manual_peaks(target);
+		return;
+	}
+	if (d_ptr->mebs->get_have_prescription() == true)
+	{
+		this->get_mebs()->set_have_prescription(true);
+		/* Apply margins */
+		this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
+		printf("Prescription depths detected. Any target depth will not be considered.\n");
+		this->compute_beam_data_from_prescription(target);
+		return;
+	}
+	if (target != "")
+	{
+		printf("Target detected.\n");
+		this->get_mebs()->set_have_manual_peaks(false);
+		this->get_mebs()->set_have_prescription(false);
+		this->compute_beam_data_from_target(target);
+		return;
+	}
+	
+	/* If we arrive to this point, it is because no beam was defined
+	Creation of a default beam: 100 MeV */
+	printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
+	printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
+	this->compute_default_beam();
+	return;
 }
 
 void
-Rt_beam::compute_beam_modifiers ()
+Rt_beam::compute_beam_data_from_spot_map()
 {
-    /* Compute the aperture and compensator */
-    this->rpl_vol->compute_beam_modifiers (
-        this->get_target()->get_vol(), 0);
-    /* Apply smearing */
-    d_ptr->aperture->apply_smearing (d_ptr->smearing);
+	this->get_mebs()->clear_depth_dose();
+	this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
+
+	/* If an aperture is defined in the input file, the aperture is erased. 
+		The range compensator is not considered if the beam line is defined as active scanning */
+	this->update_aperture_and_range_compensator();
 }
 
 void
-Rt_beam::apply_beam_modifiers ()
+Rt_beam::compute_beam_data_from_manual_peaks(std::string target)
 {
-    this->rpl_vol->apply_beam_modifiers ();
+	/* The spot map will be identical for passive or scanning beam lines */
+	int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+	this->get_mebs()->generate_part_num_from_weight(ap_dim);
+	if ((target != "" && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
+	{
+		if (d_ptr->beam_line_type == "active")
+		{
+			this->rpl_vol->compute_beam_modifiers_active_scanning(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+		}
+		else
+		{
+			this->rpl_vol->compute_beam_modifiers_passive_scattering(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+		}
+	}
+	/* the aperture and range compensator are erased and the ones defined in the input file are considered */
+	this->update_aperture_and_range_compensator();
+}
+
+void
+Rt_beam::compute_beam_data_from_prescription(std::string target)
+{
+	/* The spot map will be identical for passive or scanning beam lines */
+	/* Identic to compute from manual peaks, with a preliminary optimization */
+	d_ptr->mebs->optimize_sobp();
+	this->compute_beam_data_from_manual_peaks(target);
+}
+
+void
+Rt_beam::compute_beam_data_from_target(std::string target)
+{
+	/* Compute beam aperture, range compensator 
+	+ SOBP for passively scattered beam lines */
+	
+	if (this->get_beam_line_type() != "passive")
+	{
+		d_ptr->mebs->compute_particle_number_matrix_from_target_active(this->rpl_vol, this->get_target(), d_ptr->smearing);
+	}
+	else
+	{
+		this->compute_beam_modifiers (d_ptr->target->get_vol(), &this->get_mebs()->get_min_wed_map(), &this->get_mebs()->get_max_wed_map());
+		this->compute_beam_data_from_prescription(target);
+	}
+}
+
+void 
+Rt_beam::compute_default_beam()
+{
+	/* Computes a default 100 MeV peak */
+	this->get_mebs()->add_peak(100, 1, 1);
+	this->compute_beam_data_from_manual_peaks("");
+}
+
+void 
+Rt_beam::compute_beam_modifiers (Volume *seg_vol)
+{
+	if (d_ptr->beam_line_type == "active")
+	{
+		this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+	}
+	else
+	{
+		this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+	}
+
+	d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
+	this->rpl_vol->apply_beam_modifiers ();
+	return;
+}
+
+void 
+Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max)
+{
+	if (d_ptr->beam_line_type == "active")
+	{
+		this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+	}
+	else
+	{
+		this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+	}
+	d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
+	this->rpl_vol->apply_beam_modifiers ();
+	return;
+}
+
+void
+Rt_beam::update_aperture_and_range_compensator()
+{
+	/* The aperture is copied from rpl_vol
+		the range compensator and/or the aperture are erased if defined in the input file */
+	if (d_ptr->aperture_in != "")
+	{
+		Plm_image::Pointer ap_img = Plm_image::New (d_ptr->aperture_in, PLM_IMG_TYPE_ITK_UCHAR);
+		this->get_aperture()->set_aperture_image(d_ptr->aperture_in.c_str());
+		this->get_aperture()->set_aperture_volume(ap_img->get_volume_uchar());
+		if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+		{
+			printf("Smearing applied to the aperture. The smearing width is defined in the aperture frame.\n");
+			d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, d_ptr->aperture->get_distance());
+		}
+		else
+		{
+			printf("Smearing applied to the aperture. The smearing width is defined at the target minimal distance.\n");
+			d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+		}
+	}
+	/* Set range compensator */
+	if (d_ptr->range_compensator_in != "" && d_ptr->beam_line_type != "active")
+	{
+		Plm_image::Pointer rgc_img = Plm_image::New (d_ptr->range_compensator_in, PLM_IMG_TYPE_ITK_FLOAT);
+		this->get_aperture()->set_range_compensator_image(d_ptr->range_compensator_in.c_str());
+		this->get_aperture()->set_range_compensator_volume(rgc_img->get_volume_float());
+		
+		if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+		{
+			printf("Smearing applied to the range compensator. The smearing width is defined in the aperture frame.\n");
+			d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, d_ptr->aperture->get_distance());
+		}
+		else
+		{
+			printf("Smearing applied to the range compensator. The smearing width is defined at the target minimal distance.\n");
+			d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+		}
+	}
 }
 
 Plm_image::Pointer&
@@ -582,6 +595,18 @@ Rt_beam::set_aperture_spacing (const float ap_spacing[])
     this->get_aperture()->set_spacing (ap_spacing);
 }
 
+void 
+Rt_beam::set_step_length(float step)
+{
+	d_ptr->step_length = step;
+}
+
+float 
+Rt_beam::get_step_length()
+{
+	return d_ptr->step_length;
+}
+
 void
 Rt_beam::set_smearing (float smearing)
 {
@@ -592,38 +617,6 @@ float
 Rt_beam::get_smearing()
 {
     return d_ptr->smearing;
-}
-
-void
-Rt_beam::set_step_length (double step_length)
-{
-    d_ptr->step_length = step_length;
-}
-
-double 
-Rt_beam::get_step_length()
-{
-    return d_ptr->step_length;
-}
-
-void
-Rt_beam::set_beam_depth (float z_min, float z_max, float z_step)
-{
-    d_ptr->z_min = z_min;
-    d_ptr->z_max = z_max;
-    d_ptr->z_step = z_step;
-}
-
-void 
-Rt_beam::set_particle_type(Particle_type particle_type)
-{
-    d_ptr->part = particle_type;
-}
-
-Particle_type 
-Rt_beam::get_particle_type()
-{
-    return d_ptr->part;
 }
 
 void 
@@ -723,48 +716,6 @@ Rt_beam::get_wed_out()
 }
 
 void 
-Rt_beam::set_photon_energy(float energy)
-{
-    d_ptr->photon_energy = energy;
-}
-
-float 
-Rt_beam::get_photon_energy()
-{
-    return d_ptr->photon_energy;
-}
-
-void 
-Rt_beam::set_have_prescription(bool have_prescription)
-{
-    d_ptr->have_prescription = have_prescription;
-}
-
-bool 
-Rt_beam::get_have_prescription()
-{
-    return d_ptr->have_prescription;
-}
-
-void 
-Rt_beam::set_have_copied_peaks(bool have_copied_peaks)
-{
-    d_ptr->have_copied_peaks = have_copied_peaks;
-}
-	
-bool 
-Rt_beam::get_have_copied_peaks()
-{
-    return d_ptr->have_copied_peaks;
-}
-
-void 
-Rt_beam::set_have_manual_peaks(bool have_manual_peaks)
-{
-    d_ptr->have_manual_peaks = have_manual_peaks;
-}
-
-void 
 Rt_beam::set_beam_line_type(std::string str)
 {
 	if (str == "active")
@@ -781,32 +732,6 @@ std::string
 Rt_beam::get_beam_line_type()
 {
 		return d_ptr->beam_line_type;
-}
-
-bool 
-Rt_beam::get_have_manual_peaks()
-{
-    return d_ptr->have_manual_peaks;
-}
-
-void 
-Rt_beam::copy_sobp(Rt_sobp::Pointer sobp)
-{
-    d_ptr->sobp->set_dose_lut(sobp->get_d_lut(), sobp->get_e_lut(), sobp->get_num_samples()); /* copy also num_samples */
-    d_ptr->sobp->set_dres(sobp->get_dres());
-    d_ptr->sobp->set_energy_resolution (sobp->get_energy_resolution());
-    d_ptr->sobp->set_E_min(sobp->get_E_min());
-    d_ptr->sobp->set_E_max(sobp->get_E_max());
-    d_ptr->sobp->set_dmin(sobp->get_dmin());
-    d_ptr->sobp->set_dmax(sobp->get_dmax());
-    d_ptr->sobp->set_dend(sobp->get_dend());
-    d_ptr->sobp->set_particle_type(sobp->get_particle_type());
-    d_ptr->sobp->set_p(sobp->get_p());
-    d_ptr->sobp->set_alpha(sobp->get_alpha());
-    d_ptr->sobp->set_prescription_min(sobp->get_prescription_min());
-    d_ptr->sobp->set_prescription_max(sobp->get_prescription_max());
-    d_ptr->sobp->add_weight(sobp->get_weight()[sobp->get_num_peaks()-1]);
-    d_ptr->sobp->add_depth_dose(sobp->get_depth_dose()[sobp->get_num_peaks()-1]);	
 }
 
 bool
@@ -894,3 +819,86 @@ Rt_beam::load_txt (const char* fn)
     return true;
 }
 
+bool
+Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz)
+{
+	double ray[3] = {0,0,0};
+	double length_on_normal_axis = 0;
+	
+	vec3_copy(ray, ct_xyz);
+	vec3_sub2(ray, d_ptr->source);
+
+	length_on_normal_axis = -vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_nrm()); // MD Fix: why is the aperture not updated at this point? and why proj vol is?
+	if (length_on_normal_axis < 0)
+	{
+		return false;
+	}
+
+	vec3_scale2(ray, this->get_aperture()->get_distance()/length_on_normal_axis);
+
+	vec3_add2(ray, d_ptr->source);
+	vec3_sub2(ray, rpl_ct_vol_HU->get_proj_volume()->get_ul_room());
+					
+	idx_ap[0] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_c()) / (this->get_aperture()->get_spacing(0) * this->get_aperture()->get_spacing(0));
+	idx_ap[1] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_r()) / (this->get_aperture()->get_spacing(1) * this->get_aperture()->get_spacing(1));
+	idx[0] = (int) floor(idx_ap[0]);
+	idx[1] = (int) floor(idx_ap[1]);
+	rest[0] = idx_ap[0] - (double) idx[0];
+	rest[1] = idx_ap[1] - (double) idx[1];
+	return true;
+}
+
+bool 
+Rt_beam::is_ray_in_the_aperture(int* idx, unsigned char* ap_img)
+{
+	if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
+	if (idx[0] + 1 < this->get_aperture()->get_dim(0))
+	{
+		if ((float) ap_img[idx[0] + 1 + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
+	}
+	if (idx[1] + 1 < this->get_aperture()->get_dim(1))
+	{
+		if ((float) ap_img[idx[0] + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
+	}
+	if (idx[0] + 1 < this->get_aperture()->get_dim(0) && idx[1] + 1 < this->get_aperture()->get_dim(1))
+	{
+		if ((float) ap_img[idx[0] + 1 + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
+	}
+	 return true;
+}
+
+float 
+Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
+{
+	float* target_img = (float*) target_vol->img;
+
+	float min = FLT_MAX;
+	int idx = 0;
+	int dim[3] = {target_vol->dim[0], target_vol->dim[1], target_vol->dim[2]};
+	float target_image_origin[3] = {target_vol->origin[0], target_vol->origin[1], target_vol->origin[2]};
+	float target_image_spacing[3] = {target_vol->spacing[0], target_vol->spacing[1], target_vol->spacing[2]};
+	float source[3] = {(float) this->get_source_position(0), (float) this->get_source_position(1), (float) this->get_source_position(2)};
+
+	float voxel_xyz[3] = {0, 0, 0};
+	float min_tmp;
+
+	for (int k = 0; k < dim[2]; k++) 
+	{
+		for (int j = 0; j < dim[1]; j++) 
+		{
+			for (int i = 0; i < dim[0]; i++) 
+			{
+				idx = i + (dim[0] * (j + dim[1] * k));
+				if (target_img[idx] > background)
+				{
+					voxel_xyz[0] = target_image_origin[0] + (float) i * target_image_spacing[0];
+                    voxel_xyz[1] = target_image_origin[1] + (float) j * target_image_spacing[1];
+                    voxel_xyz[2] = target_image_origin[2] + (float) k * target_image_spacing[2];
+					min_tmp = vec3_dist(voxel_xyz, source);
+					if (min_tmp < min) {min = min_tmp;}
+				}
+			}
+		}
+	}
+	return min;
+}

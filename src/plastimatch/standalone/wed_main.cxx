@@ -91,9 +91,7 @@ wed_ct_compute (
 
     if (parms->mode==2) {
         /* Compute the aperture and range compensator */
-        rpl_vol->compute_beam_modifiers (
-            ct_vol->get_volume_float().get(), 
-            background);
+		rpl_vol->compute_beam_modifiers_passive_scattering (ct_vol->get_volume_float().get());
 
         /* Save files as output */
         Plm_image::Pointer& ap 

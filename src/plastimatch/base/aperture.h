@@ -95,8 +95,10 @@ public:
     void set_range_compensator_volume (Volume::Pointer ap);
 
     /*! \brief Expand aperture and smear compensator.  The smearing 
-      parameters is defined as mm in aperture plane. */
-    void apply_smearing (float smearing);
+      parameters is defined as mm around the target in the beam eye view frame
+	  at the target minimal depth. */
+    void apply_smearing_to_aperture (float smearing, float target_depth);
+	void apply_smearing_to_range_compensator (float smearing, float target_depth);
     ///@}
 
 public:

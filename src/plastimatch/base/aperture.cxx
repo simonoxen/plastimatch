@@ -30,10 +30,6 @@ public:
         center[1] = app->center[1];
         spacing[0] = app->spacing[0];
         spacing[1] = app->spacing[1];
-
-        /* Is this a good idea?? */
-        aperture_image = app->aperture_image;
-        range_compensator_image = app->range_compensator_image;
     }
 public:
     Plm_image::Pointer aperture_image;
@@ -48,6 +44,9 @@ public:
 Aperture::Aperture ()
 {
     this->d_ptr = new Aperture_private;
+
+	/* The aperture and the range compensator are inizialized */
+	this->allocate_aperture_images();
 
     this->vup[0] = 0.0;
     this->vup[1] = 0.0;
@@ -72,6 +71,9 @@ Aperture::Aperture (const Aperture::Pointer& ap)
 {
     this->d_ptr = new Aperture_private (ap->d_ptr);
 
+	/* The aperture and the range compensator are initialized */
+	this->allocate_aperture_images();
+
     vec3_copy (this->vup, ap->vup);
     vec3_copy (this->pdn, ap->pdn);
     vec3_copy (this->prt, ap->prt);
@@ -80,6 +82,20 @@ Aperture::Aperture (const Aperture::Pointer& ap)
     vec3_copy (this->ul_room, ap->ul_room);
     vec3_copy (this->incr_r, ap->incr_r);
     vec3_copy (this->incr_c, ap->incr_c);
+
+	Volume::Pointer ap_tmp = ap->get_aperture_volume();
+	unsigned char* ap_tmp_img = (unsigned char*) ap_tmp->img;
+	Volume::Pointer rc_tmp = ap->get_range_compensator_volume();
+	float* rc_tmp_img = (float*) rc_tmp->img;
+
+	unsigned char* ap_img = (unsigned char*) this->get_aperture_volume()->img;
+	float* rc_img = (float*) this->get_range_compensator_volume()->img;
+
+	for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
+	{
+		ap_img[i] = ap_tmp_img[i];
+		rc_img[i] = rc_tmp_img[i];
+	}
 }
 
 Aperture::~Aperture ()
@@ -118,6 +134,8 @@ Aperture::set_dim (const int* dim)
     d_ptr->dim[1] = dim[1];
     d_ptr->center[0] = (dim[0]-1) / 2;
     d_ptr->center[1] = (dim[1]-1) / 2;
+
+	this->allocate_aperture_images();
 }
 
 const double*
@@ -221,6 +239,16 @@ Aperture::allocate_aperture_images ()
     Volume *ap_vol = new Volume (dim, origin, spacing, NULL, PT_UCHAR, 1);
     Volume *rc_vol = new Volume (dim, origin, spacing, NULL, PT_FLOAT, 1);
 
+	/* Set the volume to values = 0 for range compensator and 1 for aperture */
+	unsigned char* ap_img = (unsigned char*) ap_vol->img;
+	float* rc_img = (float*) rc_vol->img;
+
+	for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
+	{
+		ap_img[i] = 1;
+		rc_img[i] = 0;
+	}
+
     d_ptr->aperture_image = Plm_image::New (ap_vol);
     d_ptr->range_compensator_image = Plm_image::New (rc_vol);
 }
@@ -286,13 +314,15 @@ Aperture::set_range_compensator_volume (Volume::Pointer rc)
 }
 
 void 
-Aperture::apply_smearing (float smearing)
+Aperture::apply_smearing_to_aperture (float smearing, float reference_depth)
 {
     /* Create a structured element of the right size */
     int strel_half_size[2];
     int strel_size[2];
-    strel_half_size[0] = ROUND_INT(smearing / d_ptr->spacing[0]);
-    strel_half_size[1] = ROUND_INT(smearing / d_ptr->spacing[1]);
+
+	strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
+	strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
+
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];
     unsigned char *strel = new unsigned char[strel_size[0]*strel_size[1]];
@@ -320,18 +350,14 @@ Aperture::apply_smearing (float smearing)
 
     /* Apply smear */
     Volume::Pointer& ap_vol = this->get_aperture_volume ();
-    Volume::Pointer& rc_vol = this->get_range_compensator_volume ();
     unsigned char* ap_img = (unsigned char*) ap_vol->img;
-    float* rc_img = (float*) rc_vol->img;
     Volume::Pointer ap_vol_new = ap_vol->clone ();
-    Volume::Pointer rc_vol_new = rc_vol->clone ();
     unsigned char* ap_img_new = (unsigned char*) ap_vol_new->img;
-    float* rc_img_new = (float*) rc_vol_new->img;
+
     for (int ar = 0; ar < d_ptr->dim[1]; ar++) {
         for (int ac = 0; ac < d_ptr->dim[0]; ac++) {
             int aidx = ar * d_ptr->dim[0] + ac;
             unsigned char ap_acc = 0;
-            float rc_acc = FLT_MAX;
             for (int sr = 0; sr < strel_size[1]; sr++) {
                 int pr = ar + sr - strel_half_size[1];
                 if (pr < 0 || pr >= d_ptr->dim[1]) {
@@ -352,18 +378,91 @@ Aperture::apply_smearing (float smearing)
                     if (ap_img[pidx]) {
                         ap_acc = 1;
                     }
-                    if (rc_img[pidx] < rc_acc) {
-                        rc_acc = rc_img[pidx];
-                    }
                 }
             }
             ap_img_new[aidx] = ap_acc;
-            rc_img_new[aidx] = rc_acc;
         }
     }
 
     /* Fixate updated aperture and rc into this object */
     d_ptr->aperture_image->set_volume (ap_vol_new);
+
+    /* Clean up */
+    delete[] strel;
+}
+
+void 
+Aperture::apply_smearing_to_range_compensator (float smearing, float reference_depth)
+{
+    /* Create a structured element of the right size */
+    int strel_half_size[2];
+    int strel_size[2];
+
+	strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
+	strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
+
+    strel_size[0] = 1 + 2 * strel_half_size[0];
+    strel_size[1] = 1 + 2 * strel_half_size[1];
+    unsigned char *strel = new unsigned char[strel_size[0]*strel_size[1]];
+    for (int r = 0; r < strel_size[1]; r++) {
+        float rf = (float) (r - strel_half_size[1]) * d_ptr->spacing[1];
+        for (int c = 0; c < strel_size[0]; c++) {
+            float cf = (float) (c - strel_half_size[0]) * d_ptr->spacing[0];
+            int idx = r*strel_size[0] + c;
+
+            strel[idx] = 0;
+            if ((rf*rf + cf*cf) <= smearing*smearing) {
+                strel[idx] = 1;
+            }
+        }
+    }
+
+    /* Debugging information */
+    for (int r = 0; r < strel_size[1]; r++) {
+        for (int c = 0; c < strel_size[0]; c++) {
+            int idx = r*strel_size[0] + c;
+            printf ("%d ", strel[idx]);
+        }
+        printf ("\n");
+    }
+
+    /* Apply smear */
+    Volume::Pointer& rc_vol = this->get_range_compensator_volume ();
+    float* rc_img = (float*) rc_vol->img;
+    Volume::Pointer rc_vol_new = rc_vol->clone ();
+    float* rc_img_new = (float*) rc_vol_new->img;
+
+    for (int ar = 0; ar < d_ptr->dim[1]; ar++) {
+        for (int ac = 0; ac < d_ptr->dim[0]; ac++) {
+            int aidx = ar * d_ptr->dim[0] + ac;
+            float rc_acc = FLT_MAX;
+            for (int sr = 0; sr < strel_size[1]; sr++) {
+                int pr = ar + sr - strel_half_size[1];
+                if (pr < 0 || pr >= d_ptr->dim[1]) {
+                    continue;
+                }
+                for (int sc = 0; sc < strel_size[0]; sc++) {
+                    int pc = ac + sc - strel_half_size[0];
+                    if (pc < 0 || pc >= d_ptr->dim[0]) {
+                        continue;
+                    }
+
+                    int sidx = sr * strel_size[0] + sc;
+                    if (strel[sidx] == 0) {
+                        continue;
+                    }
+
+                    int pidx = pr * d_ptr->dim[0] + pc;
+                    if (rc_img[pidx] < rc_acc) {
+                        rc_acc = rc_img[pidx];
+                    }
+                }
+            }
+            rc_img_new[aidx] = rc_acc;
+        }
+    }
+
+    /* Fixate updated aperture and rc into this object */
     d_ptr->range_compensator_image->set_volume (rc_vol_new);
 
     /* Clean up */

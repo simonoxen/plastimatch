@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "rt_sobp.h"
+#include "rt_mebs.h"
 
 int main (int argc, char* argv[])
 {
@@ -66,28 +66,31 @@ int main (int argc, char* argv[])
         printf("Ions data are not ready yet - beam switched to proton beams");
     }
 
-    Rt_sobp sobp(particle_type);
+    Rt_mebs mebs(particle_type);
 
     // construction of the sobp using the proximal and distal limits
     if (argv[2][0]=='d')
     {
         sscanf (argv[3], "%f", &dmin);
         sscanf (argv[4], "%f", &dmax);
-        sobp.SetMinMaxDepths(dmin, dmax);
+        mebs.set_prescription_depths(dmin, dmax);
     }
     // construction of the sobp using the lower and higher energy
     else if (argv[2][0]=='e')
     {
         sscanf (argv[3], "%d", &Emin);
         sscanf (argv[4], "%d", &Emax);
-		sobp.SetMinMaxEnergies(Emin, Emax);
+		mebs.set_energies(Emin, Emax);
     }
-
-	sobp.printparameters();
-    sobp.Optimizer();
-
-
-    //sobp.print_sobp_curve();
+	std::vector<float> weight;
+	std::vector<float> energy;
+    mebs.optimizer(&weight, &energy);
+	for (int i = 0; i < energy.size(); i++)
+	{
+		mebs.add_peak(energy[i], mebs.get_spread(), weight[i]);
+	}
+	mebs.generate();
+	mebs.printparameters();
 
     return 0;
 }

@@ -8,8 +8,6 @@
 
 double get_proton_range(double energy);
 double get_proton_stop(double energy);
-double get_proton_dose_max(double E0);
-int get_proton_depth_max(int E0);
 
 /* Range compensator functions, Highland-based definition or Monte Carlo based definition */
 double get_theta0_Highland(double range);
@@ -24,11 +22,6 @@ double compute_X0_from_HU(double CT_HU); // Radiation length
 extern const double lookup_proton_range_water[][2];
 extern const double lookup_proton_stop_water[][2];
 
-extern const double lookup_proton_dose_max_bragg[][2];
-
-/* declaration of a matrix that contains the depth of the max for each energy */
-extern const int max_depth_proton[];
-
 /* declaration of a matrix that contains the alpha and p parameters of the particles (Range = f(E, alpha, p) */
 extern const double particle_parameters[][2];
 
@@ -37,9 +30,9 @@ const int PROTON_TABLE_SIZE = 110;		// Look up table size -1
 const double PROTON_E_MAX = 255;		// Maximum proton energy dealt by Plastimatch is 255 MeV.
 const double LIGHT_SPEED = 299792458;	// m.s-1
 const double PROTON_REST_MASS = 939.4;	// MeV
-const double PMMA_DENSITY = 1.19;		// g
-const double PMMA_STPR = 0.98;			// no dim
 const double PROTON_WER_AIR = 0.88;
+const double AIR_DENSITY = 0.001205;    // g.cm-3
+
 
 /* Error Function parameters */
 const double ERF_A1 =  0.254829592;

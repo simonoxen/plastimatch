@@ -12,9 +12,9 @@ void compute_sigmas (
     Rt_plan* plan,
     const Rt_beam* beam,
     float energy,
-    float* sigma_max,
-    std::string size, int*
-    margins)
+    float* sigma_max, 
+	std::string size, 
+	int* margins)
 {
     /* We compute the sigmas for source, range compensator and patient as described in the Hong's paper */
     /* First we set the volume in which the sigmas have to be calculated: the normal rpl_sigma_volume,  */
@@ -30,16 +30,11 @@ void compute_sigmas (
         ct_vol = beam->rpl_ct_vol_HU;
         rgl_vol = beam->rpl_vol;
     }
-    else if (size == "large")
+    else
     {
         sigma_vol = beam->sigma_vol_lg;
         ct_vol = beam->rpl_ct_vol_HU_lg;
         rgl_vol = beam->rpl_vol_lg;
-    }
-    else
-    {
-        printf("error: size of convert_radiologic_length-to-sigma must be \"small\" or \"large\" \n");
-        return;
     }
 
     /* Now that the volumes were defined, we can compute the sigmas in them and do the quadratic sigmas sum */
@@ -53,7 +48,7 @@ void compute_sigmas (
     else
     {
         printf("Sigma source computed - sigma_src_max = 0 mm. (Source size <= 0)\n");
-    }    
+    }
     /* + sigma^2 range compensator */
     if (beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
@@ -63,9 +58,7 @@ void compute_sigmas (
     {
         printf("Sigma range compensator computed - sigma_rc_max = 0 mm. (No range compensator or the energy is too small)\n");
     } 
-    /* Last step: sigma = sqrt(sigma_pt^2 + sigma_src^2 + sigma_rc^2), at this point sigma_vol contains the sum of the sigmas' square */
-	
-    /* We update also the value of sigma_max */
+    /* Last step: sigma = sqrt(sigma_pt^2 + sigma_src^2 + sigma_rc^2), at this point sigma_vol contains the sum of the sigmas' square */    /* We update also the value of sigma_max */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
     plm_long dim[3] = { 
         sigma_vol->get_vol()->dim[0], 
@@ -114,15 +107,15 @@ float compute_sigma_pt_homo (
     float energy)
 {
     float sigma_max = 0;
-    int dim = sigma_vol->get_vol()->dim[0] * sigma_vol->get_vol()->dim[1] * sigma_vol->get_vol()->dim[2];
-    int dim_rpl = rpl_vol->get_vol()->dim[0] * rpl_vol->get_vol()->dim[1] * rpl_vol->get_vol()->dim[2];
+	int dim[3] = {sigma_vol->get_vol()->dim[0],  sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
+	int dim_rpl[3] = {rpl_vol->get_vol()->dim[0], rpl_vol->get_vol()->dim[1], rpl_vol->get_vol()->dim[2]};
+	int idx = 0;
 
-    if (dim != dim_rpl)
+    if (dim[0] != dim_rpl[0] || dim[1] != dim_rpl[1] || dim[2] != dim_rpl[2])
     {
         printf("Error: rpl_vol & sigma_vol have different dimensions. Sigma volume not built\n");
         return 0;
     }
-
     /* At this time, sigma_vol contains the range length, WITHOUT range compensator */
     float* sigma_volume = (float*) sigma_vol->get_vol()->img;
     float* rpl_img = (float*) rpl_vol->get_vol()->img;
@@ -134,7 +127,6 @@ float compute_sigma_pt_homo (
     {
         ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
     } 
-
     /*  Hong method to calculate the sigma value for homogeneous medium */
     /* Range value in water extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
     double range = 10 * get_proton_range(energy);
@@ -143,39 +135,43 @@ float compute_sigma_pt_homo (
     double sigma0 = 0.02275 * range + 1.2085E-6 * range * range;
 
     /* Calculation of the sigma values from the medium equivalent depth  */
-    for (int i = 0; i < dim; i++)
+    for (int i = 0; i < dim[0] * dim [1]; i++)
     {
-        if (!rpl_vol->get_aperture()->have_aperture_image() || (rpl_vol->get_aperture()->have_aperture_image() && ap_img[i] > 0))
-        {
-            if (rpl_img[i] <= 0) 
-            {
-                sigma_volume[i] = 0;
-            }
-            else if (rpl_img[i] >= range)
-            {
-                sigma_volume[i] = sigma0 * sigma0; // sigma will contains the square of the sigmas to do the quadratic sum
+		for (int k = 0; k < dim[2]; k++)
+		{
+			idx = k * dim[0] * dim[1] +i;
+			if (!rpl_vol->get_aperture()->have_aperture_image() || (rpl_vol->get_aperture()->have_aperture_image() && ap_img[i] > 0))
+			{
+				if (rpl_img[idx] <= 0) 
+				{
+					sigma_volume[idx] = 0;
+				}
+				else if (rpl_img[idx] >= range)
+				{
+					sigma_volume[idx] = sigma0 * sigma0; // sigma will contains the square of the sigmas to do the quadratic sum
             
-                /* sigma_max update */
-                if (sigma0 > sigma_max)
-                {
-                    sigma_max = sigma0;
-                }
-            }
-            else
-            {
-                x_over_range = rpl_img[i] / range;
+					/* sigma_max update */
+					if (sigma0 > sigma_max)
+					{
+						sigma_max = sigma0;
+					}
+				}
+				else
+				{
+					x_over_range = rpl_img[idx] / range;
 
-                /* sigma = y0 * Hong (x/range) */
-                sigma_volume[i] = sigma0 * x_over_range * ( 0.26232 + 0.64298 * x_over_range + 0.0952393 * x_over_range * x_over_range);
+					/* sigma = y0 * Hong (x/range) */
+					sigma_volume[idx] = sigma0 * x_over_range * ( 0.26232 + 0.64298 * x_over_range + 0.0952393 * x_over_range * x_over_range);
             
-                /* sigma_max update */
-                if (sigma_volume[i] > sigma_max)
-                {
-                    sigma_max = sigma_volume[i];
-                }
-                sigma_volume[i] *= sigma_volume[i]; // We return sigma^2 to sigma_vol
-            }
-        }
+					/* sigma_max update */
+					if (sigma_volume[idx] > sigma_max)
+					{
+						sigma_max = sigma_volume[idx];
+					}
+					sigma_volume[idx] *= sigma_volume[idx]; // We return sigma^2 to sigma_vol
+				}
+			}
+		}
     }
     return sigma_max;
 }
@@ -192,7 +188,6 @@ float compute_sigma_pt_hetero (
     float* rpl_img = (float*) rgl_vol->get_vol()->img;
     float* ct_img = (float*) ct_vol->get_vol()->img;
     unsigned char* ap_img = 0;
-
     if (rgl_vol->get_aperture()->have_aperture_image())
     {
         ap_img = (unsigned char*) rgl_vol->get_aperture()->get_aperture_volume()->img;
@@ -392,13 +387,12 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     /* Method1 rc_MC_model:  Hong's algorithm (Highland)- See Hong's paper */
 	/* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
-    
+	
     if (energy < 1)
     {
         printf("Sigma range compensator = 0 mm, the energy is too small (<1 MeV).\n");
         return;
     }
-
     /* Range value in lucite extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
     double range = 10 * get_proton_range((double) energy);
 
@@ -449,14 +443,14 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
 	/* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
-
-    if (margins[0] == 0 && margins[1] == 0)
+	
+    if (margins[0] == 0 && margins[1] == 0 || beam->get_flavor() != 'h')
     {
         for (int i = 0; i < dim[0] * dim[1]; i++)
         {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
 			if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
-            {      
+            {
                 Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
 	        
                 proj = -vec3_dot(ray_data->ray, nrm);

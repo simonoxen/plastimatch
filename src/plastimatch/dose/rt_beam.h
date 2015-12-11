@@ -4,17 +4,19 @@
 #ifndef _rt_beam_h_
 #define _rt_beam_h_
 
+#include "file_util.h"
 #include "plmdose_config.h"
 #include <string>
 #include <vector>
 
 #include "aperture.h"
+#include "particle_type.h"
 #include "rpl_volume.h"
-#include "rt_sobp.h"
+#include "rt_mebs.h"
 #include "smart_pointer.h"
 
 class Rt_beam_private;
-class Rt_sobp;
+class Rt_mebs;
 
 /*! \brief 
  * The Rt_beam class encapsulates a single SOBP Rt beam, including 
@@ -54,19 +56,6 @@ public:
     /*! \brief Set the position of the beam isocenter in world coordinates. */
     void set_isocenter_position (const double position[3]);
 
-    /*! \brief Add an SOBP pristine peak to this beam */
-    void add_peak ();              /* an empty peak */
-    void add_peak (
-        double E0,                 /* initial ion energy (MeV) */
-        double spread,             /* beam energy sigma (MeV) */
-        double dres,               /* spatial resolution of bragg curve (mm)*/
-        double dmax,               /* maximum w.e.d. (mm) */
-        double weight);
-
-    /*! \brief Get "detail" parameter of dose calculation algorithm */
-    int get_detail () const;
-    /*! \brief Set "detail" parameter of dose calculation algorithm */
-    void set_detail (int detail);
     /*! \brief Get "flavor" parameter of dose calculation algorithm */
     char get_flavor () const;
     /*! \brief Set "flavor" parameter of dose calculation algorithm */
@@ -77,31 +66,13 @@ public:
     /*! \brief Set "homo_approx" parameter of dose calculation algorithm */
     void set_homo_approx (char homo_approx);
 
-    /*! \brief Get Sobp */
-    Rt_sobp::Pointer get_sobp();
+    /*! \brief Get mebs */
+    Rt_mebs::Pointer get_mebs();
 
     /*! \brief Get "beam_weight" parameter of dose calculation algorithm */
     float get_beam_weight () const;
     /*! \brief Set "beam_weight" parameter of dose calculation algorithm */
     void set_beam_weight (float beam_weight);
-
-    /*! \Get proximal, distal margins and prescription */
-    float get_proximal_margin();
-    float get_distal_margin();
-    float get_prescription_min();
-    void set_prescription_min (float prescription_min);
-    float get_prescription_max();
-    void set_prescription_max (float prescription_max);
-
-    /*! \brief Set/Get proximal margin; this is subtracted from the 
-      minimum depth */
-    void set_proximal_margin (float proximal_margin);
-    /*! \brief Set distal margin; this is added onto the prescription
-      maximum depth */
-    void set_distal_margin (float distal_margin);
-    /*! \brief Set SOBP range and modulation for prescription 
-      as minimum and maximum depth (in mm) */
-    void set_sobp_prescription_min_max (float d_min, float d_max);
 
 		/*! \brief Get "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
     char get_rc_MC_model () const;
@@ -117,19 +88,25 @@ public:
     /*! \brief Request debugging information to be written to directory */
     void set_debug (const std::string& dir);
 
-    /*! \name Execution */
-    void optimize_sobp ();          /* automatically create, weigh peaks */
-    bool generate ();               /* use manually weighted peaks */
-
     /*! \name Outputs */
     void dump (const char* dir);     /* Print debugging information */
-    float lookup_sobp_dose (float depth);
+
+	/* Compute beam modifiers, SOBP etc. according to the teatment strategy */
+	void compute_prerequisites_beam_tools(std::string target);
+
+	/* Different strategies preparation */
+	void compute_beam_data_from_spot_map();
+	void compute_beam_data_from_manual_peaks(std::string target);
+	void compute_beam_data_from_prescription(std::string target);
+	void compute_beam_data_from_target(std::string target);
+	void compute_default_beam();
 
     /* This computes the aperture and range compensator */
-    void compute_beam_modifiers ();
+    void compute_beam_modifiers (Volume *seg_vol);
+	void compute_beam_modifiers (Volume *seg_vol, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max); // returns also the wed max and min maps
 
-    /* This modifies the rpl_volume to account for aperture and range compensator */
-    void apply_beam_modifiers ();
+	/* copy the aperture and range compensator from the rpl_vol if not defined in the input file */
+	void update_aperture_and_range_compensator();
 
     /* Set/ Get target */
     Plm_image::Pointer& get_target ();
@@ -150,19 +127,12 @@ public:
     void set_aperture_resolution (const int[]);
     void set_aperture_spacing (const float[]);
 
+	void set_step_length(float step);
+	float get_step_length();
+
     /* Set smearing */
     void set_smearing (float smearing);
     float get_smearing();
-
-    /* Set/Get step_length */
-    void set_step_length (double ray_step);
-    double get_step_length();
-
-    void set_beam_depth (float z_min, float z_max, float z_step);
-
-    /* set the type of particle (proton, helium ions, carbon ions...)*/
-    void set_particle_type(Particle_type particle_type);
-    Particle_type get_particle_type();
 
     /* Set/Get intput file names */
     void set_aperture_in (const std::string& str);
@@ -190,22 +160,15 @@ public:
     void set_wed_out(std::string str);
     std::string get_wed_out();
 
-    void set_photon_energy(float energy);
-    float get_photon_energy();
-
-    void set_have_prescription(bool have_prescription);
-    bool get_have_prescription();
-
-    void set_have_copied_peaks(bool have_copied_peaks);
-    bool get_have_copied_peaks();
-
-	void set_have_manual_peaks(bool have_manual_peaks);
-	bool get_have_manual_peaks();
-
 	void set_beam_line_type(std::string str);
-    std::string get_beam_line_type();
+	std::string get_beam_line_type();
 
-    void copy_sobp(Rt_sobp::Pointer sobp);
+	bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
+	bool is_ray_in_the_aperture(int* idx, unsigned char* ap_img);
+
+	/* computes the minimal geometric distance of the target for this beam
+	 -- used for smearing */
+	float compute_minimal_target_distance(Volume* target_vol, float background);
 
 public: 
 
@@ -220,13 +183,7 @@ public:
     Rpl_volume* rpl_ct_vol_HU_lg;
     Rpl_volume* sigma_vol_lg;
     Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
-
-    /* aperture 3D volume to avoid artefacts*/
-    Rpl_volume* aperture_vol;
-
-	/* particle number map for active scanning systems */
-	std::vector<double> num_particles;
-
+	
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);

@@ -79,12 +79,3 @@ bragg_curve (
 
     return bragg;
 }
-
-double bragg_curve_norm (
-	double E_0,         /* in MeV */
-    double sigma_E0,    /* in MeV */
-    double z            /* in mm */
-)
-{
-		return bragg_curve(E_0, sigma_E0, z)/ get_proton_dose_max(E_0);
-}

@@ -19,14 +19,14 @@ Rt_depth_dose::Rt_depth_dose ()
     this->E0 = 100.0;
     this->spread = 1.0;
     this->dres = .01;
-    this->dmax = 400.0;
-    this->weight = 1.0;
+    this->dend = 400.0;
+	this->index_of_dose_max = 0;
 
     this->num_samples = 40000;
 }
 
 Rt_depth_dose::Rt_depth_dose (
-    double E0, double spread, double dres, double dmax, double weight)
+    double E0, double spread, double dres, double dmax)
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
@@ -35,9 +35,6 @@ Rt_depth_dose::Rt_depth_dose (
     this->E0 = E0;
     this->spread = spread;
     this->dres = dres;
-    this->dmax = dmax;
-    this->weight = weight;
-
     this->generate();
 }
 
@@ -110,7 +107,7 @@ Rt_depth_dose::load_xio (const char* fn)
             ptoken = strtok (NULL, ",\n\0");
         }
     }
-    this->dmax = this->d_lut[j-1];
+    this->dend = this->d_lut[j-1];
 
     /* load in the energies (10 samples per line) */
     for (i=0, j=0; i<(this->num_samples/10)+1; i++) {
@@ -168,7 +165,7 @@ Rt_depth_dose::load_txt (const char* fn)
         this->d_lut[this->num_samples-1] = range;
         this->e_lut[this->num_samples-1] = dose;
 				this->f_lut[this->num_samples-1] = dose_int;
-        this->dmax = range;         /* Assume entries are sorted */
+        this->dend = range;         /* Assume entries are sorted */
     }
     fclose (fp);
     return true;
@@ -180,6 +177,17 @@ Rt_depth_dose::generate ()
     int i;
     double d;
 
+	float max_prep = -1;
+	float depth = -1;
+	float bragg = 0;
+	while (bragg > max_prep)
+	{
+		max_prep = bragg;
+		depth++;
+		bragg = bragg_curve(this->E0, this->spread, depth);
+	}
+	this->dend = depth + 20; // 2 cm margins after the Bragg peak
+
 #if SPECFUN_FOUND
     if (!this->E0) {
         printf ("ERROR: Failed to generate beam -- energy not specified.\n");
@@ -189,13 +197,11 @@ Rt_depth_dose::generate ()
         printf ("ERROR: Failed to generate beam -- energy spread not specified.\n");
         return false;
     }
-    if (!this->dmax) {
+    if (!this->dend) {
         printf ("ERROR: Failed to generate beam -- max depth not specified.\n");
         return false;
     }
-
-    this->num_samples = (int) floorf (this->dmax / this->dres);
-
+    this->num_samples = (int) ceilf (this->dend / this->dres)+1;
     this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
 	this->f_lut = (float*) malloc (this->num_samples*sizeof(float));
@@ -206,9 +212,39 @@ Rt_depth_dose::generate ()
 
     for (d=0, i=0; i<this->num_samples; d+=this->dres, i++) {
         d_lut[i] = d;
-		e_lut[i] = bragg_curve_norm (this->E0, this->spread, d)*this->dres;
-		if (d == 0) {f_lut[i] = e_lut[i];} else {f_lut[i] = f_lut[i-1] + e_lut[i];}
+		e_lut[i] = bragg_curve (this->E0, this->spread, d);
     }
+	float max = 0;
+	if (this->num_samples > 0) 
+	{ 
+		max = e_lut[0];
+		for (int k = 1; k < this->num_samples; k++)
+		{
+			if (e_lut[k] > max)
+			{
+				max = e_lut[k];
+				this->index_of_dose_max = k;
+			}
+		}
+	
+		/* normalization and creation of the accumulated dose curve */
+		if (max > 0)
+		{
+			e_lut[0] /= max;
+			f_lut[0] = e_lut[0] * this->dres;
+			for (int k = 1; k < this->num_samples; k++)
+			{
+				e_lut[k] /= max;
+				f_lut[k] = f_lut[k-1] + e_lut[k]*this->dres;
+			}
+		}
+		else
+		{
+			printf("Error: Depth dose curve must have at least one value > 0.\n");
+			return false;
+		}
+	}
+
     return true;
 #else
     printf ("ERROR: No specfun found.\n");
@@ -227,15 +263,20 @@ Rt_depth_dose::dump (const char* fn) const
     fclose (fp);
 }
 
+int 
+Rt_depth_dose::get_index_of_dose_max()
+{
+	return index_of_dose_max;
+}
+
 float
 Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
-{	
-    int i;
-	int j;
+{
+	int i = 0;
+	int j = 0;
+
     float energy = 0.0f;
-
 	float dres = this->dres;
-
 	float dmin = depth - dz/2.0;
 	float dmax = depth + dz/2.0;
 
@@ -252,7 +293,7 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
         }
     }
 
-	for (j = i; j < this->num_samples-1; j++) {
+	for (j = i; j < this->num_samples; j++) {
 		if (this->d_lut[j] > dmax) {
 			j--;
 			break;
@@ -267,7 +308,7 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
             * ((this->f_lut[j+1] - this->f_lut[j]) 
                 / (this->d_lut[j+1] - this->d_lut[j]));
     } 
-	else //(j == num_samples-1)
+	else
 	{
 		energy = this->f_lut[num_samples-1];
 	}
@@ -279,9 +320,48 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
             * ((this->f_lut[i+1] - this->f_lut[i]) 
                 / (this->d_lut[i+1] - this->d_lut[i]));
     } 
-	else if (i == num_samples-1) //(i == num_samples-1)
+	else if (i == num_samples-1)
 	{
 		energy -= this->f_lut[num_samples-1];
 	}
-	return energy;  
+	return energy;
+}
+
+float
+Rt_depth_dose::lookup_energy (
+    float depth)
+{	
+    int i = 0;
+    float energy = 0.0f;
+
+    /* Sanity check */
+    if (depth < 0 || depth > dend) {
+        return 0.0f;
+    }
+
+    /* Find index into profile arrays */
+    for (i = (int) floor(depth / dres); i < num_samples-1; i++) {
+        if (d_lut[i] > depth) {
+            i--;
+            break;
+        }
+    }
+
+    /* Clip input depth to maximum in lookup table */
+    if (i == num_samples-1) {
+        depth = d_lut[i];
+    }
+	
+    /* Use index to lookup and interpolate energy */
+    if (i >= 0 || i < num_samples-1) {
+        // linear interpolation
+        energy = e_lut[i]
+            + (depth - d_lut[i])
+            * ((e_lut[i+1] - e_lut[i]) 
+                / (d_lut[i+1] - d_lut[i]));
+    } else {
+        // we wen't past the end of the lookup table
+        energy = 0.0f;
+    }
+    return energy;
 }

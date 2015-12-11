@@ -11,37 +11,31 @@
 #include "plm_image.h"
 
 double
-dose_direct (
-    double* ct_xyz,             /* voxel to dose */
-    Rt_beam* beam
+energy_direct (
+    float rgdepth,             /* voxel to dose */
+    Rt_beam* beam,
+	int beam_idx
 );
 
 void compute_dose_ray_desplanques (
     Volume* dose_volume, 
     Volume::Pointer ct_vol, 
-    Rpl_volume* rpl_vol, 
-    Rpl_volume* sigma_vol, 
-    Rpl_volume* ct_vol_density, 
     Rt_beam* beam, 
     Volume::Pointer final_dose_volume, 
-    const Rt_depth_dose* ppp
+    int beam_index
 );
 void compute_dose_ray_sharp (
-    const Volume::Pointer ct_vol, 
-    const Rpl_volume* rpl_vol, 
-    const Rpl_volume* sigma_vol, 
-    Rpl_volume* ct_vol_density, 
-    const Rt_beam* beam,
-    Rpl_volume* rpl_dose_volume, 
-    const Aperture::Pointer ap, 
-    const Rt_depth_dose* ppp, 
+    const Volume::Pointer ct_vol,  
+    Rt_beam* beam,
+    Rpl_volume* rpl_dose_volume,
+	int beam_index,
     const int* margins
 );
 void compute_dose_ray_shackleford (
     Volume::Pointer dose_volume, 
     Rt_plan* plan, 
     Rt_beam *beam,
-    const Rt_depth_dose* ppp, 
+    int beam_index, 
     std::vector<double>* area, 
     std::vector<double>* xy_grid, 
     int radius_sample, 

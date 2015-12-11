@@ -21,10 +21,10 @@ set (PLMDOSE_LIBRARY_SRC
   rt_depth_dose.cxx
   rt_dose.cxx
   rt_lut.cxx
+  rt_mebs.cxx
   rt_parms.cxx
   rt_plan.cxx  
   rt_sigma.cxx
-  rt_sobp.cxx
   wed_parms.cxx
   )
 

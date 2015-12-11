@@ -790,7 +790,6 @@ Volume::get_ijk_value (const float ijk[3])
         idx_floor,
         img, this
     );
-
     return val;
 }
 

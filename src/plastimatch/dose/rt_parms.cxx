@@ -19,7 +19,7 @@
 #include "rt_depth_dose.h"
 #include "rt_parms.h"
 #include "rt_plan.h"
-#include "rt_sobp.h"
+#include "rt_mebs.h"
 #include "string_util.h"
 
 class Rt_parms_private {
@@ -36,7 +36,7 @@ public:
     /* Other parameters not directly defined by config the config file but necessary for the beam creation */
     Rt_plan* rt_plan;
     int beam_number; /* contains the number of the beam in the vector<Rt_beam*> beam_storage */
-    Rt_sobp::Pointer sobp;
+    Rt_mebs::Pointer mebs;
     bool have_prescription;
     bool ap_have_origin;
     bool have_manual_peaks;
@@ -56,7 +56,7 @@ public:
            file but necessary for the beam creation */
         this->rt_plan = 0;
         this->beam_number = -1;
-        this->sobp = Rt_sobp::New();
+        this->mebs = Rt_mebs::New();
         this->have_prescription = false;
         this->ap_have_origin = false;
         this->have_manual_peaks = false;
@@ -160,10 +160,8 @@ Rt_parms::append_peak ()
     if (!rt_beam) {
         return;
     }
-    rt_beam->set_have_manual_peaks(true);
-    rt_beam->add_peak (
-        d_ptr->E0, d_ptr->spread, d_ptr->depth_res, 
-        d_ptr->max_depth, d_ptr->weight);
+    rt_beam->get_mebs()->set_have_manual_peaks(true);
+    rt_beam->get_mebs()->add_peak (d_ptr->E0, d_ptr->spread, d_ptr->weight);
 }
 
 Plm_return_code
@@ -290,6 +288,9 @@ Rt_parms::set_key_value (
         else if (key == "rc_out") {
             rt_beam->set_range_compensator_out (val);
         }
+		else if (key == "particle_number_out") {
+            rt_beam->get_mebs()->set_particle_number_out (val);
+        }
         else if (key == "sigma_out") {
             rt_beam->set_sigma_out (val);
         }
@@ -301,18 +302,7 @@ Rt_parms::set_key_value (
             if (part == PARTICLE_TYPE_UNKNOWN) {
                 goto error_exit;
             }
-            rt_beam->set_particle_type (part);
-        }
-        else if (key == "detail") {
-            if (val == "low") {
-                rt_beam->set_detail (1);
-            }
-            else if (val == "high") {
-                rt_beam->set_detail (0);
-            }
-            else {
-                goto error_exit;
-            }
+            rt_beam->get_mebs()->set_particle_type (part);
         }
         else if (key == "beam_weight") {
             float beam_weight;
@@ -325,11 +315,13 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%lf", &(d_ptr->max_depth)) != 1) {
                 goto error_exit;
             }
+			rt_beam->get_mebs()->set_depth_end(d_ptr->max_depth);
         }
         else if (key == "depth_dose_z_res") {
             if (sscanf (val.c_str(), "%lf", &(d_ptr->depth_res)) != 1) {
                 goto error_exit;
             }
+			rt_beam->get_mebs()->set_depth_resolution(d_ptr->max_depth);
         }
         else if (key == "source") {
             float src[3];
@@ -349,21 +341,14 @@ Rt_parms::set_key_value (
             }
             rt_beam->set_isocenter_position (isocenter);
         }
-        else if (key == "prescription_min") {
+        else if (key == "prescription_min_max") {
             float prescription_min;
-            int rc = sscanf (val.c_str(), "%f", &prescription_min);
-            if (rc != 1) {
+			float prescription_max;
+            int rc = sscanf (val.c_str(), "%f %f", &prescription_min, &prescription_max);
+            if (rc != 2) {
                 goto error_exit;
             }
-            rt_beam->set_prescription_min (prescription_min);
-        }
-        else if (key == "prescription_max") {
-            float prescription_max;
-            int rc = sscanf (val.c_str(), "%f", &prescription_max);
-            if (rc != 1) {
-                goto error_exit;
-            }
-            rt_beam->set_prescription_max (prescription_max);
+            rt_beam->get_mebs()->set_prescription (prescription_min, prescription_max);
         }
         else if (key == "aperture_up") {
             float vup[3];
@@ -427,6 +412,10 @@ Rt_parms::set_key_value (
         else if (key == "range_compensator_file_in") {
             rt_beam->set_range_compensator_in (val);
         }
+		else if (key == "particle_number_in") {
+            rt_beam->get_mebs()->set_particle_number_in (val);
+			rt_beam->get_mebs()->set_have_particle_number_map(true);
+        }
         else if (key == "aperture_smearing") {
             float smearing;
             if (sscanf (val.c_str(), "%f", &smearing) != 1) {
@@ -439,21 +428,28 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%f", &proximal_margin) != 1) {
                 goto error_exit;
             }
-            rt_beam->set_proximal_margin (proximal_margin);
+            rt_beam->get_mebs()->set_proximal_margin (proximal_margin);
         }
         else if (key == "distal_margin") {
             float distal_margin;
             if (sscanf (val.c_str(), "%f", &distal_margin) != 1) {
                 goto error_exit;
             }
-            rt_beam->set_distal_margin (distal_margin);
+            rt_beam->get_mebs()->set_distal_margin (distal_margin);
+        }
+		else if (key == "energy_resolution") {
+            float eres;
+            if (sscanf (val.c_str(), "%f", &eres) != 1) {
+                goto error_exit;
+            }
+            rt_beam->get_mebs()->set_energy_resolution(eres);
         }
         else if (key == "energy_x") {
             float photon_energy;
             if (sscanf (val.c_str(), "%f", &photon_energy) != 1) {
                 goto error_exit;
             }
-            rt_beam->set_photon_energy (photon_energy);
+            rt_beam->get_mebs()->set_photon_energy (photon_energy);
         }
         else {
             goto error_exit;

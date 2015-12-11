@@ -186,6 +186,7 @@ find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k,
     alpha = xyz_ray_center[2] /(double) ray[2];
     xyz_ray_center[0] = alpha * ray[0];
     xyz_ray_center[1] = alpha * ray[1];
+
 }
 
 void 
