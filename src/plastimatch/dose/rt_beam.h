@@ -74,7 +74,7 @@ public:
     /*! \brief Set "beam_weight" parameter of dose calculation algorithm */
     void set_beam_weight (float beam_weight);
 
-		/*! \brief Get "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
+    /*! \brief Get "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
     char get_rc_MC_model () const;
     /*! \brief Set "rc_MC_model" for the model of the range compensator, y = Monte Carlo, n = Highland */
     void set_rc_MC_model (char rc_MC_model);
@@ -91,22 +91,22 @@ public:
     /*! \name Outputs */
     void dump (const char* dir);     /* Print debugging information */
 
-	/* Compute beam modifiers, SOBP etc. according to the teatment strategy */
-	void compute_prerequisites_beam_tools(std::string target);
+    /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
+    void compute_prerequisites_beam_tools(std::string target);
 
-	/* Different strategies preparation */
-	void compute_beam_data_from_spot_map();
-	void compute_beam_data_from_manual_peaks(std::string target);
-	void compute_beam_data_from_prescription(std::string target);
-	void compute_beam_data_from_target(std::string target);
-	void compute_default_beam();
+    /* Different strategies preparation */
+    void compute_beam_data_from_spot_map();
+    void compute_beam_data_from_manual_peaks(std::string target);
+    void compute_beam_data_from_prescription(std::string target);
+    void compute_beam_data_from_target(std::string target);
+    void compute_default_beam();
 
     /* This computes the aperture and range compensator */
     void compute_beam_modifiers (Volume *seg_vol);
-	void compute_beam_modifiers (Volume *seg_vol, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max); // returns also the wed max and min maps
+    void compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
 
-	/* copy the aperture and range compensator from the rpl_vol if not defined in the input file */
-	void update_aperture_and_range_compensator();
+    /* copy the aperture and range compensator from the rpl_vol if not defined in the input file */
+    void update_aperture_and_range_compensator();
 
     /* Set/ Get target */
     Plm_image::Pointer& get_target ();
@@ -127,8 +127,8 @@ public:
     void set_aperture_resolution (const int[]);
     void set_aperture_spacing (const float[]);
 
-	void set_step_length(float step);
-	float get_step_length();
+    void set_step_length(float step);
+    float get_step_length();
 
     /* Set smearing */
     void set_smearing (float smearing);
@@ -160,15 +160,15 @@ public:
     void set_wed_out(std::string str);
     std::string get_wed_out();
 
-	void set_beam_line_type(std::string str);
-	std::string get_beam_line_type();
+    void set_beam_line_type(std::string str);
+    std::string get_beam_line_type();
 
-	bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
-	bool is_ray_in_the_aperture(int* idx, unsigned char* ap_img);
+    bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
+    bool is_ray_in_the_aperture(int* idx, unsigned char* ap_img);
 
-	/* computes the minimal geometric distance of the target for this beam
-	 -- used for smearing */
-	float compute_minimal_target_distance(Volume* target_vol, float background);
+    /* computes the minimal geometric distance of the target for this beam
+       -- used for smearing */
+    float compute_minimal_target_distance(Volume* target_vol, float background);
 
 public: 
 
@@ -183,10 +183,10 @@ public:
     Rpl_volume* rpl_ct_vol_HU_lg;
     Rpl_volume* sigma_vol_lg;
     Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
-	
-private:
-    bool load_xio (const char* fn);
-    bool load_txt (const char* fn);
+    
+        private:
+            bool load_xio (const char* fn);
+                bool load_txt (const char* fn);
 };
 
 #endif

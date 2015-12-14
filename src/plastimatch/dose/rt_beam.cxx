@@ -391,22 +391,22 @@ Rt_beam::compute_beam_data_from_spot_map()
 void
 Rt_beam::compute_beam_data_from_manual_peaks(std::string target)
 {
-	/* The spot map will be identical for passive or scanning beam lines */
-	int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
-	this->get_mebs()->generate_part_num_from_weight(ap_dim);
-	if ((target != "" && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
-	{
-		if (d_ptr->beam_line_type == "active")
-		{
-			this->rpl_vol->compute_beam_modifiers_active_scanning(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
-		}
-		else
-		{
-			this->rpl_vol->compute_beam_modifiers_passive_scattering(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
-		}
-	}
-	/* the aperture and range compensator are erased and the ones defined in the input file are considered */
-	this->update_aperture_and_range_compensator();
+    /* The spot map will be identical for passive or scanning beam lines */
+    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    this->get_mebs()->generate_part_num_from_weight(ap_dim);
+    if ((target != "" && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
+    {
+        if (d_ptr->beam_line_type == "active")
+        {
+            this->rpl_vol->compute_beam_modifiers_active_scanning(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        }
+        else
+        {
+            this->rpl_vol->compute_beam_modifiers_passive_scattering(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        }
+    }
+    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
+    this->update_aperture_and_range_compensator();
 }
 
 void
@@ -421,18 +421,18 @@ Rt_beam::compute_beam_data_from_prescription(std::string target)
 void
 Rt_beam::compute_beam_data_from_target(std::string target)
 {
-	/* Compute beam aperture, range compensator 
-	+ SOBP for passively scattered beam lines */
+    /* Compute beam aperture, range compensator 
+       + SOBP for passively scattered beam lines */
 	
-	if (this->get_beam_line_type() != "passive")
-	{
-		d_ptr->mebs->compute_particle_number_matrix_from_target_active(this->rpl_vol, this->get_target(), d_ptr->smearing);
-	}
-	else
-	{
-		this->compute_beam_modifiers (d_ptr->target->get_vol(), &this->get_mebs()->get_min_wed_map(), &this->get_mebs()->get_max_wed_map());
-		this->compute_beam_data_from_prescription(target);
-	}
+    if (this->get_beam_line_type() != "passive")
+    {
+        d_ptr->mebs->compute_particle_number_matrix_from_target_active(this->rpl_vol, this->get_target(), d_ptr->smearing);
+    }
+    else
+    {
+        this->compute_beam_modifiers (d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(), this->get_mebs()->get_max_wed_map());
+        this->compute_beam_data_from_prescription(target);
+    }
 }
 
 void 
@@ -446,34 +446,34 @@ Rt_beam::compute_default_beam()
 void 
 Rt_beam::compute_beam_modifiers (Volume *seg_vol)
 {
-	if (d_ptr->beam_line_type == "active")
-	{
-		this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
-	}
-	else
-	{
-		this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
-	}
+    if (d_ptr->beam_line_type == "active")
+    {
+        this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+    }
+    else
+    {
+        this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+    }
 
-	d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
-	this->rpl_vol->apply_beam_modifiers ();
-	return;
+    d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
+    this->rpl_vol->apply_beam_modifiers ();
+    return;
 }
 
 void 
-Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max)
+Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
-	if (d_ptr->beam_line_type == "active")
-	{
-		this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
-	}
-	else
-	{
-		this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
-	}
-	d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
-	this->rpl_vol->apply_beam_modifiers ();
-	return;
+    if (d_ptr->beam_line_type == "active")
+    {
+        this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+    }
+    else
+    {
+        this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+    }
+    d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
+    this->rpl_vol->apply_beam_modifiers ();
+    return;
 }
 
 void
@@ -870,35 +870,35 @@ Rt_beam::is_ray_in_the_aperture(int* idx, unsigned char* ap_img)
 float 
 Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
 {
-	float* target_img = (float*) target_vol->img;
+    float* target_img = (float*) target_vol->img;
 
-	float min = FLT_MAX;
-	int idx = 0;
-	int dim[3] = {target_vol->dim[0], target_vol->dim[1], target_vol->dim[2]};
-	float target_image_origin[3] = {target_vol->origin[0], target_vol->origin[1], target_vol->origin[2]};
-	float target_image_spacing[3] = {target_vol->spacing[0], target_vol->spacing[1], target_vol->spacing[2]};
-	float source[3] = {(float) this->get_source_position(0), (float) this->get_source_position(1), (float) this->get_source_position(2)};
+    float min = FLT_MAX;
+    int idx = 0;
+    int dim[3] = {target_vol->dim[0], target_vol->dim[1], target_vol->dim[2]};
+    float target_image_origin[3] = {target_vol->origin[0], target_vol->origin[1], target_vol->origin[2]};
+    float target_image_spacing[3] = {target_vol->spacing[0], target_vol->spacing[1], target_vol->spacing[2]};
+    float source[3] = {(float) this->get_source_position(0), (float) this->get_source_position(1), (float) this->get_source_position(2)};
 
-	float voxel_xyz[3] = {0, 0, 0};
-	float min_tmp;
+    float voxel_xyz[3] = {0, 0, 0};
+    float min_tmp;
 
-	for (int k = 0; k < dim[2]; k++) 
-	{
-		for (int j = 0; j < dim[1]; j++) 
-		{
-			for (int i = 0; i < dim[0]; i++) 
-			{
-				idx = i + (dim[0] * (j + dim[1] * k));
-				if (target_img[idx] > background)
-				{
-					voxel_xyz[0] = target_image_origin[0] + (float) i * target_image_spacing[0];
+    for (int k = 0; k < dim[2]; k++) 
+    {
+        for (int j = 0; j < dim[1]; j++) 
+        {
+            for (int i = 0; i < dim[0]; i++) 
+            {
+                idx = i + (dim[0] * (j + dim[1] * k));
+                if (target_img[idx] > background)
+                {
+                    voxel_xyz[0] = target_image_origin[0] + (float) i * target_image_spacing[0];
                     voxel_xyz[1] = target_image_origin[1] + (float) j * target_image_spacing[1];
                     voxel_xyz[2] = target_image_origin[2] + (float) k * target_image_spacing[2];
-					min_tmp = vec3_dist(voxel_xyz, source);
-					if (min_tmp < min) {min = min_tmp;}
-				}
-			}
-		}
-	}
-	return min;
+                    min_tmp = vec3_dist(voxel_xyz, source);
+                    if (min_tmp < min) {min = min_tmp;}
+                }
+            }
+        }
+    }
+    return min;
 }

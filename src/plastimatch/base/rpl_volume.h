@@ -72,18 +72,18 @@ public:
     double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);
     double get_back_clipping_plane () const;
-	void set_minimum_distance_target(double min);
-	double get_minimum_distance_target();
+    void set_minimum_distance_target(double min);
+    double get_minimum_distance_target();
 
     double get_max_wed ();
     double get_min_wed ();
 
-	void compute_rpl_ct_density (); // compute density volume
-	void compute_rpl_HU ();	// compute HU volume
+    void compute_rpl_ct_density (); // compute density volume
+    void compute_rpl_HU ();	// compute HU volume
     void compute_rpl_void ();	// compute void volume
 
-	void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
-	void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
+    void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
+    void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
 
     double compute_farthest_penetrating_ray_on_nrm(float range); // return the distance from aperture to the farthest which rg_lenght > range
 
@@ -91,14 +91,14 @@ public:
     void compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background);
     void compute_proj_wed_volume (Volume *proj_wed_vol, float background);
     
-	void compute_beam_modifiers_passive_scattering (Volume *seg_vol);
-	void compute_beam_modifiers_active_scanning (Volume *seg_vol);
-	void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
-	void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
-	void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max); // returns also the wed max and min maps
-	void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max); // returns also the wed max and min maps
+    void compute_beam_modifiers_passive_scattering (Volume *seg_vol);
+    void compute_beam_modifiers_active_scanning (Volume *seg_vol);
+    void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
+    void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
+    void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
+    void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
 
-	void compute_volume_aperture(Aperture::Pointer ap);
+    void compute_volume_aperture(Aperture::Pointer ap);
 
     void apply_beam_modifiers ();
 
@@ -108,9 +108,9 @@ public:
     void compute_ray_data ();
 
 protected:
-	void compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max);
-	void compute_target_distance_limits (Volume* seg_vol, std::vector <double> *map_min_distance, std::vector <double> *map_max_distance);
-	void apply_smearing_to_target (float smearing, std::vector <double> *map_min_distance, std::vector <double> *map_max_distance);
+    void compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
+    void compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
+    void apply_smearing_to_target (float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
 
     void aprc_ray_trace (
         Volume *tgt_vol,             /* I: CT volume */

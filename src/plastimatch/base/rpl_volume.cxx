@@ -1362,15 +1362,15 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     ray_adj_len = (vec3_len(coord_vec)/coord_ap_len)*vec3_len(dummy_adj_ray);
                     vec3_scale3(adj_ray_coord,ray_adj[i]->ray,ray_adj_len);
 
-					if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
-								printf("Error in ray clipping, exiting...\n");
-								return;
-					}
+                    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
+                        printf("Error in ray clipping, exiting...\n");
+                        return;
+                    }
 
-							vec3_add2(adj_ray_coord,src);
-					vec3_sub2(adj_ray_coord,ray_start);
+                    vec3_add2(adj_ray_coord,src);
+                    vec3_sub2(adj_ray_coord,ray_start);
 		    
-					rad_depth_input = vec3_len(adj_ray_coord);	    
+                    rad_depth_input = vec3_len(adj_ray_coord);	    
 
                     //Now look up the radiation length, using the provided function,
                     //knowing the ray and the length along it.
@@ -1401,15 +1401,15 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
                     else {
                         dummy_lin_ex = ray_rad_len[i]-floor(ray_rad_len[i]);
 
-						wijk[0] = (ray_lookup[i][0] - 1)/wed_vol->spacing[0];
-						wijk[1] = (ray_lookup[i][1] - 1)/wed_vol->spacing[1];
+                        wijk[0] = (ray_lookup[i][0] - 1)/wed_vol->spacing[0];
+                        wijk[1] = (ray_lookup[i][1] - 1)/wed_vol->spacing[1];
 
                         //wijk[0] = ray_lookup[i][0] - 1;
                         //wijk[1] = ray_lookup[i][1] - 1;
 
                         //Needed if dew dimensions are not automatically set by wed in wed_main.
-						//wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->origin[0])/wed_vol->spacing[0];
-						//wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->origin[1])/wed_vol->spacing[1];
+                        //wijk[0] = ((ray_lookup[i][0] - 1) - wed_vol->origin[0])/wed_vol->spacing[0];
+                        //wijk[1] = ((ray_lookup[i][1] - 1) - wed_vol->origin[1])/wed_vol->spacing[1];
 
                         if (wijk[0] < 0 || wijk[0] >= wed_vol->dim[0]) {break;}
                         if (wijk[1] < 0 || wijk[1] >= wed_vol->dim[1]) {break;}
@@ -1437,40 +1437,40 @@ Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float backgrou
 }
 
 void 
-Rpl_volume::apply_smearing_to_target(float smearing, std::vector <double> *map_min_distance, std::vector <double> *map_max_distance)
+Rpl_volume::apply_smearing_to_target(float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance)
 {
-	printf("Apply smearing to the target.\nThe smearing width is defined at the minimum depth of the target.\n");
-	/* Create a structured element of the right size */
+    printf("Apply smearing to the target.\nThe smearing width is defined at the minimum depth of the target.\n");
+    /* Create a structured element of the right size */
     int strel_half_size[2];
     int strel_size[2];
 
-	/* Found the min of the target to be sure the smearing (margins) at the minimal depth */
-	double min = DBL_MAX;
-	for (int i = 0; i < (*map_min_distance).size(); i++)
-	{
-		if ((*map_min_distance)[i] > 0 && (*map_min_distance)[i] < min)
-		{
-			min = (*map_min_distance)[i];
-		}
-	}
-	if (min == DBL_MAX)
-	{
-		printf("***ERROR: Target depth min is null for each ray. Smearing not applied\n");
-		return;
-	}
-	d_ptr->min_distance_target = min + d_ptr->aperture->get_distance() + d_ptr->front_clipping_dist;
+    /* Found the min of the target to be sure the smearing (margins) at the minimal depth */
+    double min = DBL_MAX;
+    for (int i = 0; i < map_min_distance.size(); i++)
+    {
+        if (map_min_distance[i] > 0 && map_min_distance[i] < min)
+        {
+            min = map_min_distance[i];
+        }
+    }
+    if (min == DBL_MAX)
+    {
+        printf("***ERROR: Target depth min is null for each ray. Smearing not applied\n");
+        return;
+    }
+    d_ptr->min_distance_target = min + d_ptr->aperture->get_distance() + d_ptr->front_clipping_dist;
 
 
-	/* The smearing width is scaled to the aperture */
-	strel_half_size[0] = ROUND_INT(smearing * d_ptr->aperture->get_distance() / (d_ptr->min_distance_target * d_ptr->aperture->get_spacing()[0]));
-	strel_half_size[1] = ROUND_INT(smearing * d_ptr->aperture->get_distance() / (d_ptr->min_distance_target * d_ptr->aperture->get_spacing()[1]));
+    /* The smearing width is scaled to the aperture */
+    strel_half_size[0] = ROUND_INT(smearing * d_ptr->aperture->get_distance() / (d_ptr->min_distance_target * d_ptr->aperture->get_spacing()[0]));
+    strel_half_size[1] = ROUND_INT(smearing * d_ptr->aperture->get_distance() / (d_ptr->min_distance_target * d_ptr->aperture->get_spacing()[1]));
 
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];
-	float smearing_ap = smearing * d_ptr->aperture->get_distance() / (min + d_ptr->aperture->get_distance() + d_ptr->front_clipping_dist);
+    float smearing_ap = smearing * d_ptr->aperture->get_distance() / (min + d_ptr->aperture->get_distance() + d_ptr->front_clipping_dist);
 
     int *strel = new int[strel_size[0]*strel_size[1]];
-	/* (rf, cf) center of the smearing */
+    /* (rf, cf) center of the smearing */
     for (int r = 0; r < strel_size[1]; r++) {
         float rf = (float) (r - strel_half_size[1]) * d_ptr->aperture->get_spacing()[0];
         for (int c = 0; c < strel_size[0]; c++) {
@@ -1495,18 +1495,18 @@ Rpl_volume::apply_smearing_to_target(float smearing, std::vector <double> *map_m
     }
 
     /* Apply smear to target maps */
-	double distance_min;
-	double distance_max;
-	std::vector<double> min_distance_tmp ((*map_min_distance).size(), 0);
-	std::vector<double> max_distance_tmp ((*map_max_distance).size(), 0);
+    double distance_min;
+    double distance_max;
+    std::vector<double> min_distance_tmp (map_min_distance.size(), 0);
+    std::vector<double> max_distance_tmp (map_max_distance.size(), 0);
 
     for (int ar = 0; ar < d_ptr->aperture->get_dim()[1]; ar++) {
         for (int ac = 0; ac < d_ptr->aperture->get_dim()[0]; ac++) {
             int aidx = ar * d_ptr->aperture->get_dim()[0] + ac;
 
-			/* Reset the limit values */
+            /* Reset the limit values */
             distance_min = DBL_MAX;
-			distance_max = 0;
+            distance_max = 0;
 
             for (int sr = 0; sr < strel_size[1]; sr++) {
                 int pr = ar + sr - strel_half_size[1];
@@ -1525,32 +1525,32 @@ Rpl_volume::apply_smearing_to_target(float smearing, std::vector <double> *map_m
                     }
 
                     int pidx = pr * d_ptr->aperture->get_dim()[0] + pc;
-                    if ((*map_min_distance)[pidx] > 0 && (*map_min_distance)[pidx] < distance_min) {
-                        distance_min = (*map_min_distance)[pidx];
+                    if (map_min_distance[pidx] > 0 && map_min_distance[pidx] < distance_min) {
+                        distance_min = map_min_distance[pidx];
                     }
-                    if ((*map_max_distance)[pidx] > distance_max) {
-						distance_max = (*map_max_distance)[pidx];
+                    if (map_max_distance[pidx] > distance_max) {
+                        distance_max = map_max_distance[pidx];
                     }
                 }
             }
-			if (distance_min == DBL_MAX)
-			{
-				min_distance_tmp[aidx] = 0;
-			}
-			else 
-			{
-				min_distance_tmp[aidx] = distance_min;
-			}
+            if (distance_min == DBL_MAX)
+            {
+                min_distance_tmp[aidx] = 0;
+            }
+            else 
+            {
+                min_distance_tmp[aidx] = distance_min;
+            }
             max_distance_tmp[aidx] = distance_max;
         }
     }
 
-	/* update the initial distance map */
-	for (int i = 0; i < (*map_min_distance).size(); i++)
-	{
-		(*map_min_distance)[i] = min_distance_tmp[i];
-		(*map_max_distance)[i] = max_distance_tmp[i];
-	}
+    /* update the initial distance map */
+    for (int i = 0; i < map_min_distance.size(); i++)
+    {
+        map_min_distance[i] = min_distance_tmp[i];
+        map_max_distance[i] = max_distance_tmp[i];
+    }
 
     /* Clean up */
     delete[] strel;
@@ -1622,51 +1622,51 @@ Rpl_volume::apply_beam_modifiers () // In this new version the range compensator
 void 
 Rpl_volume::compute_beam_modifiers_passive_scattering (Volume *seg_vol)
 {
-	std::vector<double> min;
-	std::vector<double> max;
-	compute_beam_modifiers_core (seg_vol, false, 0, 0, 0, &min, &max);
-	return;
+    std::vector<double> min;
+    std::vector<double> max;
+    compute_beam_modifiers_core (seg_vol, false, 0, 0, 0, min, max);
+    return;
 }
 
 void 
 Rpl_volume::compute_beam_modifiers_active_scanning (Volume *seg_vol)
 {
-	std::vector<double> min;
-	std::vector<double> max;
-	compute_beam_modifiers_core (seg_vol, true, 0, 0, 0, &min, &max);
-	return;
+    std::vector<double> min;
+    std::vector<double> max;
+    compute_beam_modifiers_core (seg_vol, true, 0, 0, 0, min, max);
+    return;
 }
 
 void 
 Rpl_volume::compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin)
 {
-	std::vector<double> min;
-	std::vector<double> max;
-	compute_beam_modifiers_core (seg_vol, false, smearing, proximal_margin, distal_margin, &min, &max);
-	return;
+    std::vector<double> min;
+    std::vector<double> max;
+    compute_beam_modifiers_core (seg_vol, false, smearing, proximal_margin, distal_margin, min, max);
+    return;
 }
 
 void 
 Rpl_volume::compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin)
 {
-	std::vector<double> min;
-	std::vector<double> max;
-	compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin, distal_margin, &min, &max);
-	return;
+    std::vector<double> min;
+    std::vector<double> max;
+    compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin, distal_margin, min, max);
+    return;
 }
 
 void 
-Rpl_volume::compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max)
+Rpl_volume::compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
-	compute_beam_modifiers_core (seg_vol, false, smearing, proximal_margin, distal_margin, map_wed_min, map_wed_max);
-	return;
+    compute_beam_modifiers_core (seg_vol, false, smearing, proximal_margin, distal_margin, map_wed_min, map_wed_max);
+    return;
 }
 
 void 
-Rpl_volume::compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max)
+Rpl_volume::compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
-	compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin, distal_margin, map_wed_min, map_wed_max);
-	return;
+    compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin, distal_margin, map_wed_min, map_wed_max);
+    return;
 }
 
 Volume* 
@@ -2100,123 +2100,123 @@ rpl_ray_trace_callback_RSP (
 }
 
 void
-Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>* map_wed_min, std::vector<double>* map_wed_max)
+Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
-	printf("Compute target distance limits...\n");
-	/* compute the target min and max distance (not wed!) map in the aperture */
-	compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
+    printf("Compute target distance limits...\n");
+    /* compute the target min and max distance (not wed!) map in the aperture */
+    compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
 
-	printf("Apply smearing to the target...\n");
-	/* widen the min/max distance maps */
-	if (smearing > 0)
-	{
-		apply_smearing_to_target(smearing, map_wed_min, map_wed_max);
-	}
+    printf("Apply smearing to the target...\n");
+    /* widen the min/max distance maps */
+    if (smearing > 0)
+    {
+        apply_smearing_to_target(smearing, map_wed_min, map_wed_max);
+    }
 
-	printf("Apply longitudinal margins...\n");
-	/* add the margins */
-	for (int i = 0; i < (*map_wed_min).size(); i++)
-	{
-		(*map_wed_min)[i] -= proximal_margin;
-		if ((*map_wed_min)[i] < 0) {
-			(*map_wed_min)[i] = 0;
-		}
-		if ((*map_wed_max)[i] > 0)
-		{
-			(*map_wed_max)[i] += distal_margin;
-		}
-	}
+    printf("Apply longitudinal margins...\n");
+    /* add the margins */
+    for (int i = 0; i < map_wed_min.size(); i++)
+    {
+        map_wed_min[i] -= proximal_margin;
+        if (map_wed_min[i] < 0) {
+            map_wed_min[i] = 0;
+        }
+        if (map_wed_max[i] > 0)
+        {
+            map_wed_max[i] += distal_margin;
+        }
+    }
 
-	printf("Compute max wed...\n");
-	/* compute wed limits from depth limits and compute max wed of the target + margins */
-	int idx = 0;
-	double max_wed = 0;
-	int i[2] = {0, 0};
-	for (i[0] = 0; i[0] < d_ptr->aperture->get_aperture_volume()->dim[0]; i[0]++){
-		for (i[1] = 0; i[1] < d_ptr->aperture->get_aperture_volume()->dim[1]; i[1]++){
-			idx = i[0] + i[1] * d_ptr->aperture->get_aperture_volume()->dim[0];
-			if ((*map_wed_max)[idx] <= 0) 
-			{
-				continue;
-			}
-			(*map_wed_min)[idx] = this->get_rgdepth(i, (*map_wed_min)[idx]);
-			(*map_wed_max)[idx] = this->get_rgdepth(i, (*map_wed_max)[idx]);
-			if ((*map_wed_max)[idx] > max_wed) {
-				max_wed = (*map_wed_max)[idx];
-			}
-		}
-	}
+    printf("Compute max wed...\n");
+    /* compute wed limits from depth limits and compute max wed of the target + margins */
+    int idx = 0;
+    double max_wed = 0;
+    int i[2] = {0, 0};
+    for (i[0] = 0; i[0] < d_ptr->aperture->get_aperture_volume()->dim[0]; i[0]++){
+        for (i[1] = 0; i[1] < d_ptr->aperture->get_aperture_volume()->dim[1]; i[1]++){
+            idx = i[0] + i[1] * d_ptr->aperture->get_aperture_volume()->dim[0];
+            if (map_wed_max[idx] <= 0) 
+            {
+                continue;
+            }
+            map_wed_min[idx] = this->get_rgdepth(i, map_wed_min[idx]);
+            map_wed_max[idx] = this->get_rgdepth(i, map_wed_max[idx]);
+            if (map_wed_max[idx] > max_wed) {
+                max_wed = map_wed_max[idx];
+            }
+        }
+    }
 
-	printf("Compute the aperture...\n");
-	/* compute the aperture */
-	/* This assumes that dim & spacing are correctly set in aperture */
+    printf("Compute the aperture...\n");
+    /* compute the aperture */
+    /* This assumes that dim & spacing are correctly set in aperture */
     d_ptr->aperture->allocate_aperture_images ();
 
-	Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
-	unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
-	for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[0]; i++)
-	{
-		if ((*map_wed_min)[i] > 0) {
-			aperture_img[i] = 1;
-		}
-		else {
-			aperture_img[i] = 0;
-		}
-	}
+    Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
+    unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[0]; i++)
+    {
+        if (map_wed_min[i] > 0) {
+            aperture_img[i] = 1;
+        }
+        else {
+            aperture_img[i] = 0;
+        }
+    }
 	
-	/* compute the range compensator if passive beam line -- PMMA range compensator */
-	Volume::Pointer range_comp_vol = d_ptr->aperture->get_range_compensator_volume ();
-	float *range_comp_img = (float*) range_comp_vol->img;
+    /* compute the range compensator if passive beam line -- PMMA range compensator */
+    Volume::Pointer range_comp_vol = d_ptr->aperture->get_range_compensator_volume ();
+    float *range_comp_img = (float*) range_comp_vol->img;
 	
-	if (active == false)
-	{
-		printf("Compute range compensator...\n");
-	}
+    if (active == false)
+    {
+        printf("Compute range compensator...\n");
+    }
 
-	for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
-	{
-		if (active == true)
-		{
-			range_comp_img[i] = 0;
-		}
-		else 
-		{
-			range_comp_img[i] = (max_wed - (*map_wed_max)[i]) / (PMMA_STPR * PMMA_DENSITY);
-		}
-	}
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if (active == true)
+        {
+            range_comp_img[i] = 0;
+        }
+        else 
+        {
+            range_comp_img[i] = (max_wed - map_wed_max[i]) / (PMMA_STPR * PMMA_DENSITY);
+        }
+    }
 
-	/* compute the max/min wed of the entire target + margins + range_comp*/
-	double total_min_wed = 0;
-	double total_max_wed = 0;
-	// Max should be the same as the max in the target as for this ray rgcomp is null
-	for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
-	{
-		if (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + (*map_wed_max)[i] > total_max_wed) { // if active beam line, range comp is null
-			total_max_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + (*map_wed_max)[i];
-		}
-	}
-	total_min_wed = total_max_wed;
-	for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
-	{
-		if ((range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + (*map_wed_max)[i] > 0) && (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + (*map_wed_min)[i] < total_min_wed)) {
-			total_min_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + (*map_wed_min)[i];
-		}
-	}
+    /* compute the max/min wed of the entire target + margins + range_comp*/
+    double total_min_wed = 0;
+    double total_max_wed = 0;
+    // Max should be the same as the max in the target as for this ray rgcomp is null
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i] > total_max_wed) { // if active beam line, range comp is null
+            total_max_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i];
+        }
+    }
+    total_min_wed = total_max_wed;
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if ((range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i] > 0) && (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_min[i] < total_min_wed)) {
+            total_min_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_min[i];
+        }
+    }
 
-	printf("Max wed in the target is %lg mm.\n", total_max_wed);
+    printf("Max wed in the target is %lg mm.\n", total_max_wed);
     printf("Min wed in the target is %lg mm.\n", total_min_wed);
 
     /* Save these values in private data store */
     d_ptr->max_wed = total_max_wed;
     d_ptr->min_wed = total_min_wed;
-	return;
+    return;
 }
 
 void
-Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double> *map_min_distance, std::vector <double> *map_max_distance)
+Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance)
 {
-	double threshold = .2;  //theshold for interpolated, segmented volume
-	d_ptr->aperture->allocate_aperture_images();
+    double threshold = .2;  //theshold for interpolated, segmented volume
+    d_ptr->aperture->allocate_aperture_images();
 
     Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
     Proj_volume *proj_vol = d_ptr->proj_vol;
@@ -2229,7 +2229,7 @@ Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double>
     ires2[1] = aperture_vol->dim[1];
 
     //plm_long rijk[3]; /* Index with rvol */
-	double k = 0; /* index with rvol */
+    double k = 0; /* index with rvol */
     double seg_long_ray[3] = {0, 0, 0}; // vector in the rvol volume
     float final_index[3]; //index of final vector
 
@@ -2248,67 +2248,67 @@ Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double>
 
     Ray_data *seg_ray;
 
-	for(int i = 0; i < ires2[0] * ires2[1]; i++)
-	{
-		(*map_min_distance).push_back(0);
-		(*map_max_distance).push_back(0);
-	}
+    for(int i = 0; i < ires2[0] * ires2[1]; i++)
+    {
+        map_min_distance.push_back(0);
+        map_max_distance.push_back(0);
+    }
 
-	for (int i = 0; i < ires2[0] * ires2[1]; i++)
-	{
-		seg_ray = &d_ptr->ray_data[i];
-		k = 0.;
-		vec3_copy(seg_long_ray, seg_ray->cp);
+    for (int i = 0; i < ires2[0] * ires2[1]; i++)
+    {
+        seg_ray = &d_ptr->ray_data[i];
+        k = 0.;
+        vec3_copy(seg_long_ray, seg_ray->cp);
 
-		/* reset variables */
-		previous_depth = 0;
-		first_seg_check = true;
-		intersect_seg = false;
+        /* reset variables */
+        previous_depth = 0;
+        first_seg_check = true;
+        intersect_seg = false;
 
-		while (k < (double) rvol->dim[2])
-		{
-			if (k != 0)
-			{
-				vec3_add2(seg_long_ray, seg_ray->ray);
-			}
+        while (k < (double) rvol->dim[2])
+        {
+            if (k != 0)
+            {
+                vec3_add2(seg_long_ray, seg_ray->ray);
+            }
 
-			final_index[0] = (seg_long_ray[0]-seg_vol->origin[0])/seg_vol->spacing[0];
+            final_index[0] = (seg_long_ray[0]-seg_vol->origin[0])/seg_vol->spacing[0];
             final_index[1] = (seg_long_ray[1]-seg_vol->origin[1])/seg_vol->spacing[1];
             final_index[2] = (seg_long_ray[2]-seg_vol->origin[2])/seg_vol->spacing[2];
 			
-			li_clamp_3d (final_index, ijk_floor, ijk_round,li_1,li_2,seg_vol);
+            li_clamp_3d (final_index, ijk_floor, ijk_round,li_1,li_2,seg_vol);
             idx_floor = volume_index(seg_vol->dim, ijk_floor);
             interp_seg_value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,seg_img,seg_vol);
 
-			if (interp_seg_value > threshold)  
-			{
-				 intersect_seg = true; //this ray intersects the segmentation volume
+            if (interp_seg_value > threshold)  
+            {
+                intersect_seg = true; //this ray intersects the segmentation volume
 
-				/* If point is within segmentation volume, set distance to the map_min matrix */	  
-				if (first_seg_check)  
-				{
-					(*map_min_distance)[i] = k;
-					first_seg_check = false;
-				}
-				previous_depth = k;
-			}
-			else
-			{
-				if (intersect_seg)  
-				{ 
-					/* while we aren't currently in the seg. volume, this ray has been,
-						so check if we just exited to set the max_seg_depth */
+                /* If point is within segmentation volume, set distance to the map_min matrix */	  
+                if (first_seg_check)  
+                {
+                    map_min_distance[i] = k;
+                    first_seg_check = false;
+                }
+                previous_depth = k;
+            }
+            else
+            {
+                if (intersect_seg)  
+                { 
+                    /* while we aren't currently in the seg. volume, this ray has been,
+                       so check if we just exited to set the max_seg_depth */
                     if (previous_depth > 0)
-					{
-                        (*map_max_distance)[i] = previous_depth;
+                    {
+                        map_max_distance[i] = previous_depth;
                         previous_depth = 0;
                     }
-				}
-			}
-			k++;
-		}
-	}
-	return;
+                }
+            }
+            k++;
+        }
+    }
+    return;
 }
 
 //20140827_YKP
