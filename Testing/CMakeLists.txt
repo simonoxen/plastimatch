@@ -403,12 +403,12 @@ plm_add_test (
 plm_add_test (
   "lung-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
+  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
   )
 plm_add_test (
   "lung-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;-5"
+  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-2-dicom;--pattern;lung;--lung-tumor-pos;-5"
   )
 plm_add_test (
   "ptv-1"
