@@ -30,10 +30,10 @@ public:
     std::string debug_dir;
 
     float smearing;
-	char rc_MC_model;
+    char rc_MC_model;
     float source_size;
 
-	float step_length;
+    float step_length;
 
     Aperture::Pointer aperture;
     Plm_image::Pointer target;
@@ -47,7 +47,7 @@ public:
     std::string range_compensator_out;
     std::string sigma_out;
     std::string wed_out;
-	std::string beam_line_type;
+    std::string beam_line_type;
 
 public:
     Rt_beam_private ()
@@ -67,9 +67,9 @@ public:
         this->mebs = Rt_mebs::New();
         this->debug_dir = "";
         this->smearing = 0.f;
-		this->rc_MC_model = 'n';
+        this->rc_MC_model = 'n';
         this->source_size = 0.f;
-		this->step_length = 1.f;
+        this->step_length = 1.f;
 
         aperture = Aperture::New();
 
@@ -81,7 +81,7 @@ public:
         this->range_compensator_out = "";
         this->sigma_out = "";
         this->wed_out = "";
-		this->beam_line_type = "passive";
+        this->beam_line_type = "passive";
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
     {
@@ -101,7 +101,7 @@ public:
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
         this->source_size = rtbp->source_size;
-		this->step_length = rtbp->step_length;
+        this->step_length = rtbp->step_length;
 
         /* Copy the aperture object */
         aperture = Aperture::New (rtbp->aperture);
@@ -329,63 +329,63 @@ Rt_beam::dump (const char* dir)
 void 
 Rt_beam::compute_prerequisites_beam_tools(std::string target)
 {
-	if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
-	{
-		printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
-		printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-		this->compute_beam_data_from_spot_map();
-		return;
-	}
+    if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
+    {
+        printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
+        printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        this->compute_beam_data_from_spot_map();
+        return;
+    }
 
-	/* The priority gets to spot map > manual peaks > dose prescription > target */
-	if (d_ptr->mebs->get_have_particle_number_map() == true)
-	{
-		printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-		this->compute_beam_data_from_spot_map();
-		return;
-	}
-	if (d_ptr->mebs->get_have_manual_peaks() == true)
-	{
-		printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
-		this->get_mebs()->set_have_manual_peaks(true);
-		this->compute_beam_data_from_manual_peaks(target);
-		return;
-	}
-	if (d_ptr->mebs->get_have_prescription() == true)
-	{
-		this->get_mebs()->set_have_prescription(true);
-		/* Apply margins */
-		this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
-		printf("Prescription depths detected. Any target depth will not be considered.\n");
-		this->compute_beam_data_from_prescription(target);
-		return;
-	}
-	if (target != "")
-	{
-		printf("Target detected.\n");
-		this->get_mebs()->set_have_manual_peaks(false);
-		this->get_mebs()->set_have_prescription(false);
-		this->compute_beam_data_from_target(target);
-		return;
-	}
+    /* The priority gets to spot map > manual peaks > dose prescription > target */
+    if (d_ptr->mebs->get_have_particle_number_map() == true)
+    {
+        printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        this->compute_beam_data_from_spot_map();
+        return;
+    }
+    if (d_ptr->mebs->get_have_manual_peaks() == true)
+    {
+        printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
+        this->get_mebs()->set_have_manual_peaks(true);
+        this->compute_beam_data_from_manual_peaks(target);
+        return;
+    }
+    if (d_ptr->mebs->get_have_prescription() == true)
+    {
+        this->get_mebs()->set_have_prescription(true);
+        /* Apply margins */
+        this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
+        printf("Prescription depths detected. Any target depth will not be considered.\n");
+        this->compute_beam_data_from_prescription(target);
+        return;
+    }
+    if (target != "")
+    {
+        printf("Target detected.\n");
+        this->get_mebs()->set_have_manual_peaks(false);
+        this->get_mebs()->set_have_prescription(false);
+        this->compute_beam_data_from_target(target);
+        return;
+    }
 	
-	/* If we arrive to this point, it is because no beam was defined
-	Creation of a default beam: 100 MeV */
-	printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
-	printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
-	this->compute_default_beam();
-	return;
+    /* If we arrive to this point, it is because no beam was defined
+       Creation of a default beam: 100 MeV */
+    printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
+    printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
+    this->compute_default_beam();
+    return;
 }
 
 void
 Rt_beam::compute_beam_data_from_spot_map()
 {
-	this->get_mebs()->clear_depth_dose();
-	this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
+    this->get_mebs()->clear_depth_dose();
+    this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
 
-	/* If an aperture is defined in the input file, the aperture is erased. 
-		The range compensator is not considered if the beam line is defined as active scanning */
-	this->update_aperture_and_range_compensator();
+    /* If an aperture is defined in the input file, the aperture is erased. 
+       The range compensator is not considered if the beam line is defined as active scanning */
+    this->update_aperture_and_range_compensator();
 }
 
 void
@@ -412,10 +412,10 @@ Rt_beam::compute_beam_data_from_manual_peaks(std::string target)
 void
 Rt_beam::compute_beam_data_from_prescription(std::string target)
 {
-	/* The spot map will be identical for passive or scanning beam lines */
-	/* Identic to compute from manual peaks, with a preliminary optimization */
-	d_ptr->mebs->optimize_sobp();
-	this->compute_beam_data_from_manual_peaks(target);
+    /* The spot map will be identical for passive or scanning beam lines */
+    /* Identic to compute from manual peaks, with a preliminary optimization */
+    d_ptr->mebs->optimize_sobp();
+    this->compute_beam_data_from_manual_peaks(target);
 }
 
 void
@@ -479,42 +479,42 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
 void
 Rt_beam::update_aperture_and_range_compensator()
 {
-	/* The aperture is copied from rpl_vol
-		the range compensator and/or the aperture are erased if defined in the input file */
-	if (d_ptr->aperture_in != "")
-	{
-		Plm_image::Pointer ap_img = Plm_image::New (d_ptr->aperture_in, PLM_IMG_TYPE_ITK_UCHAR);
-		this->get_aperture()->set_aperture_image(d_ptr->aperture_in.c_str());
-		this->get_aperture()->set_aperture_volume(ap_img->get_volume_uchar());
-		if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
-		{
-			printf("Smearing applied to the aperture. The smearing width is defined in the aperture frame.\n");
-			d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, d_ptr->aperture->get_distance());
-		}
-		else
-		{
-			printf("Smearing applied to the aperture. The smearing width is defined at the target minimal distance.\n");
-			d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
-		}
-	}
-	/* Set range compensator */
-	if (d_ptr->range_compensator_in != "" && d_ptr->beam_line_type != "active")
-	{
-		Plm_image::Pointer rgc_img = Plm_image::New (d_ptr->range_compensator_in, PLM_IMG_TYPE_ITK_FLOAT);
-		this->get_aperture()->set_range_compensator_image(d_ptr->range_compensator_in.c_str());
-		this->get_aperture()->set_range_compensator_volume(rgc_img->get_volume_float());
+    /* The aperture is copied from rpl_vol
+       the range compensator and/or the aperture are erased if defined in the input file */
+    if (d_ptr->aperture_in != "")
+    {
+        Plm_image::Pointer ap_img = Plm_image::New (d_ptr->aperture_in, PLM_IMG_TYPE_ITK_UCHAR);
+        this->get_aperture()->set_aperture_image(d_ptr->aperture_in.c_str());
+        this->get_aperture()->set_aperture_volume(ap_img->get_volume_uchar());
+        if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+        {
+            printf("Smearing applied to the aperture. The smearing width is defined in the aperture frame.\n");
+            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, d_ptr->aperture->get_distance());
+        }
+        else
+        {
+            printf("Smearing applied to the aperture. The smearing width is defined at the target minimal distance.\n");
+            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+        }
+    }
+    /* Set range compensator */
+    if (d_ptr->range_compensator_in != "" && d_ptr->beam_line_type != "active")
+    {
+        Plm_image::Pointer rgc_img = Plm_image::New (d_ptr->range_compensator_in, PLM_IMG_TYPE_ITK_FLOAT);
+        this->get_aperture()->set_range_compensator_image(d_ptr->range_compensator_in.c_str());
+        this->get_aperture()->set_range_compensator_volume(rgc_img->get_volume_float());
 		
-		if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
-		{
-			printf("Smearing applied to the range compensator. The smearing width is defined in the aperture frame.\n");
-			d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, d_ptr->aperture->get_distance());
-		}
-		else
-		{
-			printf("Smearing applied to the range compensator. The smearing width is defined at the target minimal distance.\n");
-			d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
-		}
-	}
+        if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+        {
+            printf("Smearing applied to the range compensator. The smearing width is defined in the aperture frame.\n");
+            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, d_ptr->aperture->get_distance());
+        }
+        else
+        {
+            printf("Smearing applied to the range compensator. The smearing width is defined at the target minimal distance.\n");
+            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+        }
+    }
 }
 
 Plm_image::Pointer&
@@ -731,7 +731,7 @@ Rt_beam::set_beam_line_type(std::string str)
 std::string
 Rt_beam::get_beam_line_type()
 {
-		return d_ptr->beam_line_type;
+    return d_ptr->beam_line_type;
 }
 
 bool
@@ -901,4 +901,39 @@ Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
         }
     }
     return min;
+}
+
+void Rt_beam::set_energy_resolution (float eres)
+{
+    d_ptr->mebs->set_energy_resolution (eres);
+}
+
+float Rt_beam::get_energy_resolution () const
+{
+    return d_ptr->mebs->get_energy_resolution ();
+}
+
+void Rt_beam::set_proximal_margin (float proximal_margin)
+{
+    d_ptr->mebs->set_proximal_margin (proximal_margin);
+}
+
+float Rt_beam::get_proximal_margin () const
+{
+    return d_ptr->mebs->get_proximal_margin ();
+}
+
+void Rt_beam::set_distal_margin (float distal_margin)
+{
+    d_ptr->mebs->set_distal_margin (distal_margin);
+}
+
+float Rt_beam::get_distal_margin () const
+{
+    return d_ptr->mebs->get_distal_margin ();
+}
+
+void Rt_beam::set_prescription (float prescription_min, float prescription_max)
+{
+    d_ptr->mebs->set_prescription (prescription_min, prescription_max);
 }

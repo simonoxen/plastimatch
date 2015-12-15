@@ -170,6 +170,15 @@ public:
        -- used for smearing */
     float compute_minimal_target_distance(Volume* target_vol, float background);
 
+    /* functions that pass through to mebs object */
+    void set_energy_resolution (float eres);
+    float get_energy_resolution () const;
+    void set_proximal_margin (float proximal_margin);
+    float get_proximal_margin() const;
+    void set_distal_margin (float distal_margin);
+    float get_distal_margin() const;
+    void set_prescription (float prescription_min, float prescription_max);
+    
 public: 
 
     /* Volumes useful for dose calculation */
@@ -177,16 +186,16 @@ public:
     Rpl_volume* rpl_vol; // contains the radiologic path length along a ray
     Rpl_volume* rpl_ct_vol_HU; // contains the HU units along the ray
     Rpl_volume* sigma_vol;  // contains the sigma (lateral spread of the pencil beam - used to calculate the off-axis term) along the ray
-    	
+
     /* larger volumes for Hong and divergent geometry algorithms */
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* rpl_ct_vol_HU_lg;
     Rpl_volume* sigma_vol_lg;
     Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
     
-        private:
-            bool load_xio (const char* fn);
-                bool load_txt (const char* fn);
+private:
+    bool load_xio (const char* fn);
+    bool load_txt (const char* fn);
 };
 
 #endif
