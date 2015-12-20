@@ -25,8 +25,6 @@ Wed_Parms::Wed_Parms ()
     this->group = 0;
     this->mode = 0;
     this->ray_step = 1.0f;
-    this->input_ct_fn[0] = '\0';
-    this->output_ct_fn[0] = '\0';
 
     this->src[0] = -1000.f;
     this->src[1] = 0.f;
@@ -95,6 +93,7 @@ Wed_Parms::get_group_lines(char* groupfile)
     return numlines;
 }
 
+#if defined (commentout)
 void
 Wed_Parms::parse_group(int argc, char** argv, int linenumber)
 {
@@ -148,6 +147,7 @@ Wed_Parms::parse_group(int argc, char** argv, int linenumber)
         }
     }
 }
+#endif
 
 int
 Wed_Parms::set_key_val (
@@ -160,79 +160,63 @@ Wed_Parms::set_key_val (
 
         /* [INPUT SETTINGS] */
     case 0:
+        //Whether wed or reverse, input patient and rpl vol
+        if (!strcmp (key, "patient")) {
+            this->input_ct_fn = val;
+        }
+        else if (!strcmp (key, "proj_wed")) {
+            this->input_proj_wed_fn = val;
+        }
+        //Any mode will use the skin dose if specified
+        else if (!strcmp (key, "skin")) {
+            this->input_skin_fn = val;
+        }
+        //If normal wed procedure, input dose
+        else if (!strcmp (key, "dose")) {
+            this->input_dose_fn = val;
+        }
+        //If reverse wed procedure, input dose_wed
+        else if (!strcmp (key, "wed_dose")) {
+            this->input_wed_dose_fn = val;
+        }
+        //If in depth/segmentation mode, input segment
+        else if (!strcmp (key, "segment")) {
+            this->input_segment_fn = val;
+        }
+        break;
+        
+        /* [OUTPUT SETTINGS] */
+    case 1:
+        if (!strcmp (key, "proj_ct")) {
+            this->output_proj_ct_fn = val;
+        }
+        else if (!strcmp (key, "proj_wed")) {
+            this->output_proj_wed_fn = val;
+        }
+        else if (!strcmp (key, "proj_dose")) {
+            this->output_proj_dose_fn = val;
+        }
+        else if (!strcmp (key, "wed_ct")) {
+            this->output_wed_ct_fn = val;
+        }
+        else if (!strcmp (key, "wed_ct")) {
+            this->output_wed_ct_fn = val;
+        }
+#if defined (commentout)
+        else if (!strcmp (key, "aperture")) {
+            this->output_ap_fn = val;
+        }
+#endif
+        break;
+
+        /* [BEAM] */
+    case 2:
         if (!strcmp (key, "ray_step")) {
             if (sscanf (val, "%f", &this->ray_step) != 1) {
                 goto error_exit;
             }
         }
-        //Whether wed or reverse, input patient and rpl vol
-        else if (!strcmp (key, "patient")) {
-            this->input_ct_fn = val;
-        }
-        else if (!strcmp (key, "rpl_vol")) {
-            this->rpl_vol_fn = val;
-        }
-				//Any mode will use the skin dose if specified
-        else if (!strcmp (key, "skin")) {
-            this->skin_fn = val;
-        }
-        //If normal wed procedure, input dose
-		if (this->mode==0)  {
-			if (!strcmp (key, "dose")) {
-                this->input_dose_fn = val;
-            }
-		}
-		//If reverse wed procedure, input dose_wed
-		if (this->mode==1)  {
-            if (!strcmp (key, "dose_wed")) {
-                this->input_dose_fn = val;
-            }
-		}
-		//If in depth/segmentation mode, input segment
-		if (this->mode==2)  {
-            if (!strcmp (key, "segment")) {
-                this->input_dose_fn = val;
-            }
-		}
-		break;
-        
-		/* [OUTPUT SETTINGS] */
-    case 1:
-        //If normal wed procedure, output patient_wed and dose_wed
-        if (this->mode==0)  {
-            if (!strcmp (key, "patient_wed")) {
-                this->output_ct_fn = val;
-            }
-            else if (!strcmp (key, "dose_wed")) {
-                this->output_dose_fn = val;
-            }
-		}
-		//If reverse wed  procedure, output only dose
-        if (this->mode==1)  {
-            if (!strcmp (key, "dose")) {
-                this->output_dose_fn = val;
-            }
-		}
-		//If in depth/segmentation mode, output depth matrix
-        if (this->mode==2)  {
-            if (!strcmp (key, "depth")) {
-                this->output_depth_fn = val;
-            }
-            else if (!strcmp (key, "aperture")) {
-                this->output_ap_fn = val;
-            }
-		}
-		//If in proj wed mode, output projection wed volume
-        if (this->mode==3)  {
-            if (!strcmp (key, "proj_wed")) {
-                this->output_proj_wed_fn = val;
-            }
-		}
-        break;
-
-        /* [BEAM] */
-    case 2:
-        if (!strcmp (key, "pos")) {
+        else if (!strcmp (key, "pos")) {
             if (sscanf (val, "%f %f %f", 
                     &(this->src[0]), 
                     &(this->src[1]), 
@@ -255,7 +239,7 @@ Wed_Parms::set_key_val (
                 goto error_exit;
             }
         }
-		break;
+        break;
 
         /* [APERTURE] */
     case 3:
@@ -290,9 +274,9 @@ Wed_Parms::set_key_val (
             {
                 goto error_exit;
             }
-				this->have_ires = true;
+            this->have_ires = true;
         }
-				break;
+        break;
 
         /* [DEW VOLUME] */
     case 4:
@@ -321,7 +305,7 @@ Wed_Parms::set_key_val (
             }
         }
         else if (!strcmp (key, "resolution")) {
-						if (sscanf (val, "%i", &(this->sinogram_res)) != 1) {
+            if (sscanf (val, "%i", &(this->sinogram_res)) != 1) {
                 goto error_exit;
             }
         }
@@ -329,7 +313,7 @@ Wed_Parms::set_key_val (
     }
     return 0;
 
-	error_exit:
+error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }
@@ -428,7 +412,7 @@ Wed_Parms::parse_args (int argc, char** argv)
         if (!strcmp (argv[i], "--debug")) {
             this->debug = 1;
         }
-				if (!strcmp (argv[i], "--group")) {
+        if (!strcmp (argv[i], "--group")) {
             if (!argv[i+1])  { //group needs an argument
                 print_usage ();
                 return false;
@@ -438,16 +422,16 @@ Wed_Parms::parse_args (int argc, char** argv)
                 return true;
             }
         }
-				if (!strcmp (argv[i], "--dew")) {
+        if (!strcmp (argv[i], "--dew")) {
             this->mode = 1;
         }
-				else if (!strcmp (argv[i], "--segdepth")) {
+        else if (!strcmp (argv[i], "--segdepth")) {
             this->mode = 2;
         }
         else if (!strcmp (argv[i], "--projwed")) {
             this->mode = 3;
         }
-				else {
+        else {
             print_usage ();
             break;
         }
@@ -459,69 +443,9 @@ Wed_Parms::parse_args (int argc, char** argv)
         this->parse_config (argv[i]);
     }
 
-#if 0
-    if (this->d_lut == NULL) {
-        /* measured bragg curve not supplied, try to generate */
-        if (!this->generate ()) {
-            return false;
-        }
-    }
-    // JAS 2012.08.10
-    //   Hack so that I can reuse the proton code.  The values
-    //   don't actually matter.
-    scene->beam->E0 = 1.0;
-    scene->beam->spread = 1.0;
-    scene->beam->dmax = 1.0;
-#endif
-
     //Input CT always required
-    if (this->input_ct_fn[0] == '\0') {
-        fprintf (stderr, "\n** ERROR: Input patient image not specified in configuration file!\n");
-        return false;
-    }
-
-    //Input "dose" always required
-    if ((this->mode==0)||(this->mode==1))  {
-        if (this->input_dose_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Input dose not specified in configuration file!\n");
-            return false;
-        }
-    }
-
-    //For wed mode, patient wed name is required.
-    if (this->mode==0)  {
-        if (this->output_ct_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Output file for patient water equivalent depth volume not specified in configuration file!\n");
-            return false;
-        }
-    }
-
-    //For wed or dew mode, output dose name required.
-    if ((this->mode==0)||(this->mode==1))  {
-		if (this->output_dose_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Output file for dose volume not specified in configuration file!\n");
-            return false;
-		}
-    }
-
-    //For depth/segmentation  mode, aperture and depth volumes required.
-    if (this->mode==2)  {
-        if (this->output_depth_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Output file for depths not specified in configuration file!\n");
-            return false;
-        }
-        if (this->output_ap_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Output file for aperture not specified in configuration file!\n");
-            return false;
-        }
-    }
-
-    //For projection wed mode, proj_wed output volume is required.
-    if (this->mode==3)  {
-        if (this->output_proj_wed_fn[0] == '\0') {
-            fprintf (stderr, "\n** ERROR: Output file for projection wed not specified in configuration file!\n");
-            return false;
-        }
+    if (this->input_ct_fn == "") {
+        print_and_exit ("** ERROR: Input patient image not specified in configuration file!\n");
     }
 
     return true;
