@@ -27,15 +27,18 @@ public:
     short mode;                      /*Running in wed, dew, or segdepth?*/
     std::string input_ct_fn;         /* input:  patient volume */
     std::string input_dose_fn;       /* input:  dose volume */
+    std::string input_proj_ct_fn;    /* input:  ct in proj coordinates */
     std::string input_proj_wed_fn;   /* input:  wed in proj coordinates */
     std::string input_wed_dose_fn;   /* input:  dose in wed coordinates */
-    std::string input_segment_fn;    /* input:  segment volume */
+    std::string input_target_fn;     /* input:  segment volume */
     std::string input_skin_fn;       /* input:  skin volume */
     std::string output_proj_ct_fn;   /* output: ct in proj coordinates */
     std::string output_proj_wed_fn;  /* output: wed in proj coordinates */
     std::string output_proj_dose_fn; /* output: dose in proj coordinates */
     std::string output_wed_ct_fn;    /* output: ct in wed coordinates */
     std::string output_wed_dose_fn;  /* output: dose in wed coordinates */
+    std::string output_dew_ct_fn;    /* output: ct in world coordinates */
+    std::string output_dew_dose_fn;  /* output: dose in world coordinates */
 
 //    std::string output_ap_fn;        /* output: aperture volume */
 //    std::string output_depth_fn;     /* output: depth volume */

@@ -161,7 +161,7 @@ Wed_Parms::set_key_val (
         /* [INPUT SETTINGS] */
     case 0:
         //Whether wed or reverse, input patient and rpl vol
-        if (!strcmp (key, "patient")) {
+        if (!strcmp (key, "ct")) {
             this->input_ct_fn = val;
         }
         else if (!strcmp (key, "proj_wed")) {
@@ -180,8 +180,8 @@ Wed_Parms::set_key_val (
             this->input_wed_dose_fn = val;
         }
         //If in depth/segmentation mode, input segment
-        else if (!strcmp (key, "segment")) {
-            this->input_segment_fn = val;
+        else if (!strcmp (key, "target")) {
+            this->input_target_fn = val;
         }
         break;
         
@@ -199,8 +199,14 @@ Wed_Parms::set_key_val (
         else if (!strcmp (key, "wed_ct")) {
             this->output_wed_ct_fn = val;
         }
-        else if (!strcmp (key, "wed_ct")) {
-            this->output_wed_ct_fn = val;
+        else if (!strcmp (key, "wed_dose")) {
+            this->output_wed_dose_fn = val;
+        }
+        else if (!strcmp (key, "dew_ct")) {
+            this->output_dew_ct_fn = val;
+        }
+        else if (!strcmp (key, "dew_dose")) {
+            this->output_dew_dose_fn = val;
         }
 #if defined (commentout)
         else if (!strcmp (key, "aperture")) {

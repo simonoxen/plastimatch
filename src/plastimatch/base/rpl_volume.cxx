@@ -42,20 +42,20 @@ static void rpl_ray_trace_callback_ct_HU (
     double vox_len, 
     float vox_value);
 static void rpl_ray_trace_callback_PrSTPR (
-	void *callback_data, 
-	size_t vox_index, 
-	double vox_len, 
-	float vox_value);
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value);
 static void rpl_ray_trace_callback_PrSTPR_XiO_MGH (
-	void *callback_data, 
-	size_t vox_index, 
-	double vox_len, 
-	float vox_value);
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value);
 static void rpl_ray_trace_callback_range_length (
-	void *callback_data, 
-	size_t vox_index, 
-	double vox_len, 
-	float vox_value);
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value);
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -79,7 +79,7 @@ public:
     Aperture::Pointer aperture;
     double max_wed;
     double min_wed;
-	double min_distance_target;
+    double min_distance_target;
 
 public:
     Rpl_volume_private () {
@@ -91,7 +91,7 @@ public:
         aperture = Aperture::New ();
         min_wed = 0.;
         max_wed = 0.;
-		min_distance_target = 0.;
+        min_distance_target = 0.;
     }
     ~Rpl_volume_private () {
         delete proj_vol;
@@ -305,64 +305,6 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
-/* Lookup radiological path length to a voxel in world space */
-double
-Rpl_volume::get_rgdepth2 (
-    const double* ct_xyz         /* I: location of voxel in world space */
-)
-{
-    int ap_ij[2], ap_idx;
-    double ap_xy[3];
-    double dist, rgdepth = 0.;
-
-    /* A couple of abbreviations */
-    const int *ires = d_ptr->proj_vol->get_image_dim();
-    Proj_matrix *pmat = d_ptr->proj_vol->get_proj_matrix();
-
-    /* Back project the voxel to the aperture plane */
-    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
-    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
-    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
-
-    /* Make sure value is not inf or NaN */
-    if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
-    	return -1;
-    }
-
-    /* Round to nearest aperture index */
-    ap_ij[0] = ROUND_INT (ap_xy[0]);
-    ap_ij[1] = ROUND_INT (ap_xy[1]);
-
-	printf ("ap_xy = %g %g :: %d %d \n", ap_xy[0], ap_xy[1], ap_ij[0], ap_ij[1]);
-
-    /* Only handle voxels inside the (square) aperture */
-    if (ap_ij[0] < 0 || ap_ij[0] >= ires[0] ||
-        ap_ij[1] < 0 || ap_ij[1] >= ires[1]) {
-        return -1;
-    }
-
-    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
-
-    /* Look up pre-computed data for this ray */
-    Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
-    double *ap_xyz = ray_data->p2;
-
-	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
-
-    /* Compute distance from aperture to voxel */
-    dist = vec3_dist (ap_xyz, ct_xyz);
-
-    /* Subtract off standoff distance */
-    dist -= d_ptr->front_clipping_dist;
-
-	printf("dist: %lg\n", dist);
-
-    /* Retrieve the radiographic depth */
-    rgdepth = this->get_rgdepth (ap_xy, dist);
-
-    return rgdepth;
-}
-
 void Rpl_volume::set_ct (const Plm_image::Pointer& ct_volume)
 {
     d_ptr->ct = ct_volume;
@@ -419,13 +361,13 @@ double Rpl_volume::get_back_clipping_plane() const
 void 
 Rpl_volume::set_minimum_distance_target(double min)
 {
-	d_ptr->min_distance_target = min;
+    d_ptr->min_distance_target = min;
 }
 	
 double 
 Rpl_volume::get_minimum_distance_target()
 {
-	return d_ptr->min_distance_target;
+    return d_ptr->min_distance_target;
 }
 
 double
@@ -664,7 +606,7 @@ Rpl_volume::compute_rpl_HU ()
 
     /* We don't need to do the first pass, as it was already done for the real rpl_volume */
 
-	/* Ahh.  Now we can set the clipping planes and allocate the 
+    /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
     double clipping_dist[2] = {
         d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
@@ -698,7 +640,7 @@ Rpl_volume::compute_rpl_HU ()
             this->rpl_ray_trace (
                 ct_vol,            /* I: CT volume */
                 ray_data,          /* I: Pre-computed data for this ray */
-				rpl_ray_trace_callback_ct_HU, /* I: callback */
+                rpl_ray_trace_callback_ct_HU, /* I: callback */
                 &d_ptr->ct_limit,  /* I: CT bounding region */
                 src,               /* I: @ source */
                 0,            /* I: range compensator thickness */
@@ -981,7 +923,8 @@ Rpl_volume::compute_proj_wed_volume (
     Proj_volume *proj_vol = d_ptr->proj_vol;
     float *proj_wed_vol_img = (float*) proj_wed_vol->img;
 
-    //Get some parameters from the proj volume, calculate src to isocenter distance
+    /* Get some parameters from the proj volume, 
+       calculate src to isocenter distance */
     const double *src = proj_vol->get_src();
     const double *iso = proj_vol->get_iso();
     const double sid_length = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
@@ -1030,6 +973,7 @@ Rpl_volume::compute_proj_wed_volume (
     }
 }
 
+/* Resample a Proj_volume into Wed_volume */
 void 
 Rpl_volume::compute_wed_volume (
     Volume *wed_vol, Volume *in_vol, float background)
@@ -1046,7 +990,6 @@ Rpl_volume::compute_wed_volume (
     plm_long wijk[3];  /* Index within wed_volume */
    
     for (wijk[1] = 0; wijk[1] < ires[1]; wijk[1]++) {
-
         for (wijk[0] = 0; wijk[0] < ires[0]; wijk[0]++) {
 
             /* Compute index of aperture pixel */
@@ -1054,8 +997,8 @@ Rpl_volume::compute_wed_volume (
 
             bool debug = false;
             if (ap_idx == (ires[1]/2) * ires[0] + (ires[0] / 2)) {
-                //                printf ("DEBUGGING %d %d\n", ires[1], ires[0]);
-                //                debug = true;
+                // printf ("DEBUGGING %d %d\n", ires[1], ires[0]);
+                // debug = true;
             }
 #if defined (commentout)
 #endif
@@ -1064,9 +1007,8 @@ Rpl_volume::compute_wed_volume (
             Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
 
 	    //Set the default to background, if ray misses volume
-	    //ires[2] - is this meaningless?
             if (!ray_data->intersects_volume) {
-                for (wijk[2] = 0; wijk[2] < ires[2]; wijk[2]++) {
+                for (wijk[2] = 0; wijk[2] < rvol->dim[2]; wijk[2]++) {
                     plm_long widx = volume_index (rvol->dim, wijk);
                     wed_vol_img[widx] = background;
                 }
@@ -1085,7 +1027,6 @@ Rpl_volume::compute_wed_volume (
                 printf("Error in ray clipping, exiting...\n");
                 return;
 	    }
-	    //	    volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2);
 
             /* Loop, looking for each output voxel */
             for (wijk[2] = 0; wijk[2] < rvol->dim[2]; wijk[2]++) {
@@ -1122,8 +1063,6 @@ Rpl_volume::compute_wed_volume (
                         vec3_scale3 (xyz_init, ray_data->ray, dist);
 			vec3_add3 (xyz, xyz_init, ray_start);
                         
-			//NEW
-
 			float in_ijk_f[3];
 			in_ijk_f[0] = (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0];
 			in_ijk_f[1] = (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1];
@@ -1147,41 +1086,6 @@ Rpl_volume::compute_wed_volume (
 
 			float value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,in_vol_img,in_vol);
 
-			/////////////////
-			
-                        /* Look up value at coordinate in input image */
-			
-			//OLD
-			/*
-                          plm_long in_ijk[3];
-                          in_ijk[2] = ROUND_PLM_LONG(
-                          (xyz[2] - in_vol->origin[2]) / in_vol->spacing[2]);
-                          in_ijk[1] = ROUND_PLM_LONG(
-                          (xyz[1] - in_vol->origin[1]) / in_vol->spacing[1]);
-                          in_ijk[0] = ROUND_PLM_LONG(
-                          (xyz[0] - in_vol->origin[0]) / in_vol->spacing[0]);
-
-                          if (debug) {
-                          printf ("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
-                          printf ("%d %d %d\n", (int) in_ijk[0], 
-                          (int) in_ijk[1], (int) in_ijk[2]);
-                          }
-
-
-                          if (in_ijk[2] < 0 || in_ijk[2] >= in_vol->dim[2])
-                          break;
-                          if (in_ijk[1] < 0 || in_ijk[1] >= in_vol->dim[1])
-                          break;
-                          if (in_ijk[0] < 0 || in_ijk[0] >= in_vol->dim[0])
-                          break;
-
-                          plm_long in_idx = volume_index(in_vol->dim, in_ijk);
-
-                          float value = in_vol_img[in_idx];
-                          //		value = in_vol_img[in_idx];
-                          */
-
-
 			/* Write value to output image */
 			wed_vol_img[widx] = value;
 
@@ -1200,7 +1104,8 @@ Rpl_volume::compute_wed_volume (
 }
 
 void 
-Rpl_volume::compute_dew_volume (Volume *wed_vol, Volume *dew_vol, float background)
+Rpl_volume::compute_dew_volume (
+    Volume *wed_vol, Volume *dew_vol, float background)
 {
   
     double dummy_vec[3] = {0., 0., 0.};
@@ -1559,30 +1464,30 @@ Rpl_volume::apply_smearing_to_target(float smearing, std::vector <double>& map_m
 void
 Rpl_volume::compute_volume_aperture(Aperture::Pointer ap)
 {
-	int dim[3] = {(int) this->get_vol()->dim[0], (int) this->get_vol()->dim[1], (int) this->get_vol()->dim[2]};
+    int dim[3] = {(int) this->get_vol()->dim[0], (int) this->get_vol()->dim[1], (int) this->get_vol()->dim[2]};
 	
-	float* ap_vol_img = (float*) this->get_vol()->img;
+    float* ap_vol_img = (float*) this->get_vol()->img;
 
-	Volume::Pointer ap_vol = ap->get_aperture_volume ();
+    Volume::Pointer ap_vol = ap->get_aperture_volume ();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
 
-	int idx = 0;
+    int idx = 0;
 
-	for(int i = 0; i < dim[0] * dim[1]; i++)
-	{
-		for(int j = 0; j < dim[2]; j++)
-		{
-			idx = j * dim[0] * dim[1] + i;
-			if ((float) ap_img[i] == 1)
-			{
-				ap_vol_img[idx] = 1;
-			}
-			else
-			{
-				ap_vol_img[idx] = 0;
-			}
-		}
-	}
+    for(int i = 0; i < dim[0] * dim[1]; i++)
+    {
+        for(int j = 0; j < dim[2]; j++)
+        {
+            idx = j * dim[0] * dim[1] + i;
+            if ((float) ap_img[i] == 1)
+            {
+                ap_vol_img[idx] = 1;
+            }
+            else
+            {
+                ap_vol_img[idx] = 0;
+            }
+        }
+    }
 }
 
 void 
@@ -1699,9 +1604,21 @@ Rpl_volume::save (const std::string& filename)
     this->save (filename.c_str());
 }
 
+void
+Rpl_volume::load (const char *filename)
+{
+    d_ptr->proj_vol->load (filename);
+}
+
+void
+Rpl_volume::load (const std::string& filename)
+{
+    this->load (filename.c_str());
+}
+
 float compute_PrSTPR_from_HU(float CT_HU)
 {
-	return compute_PrSTPR_Schneider_weq_from_HU(CT_HU);
+    return compute_PrSTPR_Schneider_weq_from_HU(CT_HU);
 }
 
 float 
@@ -1775,34 +1692,23 @@ compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU) //YKP, Linear interpolation
 
 float compute_PrWER_from_HU(float CT_HU)
 {
-	return compute_PrSTPR_from_HU(CT_HU) / compute_density_from_HU(CT_HU);
+    return compute_PrSTPR_from_HU(CT_HU) / compute_density_from_HU(CT_HU);
 }
 
 float compute_density_from_HU (float CT_HU) // from Schneider's paper: Phys. Med. Biol.41 (1996) 111–124
 {
-	if(CT_HU <= -1000)
-	{
-		return 0.001205;
-	}
-	else if (CT_HU > -1000 && CT_HU <= 65.64)
-	{
-		return (1-.001205)/1000 * CT_HU + 1;
-	}
-	else
-	{
-		return .0006481 * CT_HU + 1.0231;
-	}
-}
-
-void Rpl_volume::aprc_ray_trace (
-    Volume *tgt_vol,             /* I: CT volume */
-    Ray_data *ray_data,          /* I: Pre-computed data for this ray */
-    Volume_limit *vol_limit,     /* I: CT bounding region */
-    const double *src,           /* I: @ source */
-    double rc_thk,               /* I: range compensator thickness */
-    int* ires                    /* I: ray cast resolution */
-)
-{
+    if(CT_HU <= -1000)
+    {
+        return 0.001205;
+    }
+    else if (CT_HU > -1000 && CT_HU <= 65.64)
+    {
+        return (1-.001205)/1000 * CT_HU + 1;
+    }
+    else
+    {
+        return .0006481 * CT_HU + 1.0231;
+    }
 }
 
 void
@@ -1962,7 +1868,7 @@ rpl_ray_trace_callback_ct_density (
         return;
     }
 
-	depth_img[ap_area*step_num + ap_idx] = compute_density_from_HU(vox_value);
+    depth_img[ap_area*step_num + ap_idx] = compute_density_from_HU(vox_value);
 }
 
 static
@@ -1982,7 +1888,7 @@ rpl_ray_trace_callback_PrSTPR (
     int ap_area = cd->ires[0] * cd->ires[1];
     size_t step_num = vox_index + cd->step_offset;
 
-	cd->accum += vox_len * compute_PrSTPR_from_HU (vox_value); //vox_value = CT_HU
+    cd->accum += vox_len * compute_PrSTPR_from_HU (vox_value); //vox_value = CT_HU
 
 #if VERBOSE
     if (global_debug) {
@@ -2026,7 +1932,7 @@ rpl_ray_trace_callback_range_length (
     int ap_area = cd->ires[0] * cd->ires[1];
     size_t step_num = vox_index + cd->step_offset;
 
-	cd->accum += vox_len * compute_density_from_HU (vox_value); //vox_value = CT_HU
+    cd->accum += vox_len * compute_density_from_HU (vox_value); //vox_value = CT_HU
 
 #if VERBOSE
     if (global_debug) {

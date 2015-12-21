@@ -19,7 +19,8 @@
 #include "volume_limit.h"
 #include "wed_parms.h"
 
-Volume* create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
+Volume* 
+create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
 {
 
    /* water equivalent depth volume has the same x,y dimensions as the rpl
@@ -51,10 +52,8 @@ Volume* create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, Rt_plan *scene)
+create_dew_volume (Wed_Parms* parms, const Volume::Pointer& patient_vol)
 {
-    Volume::Pointer patient_vol = scene->get_patient_volume();
-
     float dew_off[3];
     dew_off[0] = patient_vol->origin[0];
     dew_off[1] = patient_vol->origin[1];
@@ -100,7 +99,8 @@ Volume* create_proj_wed_volume (Rpl_volume* rpl_vol)
     return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
 }
 
-Volume* create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
+Volume* 
+create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
 {
     float proj_wed_off[3];
     proj_wed_off[0] = proj_wed_vol->origin[0];
@@ -119,13 +119,6 @@ Volume* create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
 
     return new Volume (proj_wed_dims, proj_wed_off, proj_wed_ps, NULL, PT_FLOAT, 1);
 }
-
-typedef struct callback_data Callback_data;
-struct callback_data {
-    Volume* wed_vol;   /* Water equiv depth volume */
-    int* ires;         /* Aperture Dimensions */
-    int ap_idx;        /* Current Aperture Coord */
-};
 
 static int
 skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
@@ -156,54 +149,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
   return 0;
 }
 
-void
-wed_ct_compute (
-    const std::string& out_fn,
-    Wed_Parms* parms,
-    Plm_image::Pointer& ct_vol,  // This is not always ct, 
-                                 //  sometimes it is dose or 
-                                 //  sometimes it is target mask.
-    Rt_plan *scene,
-    Rt_beam *beam,
-    float background
-)
-{
-    Rpl_volume* rpl_vol = beam->rpl_vol;
-
-    if (parms->mode==0)  {
-        Volume* wed_vol;
-	wed_vol = create_wed_volume (parms, rpl_vol);
-        rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
-            background);
-        Plm_image(wed_vol).save_image(out_fn);
-    }
-}
-
-void
-dew_ct_compute (
-    const std::string& out_fn,
-    Wed_Parms* parms,
-    Plm_image::Pointer& ct_vol,  // This is not always ct, 
-                                 //  sometimes it is dose or 
-                                 //  sometimes it is target mask.
-    Rt_plan *scene,
-    Rt_beam *beam,
-    float background
-)
-{
-    Rpl_volume* rpl_vol = beam->rpl_vol;
-
-    if (parms->mode==1)  {
-        Volume* dew_vol;
-	//Fix below function, move to rpl_volume as create_wed_volume above.
-	//Dew parameters will need to be incorporated into ion_beam
-        dew_vol = create_dew_volume (parms, scene);
-        rpl_vol->compute_dew_volume (ct_vol->get_volume_float().get(), 
-            dew_vol, background);
-        Plm_image(dew_vol).save_image(out_fn);
-    }
-}
-
+#if defined (commentout)
 void
 wed_ct_compute_mode_2 (
     const std::string& out_fn,
@@ -257,7 +203,6 @@ wed_ct_compute_mode_3 (
 
         float *sin_img = (float*) sinogram_vol->img;
         float *proj_img = (float*) proj_wed_vol->img;
-        plm_long ijk[3] = {0,0,0};
         plm_long n_voxels_sin = sinogram_vol->dim[0]*sinogram_vol->dim[1]*sinogram_vol->dim[2];
         plm_long n_voxels_proj = proj_wed_vol->dim[0]*proj_wed_vol->dim[1]*proj_wed_vol->dim[2];
         float *sin_array = new float[n_voxels_sin];
@@ -315,13 +260,11 @@ wed_ct_compute_mode_3 (
         Plm_image(proj_wed_vol).save_image(out_fn);
     }       
 }
+#endif
 
 void
 do_wed (Wed_Parms *parms)
 {
-    Plm_image::Pointer dose_vol;
-    Rt_plan scene;
-    Rt_beam beam;
     float background[4];
 
     //Background value for wed ct output
@@ -333,13 +276,27 @@ do_wed (Wed_Parms *parms)
     //Background value for projection of wed
     background[3] = 0.;
 
-    /* load the patient and insert into the scene */
+    /* load the input ct */
     Plm_image::Pointer ct_vol = Plm_image::New (
         parms->input_ct_fn, PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct_vol) {
         print_and_exit ("** ERROR: Unable to load patient volume.\n");
     }
-  
+
+    /* Load the input dose */
+    Plm_image::Pointer dose_vol;
+    if (parms->input_dose_fn != "") {
+        printf("Loading input dose: %s\n",parms->input_dose_fn.c_str());
+        dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
+            PLM_IMG_TYPE_ITK_FLOAT);
+    }
+
+    /* Load the input proj_wed */
+    Rpl_volume::Pointer proj_wed = Rpl_volume::New ();
+    if (parms->input_proj_wed_fn != "") {
+        proj_wed->load (parms->input_proj_wed_fn);
+    }
+
     if (parms->input_skin_fn != "") {
         printf ("Skin file defined.  Modifying input ct...\n");
  
@@ -356,23 +313,52 @@ do_wed (Wed_Parms *parms)
         }
     }
   
-    scene.set_patient (ct_vol);
-
-    //Load the input dose, or input wed_dose
-    if (parms->input_dose_fn != "") {
-        printf("Loading input dose: %s\n",parms->input_dose_fn.c_str());
-        dose_vol = plm_image_load (parms->input_dose_fn.c_str(), 
-            PLM_IMG_TYPE_ITK_FLOAT);
+    Aperture::Pointer aperture = Aperture::New();
+    aperture->set_distance (parms->ap_offset);
+    aperture->set_spacing (parms->ap_spacing);
+    if (parms->have_ires) {
+        aperture->set_dim (parms->ires);
     }
-    /* set scene parameters */
-    beam.set_source_position (parms->src);
-    beam.set_isocenter_position (parms->isocenter);
+    if (parms->have_ic) {
+        aperture->set_center (parms->ic);
+    }
 
-    beam.get_aperture()->set_distance (parms->ap_offset);
-    beam.get_aperture()->set_spacing (parms->ap_spacing);
-  
-    //Scene dimensions are set by .cfg file
+    double src[3], isocenter[3];
+    for (int i = 0; i < 3; i++) {
+        src[i] = parms->src[i];
+        isocenter[i] = parms->isocenter[i];
+    }
+    Rpl_volume rpl;
+    rpl.set_ct_volume (ct_vol);
+    rpl.set_aperture (aperture);
+    rpl.set_geometry (
+        src,
+        isocenter,
+        aperture->vup,
+        aperture->get_distance(),
+        aperture->get_dim(),
+        aperture->get_center(),
+        aperture->get_spacing(),
+        parms->ray_step);
 
+    if (proj_wed) {
+        proj_wed->set_ct_volume (ct_vol);
+        proj_wed->set_aperture (aperture);
+        proj_wed->set_geometry (
+            src,
+            isocenter,
+            aperture->vup,
+            aperture->get_distance(),
+            aperture->get_dim(),
+            aperture->get_center(),
+            aperture->get_spacing(),
+            parms->ray_step);
+    }
+
+    /* Compute the rpl volume */
+    rpl.compute_rpl_PrSTRP_no_rgc ();
+
+#if defined (commentout)
     //Note: Set dimensions first, THEN center, as set_dim() also changes center
     int ap_res[2];
     float ap_center[2];
@@ -445,7 +431,6 @@ do_wed (Wed_Parms *parms)
         parms->ic[0]=ap_center[0];
         parms->ic[1]=ap_center[1];
     } 
-
     beam.set_step_length(parms->ray_step);
 
     /* Try to setup the scene with the provided parameters.
@@ -459,48 +444,33 @@ do_wed (Wed_Parms *parms)
     if (parms->output_proj_wed_fn != "") {
         rpl_vol->save (parms->output_proj_wed_fn);
     }
+#endif
 
-    printf ("Working...\n");
-    fflush(stdout);
-  
-    /* Compute the proj_ct volume */
-    if (parms->output_proj_ct_fn != "") {
+    if (parms->output_proj_wed_fn != "") {
+        rpl.save (parms->output_proj_wed_fn);
+    }
+
+    if (parms->output_dew_ct_fn != "") {
+        Volume* dew_vol = create_dew_volume (parms, ct_vol->get_volume_float());
+        rpl.compute_dew_volume (ct_vol->get_volume_float().get(), 
+            dew_vol, -1000);
+        Plm_image(dew_vol).save_image(parms->output_dew_ct_fn);
+    }
+
+    if (parms->output_wed_ct_fn != "") {
         printf ("Computing patient wed volume...\n");
-
-	Volume *wed_vol = create_wed_volume (parms, rpl_vol);
-        rpl_vol->compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
+	Volume *wed_vol = create_wed_volume (parms, &rpl);
+        rpl.compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background[0]);
-        Plm_image(wed_vol).save_image(parms->output_proj_ct_fn);
+        Plm_image(wed_vol).save_image(parms->output_wed_ct_fn);
         printf ("done.\n");
     }
-  
-    /* Compute the proj_dose volume */
-    if (parms->input_dose_fn != "" && parms->output_wed_dose_fn != "") {
-        printf ("Calculating dose...\n");
-        wed_ct_compute (parms->output_wed_dose_fn,
-            parms, dose_vol, &scene, &beam, background[1]);
-        printf ("Complete...\n");
-    }
 
-    /* Compute the aperture and range compensator volumes */
-#if defined (commentout)
-    if (parms->output_depth_fn != "") {
-        printf ("Calculating depths...\n");
-        wed_ct_compute (parms->output_depth_fn,
-            parms, dose_vol, &scene, &beam, background[2]);
-        printf ("Complete...\n");
+    /* Compute the proj_ct volume */
+    if (parms->output_proj_ct_fn != "") {
+        rpl.compute_rpl_HU ();
+        rpl.save (parms->output_proj_ct_fn);
     }
-#endif
-
-    /* Compute the projective wed volume */
-#if defined (commentout)
-    if (parms->output_wed_ct_fn != "") {
-        printf ("Calculating wed projection...\n");
-        wed_ct_compute (parms->output_proj_wed_fn,
-            parms, &scene, &beam, background[3]);
-        printf ("Complete...\n");
-    }
-#endif
 }
 
 int

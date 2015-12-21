@@ -1,4 +1,50 @@
 ******************************************************************************
+Rpl_volume
+2015-12-21
+
+An rpl_volume is a proj_volume.  The x,y dimensions are defined by 
+the aperture, and the z dimension is along rays through the aperture.
+
+The contents of the rpl_volume may be intensity (e.g. ct or dose) or 
+depth (wepl).  
+
+The units of the steps are either geometric or wepl.
+
+Main functions:
+  get_rgdepth - lookup values in volume
+  compute_ray_data - this is called internally, but also by dose code;
+       
+  compute_rpl_ct_density - 
+  compute_rpl_HU 
+  compute_rpl_void 
+  compute_rpl_range_length_rgc
+  compute_rpl_PrSTRP_no_rgc
+
+  compute_farthest_penetrating_ray_on_nrm
+
+  compute_proj_wed_volume - this seems to compute a 2D image
+  compute_wed_volume - resample a Proj_vol into a Wed_vol
+  compute_dew_volume - 
+
+  apply_smearing_to_target
+  compute_volume_aperture
+  apply_beam_modifiers
+
+  compute_beam_modifiers_passive_scattering
+  compute_beam_modifiers_active_scanning
+
+  rpl_ray_trace - call ray_trace_uniform on a single ray
+
+  Why are there so many of these?
+  (For now, fine.  In future, replace with LUT.)
+  rpl_ray_trace_callback_ct_density
+  rpl_ray_trace_callback_ct_HU
+  rpl_ray_trace_callback_PrSTPR
+  rpl_ray_trace_callback_PrSTPR_XiO_MGH
+  rpl_ray_trace_callback_range_length
+
+
+******************************************************************************
 ITK Origin and Index
 2015-08-18
 

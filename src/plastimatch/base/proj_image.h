@@ -51,13 +51,4 @@ PLMBASE_C_API void proj_image_create_pmat (Proj_image *proj);
 PLMBASE_C_API void proj_image_create_img (Proj_image *proj, int dim[2]);
 PLMBASE_C_API void proj_image_stats (Proj_image *proj); 
 
-#if 0
-PLMBASE_C_API Proj_image* proj_image_create (void);
-PLMBASE_C_API Proj_image* proj_image_load_and_filter (
-    Fdk_parms* parms, 
-    const char* img_filename, 
-    const char* mat_filename
-);
-#endif
-
 #endif

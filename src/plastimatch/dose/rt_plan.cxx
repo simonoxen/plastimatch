@@ -336,7 +336,7 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         beam->get_aperture()->get_center(),
         beam->get_aperture()->get_spacing(),
         beam->get_step_length());
-	if (!beam->rpl_vol) return false;
+    if (!beam->rpl_vol) return false;
 
     /* building the ct_density_vol */
     beam->rpl_ct_vol_HU = new Rpl_volume;
@@ -374,8 +374,8 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
 	
     if (beam->get_flavor() == 'f' || beam->get_flavor() == 'g' || beam->get_flavor() == 'h')
     {
-		Aperture::Pointer ap_sigma = Aperture::New(beam->get_aperture());
-		beam->sigma_vol->set_aperture (ap_sigma);
+        Aperture::Pointer ap_sigma = Aperture::New(beam->get_aperture());
+        beam->sigma_vol->set_aperture (ap_sigma);
         beam->sigma_vol->set_aperture (beam->get_aperture());
     }
 

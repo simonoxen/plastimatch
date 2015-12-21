@@ -9,6 +9,7 @@
 #include "aperture.h"
 #include "plm_image.h"
 #include "ray_trace_callback.h"
+#include "smart_pointer.h"
 
 #define PMMA_DENSITY 1.19		// PMMA density in g
 #define PMMA_STPR 0.98		// PMMA Stopping Power Ratio, no dim
@@ -31,10 +32,11 @@ class Volume_limit;
 class PLMBASE_API Rpl_volume 
 {
 public:
+    SMART_POINTER_SUPPORT (Rpl_volume);
+    Rpl_volume_private *d_ptr;
+public:
     Rpl_volume ();
     ~Rpl_volume ();
-public:
-    Rpl_volume_private *d_ptr;
 public:
     void set_geometry (
         const double src[3],           // position of source (mm)
@@ -60,7 +62,6 @@ public:
     double get_rgdepth (int ap_ij[2], double dist);
     double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);
-    double get_rgdepth2 (const double *xyz);
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
@@ -102,8 +103,10 @@ public:
 
     void apply_beam_modifiers ();
 
-    void save (const std::string& filename);
     void save (const char* filename);
+    void save (const std::string& filename);
+    void load (const char *filename);
+    void load (const std::string& filename);
 
     void compute_ray_data ();
 
@@ -112,14 +115,6 @@ protected:
     void compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
     void apply_smearing_to_target (float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
 
-    void aprc_ray_trace (
-        Volume *tgt_vol,             /* I: CT volume */
-        Ray_data *ray_data,          /* I: Pre-computed data for this ray */
-        Volume_limit *vol_limit,     /* I: CT bounding region */
-        const double *src,           /* I: @ source */
-        double rc_thk,               /* I: range compensator thickness */
-        int* ires                    /* I: ray cast resolution */
-    );
     void rpl_ray_trace (
         Volume *ct_vol,              /* I: CT volume */
         Ray_data *ray_data,          /* I: Pre-computed data for this ray */
