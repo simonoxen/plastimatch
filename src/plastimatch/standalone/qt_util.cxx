@@ -1215,6 +1215,17 @@ void QUTIL::PrintStrList(QStringList& strList)
     }
 }
 
+QString QUTIL::GetPathWithEndFix(const QString& curFilePath, const QString& strEndFix)
+{
+    QFileInfo fInfo(curFilePath);
+    /*QString strDirPath = fInfo.absolutePath();
+    QString strBaseName = fInfo.completeBaseName();
+    QString strSuffixName = fInfo.completeSuffix();*/
+
+    QString strResult = fInfo.absolutePath() + "/" + fInfo.completeBaseName() + strEndFix + "." + fInfo.completeSuffix();
+    return strResult;
+}
+
 //
 //void QUTIL::UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,
 //    QStandardItemModel* pTableModel, gamma_gui* pParent)

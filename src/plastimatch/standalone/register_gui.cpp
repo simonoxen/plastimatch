@@ -34,7 +34,7 @@ register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     m_iCurSelCol_Que = -1;
     m_pArrThreadRegi = NULL;
 
-    m_iNumOfThreadAll = DEFAULT_MAXNUM_QUE;
+    m_iNumOfThreadAll = DEFAULT_MAXNUM_QUE; 
 
     InitTableMain(DEFAULT_MAXNUM_MAIN, DEFAULT_NUM_COLUMN_MAIN);
     InitTableQue(DEFAULT_MAXNUM_QUE, DEFAULT_NUM_COLUMN_QUE);
@@ -981,6 +981,8 @@ void register_gui::SLT_AddMultipleToQueByPermu()
     int iCntMoving = m_strlistPath_Moving.count();
     int iCntCommand = m_strlistPath_Command.count();
 
+    int iCopyCnt = 0;
+
     for (int k = 0; k < iCntFixed; k++)
     {
         for (int i = 0; i < iCntMoving; i++)
@@ -991,19 +993,30 @@ void register_gui::SLT_AddMultipleToQueByPermu()
                 strMoving = m_strlistPath_Moving.at(i);
                 strCommand = m_strlistPath_Command.at(j);
 
+                QString endFix = "_" + QString::number(iCopyCnt);
+                QString newStrCommandPath;
+                if (iCopyCnt == 0)
+                    newStrCommandPath = strCommand;
+                else
+                {
+                    newStrCommandPath = QUTIL::GetPathWithEndFix(strCommand, endFix);
+                    //copy
+                    QFile::copy(strCommand, newStrCommandPath);
+                }
+
                 if (m_vRegiQue.size() >= DEFAULT_MAXNUM_QUE)
                 {
                     cout << "Error! Maximum number of que items = " << DEFAULT_MAXNUM_QUE << endl;
                     return;
                 }
 
-                AddSingleToQue(strFixed, strMoving, strCommand); //data only
+                AddSingleToQue(strFixed, strMoving, newStrCommandPath); //data only
             }
+            iCopyCnt++;
         }
     }
     UpdateTable_Que();
 }
-
 
 void register_gui::AddSingleToQue(QString& strPathFixed, QString& strPathMoving, QString& strPathCommand)
 {
@@ -1361,6 +1374,7 @@ void register_gui::SLT_TimerRunMT()
     int iCntQued = m_vRegiQue.size();
    
     vector<int> vTargetIdx;
+    vector<int> vPendingIdx;
 
     //int targetIdx = -1;
     
@@ -1368,11 +1382,14 @@ void register_gui::SLT_TimerRunMT()
     {
         if (m_vRegiQue.at(i).m_iStatus == ST_NOT_STARTED)
             vTargetIdx.push_back(i);                    
+        else if (m_vRegiQue.at(i).m_iStatus == ST_PENDING)
+            vPendingIdx.push_back(i);        
+        
         if (vTargetIdx.size() >= iAvailableSlots)
             break;
     }
 
-    if (vTargetIdx.empty()) //if there is no NOT_STARTED item
+    if (vTargetIdx.empty() && vPendingIdx.empty()) //if there is no NOT_STARTED item
     {        
         QString strNum = QString::number(m_tTimeMT.elapsed() / 1000.0, 'f', 2);
         ui.lineEdit_TotalProcTimeMT->setText(strNum);

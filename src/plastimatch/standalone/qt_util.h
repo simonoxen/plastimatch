@@ -52,6 +52,9 @@ namespace QUTIL{
 
     void PrintStrList(QStringList& strList);
 
+    QString GetPathWithEndFix(const QString& curFilePath, const QString& strEndFix);
+
+
 
     //void UpdateTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3, QTableModel* pTableModel, QTableModel* pTableView);
     //void UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,

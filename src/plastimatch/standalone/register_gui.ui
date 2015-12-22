@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>890</width>
+    <width>1078</width>
     <height>913</height>
    </rect>
   </property>
@@ -17,6 +17,13 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Working directory</string>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QPushButton" name="pushButton_SetDefaultDir">
         <property name="text">
@@ -31,13 +38,6 @@
     </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Working directory</string>
-        </property>
-       </widget>
-      </item>
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
@@ -111,24 +111,37 @@
               </property>
               <layout class="QHBoxLayout" name="horizontalLayout_6">
                <item>
-                <widget class="QPushButton" name="pushButton_QueByLine">
-                 <property name="text">
-                  <string>Que all lines</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_QueByPermutation">
-                 <property name="text">
-                  <string>Que permutation</string>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout_9">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_QueByLine">
+                   <property name="text">
+                    <string>Que all lines</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_QueByPermutation">
+                   <property name="text">
+                    <string>Que permutation</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </item>
               </layout>
-              <zorder>pushButton_QueByLine</zorder>
-              <zorder>pushButton_QueByPermutation</zorder>
-              <zorder>tableView_main</zorder>
-              <zorder>groupBox_3</zorder>
              </widget>
             </item>
             <item>
@@ -136,9 +149,22 @@
               <item>
                <widget class="QPushButton" name="pushButton_SortSelected">
                 <property name="text">
-                 <string>Sort column</string>
+                 <string>Sort selected column</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
               <item>
                <widget class="QPushButton" name="pushButton_UpdateFileList">
@@ -168,82 +194,74 @@
               <property name="title">
                <string>Command file</string>
               </property>
-              <widget class="QPlainTextEdit" name="plainTextEdit">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>210</y>
-                 <width>256</width>
-                 <height>192</height>
-                </rect>
-               </property>
-              </widget>
-              <widget class="QWidget" name="horizontalLayoutWidget_2">
-               <property name="geometry">
-                <rect>
-                 <x>11</x>
-                 <y>25</y>
-                 <width>305</width>
-                 <height>26</height>
-                </rect>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_3">
-                <item>
-                 <widget class="QPushButton" name="pushButton_CopyCommand">
-                  <property name="text">
-                   <string>Copy to</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="lineEdit_NumOfCopy">
-                  <property name="text">
-                   <string>1</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_10">
-                  <property name="text">
-                   <string>files</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="pushButton_ClearCommandFiles">
-                  <property name="text">
-                   <string>Clear all</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-              <widget class="QWidget" name="horizontalLayoutWidget_3">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>120</y>
-                 <width>148</width>
-                 <height>26</height>
-                </rect>
-               </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_4">
-                <item>
-                 <widget class="QLabel" name="label_2">
-                  <property name="text">
-                   <string>Text Editor</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="pushButton_SaveCommandText">
-                  <property name="text">
-                   <string>Save</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_CopyCommand">
+                   <property name="text">
+                    <string>Copy to</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEdit_NumOfCopy">
+                   <property name="text">
+                    <string>1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_10">
+                   <property name="text">
+                    <string>files</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_ClearCommandFiles">
+                   <property name="text">
+                    <string>Clear all</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                 <item>
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>Command File Editor</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_SaveCommandText">
+                   <property name="text">
+                    <string>Save</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QPlainTextEdit" name="plainTextEdit"/>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -254,259 +272,177 @@
          <attribute name="title">
           <string>Que</string>
          </attribute>
-         <widget class="QTableView" name="tableView_que">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>20</y>
-            <width>671</width>
-            <height>381</height>
-           </rect>
-          </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::SingleSelection</enum>
-          </property>
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectRows</enum>
-          </property>
-         </widget>
-         <widget class="QPlainTextEdit" name="plainTextEdit_Que">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>700</x>
-            <y>50</y>
-            <width>321</width>
-            <height>501</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QLabel" name="label_4">
-          <property name="geometry">
-           <rect>
-            <x>700</x>
-            <y>20</y>
-            <width>141</width>
-            <height>21</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Command File Viewer</string>
-          </property>
-         </widget>
-         <widget class="QGroupBox" name="groupBox">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>410</y>
-            <width>151</width>
-            <height>151</height>
-           </rect>
-          </property>
-          <property name="title">
-           <string>Edit Que</string>
-          </property>
-          <widget class="QPushButton" name="pushButton_ClearQue">
-           <property name="geometry">
-            <rect>
-             <x>20</x>
-             <y>50</y>
-             <width>111</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Clear all</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_RemoveSel">
-           <property name="geometry">
-            <rect>
-             <x>20</x>
-             <y>20</y>
-             <width>111</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Remove selection</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>410</y>
-            <width>301</width>
-            <height>151</height>
-           </rect>
-          </property>
-          <property name="title">
-           <string>Run Que</string>
-          </property>
-          <widget class="QPushButton" name="pushButton_RunSelected">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>20</y>
-             <width>131</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Run selection</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_RunAll_Seq">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>50</y>
-             <width>131</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Run sequentially</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_RunAll_MultiThread">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>80</y>
-             <width>131</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Run multi-thread</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="lineEdit_MaxNumberThread">
-           <property name="geometry">
-            <rect>
-             <x>130</x>
-             <y>120</y>
-             <width>41</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>4</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_3">
-           <property name="geometry">
-            <rect>
-             <x>10</x>
-             <y>120</y>
-             <width>111</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Number of threads</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="lineEdit_TotalProcTimeSeq">
-           <property name="geometry">
-            <rect>
-             <x>240</x>
-             <y>60</y>
-             <width>51</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_5">
-           <property name="geometry">
-            <rect>
-             <x>150</x>
-             <y>60</y>
-             <width>81</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Total time (s)</string>
-           </property>
-          </widget>
-          <widget class="QLabel" name="label_11">
-           <property name="geometry">
-            <rect>
-             <x>150</x>
-             <y>90</y>
-             <width>81</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Total time (s)</string>
-           </property>
-          </widget>
-          <widget class="QLineEdit" name="lineEdit_TotalProcTimeMT">
-           <property name="geometry">
-            <rect>
-             <x>240</x>
-             <y>90</y>
-             <width>51</width>
-             <height>21</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>0</string>
-           </property>
-          </widget>
-         </widget>
-         <widget class="QGroupBox" name="groupBox_4">
-          <property name="geometry">
-           <rect>
-            <x>490</x>
-            <y>410</y>
-            <width>191</width>
-            <height>151</height>
-           </rect>
-          </property>
-          <property name="title">
-           <string>Review</string>
-          </property>
-          <widget class="QPushButton" name="pushButton_OpenSelectedOutput">
-           <property name="geometry">
-            <rect>
-             <x>30</x>
-             <y>20</y>
-             <width>131</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Open selection</string>
-           </property>
-          </widget>
-          <widget class="QPushButton" name="pushButton_CopyTableToClipboard">
-           <property name="geometry">
-            <rect>
-             <x>30</x>
-             <y>50</y>
-             <width>131</width>
-             <height>31</height>
-            </rect>
-           </property>
-           <property name="text">
-            <string>Copy To Clipboard</string>
-           </property>
-          </widget>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <widget class="QTableView" name="tableView_que">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <item>
+               <widget class="QGroupBox" name="groupBox">
+                <property name="title">
+                 <string>Edit Que</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_8">
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_6">
+                   <item>
+                    <widget class="QPushButton" name="pushButton_RemoveSel">
+                     <property name="text">
+                      <string>Remove selection</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_ClearQue">
+                     <property name="text">
+                      <string>Clear all</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_2">
+                <property name="title">
+                 <string>Run Que</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_10">
+                 <item>
+                  <layout class="QGridLayout" name="gridLayout_2">
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="pushButton_RunAll_Seq">
+                     <property name="text">
+                      <string>Run sequentially</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QPushButton" name="pushButton_RunSelected">
+                     <property name="text">
+                      <string>Run selection</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QPushButton" name="pushButton_RunAll_MultiThread">
+                     <property name="text">
+                      <string>Run multi-thread</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>Total time (s)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLineEdit" name="lineEdit_TotalProcTimeMT">
+                     <property name="text">
+                      <string>0</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLabel" name="label_11">
+                     <property name="text">
+                      <string>Total time (s)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLineEdit" name="lineEdit_TotalProcTimeSeq">
+                     <property name="text">
+                      <string>0</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLabel" name="label_3">
+                     <property name="text">
+                      <string>Number of threads</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QLineEdit" name="lineEdit_MaxNumberThread">
+                     <property name="text">
+                      <string>4</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="groupBox_4">
+                <property name="title">
+                 <string>Review</string>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_13">
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_11">
+                   <item>
+                    <widget class="QPushButton" name="pushButton_OpenSelectedOutput">
+                     <property name="text">
+                      <string>Open selection</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QPushButton" name="pushButton_CopyTableToClipboard">
+                     <property name="text">
+                      <string>Copy To Clipboard</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Command File Viewer</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPlainTextEdit" name="plainTextEdit_Que">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>
@@ -519,8 +455,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>890</width>
-     <height>19</height>
+     <width>1078</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuView">

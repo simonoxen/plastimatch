@@ -68,7 +68,7 @@ enum enUpdateDirection{
 #define DEFAULT_NUM_COLUMN_MAIN 3
 #define DEFAULT_MAXNUM_MAIN 50
 #define DEFAULT_NUM_COLUMN_QUE 7
-#define DEFAULT_MAXNUM_QUE 200
+#define DEFAULT_MAXNUM_QUE 500
 
 
 enum enStatus{
