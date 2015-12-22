@@ -202,6 +202,9 @@ Wed_Parms::set_key_val (
         else if (!strcmp (key, "wed_dose")) {
             this->output_wed_dose_fn = val;
         }
+        else if (!strcmp (key, "ct")) {
+            this->output_ct_fn = val;
+        }
         else if (!strcmp (key, "dew_ct")) {
             this->output_dew_ct_fn = val;
         }

@@ -37,6 +37,7 @@ public:
     std::string output_proj_dose_fn; /* output: dose in proj coordinates */
     std::string output_wed_ct_fn;    /* output: ct in wed coordinates */
     std::string output_wed_dose_fn;  /* output: dose in wed coordinates */
+    std::string output_ct_fn;        /* output: ct in world coordinates */
     std::string output_dew_ct_fn;    /* output: ct in world coordinates */
     std::string output_dew_dose_fn;  /* output: dose in world coordinates */
 
