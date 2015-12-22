@@ -128,13 +128,13 @@ make_directory (const std::string& dirname)
 }
 
 void
-make_parent_directories (const char *dirname)
+make_parent_directories (const char *filename)
 {
     char *p, *tmp;
 
-    if (!dirname) return;
+    if (!filename) return;
 
-    tmp = strdup (dirname);
+    tmp = strdup (filename);
     p = tmp;
     while (*p) {
 	if (ISSLASH (*p) && p != tmp) {
@@ -148,9 +148,9 @@ make_parent_directories (const char *dirname)
 }
 
 void
-make_parent_directories (const std::string& dirname)
+make_parent_directories (const std::string& filename)
 {
-    make_parent_directories (dirname.c_str());
+    make_parent_directories (filename.c_str());
 }
 
 void

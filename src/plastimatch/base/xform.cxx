@@ -15,6 +15,7 @@
 
 #include "bspline_interpolate.h"
 #include "bspline_xform.h"
+#include "file_util.h"
 #include "itk_directions.h"
 #include "itk_image_create.h"
 #include "itk_image_load.h"
@@ -416,10 +417,11 @@ itk_xform_save (T transform, const char *filename)
 {
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer outputTransformWriter;
-        
+
+    make_parent_directories (filename);
     outputTransformWriter = TransformWriterType::New();
-    outputTransformWriter->SetFileName( filename );
-    outputTransformWriter->SetInput( transform );
+    outputTransformWriter->SetFileName(filename);
+    outputTransformWriter->SetInput(transform);
     try
     {
         outputTransformWriter->Update();
