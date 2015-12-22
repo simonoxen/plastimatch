@@ -1311,3 +1311,89 @@ QString QUTIL::GetPathWithEndFix(const QString& curFilePath, const QString& strE
 //        cout << "weird!" << endl;
 //    }
 //}
+
+
+
+void QUTIL::GenSampleCommandFile(QString strPathCommandFile, enRegisterOption regiOption)
+{
+    ofstream fout;
+    fout.open(strPathCommandFile.toLocal8Bit().constData());
+
+    if (fout.fail())
+    {
+        cout << "File writing error! " << endl;
+        return;
+    }
+
+    fout << "# command_file.txt" << endl;
+    fout << "[GLOBAL]" << endl;
+    fout << "fixed=" << "TBD" << endl;
+    fout << "moving=" << "TBD" << endl;
+
+   /* if (strPathFixedMask.length() > 1)
+    {
+        fout << "fixed_roi=" << "TBD" << endl;
+    }*/
+    fout << "img_out=" << "TBD" << endl;
+    fout << "xform_out=" << "TBD" << endl;
+    fout << endl;
+    
+    //QString strOptim = "mse";    
+    QString optionStr;
+    QStringList optionList;
+
+    switch (regiOption)
+    {
+    case PLAST_RIGID:
+        fout << "[STAGE]" << endl;
+        fout << "xform=" << "rigid" << endl;        
+        fout << "optim=" << "versor" << endl;
+        fout << "impl=" << "itk" << endl;
+        fout << "threading=" << "openmp" << endl;
+        fout << "background_val=" << "-1024" << endl;
+        //fout << "background_val=" << "0" << endl; //-600 in HU //added
+        fout << "max_its=" << "50" << endl;
+
+        break;
+    case PLAST_GRADIENT:
+        fout << "#For gradient-based searching, moving image should be smaller than fixed image. So, CBCT image might move rather than CT" << endl;
+
+        optionStr = "0.7, 0.7, 0.7";
+        optionList = optionStr.split(",");
+
+        fout << "[PROCESS]" << endl;
+        fout << "action=adjust" << endl;
+        fout << "# only consider within this  intensity values" << endl;
+        fout << "parms=-inf,0,-1000,-1000,4000,4000,inf,0" << endl;
+        fout << "images=fixed,moving" << endl;
+        fout << endl;
+        fout << "[STAGE]" << endl;
+        fout << "metric=gm" << endl;
+        fout << "xform=translation" << endl;
+        fout << "optim=grid_search" << endl;
+        fout << "gridsearch_min_overlap=" << optionList.at(0).toDouble() << " "
+            << optionList.at(1).toDouble() << " "
+            << optionList.at(2).toDouble() << endl;
+
+        fout << "num_substages=5" << endl;
+        //fout << "debug_dir=" << m_strPathPlastimatch.toLocal8Bit().constData() << endl;
+        break;
+
+    case PLAST_BSPLINE:        
+            fout << "[STAGE]" << endl;
+            fout << "xform=" << "bspline" << endl;
+            fout << "impl=" << "plastimatch" << endl;            
+            fout << "threading=" << "openmp" << endl;
+            fout << "regularization_lambda=" << 0.005 << endl;            
+            fout << "metric=" << "mse" << endl;
+            fout << "max_its=" << 30 << endl;
+            fout << "grid_spac=" << "30" << " " << "30" << " " << "30" << endl;//20 20 20 --> minimum
+            fout << "res=" << "2" << " " << "2" << " " << "1" << endl;
+            fout << "background_val=" << "-1024" << endl; //-600 in HU //added
+           // fout << "img_out=" << "TBD" << endl;
+            fout << endl;
+        break;
+    }
+
+    fout.close();    
+}

@@ -15,6 +15,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QClipboard>
+#include <QProcess>
 
 #include "qt_util.h"
 
@@ -54,9 +55,17 @@ register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     m_timerRunMultiThread = new QTimer(this);
 
     connect(m_timerRunSequential, SIGNAL(timeout()), this, SLOT(SLT_TimerRunSEQ()));
-    connect(m_timerRunMultiThread, SIGNAL(timeout()), this, SLOT(SLT_TimerRunMT()));
+    connect(m_timerRunMultiThread, SIGNAL(timeout()), this, SLOT(SLT_TimerRunMT()));   
 
-    
+    m_strPathCurrent = QDir::current().absolutePath();//folder where current exe file exists.
+    m_strFileDefaultConfig = "register_gui_config.txt";
+
+    if (!ReadDefaultConfig())//if file doesn't exist
+    {
+        SetWorkDir(m_strPathCurrent);        
+        WriteDefaultConfig();
+    }
+
 }
 
 register_gui::~register_gui()
@@ -81,21 +90,49 @@ register_gui::~register_gui()
 void register_gui::SLT_SetDefaultDir()
 {    
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Work Directory"),
-        m_strPathDirDefault, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        m_strPathDirDefault, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);   
 
-    QDir dirDefaultDir = QDir(dirPath);
-    if (!dirDefaultDir.exists())
-        return;
 
+    if (dirPath.length() < 1)
+        return;    
+    
+    dirPath.replace(QString("\\"), QString("/"));
     SetWorkDir(dirPath);
+
+    WriteDefaultConfig();
 }
 
 
+void register_gui::SLT_SetDefaultViewer()
+{
+    QString dirPath = QFileDialog::getOpenFileName(this, "Open executable file", "", "executable file (*.exe *.*)", 0, 0);
+
+    if (dirPath.length() < 1)
+        return;
+
+    SetReadImageApp(dirPath);
+
+    WriteDefaultConfig();
+}
 
 void register_gui::SetWorkDir(const QString& strPath)
 {
+    QDir dirDefaultDir = QDir(strPath);
+    if (!dirDefaultDir.exists())
+        return;
+    
     m_strPathDirDefault = strPath;
     ui.lineEditDefaultDirPath->setText(m_strPathDirDefault);
+}
+
+void register_gui::SetReadImageApp(const QString& strPath)
+{
+    QFileInfo ViewerFileInfo(strPath);
+    if (!ViewerFileInfo.exists())
+        return;
+
+    m_strPathReadImageApp = strPath;
+    ui.lineEditDefaultViewerPath->setText(m_strPathReadImageApp);
 }
 
 void register_gui::InitTableQue(int rowCnt, int columnCnt)
@@ -1505,6 +1542,42 @@ QString register_gui::GetStrInfoFromCommandFile(enPlmCommandInfo plmInfo, QStrin
     return resultStr;
 }
 
+
+QStringList register_gui::GetImagePathListFromCommandFile(QString& strPathCommandFile)
+{    
+    QStringList listImgPath;
+
+    QStringList tmpStrList = GetStringListFromFile(strPathCommandFile);    
+    
+    QString strLineExcerpt;
+
+    int iCntLine = tmpStrList.count();
+    QString strTempLine;
+
+    for (int i = 0; i < iCntLine; i++)
+    {
+        strTempLine = tmpStrList.at(i);
+
+        if (strTempLine.contains("fixed=") || strTempLine.contains("fixed =") ||
+            strTempLine.contains("moving=") || strTempLine.contains("moving =") ||
+            strTempLine.contains("img_out=") || strTempLine.contains("img_out =") )
+        {
+            QString strPath;
+            QStringList infoStrList = strTempLine.split("=");
+            if (infoStrList.count() > 1)
+                strPath = infoStrList.at(1);
+
+            strPath = strPath.trimmed();
+
+            if (strPath.length() > 1)
+                listImgPath.push_back(strPath);
+            
+        }
+    }   
+    return listImgPath;
+}
+
+
 void register_gui::CopyCommandFileToOutput(QString& strPathOriginCommandFile)
 {
     QFileInfo fInfo(strPathOriginCommandFile);
@@ -1607,4 +1680,186 @@ void register_gui::SLT_CopyTableQueToClipboard()
     }
 
     qApp->clipboard()->setText(list.join("\t"));
+}
+
+void register_gui::SLT_ViewSelectedImg()
+{
+    int iSelected = m_iCurSelRow_Que;
+
+    if (iSelected < 0 || iSelected >= m_vRegiQue.size())
+    {
+        cout << "Error! Selection is not valid. Try other ones." << endl;
+        return;
+    }
+    QString strPathCommand = m_vRegiQue.at(iSelected).m_quePathCommand;
+    QStringList strlistFilePath = GetImagePathListFromCommandFile(strPathCommand);
+
+    //Check available app first
+
+    QFileInfo fInfoApp(m_strPathReadImageApp);
+
+    if (!fInfoApp.exists())
+    {
+        QUTIL::ShowErrorMessage("Error! Viewer application is not found!");
+        return;
+    }
+
+    int iCntPath = strlistFilePath.count();
+
+    QString curPath;
+    QStringList validFiles;
+    for (int i = 0; i < iCntPath; i++)
+    {
+        curPath = strlistFilePath.at(i);
+        QFileInfo fInfoimg(curPath);
+        if (fInfoimg.exists())
+        {
+            validFiles.push_back(curPath);
+        }
+    }
+
+    //Shell command
+
+    QString strShellCommand = m_strPathReadImageApp;
+    strShellCommand = "\"" + strShellCommand + "\""; //IMPORTANT! due to the "Program Files" space issue
+
+    int iCntValidImg = validFiles.count();
+
+    for (int i = 0; i < iCntValidImg; i++)
+    {
+        strShellCommand = strShellCommand + " " + validFiles.at(i);
+    }
+
+//    strShellCommand = "\"" + strShellCommand + "\"";
+    if (!QProcess::startDetached(strShellCommand))
+        cout << "Failed to run viewer app. Command= " << strShellCommand.toLocal8Bit().constData() << endl;
+
+}
+
+void register_gui::WriteDefaultConfig()
+{
+    QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
+
+    //always overwrite
+    ofstream fout;
+    fout.open(strPathDefaultConfig.toLocal8Bit().constData());
+
+    if (fout.fail())
+        return;
+
+    fout << "DEFAULT_WORK_DIR" << "\t" << m_strPathDirDefault.toLocal8Bit().constData() << endl;
+    fout << "DEFAULT_VIEWER_PATH" << "\t" << m_strPathReadImageApp.toLocal8Bit().constData() << endl;
+
+    fout.close();
+}
+
+bool register_gui::ReadDefaultConfig()
+{
+    QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
+
+    QFileInfo fInfo(strPathDefaultConfig);
+
+    if (!fInfo.exists())
+    {
+        cout << "Config file is not found. Current directory is set as default" << endl;
+        return false;
+    }    
+
+    ifstream fin;
+    fin.open(strPathDefaultConfig.toLocal8Bit().constData());
+
+    if (fin.fail())
+        return false;
+
+    char str[MAX_LINE_LENGTH];    
+
+    QString strPathDirDefault;
+    QString strPathViewer;
+
+
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+
+        QString tmpStr = QString(str);
+        QStringList strList = tmpStr.split("\t");        
+
+        if (strList.count() == 2)
+        {
+            QString firstTok = strList.at(0);
+            QString secondTok = strList.at(1);
+
+            if (firstTok.contains("DEFAULT_WORK_DIR"))
+            {
+                strPathDirDefault = secondTok;
+            }
+            else if (firstTok.contains("DEFAULT_VIEWER_PATH"))
+            {
+                strPathViewer = secondTok;
+            }
+        }
+    }
+
+    if (strPathDirDefault.length() > 1)
+        SetWorkDir(strPathDirDefault);
+
+    if (strPathViewer.length() > 1)
+        SetReadImageApp(strPathViewer);
+
+    fin.close();  
+
+    return true;
+}
+//create a smaple command file and put it into the working dir
+void register_gui::SLT_CreateSampleRigid()
+{   
+    CreateSampleCommand(PLAST_RIGID);
+}
+
+void register_gui::SLT_CreateSampleDeform()
+{
+    CreateSampleCommand(PLAST_BSPLINE);
+}
+
+void register_gui::CreateSampleCommand(enRegisterOption option)
+{
+    QString strPathSample;
+
+    if (option == PLAST_RIGID)
+        strPathSample = m_strPathDirDefault + "/" + "command_file_rigid.txt";
+    if (option == PLAST_BSPLINE)
+        strPathSample = m_strPathDirDefault + "/" + "command_file_deform.txt";
+
+    int cnt = 0;
+    QString strPathNew = strPathSample;
+
+    while (true)
+    {
+        QFileInfo fInfoBefore(strPathNew);
+        if (!fInfoBefore.exists())
+        {
+            break;
+        }
+
+        //if exists, try new path        
+        cnt++;
+        QString endFix = QString::number(cnt);
+        strPathNew = QUTIL::GetPathWithEndFix(strPathSample, endFix);
+    }
+
+    QUTIL::GenSampleCommandFile(strPathNew, option);
+
+    QFileInfo fInfoAfter(strPathNew);
+
+    if (!fInfoAfter.exists())
+    {
+        cout << "Error! failed to generate a sample command file" << endl;
+        return;
+    }
+
+    m_strlistPath_Command.push_back(strPathNew);
+
+    UpdateBaseAndComboFromFullPath();
+    UpdateTable_Main(DATA2GUI);
 }

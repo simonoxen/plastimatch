@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1078</width>
+    <width>987</width>
     <height>913</height>
    </rect>
   </property>
@@ -33,6 +33,27 @@
       </item>
       <item>
        <widget class="QLineEdit" name="lineEditDefaultDirPath"/>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="text">
+         <string>Image viewer path</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_SetViewerPath">
+        <property name="text">
+         <string>set</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEditDefaultViewerPath"/>
       </item>
      </layout>
     </item>
@@ -196,11 +217,29 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <item>
+                  <widget class="QPushButton" name="pushButton_CreateCommandRigid">
+                   <property name="text">
+                    <string>Create Sample Rigid</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_CreateCommandDeform">
+                   <property name="text">
+                    <string>Create Sample Deformable</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
                   <widget class="QPushButton" name="pushButton_CopyCommand">
                    <property name="text">
-                    <string>Copy to</string>
+                    <string>Copy selection to</string>
                    </property>
                   </widget>
                  </item>
@@ -402,9 +441,16 @@
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_11">
                    <item>
+                    <widget class="QPushButton" name="pushButtonViewSelectedImg">
+                     <property name="text">
+                      <string>View selected img</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <widget class="QPushButton" name="pushButton_OpenSelectedOutput">
                      <property name="text">
-                      <string>Open selection</string>
+                      <string>Open selected dir</string>
                      </property>
                     </widget>
                    </item>
@@ -455,7 +501,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1078</width>
+     <width>987</width>
      <height>21</height>
     </rect>
    </property>
@@ -541,8 +587,8 @@
    <slot>SLT_SaveCommandText()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>722</x>
-     <y>205</y>
+     <x>951</x>
+     <y>245</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -557,8 +603,8 @@
    <slot>SLT_AddSingleToQue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>507</x>
-     <y>180</y>
+     <x>477</x>
+     <y>183</y>
     </hint>
     <hint type="destinationlabel">
      <x>568</x>
@@ -589,8 +635,8 @@
    <slot>SLT_AddMultipleToQueByPermu()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>204</x>
-     <y>267</y>
+     <x>202</x>
+     <y>273</y>
     </hint>
     <hint type="destinationlabel">
      <x>6</x>
@@ -653,8 +699,8 @@
    <slot>SLT_CopyCommandFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>622</x>
-     <y>165</y>
+     <x>598</x>
+     <y>214</y>
     </hint>
     <hint type="destinationlabel">
      <x>570</x>
@@ -669,8 +715,8 @@
    <slot>SLT_ClearCommandFiles()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>792</x>
-     <y>165</y>
+     <x>951</x>
+     <y>214</y>
     </hint>
     <hint type="destinationlabel">
      <x>897</x>
@@ -685,8 +731,8 @@
    <slot>SLT_UpdateFileList()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>491</x>
-     <y>319</y>
+     <x>487</x>
+     <y>314</y>
     </hint>
     <hint type="destinationlabel">
      <x>572</x>
@@ -701,8 +747,8 @@
    <slot>SLT_SortSelectedColumn()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>162</x>
-     <y>305</y>
+     <x>129</x>
+     <y>314</y>
     </hint>
     <hint type="destinationlabel">
      <x>913</x>
@@ -717,8 +763,8 @@
    <slot>SLT_ClearQueAll()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>96</x>
-     <y>597</y>
+     <x>125</x>
+     <y>837</y>
     </hint>
     <hint type="destinationlabel">
      <x>6</x>
@@ -733,8 +779,8 @@
    <slot>SLT_RemoveSelectedQue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>565</y>
+     <x>125</x>
+     <y>790</y>
     </hint>
     <hint type="destinationlabel">
      <x>167</x>
@@ -749,8 +795,8 @@
    <slot>SLT_RunSingleSelected()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>302</x>
-     <y>555</y>
+     <x>241</x>
+     <y>772</y>
     </hint>
     <hint type="destinationlabel">
      <x>323</x>
@@ -765,8 +811,8 @@
    <slot>SLT_RunBatchSequential()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>314</x>
-     <y>584</y>
+     <x>241</x>
+     <y>801</y>
     </hint>
     <hint type="destinationlabel">
      <x>484</x>
@@ -781,8 +827,8 @@
    <slot>SLT_RunBatchMultiThread()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>236</x>
-     <y>625</y>
+     <x>241</x>
+     <y>830</y>
     </hint>
     <hint type="destinationlabel">
      <x>105</x>
@@ -797,8 +843,8 @@
    <slot>SLT_OpenSelectedOutputDir()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>654</x>
-     <y>548</y>
+     <x>599</x>
+     <y>813</y>
     </hint>
     <hint type="destinationlabel">
      <x>666</x>
@@ -813,8 +859,8 @@
    <slot>SLT_CopyTableQueToClipboard()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>604</x>
-     <y>588</y>
+     <x>599</x>
+     <y>848</y>
     </hint>
     <hint type="destinationlabel">
      <x>635</x>
@@ -835,6 +881,70 @@
     <hint type="destinationlabel">
      <x>530</x>
      <y>350</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_SetViewerPath</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_SetDefaultViewer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>161</x>
+     <y>90</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>978</x>
+     <y>101</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButtonViewSelectedImg</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_ViewSelectedImg()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>599</x>
+     <y>778</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>565</x>
+     <y>891</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_CreateCommandRigid</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_CreateSampleRigid()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>691</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>982</x>
+     <y>218</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_CreateCommandDeform</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_CreateSampleDeform()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>859</x>
+     <y>169</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>984</x>
+     <y>194</y>
     </hint>
    </hints>
   </connection>
@@ -861,5 +971,9 @@
   <slot>SLT_OpenSelectedOutputDir()</slot>
   <slot>SLT_CopyTableQueToClipboard()</slot>
   <slot>SLTM_ExportQueResult()</slot>
+  <slot>SLT_SetDefaultViewer()</slot>
+  <slot>SLT_ViewSelectedImg()</slot>
+  <slot>SLT_CreateSampleRigid()</slot>
+  <slot>SLT_CreateSampleDeform()</slot>
  </slots>
 </ui>

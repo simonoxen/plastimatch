@@ -55,6 +55,9 @@ public:
     int GetCountStandByJobs();
 
     QString GetStrInfoFromCommandFile(enPlmCommandInfo plmInfo, QString& strPathCommandFile);
+    QStringList GetImagePathListFromCommandFile(QString& strPathCommandFile);
+
+
     void CopyCommandFileToOutput(QString& strPathOriginCommandFile);
 
     void ExportQueResult(QString& strPathOut);
@@ -89,11 +92,15 @@ public:
 
         void SLT_TimerRunSEQ();
         void SLT_TimerRunMT();
-
-        void SLT_OpenSelectedOutputDir();       
+        
         void SLTM_ExportQueResult();
-
         void SLT_CopyTableQueToClipboard();
+        void SLT_SetDefaultViewer();
+
+        void SLT_OpenSelectedOutputDir();
+        void SLT_ViewSelectedImg();
+        void SLT_CreateSampleRigid();
+        void SLT_CreateSampleDeform();
 
 public:    
     QStringList m_strlistPath_Fixed;
@@ -108,13 +115,25 @@ public:
     QStringList m_strlistPathOutputXf;
 
     QString m_strPathDirDefault;
+    QString m_strPathReadImageApp;
+    QString m_strPathCurrent;//current path of directory where the exe is located
+    QString m_strFileDefaultConfig;//File name
+
+
     void SetWorkDir(const QString& strPath);
+    void SetReadImageApp(const QString& strPath);
     void InitTableMain(int rowCnt, int columnCnt);
     void InitTableQue(int rowCnt, int columnCnt);
     void UpdateTable_Main(enUpdateDirection updateDirection);
     void UpdateTable_Que(); //only Data2Gui direction
 
     void SetTableText(int row, int col, QString& inputStr);
+
+    void WriteDefaultConfig(); //m_strFileDefaultConfig, m_strPathDirDefault, m_strPathReadImageApp
+    bool ReadDefaultConfig();
+
+    void CreateSampleCommand(enRegisterOption option);
+
 
     int m_iCurSelRow_Main;
     int m_iCurSelCol_Main;
