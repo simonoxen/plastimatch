@@ -92,13 +92,14 @@ public:
     void dump (const char* dir);     /* Print debugging information */
 
     /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
-    void compute_prerequisites_beam_tools(std::string target);
+    void compute_prerequisites_beam_tools(Plm_image::Pointer& target);
 
     /* Different strategies preparation */
     void compute_beam_data_from_spot_map();
-    void compute_beam_data_from_manual_peaks(std::string target);
-    void compute_beam_data_from_prescription(std::string target);
-    void compute_beam_data_from_target(std::string target);
+    void compute_beam_data_from_manual_peaks();
+    void compute_beam_data_from_manual_peaks(Plm_image::Pointer& target);
+    void compute_beam_data_from_prescription(Plm_image::Pointer& target);
+    void compute_beam_data_from_target(Plm_image::Pointer& target);
     void compute_default_beam();
 
     /* This computes the aperture and range compensator */

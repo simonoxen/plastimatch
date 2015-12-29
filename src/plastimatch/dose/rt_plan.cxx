@@ -62,13 +62,13 @@ public:
     Rt_plan_private ()
     {
         debug = false;
-		this->rdp[0] = 0.f;
+		    this->rdp[0] = 0.f;
         this->rdp[1] = 0.f;
         this->rdp[2] = 0.f;
-		this->have_rdp = false;
-		this->have_dose_norm = false;
+		    this->have_rdp = false;
+		    this->have_dose_norm = false;
         this->normalization_dose = 100.f;
-		this->non_norm_dose = 'n';
+		    this->non_norm_dose = 'n';
         this->depth_dose_max = 1.f;
         
         patient = Plm_image::New();
@@ -799,7 +799,7 @@ Rt_plan::compute_plan ()
         }
 
 		/* Compute beam modifiers, SOBP etc. according to the teatment strategy */
-		beam->compute_prerequisites_beam_tools(d_ptr->target_fn);
+		beam->compute_prerequisites_beam_tools(this->get_target());
 		/*
 		if (beam->get_beam_line_type() == "passive")
 		{

@@ -327,7 +327,7 @@ Rt_beam::dump (const char* dir)
 }
 
 void 
-Rt_beam::compute_prerequisites_beam_tools(std::string target)
+Rt_beam::compute_prerequisites_beam_tools(Plm_image::Pointer& target)
 {
     if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
     {
@@ -360,7 +360,7 @@ Rt_beam::compute_prerequisites_beam_tools(std::string target)
         this->compute_beam_data_from_prescription(target);
         return;
     }
-    if (target != "")
+    if (target->get_vol())
     {
         printf("Target detected.\n");
         this->get_mebs()->set_have_manual_peaks(false);
@@ -389,20 +389,20 @@ Rt_beam::compute_beam_data_from_spot_map()
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks(std::string target)
+Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 {
     /* The spot map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
-    if ((target != "" && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
+    if ((target->get_vol() && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
         if (d_ptr->beam_line_type == "active")
         {
-            this->rpl_vol->compute_beam_modifiers_active_scanning(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->rpl_vol->compute_beam_modifiers_active_scanning(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
         }
         else
         {
-            this->rpl_vol->compute_beam_modifiers_passive_scattering(d_ptr->target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->rpl_vol->compute_beam_modifiers_passive_scattering(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
         }
     }
     /* the aperture and range compensator are erased and the ones defined in the input file are considered */
@@ -410,7 +410,17 @@ Rt_beam::compute_beam_data_from_manual_peaks(std::string target)
 }
 
 void
-Rt_beam::compute_beam_data_from_prescription(std::string target)
+Rt_beam::compute_beam_data_from_manual_peaks()
+{
+    /* The spot map will be identical for passive or scanning beam lines */
+    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    this->get_mebs()->generate_part_num_from_weight(ap_dim);
+    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
+    this->update_aperture_and_range_compensator();
+}
+
+void
+Rt_beam::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 {
     /* The spot map will be identical for passive or scanning beam lines */
     /* Identic to compute from manual peaks, with a preliminary optimization */
@@ -419,7 +429,7 @@ Rt_beam::compute_beam_data_from_prescription(std::string target)
 }
 
 void
-Rt_beam::compute_beam_data_from_target(std::string target)
+Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
 {
     /* Compute beam aperture, range compensator 
        + SOBP for passively scattered beam lines */
@@ -440,7 +450,7 @@ Rt_beam::compute_default_beam()
 {
 	/* Computes a default 100 MeV peak */
 	this->get_mebs()->add_peak(100, 1, 1);
-	this->compute_beam_data_from_manual_peaks("");
+	this->compute_beam_data_from_manual_peaks();
 }
 
 void 
