@@ -710,8 +710,8 @@ Rt_mebs::set_margins(float proximal_margin, float distal_margin)
 void 
 Rt_mebs::update_prescription_depths_from_energies() 
 {
-    d_ptr->prescription_depth_min = ((10*d_ptr->alpha)*pow(d_ptr->beam_min_energy, d_ptr->p));
-    d_ptr->prescription_depth_max = ((10*d_ptr->alpha)*pow(d_ptr->beam_max_energy, d_ptr->p));
+    d_ptr->prescription_depth_min = ((10*d_ptr->alpha)*pow((double)d_ptr->beam_min_energy, d_ptr->p));
+    d_ptr->prescription_depth_max = ((10*d_ptr->alpha)*pow((double)d_ptr->beam_max_energy, d_ptr->p));
 
     d_ptr->target_min_depth = d_ptr->prescription_depth_min + d_ptr->proximal_margin;
     d_ptr->target_max_depth = d_ptr->prescription_depth_max - d_ptr->distal_margin;
