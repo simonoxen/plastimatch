@@ -1012,7 +1012,7 @@ Rt_plan::print_verif ()
     printf("\n isocenter: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg %lg ** ", d_ptr->beam_storage[i]->get_isocenter_position()[0], d_ptr->beam_storage[i]->get_isocenter_position()[1], d_ptr->beam_storage[i]->get_isocenter_position()[2]);}
     printf("\n vup: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg %lg ** ", d_ptr->beam_storage[i]->get_aperture()->vup[0], d_ptr->beam_storage[i]->get_aperture()->vup[1], d_ptr->beam_storage[i]->get_aperture()->vup[2]);}
     printf("\n offset: "); for (int i = 0; i < num_beams; i++) {printf("%lg ** ", d_ptr->beam_storage[i]->get_aperture()->get_distance());}
-    printf("\n ap_origin: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg ** ", d_ptr->beam_storage[i]->get_aperture()->get_center()[0], d_ptr->beam_storage[i]->get_aperture()->get_center()[1]);}
+    printf("\n ap_center in pixels: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg ** ", d_ptr->beam_storage[i]->get_aperture()->get_center()[0], d_ptr->beam_storage[i]->get_aperture()->get_center()[1]);}
     printf("\n i_res: "); for (int i = 0; i < num_beams; i++) {printf("%d %d ** ", d_ptr->beam_storage[i]->get_aperture()->get_dim()[0], d_ptr->beam_storage[i]->get_aperture()->get_dim()[1]);}
     printf("\n spacing: "); for (int i = 0; i < num_beams; i++) {printf("%lg %lg ** ", d_ptr->beam_storage[i]->get_aperture()->get_spacing()[0], d_ptr->beam_storage[i]->get_aperture()->get_spacing()[1]);}
     printf("\n source_size: "); for (int i = 0; i < num_beams; i++) {printf("%lg ** ", d_ptr->beam_storage[i]->get_source_size());}

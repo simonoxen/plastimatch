@@ -109,10 +109,12 @@ public:
     void load (const std::string& filename);
 
     void compute_ray_data ();
+    void compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max, const float* origin, const float* spacing, const plm_long* dim);
 
 protected:
     void compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     void compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
+    void compute_target_distance_limits_slicerRt (Plm_image::Pointer& plmTgt, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance, const float* origin, const float* spacing, const plm_long* dim);
     void apply_smearing_to_target (float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
 
     void rpl_ray_trace (
