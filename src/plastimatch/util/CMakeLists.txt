@@ -26,6 +26,7 @@ set (PLMUTIL_LIBRARY_SRC
   geometry_chooser.cxx geometry_chooser.h 
   hausdorff_distance.cxx hausdorff_distance.h 
   image_boundary.cxx image_boundary.h
+  image_center.cxx image_center.h
   itk_adjust.cxx
   itk_distance_map.cxx
   itk_crop.cxx
@@ -81,6 +82,8 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
 if (OPENMP_FOUND)
   set (PLMUTIL_LIBRARY_LDFLAGS "${OPENMP_LDFLAGS}")
   set_source_files_properties (dice_statistics.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (image_center.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (vf_invert.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
