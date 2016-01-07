@@ -1512,6 +1512,7 @@ Plm_image::dim (size_t d1)
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+        return d_ptr->m_vol->dim[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
 	print_and_exit (
@@ -1551,6 +1552,7 @@ Plm_image::origin (size_t d1)
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+        return d_ptr->m_vol->origin[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
 	print_and_exit (
@@ -1589,6 +1591,7 @@ Plm_image::spacing (size_t d1)
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+        return d_ptr->m_vol->spacing[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
 	print_and_exit (
