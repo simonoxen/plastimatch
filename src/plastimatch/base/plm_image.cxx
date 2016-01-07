@@ -1507,11 +1507,14 @@ Plm_image::dim (size_t d1)
         return this->m_itk_float->GetLargestPossibleRegion().GetSize()[d];
     case PLM_IMG_TYPE_ITK_DOUBLE:
         return this->m_itk_double->GetLargestPossibleRegion().GetSize()[d];
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT16:
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
         return d_ptr->m_vol->dim[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
@@ -1547,11 +1550,14 @@ Plm_image::origin (size_t d1)
         return itk_image_origin(this->m_itk_float)[d];
     case PLM_IMG_TYPE_ITK_DOUBLE:
         return itk_image_origin(this->m_itk_double)[d];
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT16:
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
         return d_ptr->m_vol->origin[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
@@ -1586,11 +1592,14 @@ Plm_image::spacing (size_t d1)
         return this->m_itk_float->GetSpacing()[d];
     case PLM_IMG_TYPE_ITK_DOUBLE:
         return this->m_itk_double->GetSpacing()[d];
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT16:
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_INT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
         return d_ptr->m_vol->spacing[d];
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
