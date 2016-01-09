@@ -81,7 +81,7 @@ public:
         this->range_compensator_out = "";
         this->sigma_out = "";
         this->wed_out = "";
-        this->beam_line_type = "passive";
+        this->beam_line_type = "active";
     }
     Rt_beam_private (const Rt_beam_private* rtbp)
     {
@@ -97,6 +97,7 @@ public:
         this->homo_approx = rtbp->homo_approx;
 
         /* Copy the mebs object */
+        this->beamWeight = rtbp->beamWeight;
         this->mebs = Rt_mebs::New (rtbp->mebs);
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
@@ -114,6 +115,7 @@ public:
         this->range_compensator_out = rtbp->range_compensator_out;
         this->sigma_out = rtbp->sigma_out;
         this->wed_out = rtbp->wed_out;
+        this->beam_line_type = rtbp->beam_line_type;
     }
 };
 

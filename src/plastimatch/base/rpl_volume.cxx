@@ -795,7 +795,6 @@ void
 Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 {
     int ires[2];
-
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
@@ -808,7 +807,6 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
     }
 
     Volume *ct_vol = d_ptr->ct->get_vol();
-
     /* Preprocess data by clipping against volume */
     this->compute_ray_data ();
 
@@ -821,11 +819,14 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 
     /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
+
     double clipping_dist[2] = {
       d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
+
     d_ptr->proj_vol->allocate ();
- 
+
     /* Scan through the aperture -- second pass */
     for (int r = 0; r < ires[1]; r++) {
         for (int c = 0; c < ires[0]; c++) {
@@ -2362,6 +2363,14 @@ Rpl_volume::compute_target_distance_limits_slicerRt(Plm_image::Pointer& plmTgt, 
 
     //Interpolated seg_volume value
     double interp_seg_value;
+
+    printf ("MD dim = %d,%d,%d\n", dim[0], dim[1], dim[2]);
+    printf ("tgt dim = %d,%d,%d\n", plmTgt->dim(0), plmTgt->dim(1), plmTgt->dim(2));
+    printf ("MD origin = %g,%g,%g\n", origin[0], origin[1], origin[2]);
+    printf ("tgt origin = %g,%g,%g\n", plmTgt->origin(0), plmTgt->origin(1), plmTgt->origin(2));
+    printf ("MD spacing = %g,%g,%g\n", spacing[0], spacing[1], spacing[2]);
+    printf ("tgt spacing = %g,%g,%g\n", plmTgt->spacing(0), plmTgt->spacing(1), plmTgt->spacing(2));
+    fflush (stdout);
 
     double previous_depth; //previous wed depth
     bool intersect_seg; //boolean that checks whether or not ray intersects with seg. volume

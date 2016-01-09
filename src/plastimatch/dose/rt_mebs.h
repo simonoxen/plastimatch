@@ -137,6 +137,7 @@ public:
     void get_optimized_peaks(float dmin, float dmax, std::vector<float>* weight_tmp, std::vector<Rt_depth_dose*>* depth_dose);
     void initialize_energy_weight_and_depth_dose_vectors(std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, std::vector<Rt_depth_dose*>* depth_dose_tmp);
 
+    void scale_num_part(double A, int* ap_dim);
     double get_particle_number_xyz(int* idx, double* rest, int idx_beam, const int* ap_dim);
 
     /* This computes the E_min and E_max map from a target for all pencil beam*/
@@ -146,7 +147,6 @@ public:
     void compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing, const float* origin, const float* spacing, const plm_long* vol_dim);
 
     void export_spot_map_as_txt(Aperture::Pointer ap);
-
 };
 
 #endif

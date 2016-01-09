@@ -228,7 +228,7 @@ double get_off_axis(double radius, double dr, double sigma)
 }
 
 /* MD Fix: don't consider any cosines directions */
-void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose)
+void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_beam* beam)
 {
 	int idx = 0;
 	double norm = 0;
@@ -259,6 +259,9 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose)
 		{
 			img[i] = img[i] / norm * dose;
 		}
+    int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+    beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
+
 		printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
 	}
 	else
@@ -268,8 +271,9 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose)
 }
 
 /* MD Fix: don't consider any cosines directions */
-void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp)
+void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Rt_beam* beam)
 {
+  std::vector<float>* num_part = &beam->get_mebs()->get_num_particles();
 	double norm = dose_volume->get_ijk_value(rdp_ijk);
 	float* img = (float*) dose_volume->img;
 
@@ -279,11 +283,13 @@ void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double do
 		{
 			img[i] = img[i] / norm * dose;
 		}
+    int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+    beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
 		printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
 	}
 	else
 	{
 		printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
-		dose_normalization_to_dose(dose_volume, dose);
+		dose_normalization_to_dose(dose_volume, dose,beam);
 	}
 }

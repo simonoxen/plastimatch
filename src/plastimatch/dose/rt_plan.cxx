@@ -337,7 +337,6 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         beam->get_aperture()->get_spacing(),
         beam->get_step_length());
     if (!beam->rpl_vol) return false;
-
     /* building the ct_density_vol */
     beam->rpl_ct_vol_HU = new Rpl_volume;
     beam->rpl_ct_vol_HU->set_geometry (
@@ -350,7 +349,6 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         beam->get_aperture()->get_spacing(),
         beam->get_step_length());
     if (!beam->rpl_ct_vol_HU) return false;
-
     if (beam->get_flavor() == 'f'|| beam->get_flavor() == 'g' || beam->get_flavor() == 'h')
     {
         /* building the sigma_vol */
@@ -370,8 +368,9 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
 
     /* Copy aperture from scene into rpl volume */
     beam->rpl_ct_vol_HU->set_aperture (beam->get_aperture());
+
     beam->rpl_vol->set_aperture (beam->get_aperture());
-	
+
     if (beam->get_flavor() == 'f' || beam->get_flavor() == 'g' || beam->get_flavor() == 'h')
     {
         Aperture::Pointer ap_sigma = Aperture::New(beam->get_aperture());
@@ -398,10 +397,9 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
     {
         printf("ray_data or clipping planes to be copied from rpl volume don't exist\n");
     }
-    
+
     /*Now we can compute the rpl_volume*/
     beam->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
-    
     /* and the others */
     if(beam->rpl_vol->get_Ray_data() && beam->rpl_vol->get_front_clipping_plane() && beam->rpl_vol->get_back_clipping_plane())
     {
@@ -610,7 +608,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         }
     }
     if (beam->get_flavor() == 'a') // pull algorithm
-    {     
+    {    
         /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, if there is a range compensator */
         if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
         {
@@ -632,7 +630,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
         for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
             for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
                 for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-
                     double dose = 0.0;
 					bool voxel_debug = false;
 
@@ -700,7 +697,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 			if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
 			{
 				printf("Dose normalized to the dose reference point.\n");
-				dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp); // if no normalization dose, norm_dose = 1 by default
+				dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp, beam); // if no normalization dose, norm_dose = 1 by default
 				if (this->get_have_dose_norm())
 				{
 					printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
@@ -714,7 +711,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 			else
 			{
 				printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
-				dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose());
+				dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam);
 				if (this->get_have_dose_norm())
 				{
 					printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
@@ -728,7 +725,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 		}
 		else // case 2: no red dose point defined
 		{				
-			dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose()); // normalization_dose = 1 if no dose_prescription is set
+			dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam); // normalization_dose = 1 if no dose_prescription is set
 			if (this->get_have_dose_norm())
 			{
 				printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
@@ -755,7 +752,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
     printf ("Sigma conversion: %f seconds\n", time_sigma_conv);
     printf ("Dose calculation: %f seconds\n", time_dose_calc);
     printf ("Dose reformat: %f seconds\n", time_dose_reformat);
-    printf ("Dose overhead: %f seconds\n", time_dose_misc);
+    printf ("Dose overhead: %f seconds\n", time_dose_misc); fflush(stdout);
 }
 
 Plm_return_code
@@ -797,7 +794,6 @@ Rt_plan::compute_plan ()
         if (!this->prepare_beam_for_calc (beam)) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-
 		/* Compute beam modifiers, SOBP etc. according to the teatment strategy */
 		beam->compute_prerequisites_beam_tools(this->get_target());
 		/*
@@ -904,7 +900,7 @@ Rt_plan::compute_plan ()
 			beam->get_mebs()->export_spot_map_as_txt(beam->get_aperture());
 		}
 
-        float* beam_dose_img = (float*) d_ptr->beam_storage[i]->get_dose()->get_volume()->img;
+    float* beam_dose_img = (float*) d_ptr->beam_storage[i]->get_dose()->get_volume()->img;
 
         /* Dose cumulation to the plan dose volume */
         for (int j = 0; j < dim[0] * dim[1] * dim[2]; j++)
@@ -912,30 +908,6 @@ Rt_plan::compute_plan ()
             total_dose_img[j] += beam_dose_img[j];
         }
     }
-
-	/* normalization of the dose volume to 1 at the max if no dose reference point is set */
-	if (this->get_non_norm_dose() != 'y')
-	{
-		if (!this->get_have_ref_dose_point())
-		{
-			if (this->get_have_dose_norm())
-			{
-				printf("No reference dose point.\n");
-				dose_normalization_to_dose(dose_vol, this->get_normalization_dose());
-				printf("%lg Gy.\nBeam weights are accounted\n", this->get_normalization_dose());
-			}
-			else
-			{
-				printf("No reference dose point and no dose prescription.\n");
-				dose_normalization_to_dose(dose_vol, 100);
-				printf("100%% on the total dose volume.\n Beam weights are accounted.\n");
-			}
-		}
-	}
-	else 
-	{
-		printf("Raw dose computed, the dose is not normalized.\nOnly the beam weights are considered.\n");
-	}
 
     /* Save dose output */
     Plm_image::Pointer dose = Plm_image::New();

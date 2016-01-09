@@ -179,6 +179,7 @@ Rt_depth_dose::generate ()
 
 	float max_prep = -1;
 	float depth = -1;
+  if (this->E0 > 190) {depth = 240;} // To accelerate the process and avoid the region where the dose decreases in the first mm (mathematic model) when E>190...
 	float bragg = 0;
 	while (bragg > max_prep)
 	{

@@ -1275,10 +1275,18 @@ Rt_mebs::generate_part_num_from_weight(int* ap_dim)
     {
         for (int j = 0; j < ap_dim[0] * ap_dim[1]; j++)
         {
-            //idx = ap_dim[0] * ap_dim[1] * i + j;
             d_ptr->num_particles.push_back(d_ptr->depth_dose_weight[i]);
-            //printf("%d ", d_ptr->num_particles[idx]);
+
         }
+    }
+}
+
+void 
+Rt_mebs::scale_num_part(double A, int* ap_dim)
+{
+    for (int i = 0; i < (int) d_ptr->energy_number * ap_dim[0] * ap_dim[1]; i++)
+    {
+        d_ptr->num_particles[i] = d_ptr->num_particles[i] * A;
     }
 }
 
@@ -1603,8 +1611,8 @@ Rt_mebs::get_optimized_peaks(float dmin, float dmax, std::vector<float>* weight_
             e_lut_tmp[j] += (*weight_tmp)[i] *  (*depth_dose_tmp)[i]->e_lut[j];
         }
     }
-
-    for (int k = 0; k < 10; k++)
+    
+    for (int k = 0; k < 40; k++)
     {
         for (int i = i0; i <= imax; i++)
         {
@@ -1682,3 +1690,4 @@ Rt_mebs::export_spot_map_as_txt(Aperture::Pointer ap)
     }
     fichier.close();
 }
+

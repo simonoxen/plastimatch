@@ -5,6 +5,7 @@
 #define _dose_volume_functions_h_
 
 #include "rpl_volume.h"
+#include "rt_beam.h"
 #include "volume.h"
 
 void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range);
@@ -25,7 +26,7 @@ double double_gaussian_interpolation(double* gaussian_center, double* pixel_cent
 
 double get_off_axis(double radius, double dr, double sigma);
 
-void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose);
-void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp);
+void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_beam* beam);
+void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Rt_beam* beam);
 
 #endif
