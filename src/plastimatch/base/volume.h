@@ -79,12 +79,19 @@ public:
     );
     ~Volume ();
 public:
+    /*! \brief Return a linear index to a voxel */
     plm_long index (plm_long i, plm_long j, plm_long k) {
         return volume_index (this->dim, i, j, k);
     }
+    /*! \brief Return a linear index to a voxel */
     plm_long index (plm_long ijk[3]) {
         return volume_index (this->dim, ijk);
     }
+    /*! \brief Return a world coordinates of a voxel */
+    void coords (float coords[3], const plm_long ijk[3]) {
+        VOXEL_COORDS (coords, ijk, this->origin, this->step);
+    }
+    /*! \brief Initialize and allocate memory for the image */
     void create (
         const plm_long new_dim[3], 
         const float origin[3], 
@@ -93,6 +100,7 @@ public:
         enum Volume_pixel_type vox_type, 
         int vox_planes = 1
     );
+    /*! \brief Initialize and allocate memory for the image */
     void create (
         const Volume_header& vh, 
         enum Volume_pixel_type vox_type, 
@@ -177,6 +185,11 @@ public:
 
     /*! \brief Return true if continuous index ijk is inside volume */
     bool is_inside (const float ijk[3]) const;
+
+    /*! \brief Move the origin to the coordinate at a given index.
+      This is used to correct itk images which have a non-zero 
+      region index. */
+    void move_origin_to_idx (const plm_long ijk[3]);
 
     /*! \brief In-place (destructive) scaling of the image according to the 
       supplied scale factor */

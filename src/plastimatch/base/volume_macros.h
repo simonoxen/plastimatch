@@ -79,4 +79,20 @@ index_in_volume (const plm_long dims[3], const plm_long ijk[3])
 #define PROJECT_X(xyz,proj)                                             \
     (xyz[0] * proj[0*3+0] + xyz[1] * proj[0*3+1] + xyz[2] * proj[0*3+2])
 
+#define VOXEL_COORDS(xyz, ijk, origin, step)                            \
+    do {                                                                \
+        xyz[0] = origin[0]                                              \
+            + ijk[0]*step[3*0+0]                                        \
+            + ijk[1]*step[3*0+1]                                        \
+            + ijk[2]*step[3*0+2];                                       \
+        xyz[1] = origin[1]                                              \
+            + ijk[0]*step[3*1+0]                                        \
+            + ijk[1]*step[3*1+1]                                        \
+            + ijk[2]*step[3*1+2];                                       \
+        xyz[2] = origin[2]                                              \
+            + ijk[0]*step[3*2+0]                                        \
+            + ijk[1]*step[3*2+1]                                        \
+            + ijk[2]*step[3*2+2];                                       \
+    } while (0);
+
 #endif

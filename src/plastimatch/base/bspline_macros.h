@@ -172,7 +172,7 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
     } while (0);
 
 
-/* Get real-space coordinates from a set of volume coordinates */
+/* Get real-space coordinates from a set of volume indices */
 #define GET_REAL_SPACE_COORDS(xyz_vol, ijk_vol, bxf)			\
     do {								\
 	xyz_vol[0] = bxf->img_origin[0] + bxf->img_spacing[0] * ijk_vol[0]; \
@@ -180,22 +180,8 @@ get_region_offset (plm_long i, plm_long j, plm_long k, const Bspline_xform *bxf)
 	xyz_vol[2] = bxf->img_origin[2] + bxf->img_spacing[2] * ijk_vol[2]; \
     } while (0);
 
-
-/* Direction cosines - IJK to XYZ */
+/* Get real-space coordinates from a set of volume indices */
 #define GET_WORLD_COORDS(xyz_vol, ijk_vol, vol, bxf)                    \
-    do {                                                                \
-        xyz_vol[0] = bxf->img_origin[0]                                 \
-            + ijk_vol[0]*vol->step[3*0+0]                               \
-            + ijk_vol[1]*vol->step[3*0+1]                               \
-            + ijk_vol[2]*vol->step[3*0+2];                              \
-        xyz_vol[1] = bxf->img_origin[1]                                 \
-            + ijk_vol[0]*vol->step[3*1+0]                               \
-            + ijk_vol[1]*vol->step[3*1+1]                               \
-            + ijk_vol[2]*vol->step[3*1+2];                              \
-        xyz_vol[2] = bxf->img_origin[2]                                 \
-            + ijk_vol[0]*vol->step[3*2+0]                               \
-            + ijk_vol[1]*vol->step[3*2+1]                               \
-            + ijk_vol[2]*vol->step[3*2+2];                              \
-    } while (0);
+        VOXEL_COORDS (xyz_vol, ijk_vol, bxf->img_origin, vol->step)
 
 #endif /* _bspline_macros_h_ */

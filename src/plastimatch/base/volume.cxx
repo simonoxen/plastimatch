@@ -845,6 +845,14 @@ Volume::is_inside (const float ijk[3]) const
 }
 
 void
+Volume::move_origin_to_idx (const plm_long ijk[3])
+{
+    float new_origin[3];
+    this->coords (new_origin, ijk);
+    this->set_origin (new_origin);
+}
+
+void
 Volume::scale_inplace (float scale)
 {
     float *img;

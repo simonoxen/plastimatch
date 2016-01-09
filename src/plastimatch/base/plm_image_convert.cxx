@@ -77,14 +77,17 @@ Plm_image::convert_itk_to_gpuit (T img)
     typename ImageType::SpacingType sp = img->GetSpacing();
     typename ImageType::SizeType sz = rg.GetSize();
     typename ImageType::DirectionType dc = img->GetDirection();
+    typename ImageType::IndexType rgi = rg.GetIndex();
 
     /* Copy header & allocate data for gpuit float */
     plm_long dim[3];
+    plm_long rgidx[3];
     float origin[3];
     float spacing[3];
     float direction_cosines[9];
     for (d1 = 0; d1 < 3; d1++) {
         dim[d1] = sz[d1];
+        rgidx[d1] = rgi[d1];
         origin[d1] = og[d1];
         spacing[d1] = sp[d1];
     }
@@ -113,6 +116,9 @@ Plm_image::convert_itk_to_gpuit (T img)
     Volume* vol = new Volume (dim, origin, spacing, direction_cosines, 
         pix_type, 1);
     U *vol_img = (U*) vol->img;
+
+    /* Fix itk images with non-zero region indices */
+    vol->move_origin_to_idx (rgidx);
 
     /* Copy data into gpuit */
     typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
