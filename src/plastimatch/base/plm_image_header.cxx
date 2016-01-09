@@ -54,6 +54,7 @@ Plm_image_header::Plm_image_header (
     const RegionType& region, const OriginType& origin,
     const SpacingType& spacing, const DirectionType& direction)
 {
+    d_ptr = new Plm_image_header_private;
     this->set (region, origin,spacing, direction);
 }
 
