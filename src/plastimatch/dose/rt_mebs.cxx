@@ -1033,7 +1033,7 @@ Rt_mebs::get_depth_dose()
     return d_ptr->depth_dose;
 }
 
-std::vector<float> 
+std::vector<float>& 
 Rt_mebs::get_num_particles()
 {
     return d_ptr->num_particles;

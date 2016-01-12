@@ -104,7 +104,7 @@ public:
     void set_photon_energy(float energy);
     float get_photon_energy();
     std::vector<Rt_depth_dose*> get_depth_dose();
-    std::vector<float> get_num_particles();
+    std::vector<float>& get_num_particles();
     void set_prescription(float prescription_min, float prescription_max);
     void set_have_prescription(bool have_prescription);
     bool get_have_prescription();

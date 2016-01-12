@@ -273,23 +273,23 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_bea
 /* MD Fix: don't consider any cosines directions */
 void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Rt_beam* beam)
 {
-  std::vector<float>* num_part = &beam->get_mebs()->get_num_particles();
-	double norm = dose_volume->get_ijk_value(rdp_ijk);
-	float* img = (float*) dose_volume->img;
+    std::vector<float>& num_part = beam->get_mebs()->get_num_particles();
+    double norm = dose_volume->get_ijk_value(rdp_ijk);
+    float* img = (float*) dose_volume->img;
 
-	if (norm > 0)
-	{
-		for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
-		{
-			img[i] = img[i] / norm * dose;
-		}
-    int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
-    beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
-		printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
-	}
-	else
-	{
-		printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
-		dose_normalization_to_dose(dose_volume, dose,beam);
-	}
+    if (norm > 0)
+    {
+        for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
+        {
+            img[i] = img[i] / norm * dose;
+        }
+        int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+        beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
+        printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
+    }
+    else
+    {
+        printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
+        dose_normalization_to_dose(dose_volume, dose,beam);
+    }
 }
