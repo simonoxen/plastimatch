@@ -1483,7 +1483,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol,
 }
 
 void
-Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing, const float* origin, const float* spacing, const plm_long* vol_dim)
+Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing)
 {
     int dim[2] = {rpl_vol->get_aperture()->get_dim()[0], rpl_vol->get_aperture()->get_dim()[1]};
 
@@ -1492,7 +1492,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
     std::vector <double> dmax;
     float min = 0;
     float max = 0;
-    rpl_vol->compute_beam_modifiers_core_slicerRt(target, true, smearing, d_ptr->proximal_margin, d_ptr->distal_margin, dmin, dmax, origin, spacing, vol_dim);
+    rpl_vol->compute_beam_modifiers_core_slicerRt(target, true, smearing, d_ptr->proximal_margin, d_ptr->distal_margin, dmin, dmax);
 
     /* Sanity check */
     if (dmin.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 

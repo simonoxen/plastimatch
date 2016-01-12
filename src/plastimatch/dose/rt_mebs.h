@@ -144,7 +144,7 @@ public:
     void generate_part_num_from_weight(int* ap_dim);
     void extract_particle_number_map_from_txt(Aperture::Pointer& ap);
     void compute_particle_number_matrix_from_target_active(Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing);
-    void compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing, const float* origin, const float* spacing, const plm_long* vol_dim);
+    void compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing);
 
     void export_spot_map_as_txt(Aperture::Pointer ap);
 };

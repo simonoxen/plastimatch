@@ -2121,12 +2121,12 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
 }
 
 void
-Rpl_volume::compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max, const float* origin, const float* spacing, const plm_long* dim)
+Rpl_volume::compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
     printf("Compute target distance limits...\n");
 
     /* compute the target min and max distance (not wed!) map in the aperture */
-    compute_target_distance_limits_slicerRt(plmTgt, map_wed_min, map_wed_max, origin, spacing, dim);
+    compute_target_distance_limits_slicerRt(plmTgt, map_wed_min, map_wed_max);
 
     printf("Apply smearing to the target...\n");
     /* widen the min/max distance maps */
@@ -2334,7 +2334,7 @@ Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double>
 }
 
 void
-Rpl_volume::compute_target_distance_limits_slicerRt(Plm_image::Pointer& plmTgt, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance, const float* origin, const float* spacing, const plm_long* dim)
+Rpl_volume::compute_target_distance_limits_slicerRt(Plm_image::Pointer& plmTgt, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance)
 {
     double threshold = .2;  //theshold for interpolated, segmented volume
     d_ptr->aperture->allocate_aperture_images();
@@ -2364,13 +2364,11 @@ Rpl_volume::compute_target_distance_limits_slicerRt(Plm_image::Pointer& plmTgt, 
     //Interpolated seg_volume value
     double interp_seg_value;
 
-    printf ("MD dim = %d,%d,%d\n", dim[0], dim[1], dim[2]);
     printf ("tgt dim = %d,%d,%d\n", plmTgt->dim(0), plmTgt->dim(1), plmTgt->dim(2));
-    printf ("MD origin = %g,%g,%g\n", origin[0], origin[1], origin[2]);
     printf ("tgt origin = %g,%g,%g\n", plmTgt->origin(0), plmTgt->origin(1), plmTgt->origin(2));
-    printf ("MD spacing = %g,%g,%g\n", spacing[0], spacing[1], spacing[2]);
     printf ("tgt spacing = %g,%g,%g\n", plmTgt->spacing(0), plmTgt->spacing(1), plmTgt->spacing(2));
     fflush (stdout);
+    plm_long dim[3] = {(plm_long) plmTgt->dim(0), (plm_long) plmTgt->dim(1), (plm_long) plmTgt->dim(2)};
 
     double previous_depth; //previous wed depth
     bool intersect_seg; //boolean that checks whether or not ray intersects with seg. volume
@@ -2402,24 +2400,24 @@ Rpl_volume::compute_target_distance_limits_slicerRt(Plm_image::Pointer& plmTgt, 
                 vec3_add2(seg_long_ray, seg_ray->ray);
             }
 
-            final_index[0] = (seg_long_ray[0] - origin[0])/spacing[0];
-            final_index[1] = (seg_long_ray[1] - origin[1])/spacing[1];
-            final_index[2] = (seg_long_ray[2] - origin[2])/spacing[2];
-            if (final_index[0] < 0 || final_index[0] > (float) dim[0] || final_index[1] < 0 || final_index[1] > (float) dim[1] || final_index[2] < 0 || final_index[2] > (float) dim[2])
+            final_index[0] = (seg_long_ray[0] - plmTgt->origin(0))/plmTgt->spacing(0);
+            final_index[1] = (seg_long_ray[1] - plmTgt->origin(1))/plmTgt->spacing(1);
+            final_index[2] = (seg_long_ray[2] - plmTgt->origin(2))/plmTgt->spacing(2);
+            if (final_index[0] < 0 || final_index[0] > (float) plmTgt->dim(0) || final_index[1] < 0 || final_index[1] > (float) plmTgt->dim(1) || final_index[2] < 0 || final_index[2] > (float) plmTgt->dim(2))
             {
                 interp_seg_value = 0;
             }
             else
             {
                 /* Li_clamp_3D */
-                li_clamp (final_index[0], dim[0]-1, &ijk_floor[0], &ijk_round[0], &li_1[0], &li_2[0]);
-                li_clamp (final_index[1], dim[1]-1, &ijk_floor[1], &ijk_round[1], &li_1[1], &li_2[1]);
-                li_clamp (final_index[2], dim[2]-1, &ijk_floor[2], &ijk_round[2], &li_1[2], &li_2[2]);
+                li_clamp (final_index[0], plmTgt->dim(0)-1, &ijk_floor[0], &ijk_round[0], &li_1[0], &li_2[0]);
+                li_clamp (final_index[1], plmTgt->dim(1)-1, &ijk_floor[1], &ijk_round[1], &li_1[1], &li_2[1]);
+                li_clamp (final_index[2], plmTgt->dim(2)-1, &ijk_floor[2], &ijk_round[2], &li_1[2], &li_2[2]);
 			
                 idx_floor = volume_index (dim, ijk_floor);
 
                 /* li_value for Volume* */
-                A = li_1[0] * li_1[1] * li_1[2] * (double) seg_img[idx_floor];
+                A = li_1[0] * li_1[1] * li_1[2] * (double)seg_img[idx_floor];
                 B = li_2[0] * li_1[1] * li_1[2] * (double)seg_img[idx_floor+1];
                 C = li_1[0] * li_2[1] * li_1[2] * (double)seg_img[idx_floor+dim[0] ];
                 D = li_2[0] * li_2[1] * li_1[2] * (double)seg_img[idx_floor+dim[0]+1];
