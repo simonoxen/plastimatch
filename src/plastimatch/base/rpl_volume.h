@@ -95,6 +95,7 @@ public:
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol);
     void compute_beam_modifiers_active_scanning (Volume *seg_vol);
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
+    void compute_beam_modifiers_passive_scattering_slicerRt(Plm_image::Pointer& plmTgt, float smearing, float proximal_margin, float distal_margin);
     void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
     void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps

@@ -412,6 +412,19 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 }
 
 void
+Rt_beam::compute_beam_data_from_manual_peaks_passive_slicerRt(Plm_image::Pointer& target)
+{
+    /* The spot map will be identical for passive or scanning beam lines */
+    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    this->get_mebs()->generate_part_num_from_weight(ap_dim);
+
+    this->rpl_vol->compute_beam_modifiers_passive_scattering_slicerRt(target, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+    
+    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
+    this->update_aperture_and_range_compensator();
+}
+
+void
 Rt_beam::compute_beam_data_from_manual_peaks()
 {
     /* The spot map will be identical for passive or scanning beam lines */

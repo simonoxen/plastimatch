@@ -1554,6 +1554,15 @@ Rpl_volume::compute_beam_modifiers_passive_scattering (Volume *seg_vol, float sm
 }
 
 void 
+Rpl_volume::compute_beam_modifiers_passive_scattering_slicerRt (Plm_image::Pointer& plmTgt, float smearing, float proximal_margin, float distal_margin)
+{
+    std::vector<double> min;
+    std::vector<double> max;
+    compute_beam_modifiers_core_slicerRt (plmTgt, false, smearing, proximal_margin, distal_margin, min, max);
+    return;
+}
+
+void 
 Rpl_volume::compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin)
 {
     std::vector<double> min;
