@@ -20,6 +20,7 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "ray_trace.h"
+#include "string_util.h"
 #include "threading.h"
 #include "volume.h"
 
@@ -103,7 +104,7 @@ create_matrix_and_drr (
 {
     char mat_fn[256];
     char img_fn[256];
-    char multispectral_fn[256];
+    std::string details_fn;
     Proj_matrix *pmat = proj->pmat;
     double vup[3] = {
 	options->vup[0],
@@ -141,7 +142,11 @@ create_matrix_and_drr (
     } else {
 	sprintf (img_fn, "%s%04d.raw", options->output_prefix, a);
     }
-    sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
+
+    if (options->output_details_prefix != "") {
+        options->output_details_fn = string_format ("%s%04d.txt",
+            options->output_details_prefix.c_str(), a);
+    }
 
     if (options->geometry_only) {
 	proj_image_save (proj, 0, mat_fn);

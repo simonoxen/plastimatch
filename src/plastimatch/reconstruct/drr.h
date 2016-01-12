@@ -55,11 +55,16 @@ public:
     int exponential_mapping;
     int output_format;
     bool preprocess_attenuation;
-    std::string output_details_fn;
     Drr_algorithm algorithm;
     char* input_file;
     int geometry_only;
     char* output_prefix;
+
+    /* The option specified by the user goes in output_details_prefix, 
+       and the individual filename for a specific angle goes in 
+       output_details_fn */
+    std::string output_details_prefix;
+    std::string output_details_fn;
 };
 PLMRECONSTRUCT_C_API void drr_render_volume_perspective (
     Proj_image *proj,

@@ -32,7 +32,7 @@ print_usage (void)
 	" -z \"s1 s2\"        Set the physical size of imager (in mm)\n"
 	" -w \"r1 r2 c1 c2\"  Only produce image for pixes in window (in pix)\n"
 	" -t outformat      Select output format: pgm, pfm or raw\n"
-	" -S outfile        Output ray tracing details\n"
+	" -S outprefix      Output ray tracing details\n"
 	//" -S                Output multispectral output files\n"
 	//" -i algorithm      Choose algorithm {exact,uniform,tri_exact,tri_approx}\n"
 	" -i algorithm      Choose algorithm {exact,uniform}\n"
@@ -79,6 +79,7 @@ drr_opts_init (Drr_options* options)
     options->exponential_mapping = 0;
     options->output_format= OUTPUT_FORMAT_PFM;
     options->preprocess_attenuation = true;
+    options->output_details_prefix = "";
     options->output_details_fn = "";
     options->algorithm = DRR_ALGORITHM_EXACT;
     options->input_file = 0;
@@ -297,7 +298,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-S")) {
 	    if (++i >= argc) { print_usage(); }
-	    options->output_details_fn = argv[i];
+	    options->output_details_prefix = argv[i];
 	}
 	else if (!strcmp (argv[i], "-e")) {
 	    options->exponential_mapping = 1;
