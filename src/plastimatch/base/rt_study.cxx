@@ -249,6 +249,10 @@ Rt_study::load_xio (const char *xio_dir)
             d_ptr->m_drs->set_study_metadata (0x0010, 0x0020, 
                 demographic.m_patient_id);
         }
+        if (demographic.m_import_date != "") {
+            d_ptr->m_drs->set_study_date (demographic.m_import_date);
+            d_ptr->m_drs->set_study_time ("");
+        }
     }
 
     /* If referenced DICOM CT is provided,  the coordinates will be

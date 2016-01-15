@@ -23,11 +23,14 @@ Xio_demographic::Xio_demographic (const char *filename)
     std::string version;
     getline (ifs, version);
 
-    /* date (for what?) */
-    std::string date;
-    getline (ifs, date);
-
     /* important stuff here */
+    getline (ifs, m_import_date);
+    m_import_date = string_trim (m_import_date);
+    if (m_import_date.length() >= 8) {
+        m_import_date = m_import_date.substr(0,8);
+    } else {
+        m_import_date = "";
+    }
     getline (ifs, m_patient_name);
     m_patient_name = string_trim (m_patient_name);
     getline (ifs, m_patient_id);
