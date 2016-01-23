@@ -42,19 +42,13 @@ public:
     plm_long* qidx_lut;          /* Lookup volume for region offset */
     float* q_lut;                /* Lookup table for influence multipliers */
 
-    /* Non-aligned grid (1D) LUTs */
+    /* Aligned grid (1D) LUTs */
     float *bx_lut;               /* LUT for influence multiplier in x dir */
     float *by_lut;               /* LUT for influence multiplier in y dir */
     float *bz_lut;               /* LUT for influence multiplier in z dir */
 
 public:
-    void fill_coefficients (float val);
-    void get_volume_header (Volume_header *vh);
-};
-
-//PLMBASE_C_API void bspline_xform_set_default (Bspline_xform* bxf);
-PLMBASE_C_API void bspline_xform_initialize (
-        Bspline_xform* bxf,	          /* Output: bxf is initialized */
+    void initialize (
         float img_origin[3],          /* Image origin (in mm) */
         float img_spacing[3],         /* Image spacing (in mm) */
         plm_long img_dim[3],          /* Image size (in vox) */
@@ -62,11 +56,13 @@ PLMBASE_C_API void bspline_xform_initialize (
         plm_long roi_dim[3],	      /* Dimension of ROI (in vox) */
         plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
         float direction_cosines[9]    /* Direction cosines */
-);
-//PLMBASE_C_API void bspline_xform_free (Bspline_xform* bxf);
+    );
+    void save (const char* filename);
+    void fill_coefficients (float val);
+    void get_volume_header (Volume_header *vh);
+};
+
 PLMBASE_C_API Bspline_xform* bspline_xform_load (const char* filename);
-PLMBASE_C_API void bspline_xform_save (Bspline_xform* bxf, const char* filename);
-PLMBASE_C_API void bspline_set_coefficients (Bspline_xform* bxf, float val);
 
 /* Debugging routines */
 PLMBASE_C_API void bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);

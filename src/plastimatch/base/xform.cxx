@@ -553,7 +553,7 @@ Xform::save (const char* fn)
         itk_image_save (this->get_itk_vf(), fn);
         break;
     case XFORM_GPUIT_BSPLINE:
-        bspline_xform_save (this->get_gpuit_bsp(), fn);
+        this->get_gpuit_bsp()->save(fn);
         break;
     case XFORM_GPUIT_VECTOR_FIELD:
         this->save_gpuit_vf (fn);
@@ -1425,7 +1425,7 @@ create_gpuit_bxf (Plm_image_header* pih, const float* grid_spac)
             vox_per_rgn[d] = 4;
         }
     }
-    bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim, 
+    bxf->initialize (img_origin, img_spacing, img_dim, 
         roi_offset, roi_dim, vox_per_rgn, direction_cosines);
     return bxf;
 }

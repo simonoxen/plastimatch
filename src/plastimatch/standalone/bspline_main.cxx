@@ -88,8 +88,7 @@ main (int argc, char* argv[])
         }
     } else {
         bxf = new Bspline_xform;
-        bspline_xform_initialize (
-            bxf,
+        bxf->initialize (
             fixed->origin,
             fixed->spacing,
             fixed->dim,
@@ -107,7 +106,7 @@ main (int argc, char* argv[])
 
     /* Save output transform */
     if (options.output_xf_fn) {
-        bspline_xform_save (bxf, options.output_xf_fn);
+        bxf->save (options.output_xf_fn);
     }
 
     /* Create vector field from bspline coefficients and save */

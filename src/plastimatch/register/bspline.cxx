@@ -202,7 +202,7 @@ bspline_save_debug_state (
         sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
             parms->debug_stage, bst->it, bst->feval);
         fn = parms->debug_dir + "/" + buf;
-        bspline_xform_save (bxf, fn.c_str());
+        bxf->save (fn.c_str());
 
         if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
             sprintf (buf, "%02d_", parms->debug_stage);

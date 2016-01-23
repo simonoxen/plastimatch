@@ -114,8 +114,7 @@ check_gradient (
         bxf = bspline_xform_load (options->input_xf_fn.c_str());
     } else {
         bxf = new Bspline_xform;
-        bspline_xform_initialize (
-            bxf,
+        bxf->initialize (
             fixed->origin,
             fixed->spacing,
             fixed->dim,

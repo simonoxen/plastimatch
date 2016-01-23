@@ -101,7 +101,7 @@ bspline_basis_eval (
 }
 
 void
-bspline_xform_save (Bspline_xform* bxf, const char* filename)
+Bspline_xform::save (const char* filename)
 {
     FILE* fp;
 
@@ -111,23 +111,23 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
 
     fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
     fprintf (fp, "img_origin = %f %f %f\n", 
-        bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
+        this->img_origin[0], this->img_origin[1], this->img_origin[2]);
     fprintf (fp, "img_spacing = %f %f %f\n", 
-        bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
+        this->img_spacing[0], this->img_spacing[1], this->img_spacing[2]);
     fprintf (fp, "img_dim = %u %u %u\n", 
-        (unsigned int) bxf->img_dim[0], (unsigned int) bxf->img_dim[1], 
-        (unsigned int) bxf->img_dim[2]);
+        (unsigned int) this->img_dim[0], (unsigned int) this->img_dim[1], 
+        (unsigned int) this->img_dim[2]);
     fprintf (fp, "roi_offset = %d %d %d\n", 
-        (unsigned int) bxf->roi_offset[0], (unsigned int) bxf->roi_offset[1], 
-        (unsigned int) bxf->roi_offset[2]);
+        (unsigned int) this->roi_offset[0], (unsigned int) this->roi_offset[1], 
+        (unsigned int) this->roi_offset[2]);
     fprintf (fp, "roi_dim = %d %d %d\n", 
-        (unsigned int) bxf->roi_dim[0], (unsigned int) bxf->roi_dim[1], 
-        (unsigned int) bxf->roi_dim[2]);
+        (unsigned int) this->roi_dim[0], (unsigned int) this->roi_dim[1], 
+        (unsigned int) this->roi_dim[2]);
     fprintf (fp, "vox_per_rgn = %d %d %d\n", 
-        (unsigned int) bxf->vox_per_rgn[0], 
-        (unsigned int) bxf->vox_per_rgn[1], 
-        (unsigned int) bxf->vox_per_rgn[2]);
-    float *direction_cosines = bxf->dc.get_matrix ();
+        (unsigned int) this->vox_per_rgn[0], 
+        (unsigned int) this->vox_per_rgn[1], 
+        (unsigned int) this->vox_per_rgn[2]);
+    float *direction_cosines = this->dc.get_matrix ();
     fprintf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n", 
         direction_cosines[0], 
         direction_cosines[1], 
@@ -142,9 +142,8 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
 
     /* This dumps in itk-like planar format */
     for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < bxf->num_coeff / 3; j++) {
-            //fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
-            fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
+        for (int j = 0; j < this->num_coeff / 3; j++) {
+            fprintf (fp, "%.20f\n", this->coeff[j*3 + i]);
         }
     }           
 
@@ -242,7 +241,7 @@ bspline_xform_load (const char* filename)
     
 
     /* Allocate memory and build LUTs */
-    bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim,
+    bxf->initialize (img_origin, img_spacing, img_dim,
         roi_offset, roi_dim, vox_per_rgn, dc);
 
     /* This loads from itk-like planar format */
@@ -347,9 +346,8 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
 }
 
 void
-bspline_xform_initialize 
+Bspline_xform::initialize 
 (
-    Bspline_xform* bxf,           /* Output: bxf is initialized */
     float img_origin[3],          /* Image origin (in mm) */
     float img_spacing[3],         /* Image spacing (in mm) */
     plm_long img_dim[3],          /* Image size (in vox) */
@@ -366,50 +364,50 @@ bspline_xform_initialize
 
     logfile_printf ("bspline_xform_initialize\n");
 
-    bxf->dc.set (direction_cosines);
+    this->dc.set (direction_cosines);
     for (d = 0; d < 3; d++) {
         /* copy input parameters over */
-        bxf->img_origin[d] = img_origin[d];
-        bxf->img_spacing[d] = img_spacing[d];
-        bxf->img_dim[d] = img_dim[d];
-        bxf->roi_offset[d] = roi_offset[d];
-        bxf->roi_dim[d] = roi_dim[d];
-        bxf->vox_per_rgn[d] = vox_per_rgn[d];
+        this->img_origin[d] = img_origin[d];
+        this->img_spacing[d] = img_spacing[d];
+        this->img_dim[d] = img_dim[d];
+        this->roi_offset[d] = roi_offset[d];
+        this->roi_dim[d] = roi_dim[d];
+        this->vox_per_rgn[d] = vox_per_rgn[d];
 
         /* grid spacing is in mm */
-        bxf->grid_spac[d] = bxf->vox_per_rgn[d] * fabs (bxf->img_spacing[d]);
+        this->grid_spac[d] = this->vox_per_rgn[d] * fabs (this->img_spacing[d]);
 
         /* rdims is the number of regions */
-        bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
+        this->rdims[d] = 1 + (this->roi_dim[d] - 1) / this->vox_per_rgn[d];
 
         /* cdims is the number of control points */
-        bxf->cdims[d] = 3 + bxf->rdims[d];
+        this->cdims[d] = 3 + this->rdims[d];
     }
 
     /* total number of control points & coefficients */
-    bxf->num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
-    bxf->num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
+    this->num_knots = this->cdims[0] * this->cdims[1] * this->cdims[2];
+    this->num_coeff = this->cdims[0] * this->cdims[1] * this->cdims[2] * 3;
 
     /* Allocate coefficients */
-    bxf->coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
-    memset (bxf->coeff, 0, sizeof(float) * bxf->num_coeff);
+    this->coeff = (float*) malloc (sizeof(float) * this->num_coeff);
+    memset (this->coeff, 0, sizeof(float) * this->num_coeff);
 
     /* Create q_lut */
-    bxf->q_lut = (float*) malloc (sizeof(float) 
-        * bxf->vox_per_rgn[0] 
-        * bxf->vox_per_rgn[1] 
-        * bxf->vox_per_rgn[2] 
+    this->q_lut = (float*) malloc (sizeof(float) 
+        * this->vox_per_rgn[0] 
+        * this->vox_per_rgn[1] 
+        * this->vox_per_rgn[2] 
         * 64);
-    if (!bxf->q_lut) {
+    if (!this->q_lut) {
         print_and_exit ("Error allocating memory for q_lut\n");
     }
 
-    A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
-    B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
-    C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
+    A = (float*) malloc (sizeof(float) * this->vox_per_rgn[0] * 4);
+    B = (float*) malloc (sizeof(float) * this->vox_per_rgn[1] * 4);
+    C = (float*) malloc (sizeof(float) * this->vox_per_rgn[2] * 4);
 
-    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-        float ii = ((float) i) / bxf->vox_per_rgn[0];
+    for (i = 0; i < this->vox_per_rgn[0]; i++) {
+        float ii = ((float) i) / this->vox_per_rgn[0];
         float t3 = ii*ii*ii;
         float t2 = ii*ii;
         float t1 = ii;
@@ -419,8 +417,8 @@ bspline_xform_initialize
         A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
-    for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-        float jj = ((float) j) / bxf->vox_per_rgn[1];
+    for (j = 0; j < this->vox_per_rgn[1]; j++) {
+        float jj = ((float) j) / this->vox_per_rgn[1];
         float t3 = jj*jj*jj;
         float t2 = jj*jj;
         float t1 = jj;
@@ -430,8 +428,8 @@ bspline_xform_initialize
         B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
-    for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-        float kk = ((float) k) / bxf->vox_per_rgn[2];
+    for (k = 0; k < this->vox_per_rgn[2]; k++) {
+        float kk = ((float) k) / this->vox_per_rgn[2];
         float t3 = kk*kk*kk;
         float t2 = kk*kk;
         float t1 = kk;
@@ -442,13 +440,13 @@ bspline_xform_initialize
     }
 
     p = 0;
-    for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-        for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-            for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+    for (k = 0; k < this->vox_per_rgn[2]; k++) {
+        for (j = 0; j < this->vox_per_rgn[1]; j++) {
+            for (i = 0; i < this->vox_per_rgn[0]; i++) {
                 for (tz = 0; tz < 4; tz++) {
                     for (ty = 0; ty < 4; ty++) {
                         for (tx = 0; tx < 4; tx++) {
-                            bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
+                            this->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
                         }
                     }
                 }
@@ -460,21 +458,21 @@ bspline_xform_initialize
     free (A);
         
     /* Create c_lut */
-    bxf->c_lut = (plm_long*) malloc (sizeof(plm_long) 
-        * bxf->rdims[0] 
-        * bxf->rdims[1] 
-        * bxf->rdims[2] 
+    this->c_lut = (plm_long*) malloc (sizeof(plm_long) 
+        * this->rdims[0] 
+        * this->rdims[1] 
+        * this->rdims[2] 
         * 64);
     p = 0;
-    for (k = 0; k < bxf->rdims[2]; k++) {
-        for (j = 0; j < bxf->rdims[1]; j++) {
-            for (i = 0; i < bxf->rdims[0]; i++) {
+    for (k = 0; k < this->rdims[2]; k++) {
+        for (j = 0; j < this->rdims[1]; j++) {
+            for (i = 0; i < this->rdims[0]; i++) {
                 for (tz = 0; tz < 4; tz++) {
                     for (ty = 0; ty < 4; ty++) {
                         for (tx = 0; tx < 4; tx++) {
-                            bxf->c_lut[p++] = 
-                                + (k + tz) * bxf->cdims[0] * bxf->cdims[1]
-                                + (j + ty) * bxf->cdims[0] 
+                            this->c_lut[p++] = 
+                                + (k + tz) * this->cdims[0] * this->cdims[1]
+                                + (j + ty) * this->cdims[0] 
                                 + (i + tx);
                         }
                     }
@@ -484,30 +482,33 @@ bspline_xform_initialize
     }
 
     /* Create b_luts */
-    bxf->bx_lut = (float*)malloc(4*bxf->vox_per_rgn[0]*sizeof(float));
-    bxf->by_lut = (float*)malloc(4*bxf->vox_per_rgn[1]*sizeof(float));
-    bxf->bz_lut = (float*)malloc(4*bxf->vox_per_rgn[2]*sizeof(float));
+    this->bx_lut = (float*)malloc(4*this->vox_per_rgn[0]*sizeof(float));
+    this->by_lut = (float*)malloc(4*this->vox_per_rgn[1]*sizeof(float));
+    this->bz_lut = (float*)malloc(4*this->vox_per_rgn[2]*sizeof(float));
 
     for (int j=0; j<4; j++) {
-        for (int i=0; i<bxf->vox_per_rgn[0]; i++) {
-            bxf->bx_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[0]);
+        for (int i=0; i<this->vox_per_rgn[0]; i++) {
+            this->bx_lut[i*4+j] = bspline_basis_eval (
+                j, i, this->vox_per_rgn[0]);
         }
-        for (int i=0; i<bxf->vox_per_rgn[1]; i++) {
-            bxf->by_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[1]);
+        for (int i=0; i<this->vox_per_rgn[1]; i++) {
+            this->by_lut[i*4+j] = bspline_basis_eval (
+                j, i, this->vox_per_rgn[1]);
         }
-        for (int i=0; i<bxf->vox_per_rgn[2]; i++) {
-            bxf->bz_lut[i*4+j] = bspline_basis_eval (j, i, bxf->vox_per_rgn[2]);
+        for (int i=0; i<this->vox_per_rgn[2]; i++) {
+            this->bz_lut[i*4+j] = bspline_basis_eval (
+                j, i, this->vox_per_rgn[2]);
         }
     }
 
     //dump_luts (bxf);
 
     logfile_printf ("rdims = (%d,%d,%d)\n", 
-        bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
+        this->rdims[0], this->rdims[1], this->rdims[2]);
     logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", 
-        bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+        this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
     logfile_printf ("cdims = (%d %d %d)\n", 
-        bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
+        this->cdims[0], this->cdims[1], this->cdims[2]);
 }
 
 /* -----------------------------------------------------------------------
