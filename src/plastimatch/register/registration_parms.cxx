@@ -537,9 +537,15 @@ Registration_parms::set_key_value (
                 stage->metric_type.push_back (REGISTRATION_METRIC_MSE);
             }
             else if (metric_vec[i] == "mi" || metric_vec[i] == "MI") {
+#if PLM_CONFIG_LEGACY_MI_METRIC
                 stage->metric_type.push_back (REGISTRATION_METRIC_MI_VW);
+#else
+                stage->metric_type.push_back (REGISTRATION_METRIC_MI_MATTES);
+#endif
             }
-            else if (metric_vec[i] == "mi_vw") {
+            else if (metric_vec[i] == "mi_vw"
+                    || metric_vec[i] == "viola-wells")
+            {
                 stage->metric_type.push_back (REGISTRATION_METRIC_MI_VW);
             }
             else if (metric_vec[i] == "nmi" || metric_vec[i] == "NMI") {

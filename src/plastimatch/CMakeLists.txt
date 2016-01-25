@@ -16,12 +16,16 @@ option (PLM_CONFIG_DISABLE_VISCOUS "Disable experimental viscous fluid registrat
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
-option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
-  "Use legacy code for extending b-spline domain" OFF)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
 option (PLM_CONFIG_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VEC images (in development)" ON)
+
+# Plastimatch legacy options
+option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
+  "Use legacy code for extending b-spline domain" OFF)
+option (PLM_CONFIG_LEGACY_MI_METRIC
+  "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries
