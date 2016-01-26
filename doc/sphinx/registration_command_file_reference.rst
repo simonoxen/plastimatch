@@ -74,7 +74,10 @@ as noted below.
      - GLOBAL, STAGE
      - Data type of the output image.  Either “auto” (default), or 
        an image type string: char, uchar, short, ushort, int, uint, 
-       float, or double.
+       float, or double
+   * - logfile
+     - GLOBAL
+     - Filename for output log of registration progress
 
 Stage options
 =============
@@ -281,8 +284,8 @@ specific parameters are available.
      - mse
      - string
      - Cost function metric to be optimized.  
-       The choices are {mse, mi, nmi, mattes} when impl=itk, and {gm, mse, mi} 
-       when impl=plastimatch.
+       The choices are {mse, mi, nmi, mattes, viola-wells} when impl=itk, 
+       and {gm, mse, mi} when impl=plastimatch.
    * - mi_histogram_bins
      - any+any+any
      - 20
