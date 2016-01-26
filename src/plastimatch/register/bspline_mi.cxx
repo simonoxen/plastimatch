@@ -3283,7 +3283,7 @@ bspline_score_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
     Volume* fixed_roi  = parms->fixed_roi;

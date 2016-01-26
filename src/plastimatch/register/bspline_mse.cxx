@@ -45,7 +45,7 @@ bspline_score_normalize (
 {
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
-    Bspline_score* ssd = &bst->ssd;
+    Bspline_score *ssd = &bst->ssd;
 
     const int MIN_VOX = 1;
 
@@ -1009,7 +1009,7 @@ bspline_score_mse (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
     Volume* fixed_roi  = parms->fixed_roi;

@@ -11,13 +11,13 @@ class Bspline_regularize_private;
 class Bspline_score;
 class Bspline_xform;
 
-class Reg_parms
+class Regularization_parms
 {
 public:
     char implementation;    /* Implementation: a, b, c, etc */
     float lambda;           /* Smoothness weighting factor  */
 public:
-    Reg_parms () {
+    Regularization_parms () {
         this->implementation = '\0';
         this->lambda = 0.0f;
     }
@@ -32,7 +32,7 @@ public:
     ~Bspline_regularize ();
 public:
     /* all methods */
-    Reg_parms *reg_parms;
+    Regularization_parms *reg_parms;
     Bspline_xform *bxf;
 
     Volume* fixed;
@@ -59,12 +59,12 @@ public:
     double* cond;
 public:
     void initialize (
-        Reg_parms* reg_parms,
+        Regularization_parms* reg_parms,
         Bspline_xform* bxf
     );
     void compute_score (
         Bspline_score* bsp_score,    /* Gets updated */
-        const Reg_parms* reg_parms,
+        const Regularization_parms* reg_parms,
         const Bspline_xform* bxf
     );
 
@@ -73,7 +73,7 @@ protected:
         const Bspline_xform* bxf);
     void compute_score_numeric (
         Bspline_score *bscore, 
-        const Reg_parms *parms, 
+        const Regularization_parms *parms, 
         const Bspline_regularize *rst,
         const Bspline_xform* bxf);
 
@@ -81,12 +81,12 @@ protected:
         const Bspline_xform* bxf);
     void compute_score_analytic (
         Bspline_score *bspline_score, 
-        const Reg_parms* reg_parms,
+        const Regularization_parms* reg_parms,
         const Bspline_regularize* rst,
         const Bspline_xform* bxf);
     void compute_score_analytic_omp (
         Bspline_score *bspline_score, 
-        const Reg_parms* reg_parms,
+        const Regularization_parms* reg_parms,
         const Bspline_regularize* rst,
         const Bspline_xform* bxf);
 
@@ -113,7 +113,7 @@ protected:
         int derive2);
     void compute_score_semi_analytic (
         Bspline_score *bscore, 
-        const Reg_parms *parms, 
+        const Regularization_parms *parms, 
         const Bspline_regularize *rst,
         const Bspline_xform* bxf);
 };

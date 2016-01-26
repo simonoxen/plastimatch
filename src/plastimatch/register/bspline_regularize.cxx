@@ -66,7 +66,7 @@ Bspline_regularize::~Bspline_regularize ()
 
 void
 Bspline_regularize::initialize (
-    Reg_parms *reg_parms,
+    Regularization_parms *reg_parms,
     Bspline_xform* bxf
 )
 {
@@ -96,7 +96,7 @@ Bspline_regularize::initialize (
 void
 Bspline_regularize::compute_score (
     Bspline_score *bspline_score,    /* Gets updated */
-    const Reg_parms* reg_parms,
+    const Regularization_parms* reg_parms,
     const Bspline_xform* bxf
 )
 {

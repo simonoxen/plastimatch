@@ -80,7 +80,7 @@ Bspline_state::initialize (
     Bspline_xform *bxf,
     Bspline_parms *parms)
 {
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_regularize* rst = &this->rst;
     Bspline_landmarks* blm = parms->blm;
 
@@ -235,7 +235,7 @@ bspline_state_create (
 )
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_regularize* rst = &bst->rst;
     Bspline_landmarks* blm = parms->blm;
 

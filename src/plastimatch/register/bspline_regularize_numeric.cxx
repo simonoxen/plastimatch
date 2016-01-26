@@ -25,7 +25,7 @@
 static void
 compute_score_numeric_internal (
     Bspline_score *bscore, 
-    const Reg_parms *parms, 
+    const Regularization_parms *parms, 
     const Bspline_regularize *rst,
     const Bspline_xform* bxf,
     const Volume* vol
@@ -344,7 +344,7 @@ compute_score_numeric_internal (
 void
 Bspline_regularize::compute_score_numeric (
     Bspline_score *bscore, 
-    const Reg_parms *parms, 
+    const Regularization_parms *parms, 
     const Bspline_regularize *rst,
     const Bspline_xform* bxf)
 {

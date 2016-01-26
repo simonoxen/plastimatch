@@ -413,7 +413,7 @@ update_score_and_grad (
 void
 Bspline_regularize::compute_score_semi_analytic (
     Bspline_score *bscore, 
-    const Reg_parms *parms, 
+    const Regularization_parms *parms, 
     const Bspline_regularize *rst,
     const Bspline_xform* bxf
 )

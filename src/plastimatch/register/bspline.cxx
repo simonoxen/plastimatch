@@ -373,7 +373,7 @@ report_score (
 ) 
 {
     Bspline_score* ssd = &bst->ssd;
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
     int i;
@@ -445,23 +445,33 @@ bspline_score (Bspline_optimize *bod)
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Reg_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
 
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MSE) {
-        bspline_score_mse (bod);
-    }
-    else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
-        bspline_score_mi (bod);
-    }
-    else if (parms->metric_type[0] == REGISTRATION_METRIC_GM) {
-        bspline_score_gm (bod);
-    }
-    else {
-        /* ?? */
+    std::vector<Registration_metric_type>::const_iterator it_metric
+        = parms->metric_type.begin();
+    std::vector<float>::const_iterator it_lambda
+        = parms->metric_lambda.begin();
+    while (it_metric != parms->metric_type.end()
+        && it_lambda != parms->metric_lambda.end())
+    {
+        if (parms->metric_type[0] == REGISTRATION_METRIC_MSE) {
+            bspline_score_mse (bod);
+        }
+        else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+            bspline_score_mi (bod);
+        }
+        else if (parms->metric_type[0] == REGISTRATION_METRIC_GM) {
+            bspline_score_gm (bod);
+        }
+        else {
+            /* ?? */
+        }
+        /* GCS FIX: Until done with implementation, break here. */
+        break;
     }
 
     /* Regularize */

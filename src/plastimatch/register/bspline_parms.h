@@ -27,7 +27,7 @@ enum BsplineThreading {
 };
 
 class Bspline_landmarks;
-class Reg_parms;
+class Regularization_parms;
 
 class PLMREGISTER_API Bspline_parms
 {
@@ -75,7 +75,7 @@ public:
     Volume* fixed_stiffness;
 
     /* Regularization */
-    Reg_parms* reg_parms;        /* Regularization Parameters */
+    Regularization_parms* reg_parms;        /* Regularization Parameters */
 
     /* Landmarks */
     Bspline_landmarks* blm;      /* Landmarks parameters */

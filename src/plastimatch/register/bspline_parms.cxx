@@ -41,7 +41,7 @@ Bspline_parms::Bspline_parms ()
     this->fixed_roi = NULL;
     this->moving_roi = NULL;
 
-    this->reg_parms = new Reg_parms;
+    this->reg_parms = new Regularization_parms;
 
     this->blm = new Bspline_landmarks;
     this->rbf_radius = 0;

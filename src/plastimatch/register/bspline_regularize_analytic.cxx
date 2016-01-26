@@ -333,7 +333,7 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
 double
 region_smoothness_omp (
     double* sets,
-    const Reg_parms* reg_parms,    
+    const Regularization_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
     plm_long* knots
@@ -371,7 +371,7 @@ region_smoothness_omp (
 void
 region_smoothness (
     Bspline_score *bspline_score, 
-    const Reg_parms* reg_parms,    
+    const Regularization_parms* reg_parms,    
     const Bspline_xform* bxf,
     double* V, 
     plm_long* knots)
@@ -497,7 +497,7 @@ Bspline_regularize::analytic_init (
 void
 Bspline_regularize::compute_score_analytic_omp (
     Bspline_score *bspline_score, 
-    const Reg_parms* reg_parms,
+    const Regularization_parms* reg_parms,
     const Bspline_regularize* rst,
     const Bspline_xform* bxf)
 {
@@ -547,7 +547,7 @@ Bspline_regularize::compute_score_analytic_omp (
 void
 Bspline_regularize::compute_score_analytic (
     Bspline_score *bspline_score, 
-    const Reg_parms* reg_parms,
+    const Regularization_parms* reg_parms,
     const Bspline_regularize* rst,
     const Bspline_xform* bxf)
 {
