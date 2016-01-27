@@ -48,6 +48,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-d.txt"
   "plm-bsp-landmark-e.txt"
   "plm-bsp-double.txt"
+  "plm-bsp-regularize-numeric.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
   "plm-reg-roi-b.txt"
@@ -2948,7 +2949,7 @@ set_tests_properties (plm-bsp-regularize-analytic-check PROPERTIES
 plm_add_test (
   "plm-bsp-regularize-numeric" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-numeric.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-regularize-numeric.txt"
   )
 plm_add_test (
   "plm-bsp-regularize-numeric-stats"

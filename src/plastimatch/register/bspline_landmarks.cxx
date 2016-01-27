@@ -111,7 +111,7 @@ bspline_landmarks_score_a (
         dc_dv[0] = - land_grad_coeff * diff[0];
         dc_dv[1] = - land_grad_coeff * diff[1];
         dc_dv[2] = - land_grad_coeff * diff[2];
-        bspline_update_smetric_grad (bst, bxf, p, qidx, dc_dv);
+        ssd->update_total_grad (bxf, p, qidx, dc_dv);
 
 #if defined (commentout)
         /* Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS */

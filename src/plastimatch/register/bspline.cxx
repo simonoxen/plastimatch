@@ -298,61 +298,6 @@ bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
 }
 
 void
-bspline_update_smetric_grad (
-    Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    plm_long p[3], plm_long qidx, float dc_dv[3])
-{
-    Bspline_score* ssd = &bst->ssd;
-    plm_long i, j, k, m;
-    plm_long cidx;
-    float* q_lut = &bxf->q_lut[qidx*64];
-
-    m = 0;
-    for (k = 0; k < 4; k++) {
-        for (j = 0; j < 4; j++) {
-            for (i = 0; i < 4; i++) {
-                cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-                        + (p[1] + j) * bxf->cdims[0]
-                        + (p[0] + i);
-                cidx = cidx * 3;
-                ssd->smetric_grad[cidx+0] += dc_dv[0] * q_lut[m];
-                ssd->smetric_grad[cidx+1] += dc_dv[1] * q_lut[m];
-                ssd->smetric_grad[cidx+2] += dc_dv[2] * q_lut[m];
-                m ++;
-            }
-        }
-    }
-}
-
-void
-bspline_update_smetric_grad_b (
-    Bspline_score* bscore,
-    const Bspline_xform* bxf, 
-    plm_long pidx, 
-    plm_long qidx, 
-    const float dc_dv[3])
-{
-    plm_long i, j, k, m;
-    plm_long cidx;
-    float* q_lut = &bxf->q_lut[qidx*64];
-    plm_long* c_lut = &bxf->c_lut[pidx*64];
-
-    m = 0;
-    for (k = 0; k < 4; k++) {
-        for (j = 0; j < 4; j++) {
-            for (i = 0; i < 4; i++) {
-                cidx = 3 * c_lut[m];
-                bscore->smetric_grad[cidx+0] += dc_dv[0] * q_lut[m];
-                bscore->smetric_grad[cidx+1] += dc_dv[1] * q_lut[m];
-                bscore->smetric_grad[cidx+2] += dc_dv[2] * q_lut[m];
-                m ++;
-            }
-        }
-    }
-}
-
-void
 bspline_condense_smetric_grad (float* cond_x, float* cond_y, float* cond_z,
     Bspline_xform* bxf, Bspline_score* ssd)
 {

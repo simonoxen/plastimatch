@@ -19,18 +19,6 @@ class Volume;
 PLMREGISTER_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
 void bspline_display_coeff_stats (Bspline_xform* bxf);
 PLMREGISTER_API void bspline_score (Bspline_optimize *bod);
-void bspline_update_smetric_grad (
-    Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    plm_long p[3], plm_long qidx, float dc_dv[3]
-);
-void bspline_update_smetric_grad_b (
-    Bspline_score* bscore,
-    const Bspline_xform* bxf, 
-    plm_long pidx, 
-    plm_long qidx, 
-    const float dc_dv[3]
-);
 int* calc_offsets (int* tile_dims, int* cdims);
 void find_knots (plm_long* knots, plm_long tile_num, plm_long* rdims, plm_long* cdims);
 void report_score (

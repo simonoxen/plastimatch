@@ -215,7 +215,7 @@ public:
         );
 
         /* Update cost function gradient */
-        bspline_update_smetric_grad_b (ssd, bxf, pidx, qidx, dc_dv);
+        ssd->update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
     }
 };
 

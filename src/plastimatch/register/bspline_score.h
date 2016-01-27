@@ -8,6 +8,8 @@
 #include <vector>
 #include "plm_int.h"
 
+class Bspline_xform;
+
 class PLMREGISTER_API Bspline_score
 {
 public:
@@ -33,6 +35,39 @@ public:
     void reset_smetric_grad ();
     void reset_score ();
     void accumulate_grad (float lambda);
+    void update_smetric_grad (
+        const Bspline_xform* bxf, 
+        const plm_long p[3],
+        plm_long qidx,
+        const float dc_dv[3]);
+    void update_total_grad (
+        const Bspline_xform* bxf, 
+        const plm_long p[3],
+        plm_long qidx,
+        const float dc_dv[3]);
+    void update_smetric_grad_b (
+        const Bspline_xform* bxf, 
+        plm_long pidx, 
+        plm_long qidx, 
+        const float dc_dv[3]);
+    void update_total_grad_b (
+        const Bspline_xform* bxf, 
+        plm_long pidx, 
+        plm_long qidx, 
+        const float dc_dv[3]);
+protected:
+    void update_grad (
+        float *grad,
+        const Bspline_xform* bxf, 
+        const plm_long p[3],
+        plm_long qidx,
+        const float dc_dv[3]);
+    void update_grad_b (
+        float *grad,
+        const Bspline_xform *bxf, 
+        plm_long pidx, 
+        plm_long qidx, 
+        const float dc_dv[3]);
 };
 
 #endif

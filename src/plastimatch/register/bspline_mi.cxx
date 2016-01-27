@@ -3081,8 +3081,7 @@ bspline_score_c_mi (
                 );
 #endif
 
-                bspline_update_smetric_grad_b (
-                    &bst->ssd, bxf, pidx, qidx, dc_dv);
+                bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */

@@ -860,8 +860,7 @@ bspline_score_c_mse (
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
                 dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-                bspline_update_smetric_grad_b (
-                    &bst->ssd, bxf, pidx, qidx, dc_dv);
+                bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
                     fprintf (val_fp, 
@@ -909,8 +908,6 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_score *ssd = &bod->get_bspline_state()->ssd;
-
     /* Create/initialize bspline_loop_user */
     Bspline_mse_k blu (bod);
 
@@ -926,8 +923,6 @@ bspline_score_l_mse (
     Bspline_optimize *bod
 )
 {
-    Bspline_score *ssd = &bod->get_bspline_state()->ssd;
-
     /* Create/initialize bspline_loop_user */
     Bspline_mse_l blu (bod);
 
