@@ -1,4 +1,4 @@
-﻿#include "nki2mha_converter.h"
+#include "nki2mha_converter.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>

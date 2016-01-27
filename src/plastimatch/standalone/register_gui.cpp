@@ -1,4 +1,4 @@
-﻿#include "register_gui.h"
+#include "register_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
