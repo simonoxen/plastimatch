@@ -58,12 +58,12 @@ bspline_score_normalize (
     if (ssd->num_vox < MIN_VOX) {
         ssd->smetric[bst->sm] = FLT_MAX;
         for (int i = 0; i < bxf->num_coeff; i++) {
-            ssd->grad[i] = 0;
+            ssd->smetric_grad[i] = 0;
         }
     } else {
         ssd->smetric[bst->sm] = raw_score / ssd->num_vox;
         for (int i = 0; i < bxf->num_coeff; i++) {
-            ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
+            ssd->smetric_grad[i] = 2 * ssd->smetric_grad[i] / ssd->num_vox;
         }
     }
 }
@@ -275,7 +275,7 @@ bspline_score_i_mse (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -491,7 +491,7 @@ bspline_score_h_mse (
      * The number of total bins is equal to the number of control
      * points in the control grid.
      */
-    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -715,7 +715,7 @@ bspline_score_g_mse (
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
-    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -860,7 +860,8 @@ bspline_score_c_mse (
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
                 dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-                bspline_update_grad_b (&bst->ssd, bxf, pidx, qidx, dc_dv);
+                bspline_update_smetric_grad_b (
+                    &bst->ssd, bxf, pidx, qidx, dc_dv);
         
                 if (parms->debug) {
                     fprintf (val_fp, 

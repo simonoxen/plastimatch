@@ -340,9 +340,9 @@ Bspline_regularize::hessian_update_grad (
 		    + (p[1] + j) * bxf->cdims[0]
 		    + (p[0] + i);
 		cidx = cidx * 3;
-		bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
-		bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
-		bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
+		bscore->total_grad[cidx+0] += dc_dv[0] * q_lut[m];
+		bscore->total_grad[cidx+1] += dc_dv[1] * q_lut[m];
+		bscore->total_grad[cidx+2] += dc_dv[2] * q_lut[m];
 		m ++;
 	    }
 	}
@@ -370,9 +370,9 @@ bspline_regularize_hessian_update_grad_b (
 		    + (p[1] + j) * bxf->cdims[0]
 		    + (p[0] + i);
 		cidx = cidx * 3;
-		bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
-		bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
-		bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
+		bscore->total_grad[cidx+0] += dc_dv[0] * q_lut[m];
+		bscore->total_grad[cidx+1] += dc_dv[1] * q_lut[m];
+		bscore->total_grad[cidx+2] += dc_dv[2] * q_lut[m];
 		m ++;
 	    }
 	}
@@ -500,7 +500,6 @@ Bspline_regularize::compute_score_semi_analytic (
 	//raw_score = grad_score / num_vox;
 	grad_score *= (parms->lambda / num_vox);
 	//printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
-	//bscore->score += grad_score;
 	bscore->rmetric += grad_score;
     }
     //printf ("SCORE=%.4f\n", bscore->score);

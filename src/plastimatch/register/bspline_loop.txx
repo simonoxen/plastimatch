@@ -325,7 +325,7 @@ bspline_loop_tile_serial (
      * The number of total bins is equal to the number of control
      * points in the control grid.
      */
-    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -534,7 +534,7 @@ bspline_loop_tile_parallel (
      * The number of total bins is equal to the number of control
      * points in the control grid.
      */
-    bspline_condense_grad (cond_x, cond_y, cond_z, bxf, ssd);
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);

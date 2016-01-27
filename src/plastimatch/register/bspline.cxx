@@ -149,7 +149,7 @@ void find_knots (
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
+dump_smetric_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
 {
     int i;
     FILE* fp;
@@ -157,7 +157,7 @@ dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
     make_parent_directories (fn);
     fp = fopen (fn, "wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-        fprintf (fp, "%20.20f\n", ssd->grad[i]);
+        fprintf (fp, "%20.20f\n", ssd->smetric_grad[i]);
     }
     fclose (fp);
 }
@@ -199,7 +199,7 @@ bspline_save_debug_state (
                 parms->debug_stage, bst->it, bst->feval);
         }
         fn = parms->debug_dir + "/" + buf;
-        dump_gradient (bxf, &bst->ssd, fn.c_str());
+        dump_smetric_gradient (bxf, &bst->ssd, fn.c_str());
 
         sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
             parms->debug_stage, bst->it, bst->feval);
@@ -298,7 +298,7 @@ bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
 }
 
 void
-bspline_update_grad (
+bspline_update_smetric_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     plm_long p[3], plm_long qidx, float dc_dv[3])
@@ -316,9 +316,9 @@ bspline_update_grad (
                         + (p[1] + j) * bxf->cdims[0]
                         + (p[0] + i);
                 cidx = cidx * 3;
-                ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
-                ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
-                ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
+                ssd->smetric_grad[cidx+0] += dc_dv[0] * q_lut[m];
+                ssd->smetric_grad[cidx+1] += dc_dv[1] * q_lut[m];
+                ssd->smetric_grad[cidx+2] += dc_dv[2] * q_lut[m];
                 m ++;
             }
         }
@@ -326,7 +326,7 @@ bspline_update_grad (
 }
 
 void
-bspline_update_grad_b (
+bspline_update_smetric_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
     plm_long pidx, 
@@ -343,9 +343,9 @@ bspline_update_grad_b (
         for (j = 0; j < 4; j++) {
             for (i = 0; i < 4; i++) {
                 cidx = 3 * c_lut[m];
-                bscore->grad[cidx+0] += dc_dv[0] * q_lut[m];
-                bscore->grad[cidx+1] += dc_dv[1] * q_lut[m];
-                bscore->grad[cidx+2] += dc_dv[2] * q_lut[m];
+                bscore->smetric_grad[cidx+0] += dc_dv[0] * q_lut[m];
+                bscore->smetric_grad[cidx+1] += dc_dv[1] * q_lut[m];
+                bscore->smetric_grad[cidx+2] += dc_dv[2] * q_lut[m];
                 m ++;
             }
         }
@@ -353,16 +353,16 @@ bspline_update_grad_b (
 }
 
 void
-bspline_condense_grad (float* cond_x, float* cond_y, float* cond_z,
+bspline_condense_smetric_grad (float* cond_x, float* cond_y, float* cond_z,
     Bspline_xform* bxf, Bspline_score* ssd)
 {
     plm_long kidx, sidx;
 
-    for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
+    for (kidx=0; kidx < bxf->num_knots; kidx++) {
         for (sidx=0; sidx<64; sidx++) {
-            ssd->grad[3*kidx + 0] += cond_x[64*kidx + sidx];
-            ssd->grad[3*kidx + 1] += cond_y[64*kidx + sidx];
-            ssd->grad[3*kidx + 2] += cond_z[64*kidx + sidx];
+            ssd->smetric_grad[3*kidx + 0] += cond_x[64*kidx + sidx];
+            ssd->smetric_grad[3*kidx + 1] += cond_y[64*kidx + sidx];
+            ssd->smetric_grad[3*kidx + 2] += cond_z[64*kidx + sidx];
         }
     }
 }
@@ -391,12 +391,12 @@ report_score (
     int i;
     float ssd_grad_norm, ssd_grad_mean;
 
-    /* Normalize gradient */
+    /* Compute gradient statistics */
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd_grad_mean += bst->ssd.grad[i];
-        ssd_grad_norm += fabs (bst->ssd.grad[i]);
+        ssd_grad_mean += bst->ssd.total_grad[i];
+        ssd_grad_norm += fabs (bst->ssd.total_grad[i]);
     }
 
     /* Compute total time */
@@ -460,7 +460,6 @@ report_score (
     }
 }
 
-
 void
 bspline_score (Bspline_optimize *bod)
 {
@@ -474,6 +473,7 @@ bspline_score (Bspline_optimize *bod)
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
+    /* Compute similarity metrics */
     std::vector<Registration_metric_type>::const_iterator it_metric
         = parms->metric_type.begin();
     std::vector<float>::const_iterator it_lambda
@@ -498,13 +498,15 @@ bspline_score (Bspline_optimize *bod)
             print_and_exit ("Unknown similarity metric in bspline_score()\n");
         }
 
+        bst->ssd.accumulate_grad (*it_lambda);
+
         bst->ssd.time_smetric.push_back (timer.report ());
         bst->sm ++;
         ++it_metric;
         ++it_lambda;
     }
 
-    /* Regularize */
+    /* Compute regularization */
     if (reg_parms->lambda > 0.0f) {
         bst->rst.compute_score (&bst->ssd, reg_parms, bxf);
     }
@@ -514,7 +516,7 @@ bspline_score (Bspline_optimize *bod)
         bspline_landmarks_score (parms, bst, bxf);
     }
 
-    /* Compute total score to send of optimizer */
+    /* Compute total score */
     bst->ssd.score = bst->ssd.smetric[0] + reg_parms->lambda * bst->ssd.rmetric;
     if (blm->num_landmarks > 0) {
         bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;

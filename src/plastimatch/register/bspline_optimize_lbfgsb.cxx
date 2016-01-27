@@ -237,7 +237,7 @@ bspline_optimize_lbfgsb (
             /* Copy from C to fortran (float -> double) */
             optimizer.f = ssd->score;
             for (int i = 0; i < bxf->num_coeff; i++) {
-                optimizer.g[i] = ssd->grad[i];
+                optimizer.g[i] = ssd->total_grad[i];
             }
 
             /* Check # feval */

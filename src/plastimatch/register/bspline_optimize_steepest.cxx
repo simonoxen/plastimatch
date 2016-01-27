@@ -78,13 +78,13 @@ bspline_optimize_steepest_trace (
     /* Get search direction */
     ssd_grad_norm = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd_grad_norm += ssd->grad[i] * ssd->grad[i];
+        ssd_grad_norm += ssd->total_grad[i] * ssd->total_grad[i];
     }
     ssd_grad_norm = sqrt (ssd_grad_norm);
     htg = 0.0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        h[i] = - ssd->grad[i] / ssd_grad_norm;
-        htg -= h[i] * ssd->grad[i];
+        h[i] = - ssd->total_grad[i] / ssd_grad_norm;
+        htg -= h[i] * ssd->total_grad[i];
     }
 
     /* Give a little feedback to the user */
@@ -150,7 +150,7 @@ bspline_optimize_steepest_trace (
         // line search.
         success ++;
         memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
-        memcpy (grad_backup, ssd->grad, bxf->num_coeff * sizeof(float));
+        memcpy (grad_backup, ssd->total_grad, bxf->num_coeff * sizeof(float));
         score_backup = ssd->score;
         sprintf (filename, "grad_%04i.csv", success);
         trace = fopen(filename, "w");
@@ -173,19 +173,19 @@ bspline_optimize_steepest_trace (
         fclose (trace);
 
         printf ("Finished Capturing Gradient.\n\n");
-        memcpy (ssd->grad, grad_backup, bxf->num_coeff * sizeof(float));
+        memcpy (ssd->total_grad, grad_backup, bxf->num_coeff * sizeof(float));
         ssd->score = score_backup;
 
         /* Start new line search */
         ssd_grad_norm = 0;
         for (i = 0; i < bxf->num_coeff; i++) {
-            ssd_grad_norm += ssd->grad[i] * ssd->grad[i];
+            ssd_grad_norm += ssd->total_grad[i] * ssd->total_grad[i];
         }
         ssd_grad_norm = sqrt (ssd_grad_norm);
         htg = 0.0;
         for (i = 0; i < bxf->num_coeff; i++) {
-            h[i] = - ssd->grad[i] / ssd_grad_norm;
-            htg -= h[i] * ssd->grad[i];
+            h[i] = - ssd->total_grad[i] / ssd_grad_norm;
+            htg -= h[i] * ssd->total_grad[i];
         }
         old_score = bst->ssd.score;
     }
@@ -257,13 +257,13 @@ bspline_optimize_steepest_trust (
     /* Get search direction */
     ssd_grad_norm = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd_grad_norm += ssd->grad[i] * ssd->grad[i];
+        ssd_grad_norm += ssd->total_grad[i] * ssd->total_grad[i];
     }
     ssd_grad_norm = sqrt (ssd_grad_norm);
     htg = 0.0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        h[i] = - ssd->grad[i] / ssd_grad_norm;
-        htg -= h[i] * ssd->grad[i];
+        h[i] = - ssd->total_grad[i] / ssd_grad_norm;
+        htg -= h[i] * ssd->total_grad[i];
     }
 
     /* Give a little feedback to the user */
@@ -326,13 +326,13 @@ bspline_optimize_steepest_trust (
         memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
         ssd_grad_norm = 0;
         for (i = 0; i < bxf->num_coeff; i++) {
-            ssd_grad_norm += ssd->grad[i] * ssd->grad[i];
+            ssd_grad_norm += ssd->total_grad[i] * ssd->total_grad[i];
         }
         ssd_grad_norm = sqrt (ssd_grad_norm);
         htg = 0.0;
         for (i = 0; i < bxf->num_coeff; i++) {
-            h[i] = - ssd->grad[i] / ssd_grad_norm;
-            htg -= h[i] * ssd->grad[i];
+            h[i] = - ssd->total_grad[i] / ssd_grad_norm;
+            htg -= h[i] * ssd->total_grad[i];
         }
         old_score = bst->ssd.score;
     }
@@ -384,7 +384,7 @@ bspline_optimize_steepest_naive (
     /* Set alpha based on norm gradient */
     ssd_grad_norm = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-        ssd_grad_norm += fabs (ssd->grad[i]);
+        ssd_grad_norm += fabs (ssd->total_grad[i]);
     }
     a = 1.0f / ssd_grad_norm;
     gamma = a;
@@ -409,7 +409,7 @@ bspline_optimize_steepest_naive (
         /* Update b-spline coefficients from gradient */
         //gamma = a / pow(it + A, alpha);
         for (i = 0; i < bxf->num_coeff; i++) {
-            bxf->coeff[i] = bxf->coeff[i] + gamma * ssd->grad[i];
+            bxf->coeff[i] = bxf->coeff[i] + gamma * ssd->total_grad[i];
         }
 
         /* Get score and gradient */

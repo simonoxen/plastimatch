@@ -19,12 +19,12 @@ class Volume;
 PLMREGISTER_API Volume* bspline_compute_vf (const Bspline_xform* bxf);
 void bspline_display_coeff_stats (Bspline_xform* bxf);
 PLMREGISTER_API void bspline_score (Bspline_optimize *bod);
-void bspline_update_grad (
+void bspline_update_smetric_grad (
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     plm_long p[3], plm_long qidx, float dc_dv[3]
 );
-void bspline_update_grad_b (
+void bspline_update_smetric_grad_b (
     Bspline_score* bscore,
     const Bspline_xform* bxf, 
     plm_long pidx, 
@@ -40,14 +40,13 @@ void report_score (
 );
 
 /* Debugging routines */
-void dump_gradient (Bspline_xform* bxf, Bspline_score* ssd, char* fn);
 PLMREGISTER_API void bspline_save_debug_state (
     Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf
 );
 void dump_xpm_hist (Bspline_mi_hist_set* mi_hist, char* file_base, int iter);
-void bspline_condense_grad (
+void bspline_condense_smetric_grad (
     float* cond_x, float* cond_y, float* cond_z,
     Bspline_xform* bxf,
     Bspline_score* ssd

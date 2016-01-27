@@ -115,11 +115,11 @@ reg_update_grad (
 {
     int kidx, sidx;
 
-    for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
+    for (kidx=0; kidx < bxf->num_knots; kidx++) {
         for (sidx=0; sidx<64; sidx++) {
-            ssd->grad[3*kidx+0] += cond[3*(64*kidx+sidx)+0];
-            ssd->grad[3*kidx+1] += cond[3*(64*kidx+sidx)+1];
-            ssd->grad[3*kidx+2] += cond[3*(64*kidx+sidx)+2];
+            ssd->total_grad[3*kidx+0] += cond[3*(64*kidx+sidx)+0];
+            ssd->total_grad[3*kidx+1] += cond[3*(64*kidx+sidx)+1];
+            ssd->total_grad[3*kidx+2] += cond[3*(64*kidx+sidx)+2];
         }
     }
 }
@@ -396,9 +396,9 @@ region_smoothness (
         /* ------------------------------------------------ */
 
         /* dS/dp = 2Vp operation */
-        bspline_score->grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
-        bspline_score->grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
-        bspline_score->grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
+        bspline_score->total_grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
+        bspline_score->total_grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
+        bspline_score->total_grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
     }
 
     bspline_score->rmetric += S;

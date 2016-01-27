@@ -157,7 +157,7 @@ check_gradient (
 
     /* Save a copy of score and gradient */
     for (i = 0; i < bxf->num_coeff; i++) {
-        grad[i] = bst->ssd.grad[i];
+        grad[i] = bst->ssd.total_grad[i];
     }
     score = bst->ssd.score;
 

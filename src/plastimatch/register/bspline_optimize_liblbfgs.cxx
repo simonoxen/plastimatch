@@ -40,7 +40,7 @@ evaluate (
 
     /* Copy gradient out */
     for (i = 0; i < bxf->num_coeff; i++) {
-	g[i] = (lbfgsfloatval_t) bst->ssd.grad[i];
+	g[i] = (lbfgsfloatval_t) bst->ssd.total_grad[i];
     }
 
     /* Increment num function evals */

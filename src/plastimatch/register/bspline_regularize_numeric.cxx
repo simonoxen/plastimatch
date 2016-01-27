@@ -264,65 +264,63 @@ compute_score_numeric_internal (
 		int pidx, qidx;
 		pidx = get_region_index  (i  , j  , k  , bxf);
 		qidx = get_region_offset (i  , j  , k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv);
 
 		pidx = get_region_index  (i-1, j  , k  , bxf);
 		qidx = get_region_offset (i-1, j  , k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_in);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_in);
 		pidx = get_region_index  (i+1, j  , k  , bxf);
 		qidx = get_region_offset (i+1, j  , k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_ip);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_ip);
 		pidx = get_region_index  (i  , j-1, k  , bxf);
 		qidx = get_region_offset (i  , j-1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jn);
 		pidx = get_region_index  (i  , j+1, k  , bxf);
 		qidx = get_region_offset (i  , j+1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jp);
 		pidx = get_region_index  (i  , j  , k-1, bxf);
 		qidx = get_region_offset (i  , j  , k-1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_kn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_kn);
 		pidx = get_region_index  (i  , j  , k+1, bxf);
 		qidx = get_region_offset (i  , j  , k+1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_kp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_kp);
 
 		pidx = get_region_index  (i-1, j-1, k  , bxf);
 		qidx = get_region_offset (i-1, j-1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_injn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_injn);
 		pidx = get_region_index  (i-1, j+1, k  , bxf);
 		qidx = get_region_offset (i-1, j+1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_injp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_injp);
 		pidx = get_region_index  (i+1, j-1, k  , bxf);
 		qidx = get_region_offset (i+1, j-1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipjn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipjn);
 		pidx = get_region_index  (i+1, j+1, k  , bxf);
 		qidx = get_region_offset (i+1, j+1, k  , bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipjp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipjp);
 		pidx = get_region_index  (i-1, j  , k-1, bxf);
 		qidx = get_region_offset (i-1, j  , k-1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_inkn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_inkn);
 		pidx = get_region_index  (i-1, j  , k+1, bxf);
 		qidx = get_region_offset (i-1, j  , k+1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_inkp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_inkp);
 		pidx = get_region_index  (i+1, j  , k-1, bxf);
 		qidx = get_region_offset (i+1, j  , k-1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipkn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipkn);
 		pidx = get_region_index  (i+1, j  , k+1, bxf);
 		qidx = get_region_offset (i+1, j  , k+1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipkp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_ipkp);
 		pidx = get_region_index  (i  , j-1, k-1, bxf);
 		qidx = get_region_offset (i  , j-1, k-1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jnkn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jnkn);
 		pidx = get_region_index  (i  , j-1, k+1, bxf);
 		qidx = get_region_offset (i  , j-1, k+1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jnkp);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jnkp);
 		pidx = get_region_index  (i  , j+1, k-1, bxf);
 		qidx = get_region_offset (i  , j+1, k-1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jpkn);
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jpkn);
 		pidx = get_region_index  (i  , j+1, k+1, bxf);
 		qidx = get_region_offset (i  , j+1, k+1, bxf);
-		bspline_update_grad_b (bscore, bxf, pidx, qidx, dc_dv_jpkp);
-#if defined (commentout)
-#endif
+		bspline_update_smetric_grad_b (bscore, bxf, pidx, qidx, dc_dv_jpkp);
             }
         }
     }
