@@ -5,6 +5,7 @@
 #define _bspline_score_h_
 
 #include "plmregister_config.h"
+#include <vector>
 #include "plm_int.h"
 
 class PLMREGISTER_API Bspline_score
@@ -16,14 +17,16 @@ public:
     float score;         /* Total Score (sent to optimizer) */
     float lmetric;       /* Landmark metric */
     float rmetric;       /* Regularization metric */
-    float smetric;       /* Similarity metric */
+    std::vector<float> smetric;       /* Similarity metric */
     plm_long num_vox;    /* Number of voxel with correspondence */
 
     plm_long num_coeff;  /* Size of gradient vector = num coefficents */
     float* grad;         /* Gradient score wrt control coeff */
 
-    double time_smetric;   /* Time to compute similarity metric */
-    double time_rmetric;   /* Time to compute regularization metric */
+    /* Time to compute similarity metric */
+    std::vector<double> time_smetric;
+    /* Time to compute regularization metric */
+    double time_rmetric;
 public:
     void set_num_coeff (plm_long num_coeff);
     void reset_score ();

@@ -1146,7 +1146,6 @@ CUDA_bspline_mi_hist_jnt (
 
 }
 
-
 void
 CUDA_bspline_mi_grad (
     Bspline_state *bst,
@@ -1154,6 +1153,7 @@ CUDA_bspline_mi_grad (
     Volume* fixed,
     Volume* moving,
     float num_vox_f,
+    float score,
     Dev_Pointers_Bspline *dev_ptrs
 )
 {
@@ -1163,7 +1163,6 @@ CUDA_bspline_mi_grad (
 
     Bspline_score* ssd = &bst->ssd;
     float* host_grad = ssd->grad;
-    float score = ssd->smetric;
 
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
         (mi_hist->moving.bins > GPU_MAX_BINS)) {

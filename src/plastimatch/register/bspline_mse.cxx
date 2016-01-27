@@ -56,12 +56,12 @@ bspline_score_normalize (
        However, the best score is not currently stored in the state.  
     */
     if (ssd->num_vox < MIN_VOX) {
-        ssd->smetric = FLT_MAX;
+        ssd->smetric[bst->sm] = FLT_MAX;
         for (int i = 0; i < bxf->num_coeff; i++) {
             ssd->grad[i] = 0;
         }
     } else {
-        ssd->smetric = raw_score / ssd->num_vox;
+        ssd->smetric[bst->sm] = raw_score / ssd->num_vox;
         for (int i = 0; i < bxf->num_coeff; i++) {
             ssd->grad[i] = 2 * ssd->grad[i] / ssd->num_vox;
         }
@@ -108,10 +108,6 @@ bspline_score_i_mse (
     static int it = 0;
 
     FILE* corr_fp = 0;
-
-    // Start timing the code
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     if (parms->debug) {
         std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
@@ -291,10 +287,6 @@ bspline_score_i_mse (
     if (parms->debug) {
         fclose (corr_fp);
     }
-
-    /* Save for reporting */
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -339,10 +331,6 @@ bspline_score_h_mse (
     float* cond_z = (float*)malloc(cond_size);
 
     static int it = 0;
-
-    // Start timing the code
-    Plm_timer *timer = new Plm_timer;
-    timer->start ();
 
     // Zero out accumulators
     score_tile = 0;
@@ -515,9 +503,6 @@ bspline_score_h_mse (
     if (parms->debug) {
         fclose (corr_fp);
     }
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 
@@ -566,10 +551,6 @@ bspline_score_g_mse (
     static int it = 0;
 
     FILE* corr_fp = 0;
-
-    // Start timing the code
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     if (parms->debug) {
         std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
@@ -746,10 +727,6 @@ bspline_score_g_mse (
     if (parms->debug) {
         fclose (corr_fp);
     }
-
-    /* Save for reporting */
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 /* -----------------------------------------------------------------------
@@ -763,9 +740,6 @@ bspline_score_c_mse (
     Bspline_optimize *bod
 )
 {
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
@@ -919,9 +893,6 @@ bspline_score_c_mse (
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, score_acc);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 /* -----------------------------------------------------------------------
@@ -937,13 +908,6 @@ bspline_score_k_mse (
     Bspline_optimize *bod
 )
 {
-    /* The timer should be moved back into bspline_loop, however 
-       it requires that start/end routines for bspline_loop_user 
-       have consistent interface for all users */
-       
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
     Bspline_score *ssd = &bod->get_bspline_state()->ssd;
 
     /* Create/initialize bspline_loop_user */
@@ -954,9 +918,6 @@ bspline_score_k_mse (
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, blu.score_acc);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 void
@@ -964,13 +925,6 @@ bspline_score_l_mse (
     Bspline_optimize *bod
 )
 {
-    /* The timer should be moved back into bspline_loop, however 
-       it requires that start/end routines for bspline_loop_user 
-       have consistent interface for all users */
-       
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
     Bspline_score *ssd = &bod->get_bspline_state()->ssd;
 
     /* Create/initialize bspline_loop_user */
@@ -981,9 +935,6 @@ bspline_score_l_mse (
 
     /* Normalize score for MSE */
     bspline_score_normalize (bod, blu.score_acc);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 void
@@ -1017,8 +968,8 @@ bspline_score_mse (
     bool have_roi = fixed_roi || moving_roi;
 
     /* CPU Implementations */
-    if (parms->threading == BTHR_CPU) {
-            
+    if (parms->threading == BTHR_CPU)
+    {
         if (have_roi) {
             switch (parms->implementation) {
             case 'c':
@@ -1068,8 +1019,8 @@ bspline_score_mse (
 
 #if (CUDA_FOUND)
     /* CUDA Implementations */
-    else if (parms->threading == BTHR_CUDA) {
-
+    else if (parms->threading == BTHR_CUDA)
+    {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_j, libplmregistercuda);
@@ -1091,7 +1042,6 @@ bspline_score_mse (
 
         /* Unload plugin when done */
         UNLOAD_LIBRARY (libplmregistercuda);
-
     }
 #endif
 }

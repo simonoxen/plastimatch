@@ -318,6 +318,7 @@ extern "C" {
         Volume* fixed,
         Volume* moving,
         float num_vox_f,
+        float score,
         Dev_Pointers_Bspline *dev_ptrs
     );
 

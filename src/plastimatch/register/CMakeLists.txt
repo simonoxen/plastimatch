@@ -68,7 +68,8 @@ set (PLMREGISTER_LIBRARY_SRC
   rbf_wendland.cxx
   registration.cxx registration.h
   registration_data.cxx
-  registration_parms.cxx
+  registration_metric_type.cxx registration_metric_type.h
+  registration_parms.cxx registration_parms.h
   registration_resample.cxx registration_resample.h 
   shared_parms.cxx
   stage_parms.cxx

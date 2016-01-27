@@ -13,4 +13,6 @@ enum Registration_metric_type {
     REGISTRATION_METRIC_NMI
 };
 
+const char* registration_metric_type_string (Registration_metric_type);
+
 #endif

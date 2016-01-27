@@ -87,6 +87,7 @@ Bspline_state::initialize (
     d_ptr->bxf = bxf;
     d_ptr->parms = parms;
 
+    this->sm = 0;
     this->it = 0;
     this->feval = 0;
     this->dev_ptrs = 0;

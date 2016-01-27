@@ -53,6 +53,8 @@
 #include "interpolate_macros.h"
 #include "logfile.h"
 #include "plm_math.h"
+#include "plm_timer.h"
+#include "print_and_exit.h"
 #include "string_util.h"
 #include "volume.h"
 #include "volume_macros.h"
@@ -365,6 +367,16 @@ bspline_condense_grad (float* cond_x, float* cond_y, float* cond_z,
     }
 }
 
+static void
+logfile_print_score (float score)
+{
+    if (score < 10. && score > -10.) {
+        logfile_printf (" %1.8f ", score);
+    } else {
+        logfile_printf (" %9.3f ", score);
+    }
+}
+
 void
 report_score (
     Bspline_parms *parms,
@@ -387,36 +399,47 @@ report_score (
         ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
-    /* First line, part 1 - iterations */
+    /* Compute total time */
+    double total_time = 0;
+    std::vector<double>::const_iterator it_time = ssd->time_smetric.begin();
+    while (it_time != ssd->time_smetric.end()) {
+        total_time += *it_time;
+        ++it_time;
+    }
+    total_time += ssd->time_rmetric;
+    
+    /* First line, iterations, score, misc stats */
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
-    /* First line, part 2 - score 
-       JAS 04.19.2010 MI scores are between 0 and 1
-       The extra decimal point resolution helps in seeing
-       if the optimizer is performing adequately. */
-    if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
+    if (reg_parms->lambda > 0 || blm->num_landmarks > 0
+        || parms->metric_type.size() > 1)
+    {
         logfile_printf ("SCORE ");
-    } else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
-        logfile_printf ("MI  ");
     } else {
-        logfile_printf ("MSE ");
+        logfile_printf ("%-6s", registration_metric_type_string (
+                parms->metric_type[0]));
     }
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
-        logfile_printf ("%1.8f ", ssd->score);
-    } else {
-        logfile_printf ("%9.3f ", ssd->score);
-    }
-    /* First line, part 3 - misc stats */
+    logfile_print_score (ssd->score);
     logfile_printf (
         "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
-        ssd->num_vox, ssd_grad_mean, ssd_grad_norm, 
-        ssd->time_smetric + ssd->time_rmetric);
-
+        ssd->num_vox, ssd_grad_mean, ssd_grad_norm, total_time);
+    
+    /* Second line - smetric(s) */
+    if (ssd->smetric.size() > 1) {
+        std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
+        std::vector<Registration_metric_type>::const_iterator it_st
+            = parms->metric_type.begin();
+        logfile_printf ("         ");
+        while (it_sm != ssd->smetric.end()) {
+            logfile_printf ("%-6s",
+                registration_metric_type_string (*it_st));
+            logfile_print_score (*it_sm);
+            ++it_sm, ++it_st;
+        }
+        logfile_printf ("\n");
+    }
+    
     /* Second line - extra stats if regularization is enabled */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
-        /* Part 1 - similarity metric */
-        logfile_printf (
-            "         %s %9.3f ", 
-            (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) ? "MI   " : "MSE  ", ssd->smetric);
         /* Part 2 - regularization metric */
         if (reg_parms->lambda > 0) {
             logfile_printf ("RM %9.3f ", 
@@ -430,7 +453,7 @@ report_score (
         /* Part 4 - timing */
         if (reg_parms->lambda > 0) {
             logfile_printf ("[ %9.3f | %9.3f ]\n", 
-                ssd->time_smetric, ssd->time_rmetric);
+                ssd->time_smetric[0], ssd->time_rmetric);
         } else {
             logfile_printf ("\n");
         }
@@ -455,23 +478,30 @@ bspline_score (Bspline_optimize *bod)
         = parms->metric_type.begin();
     std::vector<float>::const_iterator it_lambda
         = parms->metric_lambda.begin();
+    bst->sm = 0;
     while (it_metric != parms->metric_type.end()
         && it_lambda != parms->metric_lambda.end())
     {
-        if (parms->metric_type[0] == REGISTRATION_METRIC_MSE) {
+        Plm_timer timer;
+        timer.start ();
+        bst->ssd.smetric.push_back (0.f);
+        if (*it_metric == REGISTRATION_METRIC_MSE) {
             bspline_score_mse (bod);
         }
-        else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+        else if (*it_metric == REGISTRATION_METRIC_MI_MATTES) {
             bspline_score_mi (bod);
         }
-        else if (parms->metric_type[0] == REGISTRATION_METRIC_GM) {
+        else if (*it_metric == REGISTRATION_METRIC_GM) {
             bspline_score_gm (bod);
         }
         else {
-            /* ?? */
+            print_and_exit ("Unknown similarity metric in bspline_score()\n");
         }
-        /* GCS FIX: Until done with implementation, break here. */
-        break;
+
+        bst->ssd.time_smetric.push_back (timer.report ());
+        bst->sm ++;
+        ++it_metric;
+        ++it_lambda;
     }
 
     /* Regularize */
@@ -485,7 +515,7 @@ bspline_score (Bspline_optimize *bod)
     }
 
     /* Compute total score to send of optimizer */
-    bst->ssd.score = bst->ssd.smetric + reg_parms->lambda * bst->ssd.rmetric;
+    bst->ssd.score = bst->ssd.smetric[0] + reg_parms->lambda * bst->ssd.rmetric;
     if (blm->num_landmarks > 0) {
         bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
     }

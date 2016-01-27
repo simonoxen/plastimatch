@@ -11,13 +11,11 @@ Bspline_score::Bspline_score ()
     this->score = 0;
     this->lmetric = 0;
     this->rmetric = 0;
-    this->smetric = 0;
     this->num_vox = 0;
 
     this->num_coeff = 0;
     this->grad = 0;
 
-    this->time_smetric = 0;
     this->time_rmetric = 0;
 }
 
@@ -40,9 +38,9 @@ Bspline_score::reset_score ()
     this->score = 0;
     this->lmetric = 0;
     this->rmetric = 0;
-    this->smetric = 0;
+    this->smetric.clear();
     this->num_vox = 0;
     memset (this->grad, 0, this->num_coeff * sizeof(float));
-    this->time_smetric = 0;
+    this->time_smetric.clear();
     this->time_rmetric = 0;
 }

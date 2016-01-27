@@ -742,7 +742,7 @@ CUDA_bspline_mi_a (
     // --- COMPUTE SCORE ----------------------------------------
 //  plm_timer_start (&timer0);
 #if defined (MI_SCORE_CPU)
-    ssd->smetric = CPU_MI_Score(mi_hist, ssd->num_vox);
+    ssd->smetric[0] = CPU_MI_Score(mi_hist, ssd->num_vox);
 //  printf (" * score: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
     // Doing this on the GPU may be silly.
@@ -757,12 +757,14 @@ CUDA_bspline_mi_a (
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)ssd->num_vox);
 //  printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
+    float score = ssd->smetric[0];
     CUDA_bspline_mi_grad (
         bst,
         bxf,
         fixed,
         moving,
         (float)ssd->num_vox,
+        score,
         dev_ptrs
     );
 //  printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
@@ -770,7 +772,7 @@ CUDA_bspline_mi_a (
     // ----------------------------------------------------------
 
 
-    ssd->time_smetric = timer->report ();
+    ssd->time_smetric[0] = timer->report ();
     delete timer;
 
     if (parms->debug) {
@@ -843,7 +845,7 @@ CUDA_bspline_mse_j (
         fixed,
         bxf->vox_per_rgn,
         fixed->dim,
-        &(ssd->smetric),
+        &(ssd->smetric[0]),
         bst->ssd.grad,
         &ssd_grad_mean,
         &ssd_grad_norm,
@@ -856,7 +858,7 @@ CUDA_bspline_mse_j (
     }
 
     // --- USER FEEDBACK ----------------------------------------
-    ssd->time_smetric = timer->report ();
+    ssd->time_smetric[0] = timer->report ();
     delete timer;
 }
 

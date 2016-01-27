@@ -30,7 +30,6 @@
 #include "logfile.h"
 #include "mha_io.h"
 #include "plm_math.h"
-#include "plm_timer.h"
 #include "volume_macros.h"
 #include "volume.h"
 #include "xpm.h"
@@ -981,7 +980,7 @@ bspline_mi_pvi_8_dc_dv (
         idx_jbin = offset_fbin + idx_mbin;
         if (j_hist[idx_jbin] > 0.0001) {
             dS_dP = logf((num_vox_f * j_hist[idx_jbin]) 
-                / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->smetric;
+                / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->smetric[0];
             dc_dv[0] -= dw[3*idx_pv+0] * dS_dP;
             dc_dv[1] -= dw[3*idx_pv+1] * dS_dP;
             dc_dv[2] -= dw[3*idx_pv+2] * dS_dP;
@@ -1043,11 +1042,12 @@ bspline_mi_pvi_6_dc_dv (
         mkqs, fzqs);
 
     /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+    float smetric = ssd->smetric[0];
     midx_f = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[0] += - fxqs[1] * dS_dP;
     dc_dv[1] += - fyqs[1] * dS_dP;
     dc_dv[2] += - fzqs[1] * dS_dP;
@@ -1056,42 +1056,42 @@ bspline_mi_pvi_6_dc_dv (
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[0] += - fxqs[0] * dS_dP;
 
     midx_f = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[0] += - fxqs[2] * dS_dP;
 
     midx_f = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[1] += - fyqs[0] * dS_dP;
 
     midx_f = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[1] += - fyqs[2] * dS_dP;
 
     midx_f = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[2] += - fzqs[0] * dS_dP;
 
     midx_f = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
-        num_vox_f, fxs, ssd->smetric, debug);
+        num_vox_f, fxs, smetric, debug);
     dc_dv[2] += - fzqs[2] * dS_dP;
 
     dc_dv[0] = dc_dv[0] / moving->spacing[0] / num_vox_f;
@@ -1145,9 +1145,6 @@ bspline_score_i_mi (
     float* cond_x = (float*)malloc(cond_size);
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -1327,7 +1324,7 @@ bspline_score_i_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1428,9 +1425,6 @@ bspline_score_i_mi (
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-    
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 #endif
 
@@ -1503,9 +1497,6 @@ bspline_score_h_mi (
         fp = plm_fopen (fn.c_str(), "wb");
         it ++;
     }
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -1589,7 +1580,7 @@ bspline_score_h_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1708,9 +1699,6 @@ bspline_score_h_mi (
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 
@@ -1773,9 +1761,6 @@ bspline_score_g_mi (
         fp = fopen (debug_fn, "w");
     }
 #endif
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -1841,7 +1826,7 @@ bspline_score_g_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1954,9 +1939,6 @@ bspline_score_g_mi (
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 
@@ -2011,9 +1993,6 @@ bspline_score_f_mi (
         fp = fopen (debug_fn, "w");
     }
 #endif
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -2153,7 +2132,7 @@ bspline_score_f_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2254,9 +2233,6 @@ bspline_score_f_mi (
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 #endif
 
@@ -2310,9 +2286,6 @@ bspline_score_e_mi (
         fp = fopen (debug_fn, "w");
     }
 #endif
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -2482,7 +2455,7 @@ bspline_score_e_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2599,9 +2572,6 @@ bspline_score_e_mi (
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-    
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 #endif
 
@@ -2667,9 +2637,6 @@ bspline_score_d_mi (
         fp = fopen (debug_fn, "w");
     }
 #endif
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -2778,7 +2745,7 @@ bspline_score_d_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2892,9 +2859,6 @@ bspline_score_d_mi (
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 /* Mutual information version of implementation "C" */
@@ -2948,9 +2912,6 @@ bspline_score_c_mi (
         fp = fopen (debug_fn, "w");
     }
 #endif
-
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
 
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
@@ -3056,7 +3017,7 @@ bspline_score_c_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
+    ssd->smetric[0] = mi_hist->compute_score (ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute gradient */
@@ -3133,9 +3094,6 @@ bspline_score_c_mi (
 #endif
 
     mse_score = mse_score / ssd->num_vox;
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 /* Mutual information version of implementation "k" */
@@ -3144,9 +3102,6 @@ bspline_score_k_mi (
     Bspline_optimize *bod
 )
 {
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_score* ssd = &bst->ssd;
@@ -3193,7 +3148,7 @@ bspline_score_k_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
+    ssd->smetric[0] = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
@@ -3201,9 +3156,6 @@ bspline_score_k_mi (
 
     /* Run the loop */
     bspline_loop_voxel_serial (blu2, bod);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 /* Mutual information version of implementation "l" */
@@ -3212,9 +3164,6 @@ bspline_score_l_mi (
     Bspline_optimize *bod
 )
 {
-    Plm_timer* timer = new Plm_timer;
-    timer->start ();
-
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_score* ssd = &bst->ssd;
@@ -3261,7 +3210,7 @@ bspline_score_l_mi (
     }
 
     /* Compute score */
-    ssd->smetric = mi_hist->compute_score (ssd->num_vox);
+    ssd->smetric[bst->sm] = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
@@ -3269,9 +3218,6 @@ bspline_score_l_mi (
 
     /* Run the loop */
     bspline_loop_voxel_serial (blu2, bod);
-
-    ssd->time_smetric = timer->report ();
-    delete timer;
 }
 
 void
@@ -3280,11 +3226,6 @@ bspline_score_mi (
 )
 {
     Bspline_parms *parms = bod->get_bspline_parms ();
-    Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
-
-    Regularization_parms* reg_parms = parms->reg_parms;
-    Bspline_landmarks* blm = parms->blm;
 
     Volume* fixed_roi  = parms->fixed_roi;
     Volume* moving_roi = parms->moving_roi;
