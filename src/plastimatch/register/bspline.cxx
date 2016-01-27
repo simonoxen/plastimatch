@@ -34,9 +34,6 @@
 #endif
 
 #include "bspline.h"
-#if (CUDA_FOUND)
-#include "bspline_cuda.h"
-#endif
 #include "bspline_gm.h"
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"

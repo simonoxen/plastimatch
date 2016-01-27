@@ -27,7 +27,6 @@
 #include "interpolate_macros.h"
 #include "logfile.h"
 #include "plm_math.h"
-#include "plm_timer.h"
 #include "volume.h"
 #include "volume_macros.h"
 
@@ -621,7 +620,6 @@ CUDA_bspline_mi_a (
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
-    Plm_timer* timer = new Plm_timer;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -672,18 +670,13 @@ CUDA_bspline_mi_a (
     CUDA_bspline_zero_grad  (dev_ptrs);
     // ----------------------------------------------------------
 
-    timer->start ();
-
     // --- GENERATE HISTOGRMS -----------------------------------
-//  plm_timer_start (&timer0);
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
         (mi_hist->moving.bins > GPU_MAX_BINS)) {
 
         ssd->num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
-//        printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
     } else {
         ssd->num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
-//        printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
     }
     // ----------------------------------------------------------
 
@@ -704,22 +697,17 @@ CUDA_bspline_mi_a (
 
 
     // --- COMPUTE SCORE ----------------------------------------
-//  plm_timer_start (&timer0);
 #if defined (MI_SCORE_CPU)
     ssd->smetric[0] = CPU_MI_Score(mi_hist, ssd->num_vox);
-//  printf (" * score: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
     // Doing this on the GPU may be silly.
     // The CPU generally completes this computation extremely quickly
-//  printf (" * score: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
     // ----------------------------------------------------------
 
     // --- COMPUTE GRADIENT -------------------------------------
-//  plm_timer_start (&timer0);
 #if defined (MI_GRAD_CPU)
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)ssd->num_vox);
-//  printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
     float score = ssd->smetric[0];
     CUDA_bspline_mi_grad (
@@ -731,13 +719,8 @@ CUDA_bspline_mi_a (
         score,
         dev_ptrs
     );
-//  printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
     // ----------------------------------------------------------
-
-
-    ssd->time_smetric[0] = timer->report ();
-    delete timer;
 
     if (parms->debug) {
         fclose (fp);
@@ -763,13 +746,12 @@ CUDA_bspline_mse_j (
     Bspline_score* ssd;     // Holds the SSD "Score" information
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm
     float ssd_grad_mean;    // Holds the SSD Gradient's Mean
-    Plm_timer* timer = new Plm_timer;
 
     static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer
     FILE* fp = NULL;        // File Pointer to Debug File
     // ----------------------------------------------------------
-
+    
     // --- INITIALIZE LOCAL VARIABLES ---------------------------
     ssd = &bst->ssd;
     
@@ -779,8 +761,6 @@ CUDA_bspline_mse_j (
     }
     // ----------------------------------------------------------
 
-    timer->start ();
-    
     // --- INITIALIZE GPU MEMORY --------------------------------
     CUDA_bspline_push_coeff (dev_ptrs, bxf);
     CUDA_bspline_zero_score (dev_ptrs);
@@ -820,10 +800,6 @@ CUDA_bspline_mse_j (
     if (parms->debug) {
         fclose (fp);
     }
-
-    // --- USER FEEDBACK ----------------------------------------
-    ssd->time_smetric[0] = timer->report ();
-    delete timer;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

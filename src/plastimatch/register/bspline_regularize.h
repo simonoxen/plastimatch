@@ -7,7 +7,6 @@
 #include "plmregister_config.h"
 #include "volume.h"
 
-class Bspline_regularize_private;
 class Bspline_score;
 class Bspline_xform;
 
@@ -26,7 +25,6 @@ public:
 class PLMREGISTER_API Bspline_regularize {
 public:
     SMART_POINTER_SUPPORT (Bspline_regularize);
-    Bspline_regularize_private *d_ptr;
 public:
     Bspline_regularize ();
     ~Bspline_regularize ();
