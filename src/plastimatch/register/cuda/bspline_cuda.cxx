@@ -71,42 +71,6 @@ clamp_linear_interpolate (
 }
 
 void
-report_score (
-    char *alg, 
-    Bspline_xform *bxf, 
-    Bspline_state *bst, 
-    int num_vox, 
-    double timing)
-{
-    int i;
-    float ssd_grad_norm, ssd_grad_mean;
-
-    /* Normalize gradient */
-    ssd_grad_norm = 0;
-    ssd_grad_mean = 0;
-    for (i = 0; i < bxf->num_coeff; i++) {
-	ssd_grad_mean += bst->ssd.grad[i];
-	ssd_grad_norm += fabs (bst->ssd.grad[i]);
-    }
-
-    // JAS 04.19.2010
-    // MI scores are between 0 and 1
-    // The extra decimal point resolution helps in seeing
-    // if the optimizer is performing adequately.
-    if (!strcmp (alg, "MI")) {
-	logfile_printf (
-	    "%s[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
-	    ssd_grad_norm, timing);
-    } else {
-	logfile_printf (
-	    "%s[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
-	    ssd_grad_norm, timing);
-    }
-}
-
-void
 bspline_interp_pix_b (
     float out[3], 
     Bspline_xform* bxf, 
@@ -846,7 +810,7 @@ CUDA_bspline_mse_j (
         bxf->vox_per_rgn,
         fixed->dim,
         &(ssd->smetric[0]),
-        bst->ssd.grad,
+        bst->ssd.smetric_grad,
         &ssd_grad_mean,
         &ssd_grad_norm,
         dev_ptrs,

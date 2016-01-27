@@ -1162,7 +1162,7 @@ CUDA_bspline_mi_grad (
     build_gbd (&gbd, bxf, fixed, moving);
 
     Bspline_score* ssd = &bst->ssd;
-    float* host_grad = ssd->grad;
+    float* host_grad = ssd->smetric_grad;
 
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
         (mi_hist->moving.bins > GPU_MAX_BINS)) {
