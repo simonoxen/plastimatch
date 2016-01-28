@@ -1,9 +1,7 @@
-#this file will create two beams (0° and 180°) of 100 MeV, automatically shaped to fit a target with 5 mm margins - if you don't specify the PEAKS, a SOBP will be automatically created to fit the target, you can also defined proximal and distal margins
-
 [PLAN]
 patient = @PLM_BUILD_TESTING_DIR@/rect-17.mha
-dose_out = @PLM_BUILD_TESTING_DIR@/proton-dose2.mha
 target = @PLM_BUILD_TESTING_DIR@/ptv-1.mha
+dose_out = @PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@.mha
 
 [BEAM]
 flavor = f

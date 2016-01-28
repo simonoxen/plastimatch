@@ -4297,8 +4297,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-1-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-1-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.160"
-  "0.165"
+  "0.140"
+  "0.145"
   )
 set_tests_properties (proton-dose-1 PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-1-stats
@@ -4319,8 +4319,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-2-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-2-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.0010"
-  "0.0012"
+  "0.10"
+  "0.12"
   )
 set_tests_properties (proton-dose-2 PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-2 PROPERTIES DEPENDS ptv-1)
@@ -4342,8 +4342,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-3-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-3-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.0022"
-  "0.0024"
+  "0.21"
+  "0.22"
   )
 set_tests_properties (proton-dose-3 PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-3 PROPERTIES DEPENDS ptv-1)
@@ -4374,8 +4374,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-5a-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-5a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.0028"
-  "0.0029"
+  "0.26"
+  "0.27"
   )
 set_tests_properties (proton-dose-5a PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-5a PROPERTIES DEPENDS ptv-1)
@@ -4397,8 +4397,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-5g-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-5g-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.0037"
-  "0.0038"
+  "0.365"
+  "0.375"
   )
 set_tests_properties (proton-dose-5g PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-5g PROPERTIES DEPENDS ptv-1)
@@ -4420,8 +4420,8 @@ plm_add_test (
 plmtest_check_interval ("proton-dose-6a-check"
   "${PLM_BUILD_TESTING_DIR}/proton-dose-6a-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.0028"
-  "0.0029"
+  "0.26"
+  "0.27"
   )
 set_tests_properties (proton-dose-6a PROPERTIES DEPENDS rect-17)
 set_tests_properties (proton-dose-6a PROPERTIES DEPENDS ptv-1)
