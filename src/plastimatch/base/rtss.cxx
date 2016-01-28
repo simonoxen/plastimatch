@@ -199,21 +199,21 @@ Rtss::debug (void)
     Rtss_roi* curr_structure;
 
     if (this->have_geometry) {
-	printf ("rps::dim = %u %u %u\n", 
+	lprintf ("rps::dim = %u %u %u\n", 
 	    (unsigned int) this->m_dim[0], 
 	    (unsigned int) this->m_dim[1], 
 	    (unsigned int) this->m_dim[2]);
-	printf ("rps::offset = %g %g %g\n", 
+	lprintf ("rps::offset = %g %g %g\n", 
 	    this->m_offset[0], this->m_offset[1], this->m_offset[2]);
-	printf ("rps::spacing = %g %g %g\n", 
+	lprintf ("rps::spacing = %g %g %g\n", 
 	    this->m_spacing[0], this->m_spacing[1], this->m_spacing[2]);
     } else {
-	printf ("rps has no geometry\n");
+	lprintf ("rps has no geometry\n");
     }
 
     for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
-	printf ("%u %d %s [%s] (%p) (%d contours)", 
+	lprintf ("%u %d %s [%s] (%p) (%d contours)", 
 	    (unsigned int) i, 
 	    curr_structure->id, 
 	    curr_structure->name.c_str(), 
@@ -224,15 +224,15 @@ Rtss::debug (void)
 	);
 	if (curr_structure->num_contours) {
 	    if (curr_structure->pslist[0]->num_vertices) {
-		printf (" [%f,%f,%f,...]",
+		lprintf (" [%f,%f,%f,...]",
 		    curr_structure->pslist[0]->x[0],
 		    curr_structure->pslist[0]->y[0],
 		    curr_structure->pslist[0]->z[0]);
 	    } else {
-		printf (" <no vertices>");
+		lprintf (" <no vertices>");
 	    }
 	}
-	printf ("\n");
+	lprintf ("\n");
     }
 }
 
@@ -415,8 +415,8 @@ Rtss::find_rasterization_geometry (
 	    have_spacing = 1;
 	} else {
 	    if (fabs (diff - z_spacing) > SPACING_TOL) {
-		printf ("Warning, slice spacing of RTSS may be unequal\n");
-		printf ("%g - %g = %g vs. %g\n", 
+		lprintf ("Warning, slice spacing of RTSS may be unequal\n");
+		lprintf ("%g - %g = %g vs. %g\n", 
 		    this_z, last_z, diff, z_spacing);
 	    }
 	}
@@ -456,13 +456,13 @@ Rtss::set_rasterization_geometry (void)
 	this->rast_dim,
         this->rast_dc
     );
-    printf ("rast_dim = %u %u %u\n", 
+    lprintf ("rast_dim = %u %u %u\n", 
 	(unsigned int) this->rast_dim[0], 
 	(unsigned int) this->rast_dim[1], 
 	(unsigned int) this->rast_dim[2]);
-    printf ("rast_offset = %g %g %g\n", 
+    lprintf ("rast_offset = %g %g %g\n", 
 	this->rast_offset[0], this->rast_offset[1], this->rast_offset[2]);
-    printf ("rast_spacing = %g %g %g\n", 
+    lprintf ("rast_spacing = %g %g %g\n", 
 	this->rast_spacing[0], this->rast_spacing[1], this->rast_spacing[2]);
 }
 
@@ -559,7 +559,7 @@ void
 Rtss::keyholize (void)
 {
 #if defined (PLM_CONFIG_KEYHOLIZE)
-    printf ("Keyholizing...\n");
+    lprintf ("Keyholizing...\n");
 
     /* Loop through structures */
     for (int i = 0; i < this->num_structures; i++) {
@@ -595,11 +595,11 @@ Rtss::keyholize (void)
 	    }
 
 	    /* We have now found a group */
-	    printf ("Keyholizing group:");
+	    lprintf ("Keyholizing group:");
 	    for (unsigned int k = 0; k < group_contours.size(); k++) {
-		printf (" %d", group_contours[k]);
+		lprintf (" %d", group_contours[k]);
 	    }
-	    printf ("\n");
+	    lprintf ("\n");
 
 	    /* Find an outermost contour in group */
 	    int cidx_xmin = -1;
