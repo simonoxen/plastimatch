@@ -76,6 +76,7 @@ set (CONFIG_FILE_LIST
   "proton-dose-5a.txt"
   "proton-dose-5g.txt"
   "proton-dose-6a.txt"
+  "speedtest-a.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -281,6 +282,18 @@ if (PLM_USE_GPU_PLUGINS)
 #  endif ()
 endif ()
 
+## -------------------------------------------------------------------------
+## Custom test command
+## -------------------------------------------------------------------------
+add_custom_target (speedtest
+  ${CMAKE_COMMAND} 
+  -DPLM_PLASTIMATCH_PATH="${PLM_PLASTIMATCH_PATH}"
+  -DPLM_BUILD_TESTING_DIR="${PLM_BUILD_TESTING_DIR}"
+  -P "${PLM_TESTING_SOURCE_DIR}/PlmSpeedTest.cmake"
+  )
+
+## -------------------------------------------------------------------------
+## Test cases
 ## -------------------------------------------------------------------------
 ## Create synthetic images
 ##   black-1           All black, slightly different geometry
