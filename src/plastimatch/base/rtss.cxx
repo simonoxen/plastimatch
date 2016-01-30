@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_math.h"
