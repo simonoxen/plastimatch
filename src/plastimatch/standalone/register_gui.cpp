@@ -7,8 +7,9 @@
 #include <iostream>
 #include <fstream>
 #include <QFile>
-#include <QTimer>
+#include <QSettings>
 #include <QTextStream>
+#include <QTimer>
 #include "YKThreadRegi.h"
 
 #include <QtGlobal>
@@ -1738,6 +1739,15 @@ void register_gui::SLT_ViewSelectedImg()
 
 void register_gui::WriteDefaultConfig()
 {
+    QCoreApplication::setOrganizationName ("Plastimatch");
+    QCoreApplication::setOrganizationDomain ("plastimatch.org");
+    QCoreApplication::setApplicationName ("register_gui");
+
+    QSettings settings;
+    settings.setValue ("DEFAULT_WORK_DIR", m_strPathDirDefault);
+    settings.setValue ("DEFAULT_VIEWER_PATH", m_strPathReadImageApp);
+
+#if defined (commentout)
     QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
 
     //always overwrite
@@ -1751,10 +1761,33 @@ void register_gui::WriteDefaultConfig()
     fout << "DEFAULT_VIEWER_PATH" << "\t" << m_strPathReadImageApp.toLocal8Bit().constData() << endl;
 
     fout.close();
+#endif
 }
 
 bool register_gui::ReadDefaultConfig()
 {
+    QCoreApplication::setOrganizationName ("Plastimatch");
+    QCoreApplication::setOrganizationDomain ("plastimatch.org");
+    QCoreApplication::setApplicationName ("register_gui");
+
+    QSettings settings;
+    settings.setValue ("DEFAULT_WORK_DIR", m_strPathDirDefault);
+    settings.setValue ("DEFAULT_VIEWER_PATH", m_strPathReadImageApp);
+
+    QVariant val = settings.value ("DEFAULT_WORK_DIR");
+    if (!val.isNull()) {
+        //SetWorkDir(val.ToString());
+    }
+
+#if defined (commentout)
+    if (strPathDirDefault.length() > 1)
+        ;
+    if (strPathViewer.length() > 1)
+        SetReadImageApp(strPathViewer);
+#endif
+    
+    
+#if defined (commentout)
     QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
 
     QFileInfo fInfo(strPathDefaultConfig);
@@ -1810,7 +1843,9 @@ bool register_gui::ReadDefaultConfig()
     fin.close();  
 
     return true;
+#endif
 }
+
 //create a smaple command file and put it into the working dir
 void register_gui::SLT_CreateSampleRigid()
 {   
