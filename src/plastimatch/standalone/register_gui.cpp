@@ -1746,22 +1746,6 @@ void register_gui::WriteDefaultConfig()
     QSettings settings;
     settings.setValue ("DEFAULT_WORK_DIR", m_strPathDirDefault);
     settings.setValue ("DEFAULT_VIEWER_PATH", m_strPathReadImageApp);
-
-#if defined (commentout)
-    QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
-
-    //always overwrite
-    ofstream fout;
-    fout.open(strPathDefaultConfig.toLocal8Bit().constData());
-
-    if (fout.fail())
-        return;
-
-    fout << "DEFAULT_WORK_DIR" << "\t" << m_strPathDirDefault.toLocal8Bit().constData() << endl;
-    fout << "DEFAULT_VIEWER_PATH" << "\t" << m_strPathReadImageApp.toLocal8Bit().constData() << endl;
-
-    fout.close();
-#endif
 }
 
 bool register_gui::ReadDefaultConfig()
@@ -1776,74 +1760,12 @@ bool register_gui::ReadDefaultConfig()
 
     QVariant val = settings.value ("DEFAULT_WORK_DIR");
     if (!val.isNull()) {
-        //SetWorkDir(val.ToString());
+        SetWorkDir(val.toString());
     }
-
-#if defined (commentout)
-    if (strPathDirDefault.length() > 1)
-        ;
-    if (strPathViewer.length() > 1)
-        SetReadImageApp(strPathViewer);
-#endif
-    
-    
-#if defined (commentout)
-    QString strPathDefaultConfig = m_strPathCurrent + "/" + m_strFileDefaultConfig;
-
-    QFileInfo fInfo(strPathDefaultConfig);
-
-    if (!fInfo.exists())
-    {
-        cout << "Config file is not found. Current directory is set as default" << endl;
-        return false;
-    }    
-
-    ifstream fin;
-    fin.open(strPathDefaultConfig.toLocal8Bit().constData());
-
-    if (fin.fail())
-        return false;
-
-    char str[MAX_LINE_LENGTH];    
-
-    QString strPathDirDefault;
-    QString strPathViewer;
-
-
-    while (!fin.eof())
-    {
-        memset(str, 0, MAX_LINE_LENGTH);
-        fin.getline(str, MAX_LINE_LENGTH);
-
-        QString tmpStr = QString(str);
-        QStringList strList = tmpStr.split("\t");        
-
-        if (strList.count() == 2)
-        {
-            QString firstTok = strList.at(0);
-            QString secondTok = strList.at(1);
-
-            if (firstTok.contains("DEFAULT_WORK_DIR"))
-            {
-                strPathDirDefault = secondTok;
-            }
-            else if (firstTok.contains("DEFAULT_VIEWER_PATH"))
-            {
-                strPathViewer = secondTok;
-            }
-        }
+    val = settings.value ("DEFAULT_VIEWER_DIR");
+    if (!val.isNull()) {
+        SetReadImageApp(val.toString());
     }
-
-    if (strPathDirDefault.length() > 1)
-        SetWorkDir(strPathDirDefault);
-
-    if (strPathViewer.length() > 1)
-        SetReadImageApp(strPathViewer);
-
-    fin.close();  
-
-    return true;
-#endif
 }
 
 //create a smaple command file and put it into the working dir
