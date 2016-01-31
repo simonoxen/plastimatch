@@ -1762,7 +1762,7 @@ bool register_gui::ReadDefaultConfig()
     if (!val.isNull()) {
         SetWorkDir(val.toString());
     }
-    val = settings.value ("DEFAULT_VIEWER_DIR");
+    val = settings.value ("DEFAULT_VIEWER_PATH");
     if (!val.isNull()) {
         SetReadImageApp(val.toString());
     }
