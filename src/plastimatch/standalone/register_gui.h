@@ -132,6 +132,7 @@ public:
 
     void CreateSampleCommand(enRegisterOption option);
 
+    void SetTemplateNameFromSample (const char *name);
 
     int m_iCurSelRow_Main;
     int m_iCurSelCol_Main;

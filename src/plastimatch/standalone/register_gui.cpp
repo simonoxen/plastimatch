@@ -1796,10 +1796,15 @@ void register_gui::CreateSampleCommand(enRegisterOption option)
 {
     QString strPathSample;
 
-    if (option == PLAST_RIGID)
+    if (option == PLAST_RIGID) {
         strPathSample = m_strPathDirDefault + "/" + "command_file_rigid.txt";
-    if (option == PLAST_BSPLINE)
+    }
+    else if (option == PLAST_BSPLINE) {
         strPathSample = m_strPathDirDefault + "/" + "command_file_deform.txt";
+    }
+    else {
+        return;
+    }
 
     int cnt = 0;
     QString strPathNew = strPathSample;
@@ -1832,4 +1837,21 @@ void register_gui::CreateSampleCommand(enRegisterOption option)
 
     UpdateBaseAndComboFromFullPath();
     UpdateTable_Main(DATA2GUI);
+
+    // GCS logic for template
+    if (option == PLAST_RIGID) {
+        SetTemplateNameFromSample ("Rigid");
+    }
+    else if (option == PLAST_BSPLINE) {
+        SetTemplateNameFromSample ("B-spline");
+    }
+    else {
+        return;
+    }
 }
+
+void register_gui::SetTemplateNameFromSample (const char *name)
+{
+    ui.comboBox_Template->addItem (name);
+}
+
