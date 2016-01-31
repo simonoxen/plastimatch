@@ -1,3 +1,4 @@
+#include "plm_config.h"
 #include "register_gui.h"
 #include <QString>
 #include <QFileDialog>
@@ -106,7 +107,13 @@ void register_gui::SLT_SetDefaultDir()
 
 void register_gui::SLT_SetDefaultViewer()
 {
-    QString dirPath = QFileDialog::getOpenFileName(this, "Open executable file", "", "executable file (*.exe *.*)", 0, 0);
+    QString dirPath = QFileDialog::getOpenFileName (
+        this, "Open executable file", "",
+#if WIN32
+        "executable files (*.exe);;"
+#endif
+        "all files (*)",
+        0, 0);
 
     if (dirPath.length() < 1)
         return;
