@@ -116,9 +116,7 @@ public:
 
     QString m_strPathDirDefault;
     QString m_strPathReadImageApp;
-    QString m_strPathCurrent;//current path of directory where the exe is located
-    QString m_strFileDefaultConfig;//File name
-
+    QString m_strPathCommandTemplateDir;
 
     void SetWorkDir(const QString& strPath);
     void SetReadImageApp(const QString& strPath);

@@ -59,15 +59,26 @@ register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     connect(m_timerRunSequential, SIGNAL(timeout()), this, SLOT(SLT_TimerRunSEQ()));
     connect(m_timerRunMultiThread, SIGNAL(timeout()), this, SLOT(SLT_TimerRunMT()));   
 
-    m_strPathCurrent = QDir::current().absolutePath();//folder where current exe file exists.
-    m_strFileDefaultConfig = "register_gui_config.txt";
+    // Set up application configuration location
+    QCoreApplication::setOrganizationName ("Plastimatch");
+    QCoreApplication::setOrganizationDomain ("plastimatch.org");
+    QCoreApplication::setApplicationName ("register_gui");
 
-    if (!ReadDefaultConfig())//if file doesn't exist
-    {
-        SetWorkDir(m_strPathCurrent);        
-        WriteDefaultConfig();
-    }
+    // Find location for command file templates.
+    // QT doesn't seem to have an API for getting the
+    // user's application data directory.  So we construct
+    // a hypothetical ini file name, then grab the directory.
+    QSettings tmp (
+	QSettings::IniFormat, /* Make sure we get path, not registry */
+	QSettings::UserScope, /* Get user directory, not system direcory */
+	"Plastimatch",        /* Orginazation name (subfolder within path) */
+	"register_gui"        /* Application name (file name with subfolder) */
+    );
+    m_strPathCommandTemplateDir = QFileInfo(tmp.fileName()).absolutePath();
 
+    // Read config file.  Save it, to create if the first invokation.
+    ReadDefaultConfig ();
+    WriteDefaultConfig ();
 }
 
 register_gui::~register_gui()
@@ -1746,10 +1757,6 @@ void register_gui::SLT_ViewSelectedImg()
 
 void register_gui::WriteDefaultConfig()
 {
-    QCoreApplication::setOrganizationName ("Plastimatch");
-    QCoreApplication::setOrganizationDomain ("plastimatch.org");
-    QCoreApplication::setApplicationName ("register_gui");
-
     QSettings settings;
     settings.setValue ("DEFAULT_WORK_DIR", m_strPathDirDefault);
     settings.setValue ("DEFAULT_VIEWER_PATH", m_strPathReadImageApp);
@@ -1757,17 +1764,16 @@ void register_gui::WriteDefaultConfig()
 
 bool register_gui::ReadDefaultConfig()
 {
-    QCoreApplication::setOrganizationName ("Plastimatch");
-    QCoreApplication::setOrganizationDomain ("plastimatch.org");
-    QCoreApplication::setApplicationName ("register_gui");
-
     QSettings settings;
-    settings.setValue ("DEFAULT_WORK_DIR", m_strPathDirDefault);
-    settings.setValue ("DEFAULT_VIEWER_PATH", m_strPathReadImageApp);
-
     QVariant val = settings.value ("DEFAULT_WORK_DIR");
     if (!val.isNull()) {
         SetWorkDir(val.toString());
+    }
+    else
+    {
+        // Set workdir to folder of current directory
+        QString m_strPathCurrent = QDir::current().absolutePath();
+        SetWorkDir(m_strPathCurrent);
     }
     val = settings.value ("DEFAULT_VIEWER_PATH");
     if (!val.isNull()) {
