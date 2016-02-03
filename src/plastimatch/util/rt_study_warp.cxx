@@ -315,9 +315,27 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     lprintf ("PIH is:\n");
     pih.print ();
 
+    /* Check if output image geometry matches input image geometry.
+       If it doesn't we need to resample to get the output geometry. 
+       We need to supply an identity xform if none was supplied, 
+       so that the warp function can do the resample. */
+    bool pih_changed = false;
+    if (rt_study->get_image()) {
+        Plm_image_header pih_input_image (rt_study->get_image());
+        if (!Plm_image_header::compare (&pih_input_image, &pih)) {
+            pih_changed = true;
+            if (parms->xf_in_fn == "") {
+                TranslationTransformType::Pointer trn
+                    = TranslationTransformType::New();
+                xform->set_trn(trn);
+            }
+        }
+    }
+
     /* Warp the image and create vf */
     if (rt_study->have_image()
-        && parms->xf_in_fn != ""
+        && (parms->xf_in_fn != ""
+            || pih_changed)
         && (parms->output_img_fn != ""
             || parms->output_vf_fn != ""
             || parms->output_dicom != ""))
