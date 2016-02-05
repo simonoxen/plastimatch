@@ -24,6 +24,8 @@ option (PLM_CONFIG_USE_SS_IMAGE_VEC
 # Plastimatch legacy options
 option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
   "Use legacy code for extending b-spline domain" OFF)
+option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
+  "Use legacy code for reading and writing b-spline xform files" ON)
 option (PLM_CONFIG_LEGACY_MI_METRIC
   "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
 

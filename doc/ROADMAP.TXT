@@ -8,6 +8,7 @@ Features
 *  Overlap fraction penalty for native registration methods
 *  Full support for irregular slice spacing
 *  Superbuild
+*  Non-aligned B-spline LUT
 
 Backward incompatible changes
 *  Remove short options
@@ -16,7 +17,7 @@ Backward incompatible changes
 *  Standalone executables will no longer be available, instead 
    they are merged into plastimatch executable:
    vf-invert, landmark-warp, drr, fdk, wed
-*  Metric mi will default to Mattes for ITK methods
+*  Metric mi will default to Mattes for ITK methods (done)
 *  Automatic tuning of regularization lambda as default (?)
 *  xform=align_center -> xform=translation, optim=align_center
 
@@ -30,6 +31,7 @@ Cleanup
 *  Evaluate if duplication between Stage_parms and Bspline_parms 
    can be removed
 *  Re-evaluate B-spline loop template
+*  DICOM uses module system
 
 Wishlist
 

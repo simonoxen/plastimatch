@@ -10,6 +10,7 @@
 #include <vector>
 #include "plm_return_code.h"
 
+PLMSYS_API bool string_starts_with (const std::string& s1, const char* s2);
 PLMSYS_API bool string_starts_with (const char* s1, const char* s2);
 PLMSYS_API int plm_strcmp (const char* s1, const char* s2);
 PLMSYS_API std::string make_lowercase (const std::string& s);
@@ -48,5 +49,7 @@ template <typename T> PLMSYS_API std::string PLM_to_string(T value);
 
 PLMSYS_API std::vector<std::string>& string_split (const std::string &s, char delim, std::vector<std::string> &elems);
 PLMSYS_API std::vector<std::string> string_split (const std::string &s, char delim);
+PLMSYS_API bool split_tag_val (const std::string& s, 
+    std::string& tag, std::string& val, char delim = '=');
 
 #endif

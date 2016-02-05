@@ -22,6 +22,11 @@ public:
     Bspline_xform ();
     ~Bspline_xform ();
 public:
+    enum Lut_type {
+        LUT_ALIGNED,
+        LUT_UNALIGNED
+    };
+public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     plm_long img_dim[3];         /* Image size (in vox) */
@@ -36,6 +41,8 @@ public:
     int num_coeff;               /* Total number of coefficents (= product(cdims) * 3) */
     float* coeff;                /* Coefficients.  Vector directions interleaved. */
 
+    Lut_type lut_type;
+
     /* Aligned grid (3D) LUTs */
     plm_long* cidx_lut;          /* Lookup volume for region number */
     plm_long* c_lut;             /* Lookup table for control point indices */
@@ -46,6 +53,11 @@ public:
     float *bx_lut;               /* LUT for influence multiplier in x dir */
     float *by_lut;               /* LUT for influence multiplier in y dir */
     float *bz_lut;               /* LUT for influence multiplier in z dir */
+
+    /* Unaligned grid (1D) LUTs */
+    float *ux_lut;               /* LUT for influence multiplier in x dir */
+    float *uy_lut;               /* LUT for influence multiplier in y dir */
+    float *uz_lut;               /* LUT for influence multiplier in z dir */
 
 public:
     void initialize (

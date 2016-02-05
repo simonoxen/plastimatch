@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <fstream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -19,6 +20,7 @@
 #include "logfile.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
+#include "string_util.h"
 #include "volume_header.h"
 #include "volume_macros.h"
 
@@ -40,6 +42,8 @@ Bspline_xform::Bspline_xform ()
     this->num_coeff = 0;
     this->coeff = 0;
 
+    this->lut_type = LUT_ALIGNED;
+
     this->cidx_lut = 0;
     this->c_lut = 0;
     this->qidx_lut = 0;
@@ -48,6 +52,10 @@ Bspline_xform::Bspline_xform ()
     this->bx_lut = 0;
     this->by_lut = 0;
     this->bz_lut = 0;
+
+    this->ux_lut = 0;
+    this->uy_lut = 0;
+    this->uz_lut = 0;
 }
 
 Bspline_xform::~Bspline_xform ()
@@ -70,6 +78,9 @@ Bspline_xform::~Bspline_xform ()
     if (this->bz_lut) {
         free (this->bz_lut);
     }
+    delete[] ux_lut;
+    delete[] uy_lut;
+    delete[] uz_lut;
 }
 
 static float
@@ -149,6 +160,8 @@ Bspline_xform::save (const char* filename)
 
     fclose (fp);
 }
+
+#if PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
 
 Bspline_xform* 
 bspline_xform_load (const char* filename)
@@ -264,6 +277,141 @@ free_exit:
     return 0;
 }
 
+#else /* PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO is off */
+
+Bspline_xform* 
+bspline_xform_load (const char* filename)
+{
+    int rc;
+    float img_origin[3] = {      /* Image origin (in mm) */
+        0., 0., 0. };
+    float img_spacing[3] = {     /* Image spacing (in mm) */
+        1., 1., 1. };
+    unsigned int a, b, c;        /* For fscanf */
+    plm_long img_dim[3] = {      /* Image size (in vox) */
+        0, 0, 0 };
+    plm_long roi_offset[3] = {   /* Position of first vox in ROI (in vox) */
+        0, 0, 0 };
+    plm_long roi_dim[3] = {      /* Dimension of ROI (in vox) */
+        0, 0, 0 };
+    plm_long vox_per_rgn[3] = {  /* Knot spacing (in vox) */
+        0, 0, 0 };
+    float dc[9] = {              /* Direction cosines */
+        1., 0., 0., 0., 1., 0., 0., 0., 1. };
+
+    std::ifstream ifs (filename);
+    if (!ifs.is_open()) {
+        return 0;
+    }
+
+    /* Check magic number */
+    std::string line;
+    getline (ifs, line);
+    if (!string_starts_with (line, "MGH_GPUIT_BSP")) {
+        return 0;
+    }
+
+    /* Parse header */
+    while (true) {
+        getline (ifs, line);
+        if (!ifs.good()) {
+            logfile_printf ("Error parsing bspline xform\n");
+            return 0;
+        }
+
+        std::string tag, val;
+        if (!split_tag_val (line, tag, val)) {
+            /* No "=" found.  Better be the first coefficient. */
+            break;
+        }
+        
+        rc = sscanf (line.c_str(), "img_origin = %f %f %f\n", 
+            &img_origin[0], &img_origin[1], &img_origin[2]);
+        if (rc == 3) continue;
+
+        rc = sscanf (line.c_str(), "img_spacing = %f %f %f\n", 
+            &img_spacing[0], &img_spacing[1], &img_spacing[2]);
+        if (rc == 3) continue;
+
+        rc = sscanf (line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            img_dim[0] = a;
+            img_dim[1] = b;
+            img_dim[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "roi_offset = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            roi_offset[0] = a;
+            roi_offset[1] = b;
+            roi_offset[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "roi_dim = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            roi_dim[0] = a;
+            roi_dim[1] = b;
+            roi_dim[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "vox_per_rgn = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            vox_per_rgn[0] = a;
+            vox_per_rgn[1] = b;
+            vox_per_rgn[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
+            &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
+            &dc[5], &dc[6], &dc[7], &dc[8]);
+        if (rc == 9) continue;
+
+        logfile_printf ("Error loading bxf file\n%s\n", line.c_str());
+        return 0;
+    }
+
+    logfile_printf ("1\n");
+
+    /* Allocate memory and build LUTs */
+    Bspline_xform* bxf = new Bspline_xform;
+    bxf->initialize (img_origin, img_spacing, img_dim,
+        roi_offset, roi_dim, vox_per_rgn, dc);
+
+    if (bxf->num_coeff < 1) {
+        logfile_printf ("Error loading bxf file, no coefficients\n");
+        delete bxf;
+        return 0;
+    }
+
+    /* Load from itk-like planar format */
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < bxf->num_coeff / 3; j++) {
+            /* The first line is already loaded from before */
+            if (i != 0 || j != 0) {
+                getline (ifs, line);
+            }
+            if (!ifs.good()) {
+                logfile_printf ("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
+                delete bxf;
+                return 0;
+            }
+            rc = sscanf (line.c_str(), "%f", &bxf->coeff[j*3 + i]);
+            if (rc != 1) {
+                logfile_printf ("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
+                delete bxf;
+                return 0;
+            }
+        }
+    }
+
+    ifs.close();
+    return bxf;
+}
+#endif
 
 /* -----------------------------------------------------------------------
    Debugging routines

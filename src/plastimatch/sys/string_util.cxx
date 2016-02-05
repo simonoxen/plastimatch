@@ -17,6 +17,12 @@
 #include "string_util.h"
 
 bool
+string_starts_with (const std::string& s1, const char* s2)
+{
+    return string_starts_with (s1.c_str(), s2);
+}
+
+bool
 string_starts_with (const char* s1, const char* s2)
 {
     return strncmp (s1, s2, strlen(s2)) == 0;
@@ -398,4 +404,21 @@ std::vector<std::string> string_split (
     std::vector<std::string> elems;
     string_split (s, delim, elems);
     return elems;
+}
+
+bool split_tag_val (
+    const std::string& s, 
+    std::string& tag,
+    std::string& val,
+    char delim)
+{
+    size_t loc = s.find (delim);
+    if (loc == std::string::npos) {
+        tag = "";
+        val = "";
+        return false;
+    }
+    tag = string_trim (s.substr (0, loc));
+    val = string_trim (s.substr (loc + 1));
+    return true;
 }
