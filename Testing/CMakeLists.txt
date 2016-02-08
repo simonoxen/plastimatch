@@ -77,6 +77,8 @@ set (CONFIG_FILE_LIST
   "proton-dose-5g.txt"
   "proton-dose-6a.txt"
   "speedtest-a.txt"
+  "wed-a.txt"
+  "wed-b.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -417,7 +419,7 @@ plm_add_test (
 plm_add_test (
   "lung-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
+  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-prefix;${PLM_BUILD_TESTING_DIR}/lung-1-prefix;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
   )
 plm_add_test (
   "lung-2"
@@ -4443,6 +4445,24 @@ set_tests_properties (proton-dose-6a-stats
 set_tests_properties (proton-dose-6a-check
     PROPERTIES DEPENDS proton-dose-6a-stats)
 
+## -------------------------------------------------------------------------
+## wed-a           ct to proj-wed, proj-ct, and wed-ct
+## wed-b           proj-wed to dew-ct
+## -------------------------------------------------------------------------
+plm_add_test (
+  "wed-a"
+  ${PLM_PLASTIMATCH_PATH}/wed
+  "${PLM_BUILD_TESTING_DIR}/wed-a.txt"
+  )
+set_tests_properties (wed-a PROPERTIES DEPENDS lung-1)
+
+plm_add_test (
+  "wed-b"
+  ${PLM_PLASTIMATCH_PATH}/wed
+  "${PLM_BUILD_TESTING_DIR}/wed-b.txt"
+  )
+set_tests_properties (wed-b PROPERTIES DEPENDS lung-1)
+set_tests_properties (wed-b PROPERTIES DEPENDS wed-a)
 
 ## -------------------------------------------------------------------------
 ## i hate myself

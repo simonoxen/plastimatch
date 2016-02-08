@@ -21,6 +21,7 @@ class Synthetic_mha_main_parms
 public:
     std::string output_fn;
     std::string output_dose_img_fn;
+    std::string output_prefix;
     std::string output_ss_img_fn;
     std::string output_ss_list_fn;
     std::string output_dicom;
@@ -41,6 +42,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     /* Create image */
     Rt_study rtds;
     if (parms->output_dicom != "" 
+        || parms->output_prefix != ""
         || parms->output_ss_img_fn != ""
         || parms->output_ss_list_fn != "")
     {
@@ -68,6 +70,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
         rtds.get_rtss()->convert_to_uchar_vec ();
 #endif
         rtds.get_rtss()->save_ss_image (parms->output_ss_img_fn);
+    }
+
+    /* prefix */
+    if (parms->output_prefix != "") {
+        rtds.get_rtss()->save_prefix (parms->output_prefix);
     }
 
     /* dose_img */
@@ -121,6 +128,8 @@ parse_fn (
         "output dicom directory", 1, "");
     parser->add_long_option ("", "output-dose-img", 
         "filename for output dose image", 1, "");
+    parser->add_long_option ("", "output-prefix", 
+        "create a directory with a separate image for each structure", 1, "");
     parser->add_long_option ("", "output-ss-img", 
         "filename for output structure set image", 1, "");
     parser->add_long_option ("", "output-ss-list", 
@@ -253,6 +262,7 @@ parse_fn (
     parms->output_fn = parser->get_string("output");
     parms->output_dicom = parser->get_string("output-dicom");
     parms->output_dose_img_fn = parser->get_string("output-dose-img");
+    parms->output_prefix = parser->get_string("output-prefix");
     parms->output_ss_img_fn = parser->get_string("output-ss-img");
     parms->output_ss_list_fn = parser->get_string("output-ss-list");
     sm_parms->output_type = plm_image_type_parse (
