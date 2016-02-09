@@ -22,7 +22,7 @@ Proj_matrix::Proj_matrix ()
 }
 
 Proj_matrix*
-proj_matrix_clone (Proj_matrix* pmat_in)
+Proj_matrix::clone ()
 {
     Proj_matrix *pmat;
     
@@ -30,7 +30,7 @@ proj_matrix_clone (Proj_matrix* pmat_in)
     if (!pmat) return 0;
 
     /* No dynamically allocated memory in proj_matrix */
-    memcpy (pmat, pmat_in, sizeof (Proj_matrix));
+    memcpy (pmat, this, sizeof (Proj_matrix));
 
     return pmat;
 }
@@ -86,23 +86,19 @@ proj_matrix_write (
 }
 
 void
-proj_matrix_debug (
-    Proj_matrix *pmat
-)
+Proj_matrix::debug ()
 {
-    proj_matrix_write (pmat, stdout);
+    proj_matrix_write (this, stdout);
 }
 
 void
-proj_matrix_save (
-    Proj_matrix *pmat,
+Proj_matrix::save (
     const char *fn
 )
 {
     FILE *fp;
 
     if (!fn) return;
-    if (!pmat) return;
 
     make_parent_directories (fn);
     fp = fopen (fn, "w");
@@ -111,14 +107,13 @@ proj_matrix_save (
 	exit (-1);
     }
 
-    proj_matrix_write (pmat, fp);
+    proj_matrix_write (this, fp);
 
     fclose (fp);
 }
 
 void
-proj_matrix_set (
-    Proj_matrix *pmat,
+Proj_matrix::set (
     const double* cam, 
     const double* tgt, 
     const double* vup, 
@@ -133,11 +128,11 @@ proj_matrix_set (
     double plt[3];       /* Panel left (toward first column) */
     double pup[3];       /* Panel up (toward top row) */
 
-    vec3_copy (pmat->cam, cam);
-    pmat->sid = sid;
-    pmat->sad = vec3_len (cam);
-    pmat->ic[0] = ic[0];
-    pmat->ic[1] = ic[1];
+    vec3_copy (this->cam, cam);
+    this->sid = sid;
+    this->sad = vec3_len (cam);
+    this->ic[0] = ic[0];
+    this->ic[1] = ic[1];
 
     /* Compute imager coordinate sys (nrm,pup,plt) 
        ---------------
@@ -162,51 +157,51 @@ proj_matrix_set (
 #endif
 
     /* Build extrinsic matrix - rotation part */
-    vec_zero (pmat->extrinsic, 16);
-    vec3_copy (&pmat->extrinsic[0], plt);
-    vec3_copy (&pmat->extrinsic[4], pup);
-    vec3_copy (&pmat->extrinsic[8], nrm);
-    vec3_invert (&pmat->extrinsic[0]);
-    vec3_invert (&pmat->extrinsic[4]);
-    vec3_invert (&pmat->extrinsic[8]);
-    m_idx (pmat->extrinsic,cols,3,3) = 1.0;
+    vec_zero (this->extrinsic, 16);
+    vec3_copy (&this->extrinsic[0], plt);
+    vec3_copy (&this->extrinsic[4], pup);
+    vec3_copy (&this->extrinsic[8], nrm);
+    vec3_invert (&this->extrinsic[0]);
+    vec3_invert (&this->extrinsic[4]);
+    vec3_invert (&this->extrinsic[8]);
+    m_idx (this->extrinsic,cols,3,3) = 1.0;
 
     /* Build extrinsic matrix - translation part */
-    pmat->extrinsic[3] = vec3_dot (plt, tgt);
-    pmat->extrinsic[7] = vec3_dot (pup, tgt);
-    pmat->extrinsic[11] = vec3_dot (nrm, tgt) + pmat->sad;
+    this->extrinsic[3] = vec3_dot (plt, tgt);
+    this->extrinsic[7] = vec3_dot (pup, tgt);
+    this->extrinsic[11] = vec3_dot (nrm, tgt) + this->sad;
 
 #if defined (commentout)
     printf ("EXTRINSIC\n%g %g %g %g\n%g %g %g %g\n"
 	"%g %g %g %g\n%g %g %g %g\n",
-	pmat->extrinsic[0], pmat->extrinsic[1], 
-	pmat->extrinsic[2], pmat->extrinsic[3],
-	pmat->extrinsic[4], pmat->extrinsic[5], 
-	pmat->extrinsic[6], pmat->extrinsic[7],
-	pmat->extrinsic[8], pmat->extrinsic[9], 
-	pmat->extrinsic[10], pmat->extrinsic[11],
-	pmat->extrinsic[12], pmat->extrinsic[13], 
-	pmat->extrinsic[14], pmat->extrinsic[15]);
+	this->extrinsic[0], this->extrinsic[1], 
+	this->extrinsic[2], this->extrinsic[3],
+	this->extrinsic[4], this->extrinsic[5], 
+	this->extrinsic[6], this->extrinsic[7],
+	this->extrinsic[8], this->extrinsic[9], 
+	this->extrinsic[10], this->extrinsic[11],
+	this->extrinsic[12], this->extrinsic[13], 
+	this->extrinsic[14], this->extrinsic[15]);
 #endif
 
     /* Build intrinsic matrix */
-    vec_zero (pmat->intrinsic, 12);
-    m_idx (pmat->intrinsic,cols,0,0) = 1 / ps[0];
-    m_idx (pmat->intrinsic,cols,1,1) = 1 / ps[1];
-    m_idx (pmat->intrinsic,cols,2,2) = 1 / sid;
+    vec_zero (this->intrinsic, 12);
+    m_idx (this->intrinsic,cols,0,0) = 1 / ps[0];
+    m_idx (this->intrinsic,cols,1,1) = 1 / ps[1];
+    m_idx (this->intrinsic,cols,2,2) = 1 / sid;
 
 #if defined (commentout)
     printf ("INTRINSIC\n%g %g %g %g\n%g %g %g %g\n%g %g %g %g\n",
-	pmat->intrinsic[0], pmat->intrinsic[1], 
-	pmat->intrinsic[2], pmat->intrinsic[3],
-	pmat->intrinsic[4], pmat->intrinsic[5], 
-	pmat->intrinsic[6], pmat->intrinsic[7],
-	pmat->intrinsic[8], pmat->intrinsic[9], 
-	pmat->intrinsic[10], pmat->intrinsic[11]);
+	this->intrinsic[0], this->intrinsic[1], 
+	this->intrinsic[2], this->intrinsic[3],
+	this->intrinsic[4], this->intrinsic[5], 
+	this->intrinsic[6], this->intrinsic[7],
+	this->intrinsic[8], this->intrinsic[9], 
+	this->intrinsic[10], this->intrinsic[11]);
 #endif
 
     /* Build projection matrix */
-    mat_mult_mat (pmat->matrix, pmat->intrinsic,3,4, pmat->extrinsic,4,4);
+    mat_mult_mat (this->matrix, this->intrinsic,3,4, this->extrinsic,4,4);
 }
 
 void

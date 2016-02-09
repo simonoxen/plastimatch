@@ -490,7 +490,7 @@ proj_image_save (
 #endif
     }
     if (mat_filename) {
-        proj_matrix_save (proj->pmat, mat_filename);
+        proj->pmat->save (mat_filename);
     }
 }
 

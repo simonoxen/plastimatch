@@ -96,8 +96,7 @@ Proj_volume::set_geometry (
     d_ptr->step_length = step_length;
 
     /* build projection matrix */
-    proj_matrix_set (
-        d_ptr->pmat,
+    d_ptr->pmat->set (
         src, 
         iso, 
         vup, 

@@ -1,4 +1,22 @@
 ******************************************************************************
+Proj_volume coordinates
+2016-02-08
+
+The main issue with the proj volume is that its coordinates are 
+both difficult to understand and poorly documented.
+
+What makes it difficult?
+- ires vs image_dim
+- image_center vs image_origin
+- location of first data point (at clipping plane or inside volume?)
+
+What does ray_data contain?
+- ray_data is computed from reference volume
+- Includes test if ray intersects volume, front and back intersection 
+  points, aperture intersection point, and ray norm
+
+
+******************************************************************************
 Rpl_volume
 2015-12-21
 

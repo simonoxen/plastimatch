@@ -257,7 +257,7 @@ Rpl_volume::get_rgdepth (
     Proj_matrix *pmat = d_ptr->proj_vol->get_proj_matrix();
 
     if (debug) {
-        proj_matrix_debug (pmat);
+        pmat->debug ();
     }
 
     /* Back project the voxel to the aperture plane */

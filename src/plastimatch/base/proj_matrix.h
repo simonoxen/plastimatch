@@ -25,20 +25,18 @@ public:
     void get_nrm (double nrm[3]);
     void get_pdn (double pdn[3]);
     void get_prt (double prt[3]);
+    void set (
+        const double* cam, 
+        const double* tgt, 
+        const double* vup, 
+        double sid, 
+        const double* ic, 
+        const double* ps, 
+        const int* ires
+    );
+    void save (const char *fn);
+    void debug ();
+    Proj_matrix* clone ();
 };
-
-PLMBASE_API Proj_matrix* proj_matrix_clone (Proj_matrix* pmat_in);
-PLMBASE_API void proj_matrix_set (
-    Proj_matrix *pmat,
-    const double* cam, 
-    const double* tgt, 
-    const double* vup, 
-    double sid, 
-    const double* ic, 
-    const double* ps, 
-    const int* ires
-);
-PLMBASE_API void proj_matrix_debug (Proj_matrix *pmat);
-PLMBASE_API void proj_matrix_save (Proj_matrix *pmat, const char *fn);
 
 #endif
