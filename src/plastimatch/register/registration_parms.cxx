@@ -339,6 +339,10 @@ Registration_parms::set_key_value (
             goto key_not_allowed_in_section_process;
         }
     }
+    else if (key == "valid_roi_out") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->valid_roi_out_fn = val;
+    }
     else if (key == "fixed_landmarks") {
         if (section_process) goto key_not_allowed_in_section_process;
         shared->fixed_landmarks_fn = val;

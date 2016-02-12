@@ -173,11 +173,11 @@ Plm_image::create (Plm_image_type type, const Plm_image_header& pih)
 /* -----------------------------------------------------------------------
    Cloning
    ----------------------------------------------------------------------- */
-Plm_image*
+Plm_image::Pointer
 Plm_image::clone (void)
 {
-    Plm_image *pli = new Plm_image;
-    if (!pli) return 0;
+    Plm_image::Pointer pli = Plm_image::New();
+    if (!pli) return pli;
 
     pli->m_original_type = this->m_original_type;
     pli->m_type = this->m_type;
@@ -218,8 +218,7 @@ Plm_image::clone (void)
 Plm_image::Pointer
 Plm_image::clone (const Plm_image::Pointer& pli)
 {
-    Plm_image* new_pli = pli->clone();
-    return Plm_image::New (new_pli);
+    return pli->clone ();
 }
 
 /* -----------------------------------------------------------------------

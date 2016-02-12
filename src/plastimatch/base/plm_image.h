@@ -91,7 +91,7 @@ public:
     void init ();
     void free ();
     bool have_image ();
-    Plm_image* clone (void);
+    Plm_image::Pointer clone (void);
     void create (Plm_image_type type, const Plm_image_header& pih);
 
     /* Loading */
