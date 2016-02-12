@@ -120,44 +120,37 @@
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #endif
 
-#if _MSC_VER < 1700
+#if defined(_MSC_VER) && _MSC_VER < 1700
 #define inline __inline
 #endif
 
-#if defined(__BORLANDC__) || defined(_MSC_VER)
+#if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf _snprintf
 #endif
 
-
-/* JAS 2012.04.24
- * Plastimatch 2.0 method for demangling symbols */
 #ifdef __cplusplus
 #define EXTERNC extern "C"
 #else
 #define EXTERNC
 #endif
 
-
-/* JAS 2011.02.07
- * GPU Plugins are not considered "shared libs"
- * otherwise Win32 build will break when not using "shared libs" */
 #if ((defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
 #ifdef plmcuda_EXPORTS
- #define plmcuda_EXPORT(f, ...)                                     \
+#define plmcuda_EXPORT(f, ...)                                     \
     __declspec(dllexport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
  #else
- #define plmcuda_EXPORT(f, ...)                                     \
+#define plmcuda_EXPORT(f, ...)                                     \
     __declspec(dllimport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #endif
 
 #ifdef plmopencl_EXPORTS
- #define plmopencl_EXPORT(f, ...)                                   \
+#define plmopencl_EXPORT(f, ...)                                   \
     __declspec(dllexport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #else
- #define plmopencl_EXPORT(f, ...)                                   \
+#define plmopencl_EXPORT(f, ...)                                   \
     __declspec(dllimport)                                          \
     f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
 #endif
