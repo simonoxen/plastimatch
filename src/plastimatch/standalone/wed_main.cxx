@@ -294,7 +294,7 @@ do_wed (Wed_Parms *parms)
     /* Load the input proj_wed */
     Rpl_volume::Pointer proj_wed = Rpl_volume::New ();
     if (parms->input_proj_wed_fn != "") {
-        proj_wed->load (parms->input_proj_wed_fn);
+        proj_wed->load_rpl (parms->input_proj_wed_fn);
     }
 
     if (parms->input_skin_fn != "") {
@@ -447,7 +447,7 @@ do_wed (Wed_Parms *parms)
 #endif
 
     if (parms->output_proj_wed_fn != "") {
-        rpl.save (parms->output_proj_wed_fn);
+        rpl.save_rpl (parms->output_proj_wed_fn);
     }
 
     if (parms->output_dew_ct_fn != "") {
@@ -469,7 +469,7 @@ do_wed (Wed_Parms *parms)
     /* Compute the proj_ct volume */
     if (parms->output_proj_ct_fn != "") {
         rpl.compute_rpl_HU ();
-        rpl.save (parms->output_proj_ct_fn);
+        rpl.save_rpl (parms->output_proj_ct_fn);
     }
 }
 

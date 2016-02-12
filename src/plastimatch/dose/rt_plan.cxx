@@ -794,57 +794,57 @@ Rt_plan::compute_plan ()
         if (!this->prepare_beam_for_calc (beam)) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-		/* Compute beam modifiers, SOBP etc. according to the teatment strategy */
-		beam->compute_prerequisites_beam_tools(this->get_target());
-		/*
-		if (beam->get_beam_line_type() == "passive")
-		{
-			/* handle auto-generated beam modifiers
-			if (d_ptr->target_fn != "") {
-				printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
-				this->set_target (d_ptr->target_fn);
-				beam->compute_beam_modifiers(this->get_target()->get_vol());
-			}
+        /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
+        beam->compute_prerequisites_beam_tools(this->get_target());
+        /*
+          if (beam->get_beam_line_type() == "passive")
+          {
+          /* handle auto-generated beam modifiers
+          if (d_ptr->target_fn != "") {
+          printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
+          this->set_target (d_ptr->target_fn);
+          beam->compute_beam_modifiers(this->get_target()->get_vol());
+          }
 	
-			/* generate depth dose curve, might be manual peaks or 
-			optimized based on prescription, or automatic based on target
+          /* generate depth dose curve, might be manual peaks or 
+          optimized based on prescription, or automatic based on target
 
-			if ((beam->get_mebs()->get_have_copied_peaks() == false && beam->get_mebs()->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_mebs()->get_have_manual_peaks() == true)) {
+          if ((beam->get_mebs()->get_have_copied_peaks() == false && beam->get_mebs()->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_mebs()->get_have_manual_peaks() == true)) {
 		
-				/* Manually specified, so do not optimize
-				if (!beam->get_mebs()->generate ()) {
-					return PLM_ERROR;
-				}
-			} 
-			else if (d_ptr->target_fn != "" && !beam->get_mebs()->get_have_prescription()) {
-				/* Optimize based on target volume
-				Rpl_volume *rpl_vol = beam->rpl_vol;
-				beam->get_mebs()->set_prescription(rpl_vol->get_min_wed() - beam->get_mebs()->get_proximal_margin(), rpl_vol->get_max_wed() + beam->get_mebs()->get_distal_margin());
-				beam->get_mebs()->optimize_sobp ();
-			} else {
-				/* Optimize based on manually specified range and modulation
-				beam->get_mebs()->optimize_sobp ();
-			}
+          /* Manually specified, so do not optimize
+          if (!beam->get_mebs()->generate ()) {
+          return PLM_ERROR;
+          }
+          } 
+          else if (d_ptr->target_fn != "" && !beam->get_mebs()->get_have_prescription()) {
+          /* Optimize based on target volume
+          Rpl_volume *rpl_vol = beam->rpl_vol;
+          beam->get_mebs()->set_prescription(rpl_vol->get_min_wed() - beam->get_mebs()->get_proximal_margin(), rpl_vol->get_max_wed() + beam->get_mebs()->get_distal_margin());
+          beam->get_mebs()->optimize_sobp ();
+          } else {
+          /* Optimize based on manually specified range and modulation
+          beam->get_mebs()->optimize_sobp ();
+          }
 			
-			/* compute the pencil beam spot matrix for passive beams
-			beam->get_mebs()->initialize_and_compute_particle_number_matrix_passive(beam->get_aperture());
-		}
-		else // active
-		{
-			// to be computed
+          /* compute the pencil beam spot matrix for passive beams
+          beam->get_mebs()->initialize_and_compute_particle_number_matrix_passive(beam->get_aperture());
+          }
+          else // active
+          {
+          // to be computed
 
-			/* Compute the aperture and wed matrices
-			if (beam->get_mebs()->get_have_particle_number_map() == false)
-			{
-				/* we extract the max and min energies to cover the target/prescription
-				beam->compute_beam_modifiers(
-				beam->get_mebs()->compute_particle_number_matrix_from_target_active(beam->rpl_vol, beam->get_target(), beam->get_aperture());
-			}
-			else // spot map exists as a txt file
-			{
-				beam->get_mebs()->initialize_and_read_particle_number_matrix_active(beam->get_aperture());
-			}
-		} */
+          /* Compute the aperture and wed matrices
+          if (beam->get_mebs()->get_have_particle_number_map() == false)
+          {
+          /* we extract the max and min energies to cover the target/prescription
+          beam->compute_beam_modifiers(
+          beam->get_mebs()->compute_particle_number_matrix_from_target_active(beam->rpl_vol, beam->get_target(), beam->get_aperture());
+          }
+          else // spot map exists as a txt file
+          {
+          beam->get_mebs()->initialize_and_read_particle_number_matrix_active(beam->get_aperture());
+          }
+          } */
 
         /* Generate dose */
         this->set_debug (true);
@@ -867,7 +867,7 @@ Rt_plan::compute_plan ()
         if (d_ptr->output_proj_img_fn != "") {
             Rpl_volume* proj_img = beam->rpl_ct_vol_HU;
             if (proj_img) {
-                proj_img->save (beam->get_proj_img_out().c_str());
+                proj_img->save_rpl (beam->get_proj_img_out());
             }
         }
 
@@ -875,7 +875,7 @@ Rt_plan::compute_plan ()
         if (beam->get_proj_dose_out() != "") {
             Rpl_volume* proj_dose = beam->rpl_dose_vol;
             if (proj_dose) {
-                proj_dose->save (beam->get_proj_dose_out().c_str());
+                proj_dose->save_rpl (beam->get_proj_dose_out());
             }
         }
 
@@ -883,7 +883,7 @@ Rt_plan::compute_plan ()
         if (beam->get_sigma_out() != "") {
             Rpl_volume* sigma_img = beam->sigma_vol;
             if (sigma_img) {
-                sigma_img->save (beam->get_sigma_out().c_str());
+                sigma_img->save_rpl (beam->get_sigma_out());
             }
         }
 
@@ -891,16 +891,16 @@ Rt_plan::compute_plan ()
         if (beam->get_wed_out() != "") {
             Rpl_volume* rpl_vol = beam->rpl_vol;
             if (rpl_vol) {
-                rpl_vol->save (beam->get_wed_out().c_str());
+                rpl_vol->save_rpl (beam->get_wed_out());
             }
         }
 
-		/* Save the spot map */
-		if (beam->get_mebs()->get_particle_number_out() != "") {
-			beam->get_mebs()->export_spot_map_as_txt(beam->get_aperture());
-		}
+        /* Save the spot map */
+        if (beam->get_mebs()->get_particle_number_out() != "") {
+            beam->get_mebs()->export_spot_map_as_txt(beam->get_aperture());
+        }
 
-    float* beam_dose_img = (float*) d_ptr->beam_storage[i]->get_dose()->get_volume()->img;
+        float* beam_dose_img = (float*) d_ptr->beam_storage[i]->get_dose()->get_volume()->img;
 
         /* Dose cumulation to the plan dose volume */
         for (int j = 0; j < dim[0] * dim[1] * dim[2]; j++)

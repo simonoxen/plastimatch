@@ -14,6 +14,11 @@ What does ray_data contain?
 - ray_data is computed from reference volume
 - Includes test if ray intersects volume, front and back intersection 
   points, aperture intersection point, and ray norm
+- compute_ray_data also sets the clipping planes
+
+What conversions are important?
+- Convert ct to proj_wed, proj_ct
+- Convert proj_wed to ct
 
 
 ******************************************************************************

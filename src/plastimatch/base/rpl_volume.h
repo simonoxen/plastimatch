@@ -104,10 +104,14 @@ public:
 
     void apply_beam_modifiers ();
 
-    void save (const char* filename);
-    void save (const std::string& filename);
-    void load (const char *filename);
-    void load (const std::string& filename);
+    void save_rpl (const char* filename);
+    void save_rpl (const std::string& filename);
+    void save_img (const char* filename);
+    void save_img (const std::string& filename);
+    void load_rpl (const char* filename);
+    void load_rpl (const std::string& filename);
+    void load_img (const char *filename);
+    void load_img (const std::string& filename);
 
     void compute_ray_data ();
     void compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);

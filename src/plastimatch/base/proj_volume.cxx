@@ -166,7 +166,7 @@ Proj_volume::allocate ()
     plm_long dim[3] = { d_ptr->image_dim[0], d_ptr->image_dim[1], 
                         d_ptr->num_steps };
     float origin[3] = { 0, 0, 0 };
-    float spacing[3] = { 1,1,1};
+    float spacing[3] = { 1, 1, 1 };
     float direction_cosines[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
 
     printf("%lg %lg %lg \n", (float) dim[0], (float) dim[1], (float) dim[2]);
@@ -254,14 +254,33 @@ Proj_volume::get_vol () const
 }
 
 void
-Proj_volume::save (const char *filename)
+Proj_volume::save_img (const char *filename)
 {
     Plm_image(d_ptr->vol).save_image(filename);
 }
 
 void
-Proj_volume::load (const char *filename)
+Proj_volume::save_projv (const char *filename)
+{
+    Plm_image(d_ptr->vol).save_image(filename);
+}
+
+void
+Proj_volume::load_img (const char *filename)
 {
     Plm_image::Pointer plm_image = Plm_image::New (filename);
     d_ptr->vol = plm_image->get_volume ();
+}
+
+void
+Proj_volume::load_projv (const char *filename)
+{
+    Plm_image::Pointer plm_image = Plm_image::New (filename);
+    d_ptr->vol = plm_image->get_volume ();
+}
+
+void
+Proj_volume::load_projv (const std::string& filename)
+{
+    this->load_projv (filename.c_str());
 }

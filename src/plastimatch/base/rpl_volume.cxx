@@ -13,6 +13,7 @@
 #include "compiler_warnings.h"
 #include "logfile.h"
 #include "mha_io.h"
+#include "path_util.h"
 #include "plm_int.h"
 #include "plm_math.h"
 #include "plm_image_header.h"
@@ -386,14 +387,11 @@ Rpl_volume::get_min_wed ()
 void 
 Rpl_volume::compute_ray_data ()
 {
-    int ires[2];
-
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
     const double *nrm = proj_vol->get_nrm();
-    ires[0] = d_ptr->proj_vol->get_image_dim (0);
-    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+    const int *ires = d_ptr->proj_vol->get_image_dim();
     Volume *ct_vol = d_ptr->ct->get_vol();
 
     lprintf ("Proj vol:\n");
@@ -401,15 +399,11 @@ Rpl_volume::compute_ray_data ()
     lprintf ("Ref vol:\n");
     ct_vol->debug ();
 
-    /* Make two passes through the aperture grid.  The first pass 
-       is used to find the clipping planes.  The second pass actually 
-       traces the rays. */
-
     /* Allocate data for each ray */
     if (d_ptr->ray_data) delete[] d_ptr->ray_data;
     d_ptr->ray_data = new Ray_data[ires[0]*ires[1]];
 
-    /* Scan through the aperture -- first pass */
+    /* Scan through the aperture plane */
     for (int r = 0; r < ires[1]; r++) {
         double r_tgt[3];
         double tmp[3];
@@ -1604,27 +1598,55 @@ Rpl_volume::get_proj_volume ()
 }
 
 void
-Rpl_volume::save (const char *filename)
+Rpl_volume::save_rpl (const char *filename)
 {
-    d_ptr->proj_vol->save (filename);
+    std::string fn_base = strip_extension_if (filename, "rpl");
+    std::string proj_vol_hdr_fn = fn_base + ".projv";
+    d_ptr->proj_vol->save_projv (filename);
 }
 
 void
-Rpl_volume::save (const std::string& filename)
+Rpl_volume::save_rpl (const std::string& filename)
 {
-    this->save (filename.c_str());
+    this->save_rpl (filename.c_str());
 }
 
 void
-Rpl_volume::load (const char *filename)
+Rpl_volume::save_img (const char *filename)
 {
-    d_ptr->proj_vol->load (filename);
+    d_ptr->proj_vol->save_img (filename);
 }
 
 void
-Rpl_volume::load (const std::string& filename)
+Rpl_volume::save_img (const std::string& filename)
 {
-    this->load (filename.c_str());
+    this->save_img (filename.c_str());
+}
+
+void
+Rpl_volume::load_rpl (const char *filename)
+{
+    std::string fn_base = strip_extension_if (filename, "rpl");
+    std::string proj_vol_hdr_fn = fn_base + ".projv";
+    d_ptr->proj_vol->load_projv (proj_vol_hdr_fn);
+}
+
+void
+Rpl_volume::load_rpl (const std::string& filename)
+{
+    this->load_rpl (filename.c_str());
+}
+
+void
+Rpl_volume::load_img (const char *filename)
+{
+    d_ptr->proj_vol->load_img (filename);
+}
+
+void
+Rpl_volume::load_img (const std::string& filename)
+{
+    this->load_img (filename.c_str());
 }
 
 float compute_PrSTPR_from_HU(float CT_HU)
