@@ -56,7 +56,7 @@ namespace QUTIL{
 
     void GenSampleCommandFile(QString strPathCommandFile, enRegisterOption regiOption);
 
-
+    void GetGeometricLimitFloatImg (FloatImageType::Pointer& spFloatImg, VEC3D& limitStart, VEC3D& limitEnd);
 
     //void UpdateTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3, QTableModel* pTableModel, QTableModel* pTableView);
     //void UpdateFloatTable3(vector<QPointF>& vData1, vector<QPointF>& vData2, vector<QPointF>& vData3,

@@ -30,6 +30,12 @@
 #include "dcmtk/dcmdata/dcitem.h"
 #include "dcmtk/dcmdata/dcdeftag.h"
 
+#include <QDataStream>
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+#include "itkImageSliceIteratorWithIndex.h"
+#include "itkFlipImageFilter.h"
+
 
 gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
@@ -1107,19 +1113,22 @@ void gamma_gui::UpdateProbePos(qyklabel* qlabel)
         physPosX = crntDataPt.x()*spacingX + originX;
         physPosY = crntDataPt.y()*spacingY + originY;
 
-        ui.lineEdit_ProbePosX->setText(QString("%1").arg(physPosX));
-        ui.lineEdit_ProbePosY->setText(QString("%1").arg(physPosY));
-        //ui.lineEdit_ProbePosZ
+
+        ui.lineEdit_ProbePosX->setText(QString::number(physPosX, 'f', 1));
+        ui.lineEdit_ProbePosY->setText(QString::number(physPosY, 'f', 1));
+                //ui.lineEdit_ProbePosZ
     }
     else if (ui.radioButtonSagittal->isChecked())
     {
         curPlane = PLANE_SAGITTAL;
 
         physPosX = crntDataPt.x()*spacingX + originX;
-        physPosY = (iHeight - crntDataPt.y() - 1)*spacingY + originY;
+        physPosY = (iHeight - crntDataPt.y() - 1)*spacingY + originY;        
 
-        ui.lineEdit_ProbePosY->setText(QString("%1").arg(physPosX));
-        ui.lineEdit_ProbePosZ->setText(QString("%1").arg(physPosY));
+        ui.lineEdit_ProbePosY->setText(QString::number(physPosX, 'f', 1));
+        ui.lineEdit_ProbePosZ->setText(QString::number(physPosY, 'f', 1));
+
+
     }
     else if (ui.radioButtonFrontal->isChecked())
     {
@@ -1128,8 +1137,11 @@ void gamma_gui::UpdateProbePos(qyklabel* qlabel)
         physPosX = crntDataPt.x()*spacingX + originX;
         physPosY = (iHeight - crntDataPt.y() - 1)*spacingY + originY;
 
-        ui.lineEdit_ProbePosX->setText(QString("%1").arg(physPosX));
-        ui.lineEdit_ProbePosZ->setText(QString("%1").arg(physPosY));
+        //ui.lineEdit_ProbePosX->setText(QString("%1").arg(physPosX));
+        //ui.lineEdit_ProbePosZ->setText(QString("%1").arg(physPosY));
+
+        ui.lineEdit_ProbePosX->setText(QString::number(physPosX, 'f', 1));
+        ui.lineEdit_ProbePosZ->setText(QString::number(physPosY, 'f', 1));
     }   
   
     
@@ -1941,6 +1953,9 @@ void gamma_gui::SLT_WhenSelectCombo()
     //SLT_DrawAll();
 }
 
+
+
+
 void gamma_gui::SLT_MouseWheelUpdateRef()
 {
     if (ui.labelReferDose->m_pYK16Image == NULL||
@@ -1949,6 +1964,23 @@ void gamma_gui::SLT_MouseWheelUpdateRef()
     {
         return;
     }
+
+    QComboBox* crntCombo = ui.comboBoxCompareFile;
+    int curIdx = crntCombo->currentIndex(); //this should be basename    
+
+    if (curIdx < 0)
+        return;
+
+    if (curIdx >= m_vRefDoseImages.size())
+        return;
+
+    FloatImageType::Pointer spCurImg = m_vRefDoseImages.at(curIdx);
+
+    VEC3D ptLimitStart = { 0.0, 0.0, 0.0 };
+    VEC3D ptLimitEnd = { 0.0, 0.0, 0.0 };
+
+    QUTIL::GetGeometricLimitFloatImg(spCurImg, ptLimitStart, ptLimitEnd);
+
     if (ui.checkBox_ScrollZoom->isChecked())
     {
         double oldZoom = ui.labelReferDose->m_pYK16Image->m_fZoom;
@@ -1973,18 +2005,37 @@ void gamma_gui::SLT_MouseWheelUpdateRef()
         {
             curPlane = PLANE_AXIAL;
             probePosZ = probePosZ + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosZ <= ptLimitStart.z)
+                probePosZ = ptLimitStart.z;
+
+            if (probePosZ >= ptLimitEnd.z)
+                probePosZ = ptLimitEnd.z;
+
+            
             ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
         }
         else if (ui.radioButtonSagittal->isChecked())
         {
             curPlane = PLANE_SAGITTAL;
             probePosX = probePosX + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+            if (probePosX <= ptLimitStart.x)
+                probePosX = ptLimitStart.x;
+
+            if (probePosX >= ptLimitEnd.x)
+                probePosX = ptLimitEnd.x;            
+
             ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));          
         }
         else if (ui.radioButtonFrontal->isChecked())
         {
             curPlane = PLANE_FRONTAL;
             probePosY = probePosY + ui.labelReferDose->m_iMouseWheelDelta*fWeighting;
+            if (probePosY <= ptLimitStart.y)
+                probePosY = ptLimitStart.y;
+            if (probePosY >= ptLimitEnd.y)
+                probePosY = ptLimitEnd.y;       
+
             ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
         }        
     }
@@ -2000,6 +2051,25 @@ void gamma_gui::SLT_MouseWheelUpdateComp()
     {
         return;
     }
+
+    QComboBox* crntCombo = ui.comboBoxCompareFile;
+    int curIdx = crntCombo->currentIndex(); //this should be basename    
+
+    if (curIdx < 0)
+        return;
+
+    if (curIdx >= m_vRefDoseImages.size())
+        return;
+
+    FloatImageType::Pointer spCurImg = m_vCompDoseImages.at(curIdx);
+
+    VEC3D ptLimitStart = { 0.0, 0.0, 0.0 };
+    VEC3D ptLimitEnd = { 0.0, 0.0, 0.0 };
+
+    QUTIL::GetGeometricLimitFloatImg(spCurImg, ptLimitStart, ptLimitEnd);
+
+
+
 
     if (ui.checkBox_ScrollZoom->isChecked())
     {
@@ -2027,18 +2097,41 @@ void gamma_gui::SLT_MouseWheelUpdateComp()
         {
             curPlane = PLANE_AXIAL;
             probePosZ = probePosZ + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+
+
+            if (probePosZ <= ptLimitStart.z)
+                probePosZ = ptLimitStart.z;
+
+            if (probePosZ >= ptLimitEnd.z)
+                probePosZ = ptLimitEnd.z;
+
+
+
             ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
         }
         else if (ui.radioButtonSagittal->isChecked())
         {
             curPlane = PLANE_SAGITTAL;
             probePosX = probePosX + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosX <= ptLimitStart.x)
+                probePosX = ptLimitStart.x;
+
+            if (probePosX >= ptLimitEnd.x)
+                probePosX = ptLimitEnd.x;
+
             ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));
         }
         else if (ui.radioButtonFrontal->isChecked())
         {
             curPlane = PLANE_FRONTAL;
             probePosY = probePosY + ui.labelCompDose->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosY <= ptLimitStart.y)
+                probePosY = ptLimitStart.y;
+            if (probePosY >= ptLimitEnd.y)
+                probePosY = ptLimitEnd.y;
+
             ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
         }
     }
@@ -2060,6 +2153,22 @@ void gamma_gui::SLT_MouseWheelUpdateGamma3D()
     {
         return;
     }
+
+    QComboBox* crntCombo = ui.comboBoxCompareFile;
+    int curIdx = crntCombo->currentIndex(); //this should be basename    
+
+    if (curIdx < 0)
+        return;
+
+    if (curIdx >= m_vRefDoseImages.size())
+        return;
+
+    FloatImageType::Pointer spCurImg = m_vGammaMapImages.at(curIdx);
+
+    VEC3D ptLimitStart = { 0.0, 0.0, 0.0 };
+    VEC3D ptLimitEnd = { 0.0, 0.0, 0.0 };
+
+    QUTIL::GetGeometricLimitFloatImg(spCurImg, ptLimitStart, ptLimitEnd);
 
     if (ui.checkBox_ScrollZoom->isChecked())
     {
@@ -2087,18 +2196,36 @@ void gamma_gui::SLT_MouseWheelUpdateGamma3D()
         {
             curPlane = PLANE_AXIAL;
             probePosZ = probePosZ + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosZ <= ptLimitStart.z)
+                probePosZ = ptLimitStart.z;
+            if (probePosZ >= ptLimitEnd.z)
+                probePosZ = ptLimitEnd.z;
+
             ui.lineEdit_ProbePosZ->setText(QString::number(probePosZ, 'f', 1));
         }
         else if (ui.radioButtonSagittal->isChecked())
         {
             curPlane = PLANE_SAGITTAL;
             probePosX = probePosX + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosX <= ptLimitStart.x)
+                probePosX = ptLimitStart.x;
+            if (probePosX >= ptLimitEnd.x)
+                probePosX = ptLimitEnd.x;
             ui.lineEdit_ProbePosX->setText(QString::number(probePosX, 'f', 1));
         }
         else if (ui.radioButtonFrontal->isChecked())
         {
             curPlane = PLANE_FRONTAL;
             probePosY = probePosY + ui.labelGammaMap3D->m_iMouseWheelDelta*fWeighting;
+
+            if (probePosY <= ptLimitStart.y)
+                probePosY = ptLimitStart.y;
+            if (probePosY >= ptLimitEnd.y)
+                probePosY = ptLimitEnd.y;
+
+
             ui.lineEdit_ProbePosY->setText(QString::number(probePosY, 'f', 1));
         }
     }
@@ -2837,7 +2964,6 @@ void gamma_gui::SLT_SetWorkDir()
     SetWorkDir(dirPath);
 }
 
-
 void gamma_gui::SetWorkDir(const QString& strPath)
 {
     m_strPathDirWorkDir = strPath;
@@ -2852,4 +2978,337 @@ void gamma_gui::SLTM_ExportBatchReport()
         return;
 
     SaveBatchGamma3DSimpleReport(fileName); 
+}
+
+void gamma_gui::SLTM_LoadProtonDoseSetFiles()
+{   
+    QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select proton dose set file to open", m_strPathDirWorkDir, "Proton dose set file (*.set)");
+
+    int iFileCnt = tmpList.size();
+    if (iFileCnt < 1)
+        return;
+
+    vector<ProtonSetFileMGH> vProtonSetHeader;
+
+    for (int i = 0; i < iFileCnt; i++)
+    {
+        QString curTextSetFilePath = tmpList.at(i);
+        
+        ProtonSetFileMGH tmpProtonSetHeader;
+        //Read text and fill the class with as it is.
+        if (!ReadProtonDoseSet(curTextSetFilePath, tmpProtonSetHeader)) //Only reading text files to fill up the vectors, without any auditing
+        {
+            //do nothing
+        }
+
+        QFileInfo fInfoRef(tmpProtonSetHeader.strPathRefDose);
+        QFileInfo fInfoComp(tmpProtonSetHeader.strPathCompDose);
+
+        if (fInfoRef.exists() && fInfoComp.exists()) //both files should exists.
+        {
+            vProtonSetHeader.push_back(tmpProtonSetHeader);
+        }        
+    }
+
+    if (vProtonSetHeader.empty())
+    {
+        cout << "Error. No file was found" << endl;
+        return;
+    }
+
+
+    //Ref clear
+    ui.plainTextEdit_RD_Ref->clear();
+    m_strlistPath_RD_Original_Ref.clear();
+    m_strlistFileBaseName_Ref.clear();
+
+    //Comp Clear
+    ui.plainTextEdit_RD_Comp->clear();    
+    m_strlistPath_RD_Original_Comp.clear();    
+    m_strlistFileBaseName_Comp.clear();
+
+    //output clear
+    m_strlistPath_Output_Gammamap.clear();    
+    m_strlistPath_Output_Failure.clear();
+    m_strlistPath_Output_Report.clear();
+    m_strlistBatchReport.clear();
+
+    //Ref dose clear;
+    m_vRefDose.clear();   
+
+    //Conversion
+    vector<ProtonSetFileMGH>::iterator it;
+    for (it = vProtonSetHeader.begin(); it != vProtonSetHeader.end(); ++it)
+    {
+        ProtonSetFileMGH tempDoseSet = (*it);
+
+        QString strPathMhaRef = ConvertMGHProtonDoseToMha(tempDoseSet.strPathRefDose, tempDoseSet.fDim, tempDoseSet.fOrigin, tempDoseSet.fSpacing);
+        QString strPathMhaComp = ConvertMGHProtonDoseToMha(tempDoseSet.strPathCompDose, tempDoseSet.fDim, tempDoseSet.fOrigin, tempDoseSet.fSpacing);
+
+        QFileInfo fInfoMhaRef(strPathMhaRef);
+        QFileInfo fInfoMhaComp(strPathMhaComp);
+
+        if (fInfoMhaRef.exists())
+        {            
+            m_strlistPath_RD_Original_Ref.push_back(strPathMhaRef);            
+            m_strlistFileBaseName_Ref.push_back(fInfoMhaRef.completeBaseName());
+            ui.plainTextEdit_RD_Ref->appendPlainText(strPathMhaRef); //just for display            
+        }        
+
+        if (fInfoMhaComp.exists())
+        {
+            m_strlistPath_RD_Original_Comp.push_back(strPathMhaComp);            
+            m_strlistFileBaseName_Comp.push_back(fInfoMhaComp.completeBaseName());
+            ui.plainTextEdit_RD_Comp->appendPlainText(strPathMhaComp); //just for display            
+        }
+    }          
+
+    if (m_strlistPath_RD_Original_Ref.size() > 0)
+    {
+        QFileInfo finfo(m_strlistPath_RD_Original_Ref.at(0));
+        QDir crntDir = finfo.absoluteDir();
+        m_strPathInputDir = crntDir.absolutePath();
+
+        SetWorkDir(m_strPathInputDir); //optional
+
+        //Change the plane to Frontal
+        ui.radioButtonFrontal->setChecked(true);
+    }     
+}
+
+bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMGH& protonSetInfo) //strPathProtonDoseSet text file
+{
+    //protonSetInfo    
+
+    protonSetInfo.fDim = { 1.0, 1.0, 1.0 };
+    protonSetInfo.fOrigin = { 0.0, 0.0, 0.0 };
+    protonSetInfo.fSpacing = { 1.0, 1.0, 1.0 };
+    protonSetInfo.strCTDir = "";
+    protonSetInfo.strPathRefDose = "";
+    protonSetInfo.strPathCompDose = "";
+
+
+    QFileInfo fInfoBase(strPathProtonDoseSet);
+
+    ifstream fin;
+    fin.open(strPathProtonDoseSet.toLocal8Bit().constData());
+
+    if (fin.fail())
+    {
+        cout << "Error occurred in file reading!" << endl;
+        return false;
+    } 
+
+    char str[MAX_LINE_LENGTH];
+
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+
+        QString tmpStrLine = QString(str);
+        QStringList strListData = tmpStrLine.split(" \"");
+
+        QString strHeader, strData;
+        if (strListData.count() == 2)
+        {
+            strHeader = strListData.at(0);
+            strData = strListData.at(1);
+            strData = strData.remove("\"");
+        }        
+        
+        if (strHeader.contains("calc-vol"))
+        {
+            QStringList strlistVolInfo = strData.split(",");
+            if (strlistVolInfo.count() == 9) //should be
+            {
+                //First 3 digits: size in mm. X (Lat), Y(SI), Z(AntPost), IEC
+                VEC3D fLength, fOrigin, fDim, fSpacing;
+
+                fLength.x = strlistVolInfo.at(0).toDouble();
+                fLength.y = strlistVolInfo.at(1).toDouble();
+                fLength.z = strlistVolInfo.at(2).toDouble();
+
+                fOrigin.x = strlistVolInfo.at(3).toDouble();
+                fOrigin.y = strlistVolInfo.at(4).toDouble();
+                fOrigin.z = strlistVolInfo.at(5).toDouble();
+
+                fDim.x = strlistVolInfo.at(6).toDouble();
+                fDim.y = strlistVolInfo.at(7).toDouble();
+                fDim.z = strlistVolInfo.at(8).toDouble();
+
+                if (fDim.x != 0 && fDim.y != 0 && fDim.z != 0)
+                {
+                    fSpacing.x = fLength.x / fDim.x;
+                    fSpacing.y = fLength.y / fDim.y;
+                    fSpacing.z = fLength.z / fDim.z;
+                }
+                else
+                {
+                    fSpacing = { 1.0, 1.0, 1.0 };
+                }
+
+                protonSetInfo.fDim = fDim;
+                protonSetInfo.fOrigin = fOrigin;
+                protonSetInfo.fSpacing = fSpacing;
+            }
+        }
+        else if (strHeader.contains("ct-dir"))
+        {
+            protonSetInfo.strCTDir = strData;
+        }
+        else if (strHeader.trimmed() == "dose")
+        {
+            strData = strData + ".MC";            
+            protonSetInfo.strPathCompDose = fInfoBase.absolutePath() + "/" +strData;
+        }
+        else if (strHeader.trimmed() == "ref-dose")
+        {
+            strData = strData + ".orig";
+            protonSetInfo.strPathRefDose = fInfoBase.absolutePath() + "/" + strData;
+        }
+    }
+    fin.close();
+
+    return true;
+}
+
+QString gamma_gui::ConvertMGHProtonDoseToMha(QString& strPathBinary, VEC3D& fDim, VEC3D& fOrigin, VEC3D& fSpacing)
+{
+    QString strResult = "";
+    ///Create a mha file
+
+    QFileInfo fInfo(strPathBinary);
+
+    if (!fInfo.exists())
+    {
+        cout << "Cannot find the binary file: " << strPathBinary.toLocal8Bit().constData() << endl;
+        return strResult;
+    }
+
+    QFile binFile(strPathBinary);
+    binFile.open(QIODevice::ReadOnly);
+    QDataStream in(&binFile);    
+    in.setByteOrder(QDataStream::BigEndian);
+
+    //qint32 voxData;
+    quint32 voxData;
+
+    //Coordinate conversion: IEC --> DICOM --> not possible!
+    //fDim = IEC
+    int width_DCM = (int)fDim.x; //
+    int height_DCM = (int)fDim.z; //
+    int length_DCM = (int)fDim.y; //
+
+    //Create a float itk image 3D
+    FloatImageType::Pointer spItkFloat = FloatImageType::New();
+
+    FloatImageType::SizeType size;
+    size[0] = width_DCM;
+    size[1] = height_DCM;
+    size[2] = length_DCM;
+
+    FloatImageType::IndexType idxStart;
+    idxStart[0] = 0;
+    idxStart[1] = 0;
+    idxStart[2] = 0;
+
+    FloatImageType::SpacingType spacing;    
+    spacing[0] = fSpacing.x;
+    spacing[1] = fSpacing.z;
+    spacing[2] = fSpacing.y;    
+
+    FloatImageType::PointType origin;
+    origin[0] = fOrigin.x;
+    origin[1] = -fOrigin.z;
+    origin[2] = fOrigin.y;
+
+    FloatImageType::RegionType region;
+    region.SetSize(size);
+    region.SetIndex(idxStart);
+
+    spItkFloat->SetRegions(region);
+    spItkFloat->SetSpacing(spacing);
+    spItkFloat->SetOrigin(origin);
+    spItkFloat->Allocate();
+
+    /*ofstream fout;
+    fout.open("D:/testDoseOut.txt");*/
+
+    //itk::ImageRegionIterator<FloatImageType> it(spItkFloat, spItkFloat->GetLargestPossibleRegion());
+    itk::ImageSliceIteratorWithIndex<FloatImageType> it(spItkFloat, spItkFloat->GetLargestPossibleRegion());
+    it.SetFirstDirection(0); //dicom x
+    it.SetSecondDirection(2); //dicom z. -2 doesn't work
+
+    it.GoToBegin();          
+    
+    //for (int k = 3; k < 4; k++)
+    float doseGyVal = 0.0;
+    for (int k = 0; k < height_DCM && !it.IsAtEnd(); k++)
+    {
+        for (int i = 0; i < length_DCM && !it.IsAtEndOfSlice(); i++) //coronal plane
+        {
+            for (int j = 0; j < width_DCM && !it.IsAtEndOfLine(); j++)
+            {
+                //converted mha file: Gy, float //current file: cGy, uint
+                in >> voxData;
+                doseGyVal = voxData / 100.0; //cGy to Gy
+                it.Set(doseGyVal);
+                ++it;                            
+                
+                //    fout << voxData << ",";
+            }
+            it.NextLine();
+          //  fout << endl;
+        }
+        it.NextSlice();
+        //fout << "Plane=" << k << endl;
+    }
+    binFile.close();
+
+    typedef itk::FlipImageFilter< FloatImageType >  FilterType;
+    FilterType::Pointer flipFilter = FilterType::New();
+    typedef FilterType::FlipAxesArrayType FlipAxesArrayType;
+
+    FlipAxesArrayType arrFlipAxes;
+    arrFlipAxes[0] = 0;
+    arrFlipAxes[1] = 0;
+    arrFlipAxes[2] = 1;//SI flip
+
+    flipFilter->SetFlipAxes(arrFlipAxes);
+    flipFilter->SetInput(spItkFloat); //plan CT, USHORT image
+    flipFilter->Update();
+
+    spItkFloat = flipFilter->GetOutput();
+    spItkFloat->SetOrigin(origin); //origin was reverted after the flipping
+    
+
+    QString strDirPath = fInfo.absolutePath();
+    QString strFileName = fInfo.fileName() + ".mha";
+    strResult = strDirPath + "/" + strFileName;
+
+    typedef itk::ImageFileWriter<FloatImageType> WriterType;
+    WriterType::Pointer writer = WriterType::New();
+
+    writer->SetFileName(strResult.toLocal8Bit().constData());
+    writer->SetUseCompression(true); //not exist in original code (rtkfdk)	
+    writer->SetInput(spItkFloat);
+    writer->Update();
+
+    //cout << "Writing image file was succeeded: " << strPath.toLocal8Bit().constData() << endl;
+    //fout.close();
+
+    QFileInfo fInfoOut(strResult);
+
+    if (!fInfoOut.exists())
+    {
+        strResult = "";
+        cout << "Error!File conversion failed" << endl;
+    }
+    else
+        cout << "Successfully converted to a mha file:" << strResult.toLocal8Bit().constData() <<endl;
+     
+    
+    
+    return strResult;
 }
