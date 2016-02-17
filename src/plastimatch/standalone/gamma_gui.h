@@ -131,7 +131,7 @@ public:
 
         void SLTM_ExportBatchReport();
 
-        void SLTM_LoadProtonDoseSetFiles();
+        void SLTM_LoadProtonDoseSetFile();       
 
 public:    
     QStringList m_strlistPath_RD_Original_Ref; //RD files, before the conversion

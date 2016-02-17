@@ -2980,7 +2980,7 @@ void gamma_gui::SLTM_ExportBatchReport()
     SaveBatchGamma3DSimpleReport(fileName); 
 }
 
-void gamma_gui::SLTM_LoadProtonDoseSetFiles()
+void gamma_gui::SLTM_LoadProtonDoseSetFile()
 {   
     QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select proton dose set file to open", m_strPathDirWorkDir, "Proton dose set file (*.set)");
 
