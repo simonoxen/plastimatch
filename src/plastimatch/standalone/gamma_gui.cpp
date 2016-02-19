@@ -758,8 +758,8 @@ void gamma_gui::SLT_DrawAll()
     if (iCnt < 1)
         return;
 
-    if (m_vRefDoseImages.size() != iCnt ||
-        m_vCompDoseImages.size() != iCnt)
+    if ((int)(m_vRefDoseImages.size()) != iCnt ||
+        (int)(m_vCompDoseImages.size()) != iCnt)
     {
         cout << "Error! iCnt not matching in DrawAll" << endl;
         return;
@@ -787,7 +787,7 @@ void gamma_gui::SLT_DrawAll()
 
     FloatImageType::Pointer spCurGamma;
     
-      if (m_vGammaMapImages.size() == iCnt)
+      if ((int)(m_vGammaMapImages.size()) == iCnt)
           spCurGamma = m_vGammaMapImages.at(curIdx);
     /*if (m_pCurImageGamma3D)
         spCurGamma = m_spGammaMapImages;*/
@@ -805,7 +805,7 @@ void gamma_gui::SLT_DrawAll()
     FloatImage2DType::Pointer spCurGamma2DFrom3D; 
     double finalPos1, finalPos2, finalPos3;
 
-    enPLANE curPlane;
+    enPLANE curPlane = PLANE_AXIAL;
     float fixedPos = 0.0;
 
     float probePos2D_X =0.0;
@@ -1090,7 +1090,7 @@ void gamma_gui::UpdateProbePos(qyklabel* qlabel)
     float spacingX = pYKImg->m_fSpacingX;
     float spacingY = pYKImg->m_fSpacingY;
 
-    float iWidth = pYKImg->m_iWidth;
+    //float iWidth = pYKImg->m_iWidth;
     float iHeight = pYKImg->m_iHeight;
 
     float physPosX = 0.0;
@@ -1105,7 +1105,8 @@ void gamma_gui::UpdateProbePos(qyklabel* qlabel)
     //Update Probe position
     // ui.lineEdit_ProbePosX
 
-    enPLANE curPlane;
+    enPLANE curPlane = PLANE_AXIAL;
+
     if (ui.radioButtonAxial->isChecked())
     {
         curPlane = PLANE_AXIAL;
@@ -1238,7 +1239,7 @@ void gamma_gui::UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, ve
 
         if (bData2Exists)
         {
-            qreal tmpValX2 = vData2.at(i).x();
+            //qreal tmpValX2 = vData2.at(i).x();
             qreal tmpValY2 = vData2.at(i).y()*fMag2;
             qreal tmpValY2_Perc = vData2.at(i).y() / fNorm2 * 100.0; //fNorm : Gy not cGy            
 
@@ -1248,9 +1249,9 @@ void gamma_gui::UpdateTable(vector<QPointF>& vData1, vector<QPointF>& vData2, ve
 
         if (bData3Exists)
         {
-            qreal tmpValX3 = vData3.at(i).x();
+            //qreal tmpValX3 = vData3.at(i).x();
             qreal tmpValY3 = vData3.at(i).y()*fMag3;
-            qreal tmpValY3_Perc = vData3.at(i).y() / fNorm3 * 100.0; //fNorm : Gy not cGy
+            //qreal tmpValY3_Perc = vData3.at(i).y() / fNorm3 * 100.0; //fNorm : Gy not cGy
 
             strValY3 = QString::number(tmpValY3, 'f', 2); //gamma
         }       
@@ -1334,7 +1335,7 @@ void gamma_gui::SLT_DrawGraph(bool bInitMinMax)
 
     //QStandardItemModel 	m_pTableModel.item()
     int dataLen = m_pTableModel->rowCount();
-    int columnLen = m_pTableModel->columnCount();
+   // int columnLen = m_pTableModel->columnCount();
 
     if (dataLen < 1)
         return;
@@ -1874,10 +1875,10 @@ void gamma_gui::SLT_WhenSelectCombo()
         return;
 
 
-    if (m_vRefDose.size() != iCnt ||
-        m_strlistPath_RD_Read_Ref.size() != iCnt ||
-        m_strlistPath_RD_Read_Comp.size() != iCnt ||
-        m_strlistPath_Output_Gammamap.size() != iCnt)
+    if ((int)m_vRefDose.size() != iCnt ||
+        (int)m_strlistPath_RD_Read_Ref.size() != iCnt ||
+        (int)m_strlistPath_RD_Read_Comp.size() != iCnt ||
+        (int)m_strlistPath_Output_Gammamap.size() != iCnt)
     {
         cout << "Error! SLT_WhenSelectCombo file count doesn't match!" << endl;
 
@@ -1890,9 +1891,9 @@ void gamma_gui::SLT_WhenSelectCombo()
         return;
     }
         
-    if (m_vRefDoseImages.size() != iCnt ||
-        m_vCompDoseImages.size() != iCnt ||
-        m_vGammaMapImages.size() != iCnt)
+    if ((int)(m_vRefDoseImages.size()) != iCnt ||
+        (int)(m_vCompDoseImages.size()) != iCnt ||
+        (int)(m_vGammaMapImages.size()) != iCnt)
     {
         cout << "Error! ItkImage Pointer count doesn't match!" << endl;
         return;
@@ -1971,7 +1972,7 @@ void gamma_gui::SLT_MouseWheelUpdateRef()
     if (curIdx < 0)
         return;
 
-    if (curIdx >= m_vRefDoseImages.size())
+    if (curIdx >= (int)(m_vRefDoseImages.size()))
         return;
 
     FloatImageType::Pointer spCurImg = m_vRefDoseImages.at(curIdx);
@@ -1996,7 +1997,7 @@ void gamma_gui::SLT_MouseWheelUpdateRef()
     else //change slice
     {
         double fWeighting = 1.0;
-        enPLANE curPlane;
+        enPLANE curPlane = PLANE_AXIAL;
         float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
         float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
         float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
@@ -2058,7 +2059,7 @@ void gamma_gui::SLT_MouseWheelUpdateComp()
     if (curIdx < 0)
         return;
 
-    if (curIdx >= m_vRefDoseImages.size())
+    if (curIdx >= (int)(m_vRefDoseImages.size()))
         return;
 
     FloatImageType::Pointer spCurImg = m_vCompDoseImages.at(curIdx);
@@ -2088,7 +2089,7 @@ void gamma_gui::SLT_MouseWheelUpdateComp()
     else //change slice
     {
         double fWeighting = 1.0;
-        enPLANE curPlane;
+        enPLANE curPlane = PLANE_AXIAL;
         float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
         float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
         float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
@@ -2160,7 +2161,7 @@ void gamma_gui::SLT_MouseWheelUpdateGamma3D()
     if (curIdx < 0)
         return;
 
-    if (curIdx >= m_vRefDoseImages.size())
+    if (curIdx >= (int)(m_vRefDoseImages.size()))
         return;
 
     FloatImageType::Pointer spCurImg = m_vGammaMapImages.at(curIdx);
@@ -2187,7 +2188,7 @@ void gamma_gui::SLT_MouseWheelUpdateGamma3D()
     else //change slice
     {
         double fWeighting = 1.0;
-        enPLANE curPlane;
+        enPLANE curPlane = PLANE_AXIAL;
         float probePosX = ui.lineEdit_ProbePosX->text().toFloat();
         float probePosY = ui.lineEdit_ProbePosY->text().toFloat();
         float probePosZ = ui.lineEdit_ProbePosZ->text().toFloat();
@@ -2381,8 +2382,8 @@ void gamma_gui::UpdatePanCommon(qyklabel* qWnd)
     if (dataWidth*dataHeight == 0)
         return;
 
-    int dataX = qWnd->GetDataPtFromMousePos().x();
-    int dataY = qWnd->GetDataPtFromMousePos().y();
+   // int dataX = qWnd->GetDataPtFromMousePos().x();
+   // int dataY = qWnd->GetDataPtFromMousePos().y();
 
     ////Update offset information of dispImage
     //GetOriginalDataPos (PanStart)
@@ -2558,13 +2559,13 @@ void gamma_gui::RenameFileByDCMInfo(QStringList& filenameList)
         if (rc)
         {
             //DcmSequenceOfItems *seqFractionGroup = 0;
-            int iNumOfRefPlanSeq = seqRefPlan->card();
+            int iNumOfRefPlanSeq = (int)(seqRefPlan->card());
 
-            for (unsigned long i = 0; i < iNumOfRefPlanSeq; i++)
+            for (int i = 0; i < iNumOfRefPlanSeq; i++)
             {
                 OFCondition orc;
 
-                const char *strVal = 0;
+               // const char *strVal = 0;
 
                 DcmItem *itemRefPlan = seqRefPlan->getItem(i);
 
@@ -2625,10 +2626,10 @@ void gamma_gui::RenameFileByDCMInfo(QStringList& filenameList)
         //cout << "iBeamNumber " << iValBeamNumber << endl;
 
         QString strFractionGroupNumber;
-        strFractionGroupNumber = strFractionGroupNumber.sprintf("%02d", iValFractionGroupNumber);
+        strFractionGroupNumber = strFractionGroupNumber.sprintf("%02d", (int)iValFractionGroupNumber);
 
         QString strBeamNumber;
-        strBeamNumber = strBeamNumber.sprintf("%03d", iValBeamNumber);
+        strBeamNumber = strBeamNumber.sprintf("%03d", (int)iValBeamNumber);
 
         QFileInfo fileInfo = QFileInfo(crntFilePath);
         QDir dir = fileInfo.absoluteDir();
@@ -2998,7 +2999,7 @@ void gamma_gui::SLTM_LoadProtonDoseSetFile()
         //Read text and fill the class with as it is.
         if (!ReadProtonDoseSet(curTextSetFilePath, tmpProtonSetHeader)) //Only reading text files to fill up the vectors, without any auditing
         {
-            //do nothing
+            //do nothing            
         }
 
         QFileInfo fInfoRef(tmpProtonSetHeader.strPathRefDose);
@@ -3080,9 +3081,22 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
 {
     //protonSetInfo    
 
-    protonSetInfo.fDim = { 1.0, 1.0, 1.0 };
+    /*protonSetInfo.fDim = { 1.0, 1.0, 1.0 };
     protonSetInfo.fOrigin = { 0.0, 0.0, 0.0 };
-    protonSetInfo.fSpacing = { 1.0, 1.0, 1.0 };
+    protonSetInfo.fSpacing = { 1.0, 1.0, 1.0 };*/
+
+    protonSetInfo.fDim.x = 1.0;
+    protonSetInfo.fDim.y = 1.0;
+    protonSetInfo.fDim.z = 1.0;
+
+    protonSetInfo.fOrigin.x = 0.0;
+    protonSetInfo.fOrigin.y = 0.0;
+    protonSetInfo.fOrigin.z = 0.0;
+
+    protonSetInfo.fSpacing.x = 1.0;
+    protonSetInfo.fSpacing.y = 1.0;
+    protonSetInfo.fSpacing.z = 1.0;
+
     protonSetInfo.strCTDir = "";
     protonSetInfo.strPathRefDose = "";
     protonSetInfo.strPathCompDose = "";
@@ -3116,9 +3130,11 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
             strData = strListData.at(1);
             strData = strData.remove("\"");
         }        
+        cout << "strHeader" << strHeader.toLocal8Bit().constData() << endl;
         
         if (strHeader.contains("calc-vol"))
-        {
+        {           
+
             QStringList strlistVolInfo = strData.split(",");
             if (strlistVolInfo.count() == 9) //should be
             {

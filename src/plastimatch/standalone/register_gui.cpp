@@ -1793,7 +1793,7 @@ void register_gui::ExportQueResult(QString& strPathOut)
 
 void register_gui::SLTM_ExportQueResult()
 {
-    QString strFilePath = QFileDialog::getSaveFileName(this, "Save registration report file", "", "report (*.txt)", 0, 0);
+    QString strFilePath = QFileDialog::getSaveFileName(this, "Save registration report file", m_strPathDirDefault, "report (*.txt)", 0, 0);
 
     if (strFilePath.length() < 1)
         return;
@@ -2271,7 +2271,7 @@ void register_gui::ImportDataPool(QString& strPathImportTxt)
 
 void register_gui::SLTM_ExportDataPool()
 {
-    QString strFilePath = QFileDialog::getSaveFileName(this, "Save Data pool log file", m_strPathDirDefault, "Data pool log file (*.dpl)", 0, 0);  
+    QString strFilePath = QFileDialog::getSaveFileName(this, "Save Data pool log file", m_strPathDirDefault, "Datafile (*.dpl)", 0, 0);  
 
     if (strFilePath.length() < 1)
         return;
