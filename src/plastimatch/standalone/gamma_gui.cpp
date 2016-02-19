@@ -3002,6 +3002,9 @@ void gamma_gui::SLTM_LoadProtonDoseSetFile()
             //do nothing            
         }
 
+        cout << "FilePathRef= " << tmpProtonSetHeader.strPathRefDose.toLocal8Bit().constData() << endl;
+        cout << "FilePathComp= " << tmpProtonSetHeader.strPathCompDose.toLocal8Bit().constData() << endl;
+
         QFileInfo fInfoRef(tmpProtonSetHeader.strPathRefDose);
         QFileInfo fInfoComp(tmpProtonSetHeader.strPathCompDose);
 
@@ -3132,6 +3135,9 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
         }        
         cout << "strHeader" << strHeader.toLocal8Bit().constData() << endl;
         
+        QString str_dose = "dose";
+        QString str_refdose = "ref-dose";
+
         if (strHeader.contains("calc-vol"))
         {           
 
@@ -3161,7 +3167,9 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
                 }
                 else
                 {
-                    fSpacing = { 1.0, 1.0, 1.0 };
+                    fSpacing.x = 1.0;
+                    fSpacing.y = 1.0;
+                    fSpacing.z = 1.0;                    
                 }
 
                 protonSetInfo.fDim = fDim;
@@ -3173,12 +3181,12 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
         {
             protonSetInfo.strCTDir = strData;
         }
-        else if (strHeader.trimmed() == "dose")
-        {
+        else if (strHeader.trimmed() == str_dose)
+        {            
             strData = strData + ".MC";            
             protonSetInfo.strPathCompDose = fInfoBase.absolutePath() + "/" +strData;
         }
-        else if (strHeader.trimmed() == "ref-dose")
+        else if (strHeader.trimmed() == str_refdose)
         {
             strData = strData + ".orig";
             protonSetInfo.strPathRefDose = fInfoBase.absolutePath() + "/" + strData;
