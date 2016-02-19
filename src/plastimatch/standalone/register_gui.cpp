@@ -2174,7 +2174,7 @@ void register_gui::SLT_DeleteSingleTemplate()
 
 void register_gui::SLTM_ImportDataPool()
 {    
-    QString filePath = QFileDialog::getOpenFileName(this, "Open Data pool log file", m_strPathDirDefault, "Data pool log file (*.plmdpl)", 0, 0);
+    QString filePath = QFileDialog::getOpenFileName(this, "Open Data pool log file", m_strPathDirDefault, "Data pool log file (*.dpl)", 0, 0);
 
     /*if (filePath.length() < 1)
         return;*/
@@ -2271,7 +2271,7 @@ void register_gui::ImportDataPool(QString& strPathImportTxt)
 
 void register_gui::SLTM_ExportDataPool()
 {
-    QString strFilePath = QFileDialog::getSaveFileName(this, "Save Data pool log file", m_strPathDirDefault, "Data pool log file (*.plmdpl)", 0, 0);
+    QString strFilePath = QFileDialog::getSaveFileName(this, "Save Data pool log file", m_strPathDirDefault, "Data pool log file (*.dpl)", 0, 0);  
 
     if (strFilePath.length() < 1)
         return;
@@ -2293,7 +2293,7 @@ void register_gui::ExportDataPool(QString& strPathExportTxt)
     QStringList m_strlistPath_Moving;
     QStringList m_strlistPath_Command;*/
 
-    fout << "#Data pool log file (*.plmdpl) for plastimatch register_gui" << endl;
+    fout << "#Data pool log file (*.dpl) for plastimatch register_gui" << endl;
     fout << "%FIXED_FILE_BEGIN%" << endl;
 
     QStringList::const_iterator it;

@@ -1,0 +1,4 @@
+calc-vol "348, 348, 8, 0, -0, 0, 175, 175, 5"
+ct-dir ""
+dose "proton_dose.QA.dose"
+ref-dose "proton_dose.QA.dose"
