@@ -1,4 +1,4 @@
-#ifndef QT_UTIL_H
+﻿#ifndef QT_UTIL_H
 #define QT_UTIL_H
 
 #include "yk_config.h"
@@ -54,7 +54,7 @@ namespace QUTIL{
 
     QString GetPathWithEndFix(const QString& curFilePath, const QString& strEndFix);
 
-    void GenSampleCommandFile(QString strPathCommandFile, enRegisterOption regiOption);
+    void GenDefaultCommandFile(QString strPathCommandFile, enRegisterOption regiOption);
 
     void GetGeometricLimitFloatImg (FloatImageType::Pointer& spFloatImg, VEC3D& limitStart, VEC3D& limitEnd);
 

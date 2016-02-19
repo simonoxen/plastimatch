@@ -1,4 +1,4 @@
-#include "gamma_gui.h"
+﻿#include "gamma_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
@@ -3254,8 +3254,7 @@ QString gamma_gui::ConvertMGHProtonDoseToMha(QString& strPathBinary, VEC3D& fDim
                 in >> voxData;
                 doseGyVal = voxData / 100.0; //cGy to Gy
                 it.Set(doseGyVal);
-                ++it;                            
-                
+                ++it;                                            
                 //    fout << voxData << ",";
             }
             it.NextLine();

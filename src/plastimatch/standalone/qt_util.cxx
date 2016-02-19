@@ -1,4 +1,4 @@
-#include "qt_util.h"
+﻿#include "qt_util.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -1314,7 +1314,7 @@ QString QUTIL::GetPathWithEndFix(const QString& curFilePath, const QString& strE
 
 
 
-void QUTIL::GenSampleCommandFile(QString strPathCommandFile, enRegisterOption regiOption)
+void QUTIL::GenDefaultCommandFile(QString strPathCommandFile, enRegisterOption regiOption)
 {
     ofstream fout;
     fout.open(strPathCommandFile.toLocal8Bit().constData());
@@ -1325,7 +1325,7 @@ void QUTIL::GenSampleCommandFile(QString strPathCommandFile, enRegisterOption re
         return;
     }
 
-    fout << "# command_file.txt" << endl;
+    fout << "#Plastimatch command file for registration.txt" << endl;
     fout << "[GLOBAL]" << endl;
     fout << "fixed=" << "TBD" << endl;
     fout << "moving=" << "TBD" << endl;
@@ -1353,8 +1353,20 @@ void QUTIL::GenSampleCommandFile(QString strPathCommandFile, enRegisterOption re
         fout << "background_val=" << "-1024" << endl;
         //fout << "background_val=" << "0" << endl; //-600 in HU //added
         fout << "max_its=" << "50" << endl;
-
         break;
+
+    case PLAST_AFFINE:
+        fout << "[STAGE]" << endl;
+        fout << "xform=" << "rigid" << endl;
+        fout << "optim=" << "versor" << endl;
+        fout << "impl=" << "itk" << endl;
+        fout << "threading=" << "openmp" << endl;
+        fout << "background_val=" << "-1024" << endl;
+        //fout << "background_val=" << "0" << endl; //-600 in HU //added
+        fout << "max_its=" << "50" << endl;
+        fout << endl;
+        break;
+
     case PLAST_GRADIENT:
         fout << "#For gradient-based searching, moving image should be smaller than fixed image. So, CBCT image might move rather than CT" << endl;
 
@@ -1392,9 +1404,8 @@ void QUTIL::GenSampleCommandFile(QString strPathCommandFile, enRegisterOption re
             fout << "background_val=" << "-1024" << endl; //-600 in HU //added
            // fout << "img_out=" << "TBD" << endl;
             fout << endl;
-        break;
+        break; 
     }
-
     fout.close();    
 }
 
