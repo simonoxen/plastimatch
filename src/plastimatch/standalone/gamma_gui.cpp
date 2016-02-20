@@ -457,12 +457,20 @@ void gamma_gui::SaveBatchGamma3DSimpleReport(QString& strFilePath)
 
 void gamma_gui::SLTM_SaveBatchModeSimpleReport()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", "", "report (*.txt)", 0, 0);
+    QString filePath = QFileDialog::getSaveFileName(this, "Save batch report file", m_strPathDirWorkDir, "report (*.txt)", 0, 0);
 
-    if (fileName.length() < 1)
+    if (filePath.length() < 1)
         return;
 
-    SaveBatchGamma3DSimpleReport(fileName);
+    QFileInfo fInfo(filePath);
+
+    if (fInfo.suffix() != "txt" && fInfo.suffix() != "TXT")
+    {
+        cout << "Saving filter didn't work. Saving this file as txt." << endl;
+        filePath = filePath + ".txt";
+    }
+
+    SaveBatchGamma3DSimpleReport(filePath);
 }
 
 
@@ -2973,12 +2981,21 @@ void gamma_gui::SetWorkDir(const QString& strPath)
 
 void gamma_gui::SLTM_ExportBatchReport()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, "Save batch report file", m_strPathDirWorkDir, "report (*.txt)", 0, 0);
+    QString filePath = QFileDialog::getSaveFileName(this, "Save batch report file", m_strPathDirWorkDir, "report (*.txt)", 0, 0);
 
-    if (fileName.length() < 1)
+    if (filePath.length() < 1)
         return;
 
-    SaveBatchGamma3DSimpleReport(fileName); 
+
+    QFileInfo fInfo(filePath);
+
+    if (fInfo.suffix() != "txt" && fInfo.suffix() != "TXT")
+    {
+        cout << "Saving filter didn't work. Saving this file as txt." << endl;
+        filePath = filePath + ".txt";
+    }
+
+    SaveBatchGamma3DSimpleReport(filePath);
 }
 
 void gamma_gui::SLTM_LoadProtonDoseSetFile()
@@ -3133,10 +3150,9 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
             strData = strListData.at(1);
             strData = strData.remove("\"");
         }        
-        cout << "strHeader" << strHeader.toLocal8Bit().constData() << endl;
-        
-        QString str_dose = "dose";
-        QString str_refdose = "ref-dose";
+        strData = strData.trimmed(); //very important for Linux system!!!!!
+
+
 
         if (strHeader.contains("calc-vol"))
         {           
@@ -3181,14 +3197,14 @@ bool gamma_gui::ReadProtonDoseSet(QString& strPathProtonDoseSet, ProtonSetFileMG
         {
             protonSetInfo.strCTDir = strData;
         }
-        else if (strHeader.trimmed() == str_dose)
+        else if (strHeader.trimmed() == "dose")
         {            
-            strData = strData + ".MC";            
+            strData = strData + ".MC";                        
             protonSetInfo.strPathCompDose = fInfoBase.absolutePath() + "/" +strData;
         }
-        else if (strHeader.trimmed() == str_refdose)
+        else if (strHeader.trimmed() == "ref-dose")
         {
-            strData = strData + ".orig";
+            strData = strData + ".orig";            
             protonSetInfo.strPathRefDose = fInfoBase.absolutePath() + "/" + strData;
         }
     }

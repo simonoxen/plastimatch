@@ -1035,14 +1035,13 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_saved_results"/>
-    <addaction name="actionExport_simple_batch_report"/>
     <addaction name="actionLoad_proton_dose_file_set"/>
+    <addaction name="actionExport_simple_batch_report"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionProfile_View"/>
    </widget>
    <widget class="QMenu" name="menuTool">
     <property name="title">
@@ -1078,7 +1077,7 @@
   </action>
   <action name="actionLoad_saved_results">
    <property name="text">
-    <string>Load saved results</string>
+    <string>Import workspace file</string>
    </property>
   </action>
   <action name="actionExport_simple_batch_report">
@@ -1088,7 +1087,7 @@
   </action>
   <action name="actionLoad_proton_dose_file_set">
    <property name="text">
-    <string>Load proton dose file (set)</string>
+    <string>Import proton dose file (*.set)</string>
    </property>
   </action>
  </widget>

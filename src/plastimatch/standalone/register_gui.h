@@ -81,8 +81,12 @@ public:
         
         void SLT_ReadCommandFile_Main(QModelIndex index); //(QModelIndex& index) didn't work
         void SLT_ReadCommandFile_Que(QModelIndex index); //(QModelIndex& index) didn't work        
-        void SLT_SelectionChangedMain(QItemSelection curItem, QItemSelection prevItem);
+        void SLT_SelectionChangedMain(QItemSelection curItem, QItemSelection prevItem); //prevItem is not being used now
+        void SLT_ItemClickedMain(); //single clicked
+
         void SLT_SelectionChangedQue(QItemSelection curItem, QItemSelection prevItem);
+        void SLT_ItemClickedQue(); //single clicked
+
         void SLT_SaveCommandText();       
         void SLT_SaveCommandFileAsTemplate();
 

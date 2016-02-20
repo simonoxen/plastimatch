@@ -239,7 +239,7 @@ void register_gui::InitTableQue(int rowCnt, int columnCnt)
     ui.tableView_que->resizeColumnsToContents();
 
     QItemSelectionModel *select = ui.tableView_que->selectionModel();
-    connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedQue(QItemSelection, QItemSelection)));   
+    //connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedQue(QItemSelection, QItemSelection)));   
 }
 
 void register_gui::InitTableMain(int rowCnt, int columnCnt)
@@ -264,7 +264,7 @@ void register_gui::InitTableMain(int rowCnt, int columnCnt)
     ui.tableView_main->resizeColumnsToContents();
 
     QItemSelectionModel *select = ui.tableView_main->selectionModel();
-    connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedMain(QItemSelection, QItemSelection)));  
+    //connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedMain(QItemSelection, QItemSelection)));  
 }
 
 void register_gui::SLT_LoadFixedFiles()
@@ -897,8 +897,21 @@ void register_gui::SLT_SelectionChangedMain(QItemSelection curItem, QItemSelecti
 
     if (mIdx.column() == 2)
         SLT_ReadCommandFile_Main(mIdx);   
-
 }
+
+
+void register_gui::SLT_ItemClickedMain() //single clicked
+{
+    QModelIndex mIdx = ui.tableView_main->currentIndex();
+
+    m_iCurSelRow_Main = mIdx.row();
+    m_iCurSelCol_Main = mIdx.column();
+
+    if (mIdx.column() == 2)
+        SLT_ReadCommandFile_Main(mIdx);
+}
+
+//void register_gui::SLT_TableItemSelectedMain()
 
 void register_gui::SLT_SelectionChangedQue(QItemSelection curItem, QItemSelection prevItem)
 {    
@@ -909,6 +922,17 @@ void register_gui::SLT_SelectionChangedQue(QItemSelection curItem, QItemSelectio
         return;
 
     QModelIndex mIdx = listModelIndexCur.at(0);//get first cell
+    m_iCurSelRow_Que = mIdx.row();
+    m_iCurSelCol_Que = mIdx.column();
+
+    SLT_ReadCommandFile_Que(mIdx);
+}
+
+
+void register_gui::SLT_ItemClickedQue() //single clicked
+{
+    QModelIndex mIdx = ui.tableView_que->currentIndex();
+    
     m_iCurSelRow_Que = mIdx.row();
     m_iCurSelCol_Que = mIdx.column();
 
@@ -1687,6 +1711,7 @@ QString register_gui::GetStrInfoFromCommandFile(enPlmCommandInfo plmInfo, QStrin
     if (infoStrList.count() > 1)
         infoStr = infoStrList.at(1);
 
+    infoStr = infoStr.trimmed(); //remove only first and last spaces
     if (plmInfo == PLM_OUTPUT_DIR_PATH)
     {
         QFileInfo fInfo(infoStr);
@@ -1797,6 +1822,13 @@ void register_gui::SLTM_ExportQueResult()
 
     if (strFilePath.length() < 1)
         return;
+
+    QFileInfo fInfo(strFilePath);
+
+    if (fInfo.suffix() != "txt" && fInfo.suffix() != "TXT")
+    {
+        strFilePath = strFilePath + ".txt";
+    }
 
     ExportQueResult(strFilePath);
 }
@@ -2274,10 +2306,16 @@ void register_gui::SLTM_ExportDataPool()
     QString strFilePath = QFileDialog::getSaveFileName(this, "Save Data pool log file", m_strPathDirDefault, "Datafile (*.dpl)", 0, 0);  
 
     if (strFilePath.length() < 1)
-        return;
+        return;        
+
+    QFileInfo fInfo(strFilePath);
+
+    if (fInfo.suffix() != "dpl" && fInfo.suffix() != "DPL")
+    {
+        strFilePath = strFilePath + ".dpl";
+    }
 
     ExportDataPool(strFilePath);
-
 }
 
 void register_gui::ExportDataPool(QString& strPathExportTxt)

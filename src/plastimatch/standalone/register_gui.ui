@@ -695,8 +695,8 @@
    <slot>SLT_AddSingleToQue()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>402</x>
-     <y>183</y>
+     <x>343</x>
+     <y>202</y>
     </hint>
     <hint type="destinationlabel">
      <x>568</x>
@@ -728,7 +728,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>202</x>
-     <y>273</y>
+     <y>266</y>
     </hint>
     <hint type="destinationlabel">
      <x>6</x>
@@ -791,7 +791,7 @@
    <slot>SLT_CopyCommandFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>523</x>
+     <x>464</x>
      <y>552</y>
     </hint>
     <hint type="destinationlabel">
@@ -823,8 +823,8 @@
    <slot>SLT_UpdateFileList()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>412</x>
-     <y>314</y>
+     <x>353</x>
+     <y>307</y>
     </hint>
     <hint type="destinationlabel">
      <x>572</x>
@@ -840,7 +840,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>129</x>
-     <y>314</y>
+     <y>307</y>
     </hint>
     <hint type="destinationlabel">
      <x>913</x>
@@ -1010,7 +1010,7 @@
   </connection>
   <connection>
    <sender>listWidgetCommandTemplate</sender>
-   <signal>itemSelectionChanged()</signal>
+   <signal>itemClicked(QListWidgetItem*)</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_CommandTemplateSelected()</slot>
    <hints>
@@ -1136,6 +1136,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>tableView_main</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_ItemClickedMain()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>387</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>7</x>
+     <y>389</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>tableView_que</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_ItemClickedQue()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>483</x>
+     <y>164</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>248</x>
+     <y>40</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_SetDefaultDir()</slot>
@@ -1171,5 +1203,7 @@
   <slot>SLT_DeleteSingleTemplate()</slot>
   <slot>SLTM_ImportDataPool()</slot>
   <slot>SLTM_ExportDataPool()</slot>
+  <slot>SLT_ItemClickedMain()</slot>
+  <slot>SLT_ItemClickedQue()</slot>
  </slots>
 </ui>
