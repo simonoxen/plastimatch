@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-
+#include <fstream>
 #include "file_util.h"
 #include "logfile.h"
 #include "path_util.h"
@@ -365,7 +365,7 @@ Proj_volume::load_header (const char* filename)
         rc = sscanf (line.c_str(), "num_steps = %d\n", &d_ptr->num_steps);
         if (rc == 1) continue;
 
-        float f;
+        float f, g;
         rc = sscanf (line.c_str(), "step_length = %f\n", &f);
         if (rc == 1) {
             d_ptr->step_length = f;
@@ -380,9 +380,12 @@ Proj_volume::load_header (const char* filename)
             continue;
         }
 
-        rc = sscanf (line.c_str(), "image_spacing = %f %f\n", 
-            &d_ptr->image_spacing[0], &d_ptr->image_spacing[1]);
-        if (rc == 2) continue;
+        rc = sscanf (line.c_str(), "image_spacing = %f %f\n", &f, &g);
+        if (rc == 2) {
+            d_ptr->image_spacing[0] = f;
+            d_ptr->image_spacing[1] = g;
+            continue;
+        }
 
 #if defined (commentout)
         rc = sscanf (line.c_str(), "roi_offset = %d %d %d\n", &a, &b, &c);
