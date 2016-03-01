@@ -1414,8 +1414,12 @@ void QUTIL::GetGeometricLimitFloatImg(FloatImageType::Pointer& spFloatImg, VEC3D
 {
     if (!spFloatImg)
     {
-        limitStart = { 0.0, 0.0, 0.0 };
-        limitEnd = { 0.0, 0.0, 0.0 };
+        limitStart.x = 0.0;
+        limitStart.y = 0.0;
+        limitStart.z = 0.0;
+        limitEnd.x = 0.0;
+        limitEnd.y = 0.0;
+        limitEnd.z = 0.0;
         return;
     }
      
@@ -1423,8 +1427,9 @@ void QUTIL::GetGeometricLimitFloatImg(FloatImageType::Pointer& spFloatImg, VEC3D
     FloatImageType::PointType origin = spFloatImg->GetOrigin();
     FloatImageType::SpacingType spacing = spFloatImg->GetSpacing();
 
-    limitStart = { origin[0], origin[1], origin[2] };
-    
+    limitStart.x = origin[0];
+    limitStart.y = origin[1];
+    limitStart.z = origin[2];
     limitEnd.x = limitStart.x + (imgSize[0] - 1)*spacing[0];
     limitEnd.y = limitStart.y + (imgSize[1] - 1)*spacing[1];
     limitEnd.z = limitStart.z + (imgSize[2] - 1)*spacing[2];
