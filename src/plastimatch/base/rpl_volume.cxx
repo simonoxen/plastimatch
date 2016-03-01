@@ -862,7 +862,8 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 
 double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
 {
-    int dim[3] = { this->get_vol()->dim[0], this->get_vol()->dim[1], this->get_vol()->dim[2]};
+    //int dim[3] = { this->get_vol()->dim[0], this->get_vol()->dim[1], this->get_vol()->dim[2]};
+    const plm_long *dim = this->get_vol()->dim;
     int idx = 0;
     double POI[3] = {0.0, 0.0, 0.0};
     double tmp[3] = {0.0, 0.0, 0.0};

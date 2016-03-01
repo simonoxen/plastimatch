@@ -899,7 +899,7 @@ Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
 
     float min = FLT_MAX;
     int idx = 0;
-    int dim[3] = {target_vol->dim[0], target_vol->dim[1], target_vol->dim[2]};
+    const plm_long *dim = target_vol->dim;
     float target_image_origin[3] = {target_vol->origin[0], target_vol->origin[1], target_vol->origin[2]};
     float target_image_spacing[3] = {target_vol->spacing[0], target_vol->spacing[1], target_vol->spacing[2]};
     float source[3] = {(float) this->get_source_position(0), (float) this->get_source_position(1), (float) this->get_source_position(2)};
