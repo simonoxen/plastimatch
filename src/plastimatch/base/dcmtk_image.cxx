@@ -349,7 +349,7 @@ Dcmtk_loader::image_load ()
            cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
 	const uint8_t* pixel_data_8;
 	const uint16_t* pixel_data_16;
-	unsigned long length;
+	unsigned long length = 0;
         rc = 0;
         if (bits_alloc == 8) {
             rc = df->get_uint8_array (DCM_PixelData, &pixel_data_8, &length);
