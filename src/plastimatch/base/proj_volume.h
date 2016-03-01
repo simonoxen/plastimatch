@@ -54,8 +54,15 @@ public:
     void allocate ();
 
     void save_img (const char* filename);
+    void save_img (const std::string& filename);
+    void save_header (const char* filename);
+    void save_header (const std::string& filename);
     void save_projv (const char* filename);
+    void save_projv (const std::string& filename);
     void load_img (const char* filename);
+    void load_img (const std::string& filename);
+    void load_header (const char* filename);
+    void load_header (const std::string& filename);
     void load_projv (const char* filename);
     void load_projv (const std::string& filename);
 

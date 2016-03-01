@@ -3,9 +3,14 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
+#include "file_util.h"
+#include "logfile.h"
+#include "path_util.h"
 #include "plm_image.h"
+#include "print_and_exit.h"
 #include "proj_matrix.h"
 #include "proj_volume.h"
+#include "string_util.h"
 #include "volume.h"
 
 class Proj_volume_private {
@@ -260,9 +265,64 @@ Proj_volume::save_img (const char *filename)
 }
 
 void
+Proj_volume::save_img (const std::string& filename)
+{
+    this->save_img (filename.c_str());
+}
+
+void
+Proj_volume::save_header (const char *filename)
+{
+    FILE *fp = plm_fopen (filename, "wb");
+    if (!fp) {
+        print_and_exit ("Error opening file %s for write\n", filename);
+    }
+
+    std::string s = d_ptr->pmat->get ();
+    fprintf (fp, "num_steps=%d\n", d_ptr->num_steps);
+    fprintf (fp, "step_length=%g\n", d_ptr->step_length);
+    fprintf (fp, "image_dim=%d %d\n", 
+        d_ptr->image_dim[0], d_ptr->image_dim[1]);
+    fprintf (fp, "image_spacing=%g %g\n", 
+        d_ptr->image_spacing[0], d_ptr->image_spacing[1]);
+    fprintf (fp, "clipping_dist=%g %g\n", 
+        d_ptr->clipping_dist[0], d_ptr->clipping_dist[1]);
+    fprintf (fp, "nrm=%g %g %g\n", 
+        d_ptr->nrm[0], d_ptr->nrm[1], d_ptr->nrm[2]);
+    fprintf (fp, "src=%g %g %g\n", 
+        d_ptr->src[0], d_ptr->src[1], d_ptr->src[2]);
+    fprintf (fp, "iso=%g %g %g\n", 
+        d_ptr->iso[0], d_ptr->iso[1], d_ptr->iso[2]);
+    fprintf (fp, "ul_room=%g %g %g\n", 
+        d_ptr->ul_room[0], d_ptr->ul_room[1], d_ptr->ul_room[2]);
+    fprintf (fp, "incr_r=%g %g %g\n", 
+        d_ptr->incr_r[0], d_ptr->incr_r[1], d_ptr->incr_r[2]);
+    fprintf (fp, "incr_c=%g %g %g\n", 
+        d_ptr->incr_c[0], d_ptr->incr_c[1], d_ptr->incr_c[2]);
+    fprintf (fp, "pmat=%s\n", s.c_str());
+    fclose (fp);
+}
+
+void
+Proj_volume::save_header (const std::string& filename)
+{
+    this->save_header (filename.c_str());
+}
+
+void
 Proj_volume::save_projv (const char *filename)
 {
-    Plm_image(d_ptr->vol).save_image(filename);
+    std::string fn_base = strip_extension_if (filename, "projv");
+    std::string proj_vol_hdr_fn = fn_base + ".projv";
+    this->save_header (proj_vol_hdr_fn);
+    std::string proj_vol_img_fn = fn_base + ".nrrd";
+    this->save_img (proj_vol_img_fn);
+}
+
+void
+Proj_volume::save_projv (const std::string& filename)
+{
+    this->save_projv (filename.c_str());
 }
 
 void
@@ -273,10 +333,123 @@ Proj_volume::load_img (const char *filename)
 }
 
 void
+Proj_volume::load_img (const std::string& filename)
+{
+    this->load_img (filename.c_str());
+}
+
+void
+Proj_volume::load_header (const char* filename)
+{
+    std::ifstream ifs (filename);
+    if (!ifs.is_open()) {
+        logfile_printf ("Error opening %s for read", filename);
+        return;
+    }
+
+    while (true) {
+        std::string line;
+        getline (ifs, line);
+        if (!ifs.good()) {
+            /* End of file. */
+            break;
+        }
+
+        std::string tag, val;
+        if (!split_tag_val (line, tag, val)) {
+            /* No "=" found. */
+            break;
+        }
+
+        int rc;
+        rc = sscanf (line.c_str(), "num_steps = %d\n", &d_ptr->num_steps);
+        if (rc == 1) continue;
+
+        float f;
+        rc = sscanf (line.c_str(), "step_length = %f\n", &f);
+        if (rc == 1) {
+            d_ptr->step_length = f;
+            continue;
+        }
+
+        int a, b;
+        rc = sscanf (line.c_str(), "image_dim = %d %d\n", &a, &b);
+        if (rc == 3) {
+            d_ptr->image_dim[0] = a;
+            d_ptr->image_dim[1] = b;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "image_spacing = %f %f\n", 
+            &d_ptr->image_spacing[0], &d_ptr->image_spacing[1]);
+        if (rc == 2) continue;
+
+#if defined (commentout)
+        rc = sscanf (line.c_str(), "roi_offset = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            roi_offset[0] = a;
+            roi_offset[1] = b;
+            roi_offset[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "roi_dim = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            roi_dim[0] = a;
+            roi_dim[1] = b;
+            roi_dim[2] = c;
+            continue;
+        }
+
+        rc = sscanf (line.c_str(), "vox_per_rgn = %d %d %d\n", &a, &b, &c);
+        if (rc == 3) {
+            vox_per_rgn[0] = a;
+            vox_per_rgn[1] = b;
+            vox_per_rgn[2] = c;
+            continue;
+        }
+#endif
+
+        logfile_printf ("Error loading projv file\n%s\n", line.c_str());
+        return;
+    }
+
+#if defined (commentout)
+    fprintf (fp, "clipping_dist=%g %g\n", 
+        d_ptr->image_spacing[0], d_ptr->image_spacing[1]);
+    fprintf (fp, "nrm=%g %g %g\n", 
+        d_ptr->nrm[0], d_ptr->nrm[1], d_ptr->nrm[2]);
+    fprintf (fp, "src=%g %g %g\n", 
+        d_ptr->src[0], d_ptr->src[1], d_ptr->src[2]);
+    fprintf (fp, "iso=%g %g %g\n", 
+        d_ptr->iso[0], d_ptr->iso[1], d_ptr->iso[2]);
+    fprintf (fp, "ul_room=%g %g %g\n", 
+        d_ptr->ul_room[0], d_ptr->ul_room[1], d_ptr->ul_room[2]);
+    fprintf (fp, "incr_r=%g %g %g\n", 
+        d_ptr->incr_r[0], d_ptr->incr_r[1], d_ptr->incr_r[2]);
+    fprintf (fp, "incr_c=%g %g %g\n", 
+        d_ptr->incr_c[0], d_ptr->incr_c[1], d_ptr->incr_c[2]);
+    std::string s = d_ptr->pmat->get ();
+    fprintf (fp, "pmat=%s\n", s.c_str());
+    fclose (fp);
+#endif
+
+}
+
+void
+Proj_volume::load_header (const std::string& filename)
+{
+    this->load_header (filename.c_str());
+}
+
+void
 Proj_volume::load_projv (const char *filename)
 {
-    Plm_image::Pointer plm_image = Plm_image::New (filename);
-    d_ptr->vol = plm_image->get_volume ();
+    std::string fn_base = strip_extension_if (filename, "projv");
+    std::string proj_vol_hdr_fn = fn_base + ".projv";
+    this->load_header (proj_vol_hdr_fn);
+    std::string proj_vol_img_fn = fn_base + ".nrrd";
+    this->load_img (proj_vol_img_fn);
 }
 
 void

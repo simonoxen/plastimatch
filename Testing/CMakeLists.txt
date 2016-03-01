@@ -79,6 +79,7 @@ set (CONFIG_FILE_LIST
   "speedtest-a.txt"
   "wed-a.txt"
   "wed-b.txt"
+  "wed-c.txt"
 )
 foreach (CONFIG_FILE ${CONFIG_FILE_LIST})
     string (REGEX REPLACE "\\.txt$" "" PLM_TEST_NAME ${CONFIG_FILE})
@@ -4447,7 +4448,8 @@ set_tests_properties (proton-dose-6a-check
 
 ## -------------------------------------------------------------------------
 ## wed-a           ct to proj-wed, proj-ct, and wed-ct
-## wed-b           proj-wed to dew-ct
+## wed-b           load saved proj-wed, compute proj-ct and wed-ct
+## wed-c           proj-wed to dew-ct
 ## -------------------------------------------------------------------------
 plm_add_test (
   "wed-a"
@@ -4460,6 +4462,14 @@ plm_add_test (
   "wed-b"
   ${PLM_PLASTIMATCH_PATH}/wed
   "${PLM_BUILD_TESTING_DIR}/wed-b.txt"
+  )
+set_tests_properties (wed-b PROPERTIES DEPENDS lung-1)
+set_tests_properties (wed-b PROPERTIES DEPENDS wed-a)
+
+plm_add_test (
+  "wed-c"
+  ${PLM_PLASTIMATCH_PATH}/wed
+  "${PLM_BUILD_TESTING_DIR}/wed-c.txt"
   )
 set_tests_properties (wed-b PROPERTIES DEPENDS lung-1)
 set_tests_properties (wed-b PROPERTIES DEPENDS wed-a)

@@ -867,7 +867,7 @@ Rt_plan::compute_plan ()
         if (d_ptr->output_proj_img_fn != "") {
             Rpl_volume* proj_img = beam->rpl_ct_vol_HU;
             if (proj_img) {
-                proj_img->save_rpl (beam->get_proj_img_out());
+                proj_img->save (beam->get_proj_img_out());
             }
         }
 
@@ -875,7 +875,7 @@ Rt_plan::compute_plan ()
         if (beam->get_proj_dose_out() != "") {
             Rpl_volume* proj_dose = beam->rpl_dose_vol;
             if (proj_dose) {
-                proj_dose->save_rpl (beam->get_proj_dose_out());
+                proj_dose->save (beam->get_proj_dose_out());
             }
         }
 
@@ -883,7 +883,7 @@ Rt_plan::compute_plan ()
         if (beam->get_sigma_out() != "") {
             Rpl_volume* sigma_img = beam->sigma_vol;
             if (sigma_img) {
-                sigma_img->save_rpl (beam->get_sigma_out());
+                sigma_img->save (beam->get_sigma_out());
             }
         }
 
@@ -891,7 +891,7 @@ Rt_plan::compute_plan ()
         if (beam->get_wed_out() != "") {
             Rpl_volume* rpl_vol = beam->rpl_vol;
             if (rpl_vol) {
-                rpl_vol->save_rpl (beam->get_wed_out());
+                rpl_vol->save (beam->get_wed_out());
             }
         }
 

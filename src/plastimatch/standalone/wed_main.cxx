@@ -447,7 +447,7 @@ do_wed (Wed_Parms *parms)
 #endif
 
     if (parms->output_proj_wed_fn != "") {
-        rpl.save_rpl (parms->output_proj_wed_fn);
+        rpl.save (parms->output_proj_wed_fn);
     }
 
     if (parms->output_dew_ct_fn != "") {
@@ -469,7 +469,7 @@ do_wed (Wed_Parms *parms)
     /* Compute the proj_ct volume */
     if (parms->output_proj_ct_fn != "") {
         rpl.compute_rpl_HU ();
-        rpl.save_rpl (parms->output_proj_ct_fn);
+        rpl.save (parms->output_proj_ct_fn);
     }
 }
 
@@ -482,25 +482,6 @@ main (int argc, char* argv[])
     if (!parms->parse_args (argc, argv)) {
         exit (0); 
     }
-
-#if defined (commentout)  
-    if (parms->group)  {
-        int wed_iter = 0;
-    
-        while(wed_iter!=parms->group)  {
-            if (parms->group) {
-                parms->parse_group(argc, argv, wed_iter);
-                do_wed (parms);
-                wed_iter++;
-            }
-      
-        }
-    }
-    else {
-        //Compute wed without loop
-        do_wed (parms);
-    }
-#endif
 
     do_wed (parms);
 

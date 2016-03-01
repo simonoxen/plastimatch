@@ -16,6 +16,15 @@ What does ray_data contain?
   points, aperture intersection point, and ray norm
 - compute_ray_data also sets the clipping planes
 
+What files might the wed program create?
+- proj_ct = HU in proj coordinates
+- proj_wed = WED in proj coordinates
+- proj_dose = dose in proj coordinates
+- wed_ct = HU in WED coordinates
+- wed_dose = dose in WED coordinates
+- dew_ct = HU in proj coordinates
+- dew_dose = dose in proj coordinates
+
 What conversions are important?
 - Convert ct to proj_wed, proj_ct
 - Convert proj_wed to ct

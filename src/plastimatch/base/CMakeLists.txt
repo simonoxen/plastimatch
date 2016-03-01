@@ -106,9 +106,10 @@ set (PLMBASE_LIBRARY_SRC
   vf_jacobian.cxx
   vf_stats.cxx
   vf.cxx
-  volume_conv.cxx
-  volume_gaussian.cxx volume_gaussian.h 
-  volume_grad.cxx volume_grad.h 
+  volume_conv.cxx volume_conv.h
+  volume_fill.cxx volume_fill.h
+  volume_gaussian.cxx volume_gaussian.h
+  volume_grad.cxx volume_grad.h
   volume_header.cxx
   volume_limit.cxx
   volume_resample.cxx

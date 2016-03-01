@@ -104,10 +104,8 @@ public:
 
     void apply_beam_modifiers ();
 
-    void save_rpl (const char* filename);
-    void save_rpl (const std::string& filename);
-    void save_img (const char* filename);
-    void save_img (const std::string& filename);
+    void save (const char* filename);
+    void save (const std::string& filename);
     void load_rpl (const char* filename);
     void load_rpl (const std::string& filename);
     void load_img (const char *filename);
@@ -131,6 +129,9 @@ protected:
         double rc_thk,               /* I: range compensator thickness */
         int* ires                    /* I: ray cast resolution */
     );
+protected:
+    void save_img (const char* filename);
+    void save_img (const std::string& filename);
 };
 
 #endif
