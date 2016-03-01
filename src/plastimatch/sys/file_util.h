@@ -25,7 +25,6 @@ PLMSYS_API void make_directory_recursive (const std::string& dirname);
 PLMSYS_API FILE* make_tempfile (void);
 PLMSYS_API char* plm_getcwd (char* s, int len);
 PLMSYS_API int plm_chdir (char* s);
-PLMSYS_API int plm_get_dir_list (const char*** f_list);
 PLMSYS_API FILE* plm_fopen (const char *path, const char *mode);
 PLMSYS_API FILE* plm_fopen (const std::string& path, const char *mode);
 
