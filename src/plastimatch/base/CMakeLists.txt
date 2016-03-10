@@ -81,6 +81,7 @@ set (PLMBASE_LIBRARY_SRC
   proj_image_dir.cxx
   proj_matrix.cxx
   proj_volume.cxx proj_volume.h
+  pwlut.cxx pwlut.h 
   rasterize_slice.cxx
   rasterizer.cxx 
   raw_pointset.cxx

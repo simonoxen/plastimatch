@@ -69,11 +69,12 @@ Main functions:
 
   Why are there so many of these?
   (For now, fine.  In future, replace with LUT.)
-  rpl_ray_trace_callback_ct_density
-  rpl_ray_trace_callback_ct_HU
-  rpl_ray_trace_callback_PrSTPR
-  rpl_ray_trace_callback_PrSTPR_XiO_MGH
-  rpl_ray_trace_callback_range_length
+  rpl_ray_trace_callback_ct_density (called)
+    -> Schneider density equation
+  rpl_ray_trace_callback_ct_HU (called)
+  rpl_ray_trace_callback_PrSTPR (called)
+  rpl_ray_trace_callback_PrSTPR_XiO_MGH (not called)
+  rpl_ray_trace_callback_range_length (called)
 
 
 ******************************************************************************
