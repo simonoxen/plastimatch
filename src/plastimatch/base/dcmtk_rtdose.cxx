@@ -306,6 +306,9 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
         d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
         d_ptr->rt_study_metadata->get_study_time());
+    dcmtk_copy_from_metadata (dataset, dose_metadata, 
+        DCM_StudyDescription, "");
+
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");

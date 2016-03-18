@@ -168,9 +168,12 @@ Dcmtk_rt_study::save (const char *dicom_dir)
 {
     /* GCS FIX: If we're writing an image, we always want new metadata;
        but this should probably be handled by somewhere else in the 
-       code. */
+       code. 
+       GCS FIX MORE: Slicer-RT retains the option to set the study UID.
+       There is, I think (?!), no need to regenerate those at this time.
+    */
     if (d_ptr->img) {
-        d_ptr->rt_study_metadata->generate_new_uids ();
+        d_ptr->rt_study_metadata->generate_new_series_uids ();
     }
     if (d_ptr->img) {
         this->save_image (dicom_dir);

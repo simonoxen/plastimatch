@@ -75,7 +75,8 @@ public:
     const Metadata::Pointer& get_rtss_metadata () const;
     Metadata::Pointer& get_dose_metadata ();
     const Metadata::Pointer& get_dose_metadata () const;
-    void generate_new_uids ();
+    void generate_new_study_uids ();
+    void generate_new_series_uids ();
 };
 
 #endif
