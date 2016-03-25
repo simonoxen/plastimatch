@@ -71,10 +71,16 @@ public:
         const std::string& val);
     Metadata::Pointer& get_image_metadata ();
     const Metadata::Pointer& get_image_metadata () const;
+    void set_image_metadata (unsigned short key1, unsigned short key2,
+        const std::string& val);
     Metadata::Pointer& get_rtss_metadata ();
     const Metadata::Pointer& get_rtss_metadata () const;
+    void set_rtss_metadata (unsigned short key1, unsigned short key2,
+        const std::string& val);
     Metadata::Pointer& get_dose_metadata ();
     const Metadata::Pointer& get_dose_metadata () const;
+    void set_dose_metadata (unsigned short key1, unsigned short key2,
+        const std::string& val);
     void generate_new_study_uids ();
     void generate_new_series_uids ();
 };

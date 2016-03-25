@@ -322,6 +322,15 @@ Rt_study_metadata::get_image_metadata () const
     return d_ptr->image_metadata;
 }
 
+void
+Rt_study_metadata::set_image_metadata (
+    unsigned short key1, 
+    unsigned short key2,
+    const std::string& val
+) {
+    d_ptr->image_metadata->set_metadata (key1, key2, val);
+}
+
 Metadata::Pointer&
 Rt_study_metadata::get_rtss_metadata ()
 {
@@ -334,6 +343,15 @@ Rt_study_metadata::get_rtss_metadata () const
     return d_ptr->rtss_metadata;
 }
 
+void
+Rt_study_metadata::set_rtss_metadata (
+    unsigned short key1, 
+    unsigned short key2,
+    const std::string& val
+) {
+    d_ptr->rtss_metadata->set_metadata (key1, key2, val);
+}
+
 Metadata::Pointer&
 Rt_study_metadata::get_dose_metadata ()
 {
@@ -344,6 +362,15 @@ const Metadata::Pointer&
 Rt_study_metadata::get_dose_metadata () const
 {
     return d_ptr->dose_metadata;
+}
+
+void
+Rt_study_metadata::set_dose_metadata (
+    unsigned short key1, 
+    unsigned short key2,
+    const std::string& val
+) {
+    d_ptr->dose_metadata->set_metadata (key1, key2, val);
 }
 
 void

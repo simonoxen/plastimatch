@@ -461,7 +461,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
 
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         drs->get_ct_series_uid());
-    dataset->putAndInsertString (DCM_SeriesNumber, "303");
+    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_SeriesNumber, "1");
     tmp = string_format ("%d", dsd->instance_no);
     dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
     //dataset->putAndInsertString (DCM_InstanceNumber, "0");
