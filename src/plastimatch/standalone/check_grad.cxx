@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <fstream>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +18,7 @@
 #include "mha_io.h"
 #include "plm_clp.h"
 #include "plm_image.h"
+#include "print_and_exit.h"
 #include "registration_metric_type.h"
 #include "volume.h"
 #include "volume_grad.h"
@@ -33,6 +35,7 @@ public:
     std::string fixed_fn;
     std::string moving_fn;
     std::string input_xf_fn;
+    std::string input_search_dir_fn;
     std::string output_fn;
     const char* xpm_hist_prefix;
 
@@ -53,10 +56,6 @@ public:
 
 public:
     Check_grad_opts () {
-	fixed_fn = "";
-	moving_fn = "";
-	input_xf_fn = "";
-	output_fn = "";
         xpm_hist_prefix = 0;
 	factr = 0;
 	pgtol = 0;
@@ -99,6 +98,7 @@ check_gradient (
     parms->moving = moving;
     parms->moving_grad = moving_grad;
     parms->implementation = options->bsp_implementation;
+    parms->metric_type[0] = options->bsp_metric;
 
     /* Set extra debug stuff, if desired */
     if (options->debug_dir != "") {
@@ -160,6 +160,22 @@ check_gradient (
         grad[i] = bst->ssd.total_grad[i];
     }
     score = bst->ssd.score;
+
+    /* If a search dir was specified, use that instead of the gradient */
+    if (options->input_search_dir_fn != "") {
+        std::ifstream ifs (options->input_search_dir_fn.c_str());
+        if (!ifs) {
+            print_and_exit ("Failure opening %s for read\n",
+                options->input_search_dir_fn.c_str());
+        }
+        for (i = 0; i < bxf->num_coeff; i++) {
+            ifs >> grad[i];
+            if (!ifs) {
+                print_and_exit ("Incomplete search_dir in %s\n", 
+                    options->input_search_dir_fn.c_str());
+            }
+        }
+    }
 
     if (options->output_fn.empty()) {
         fp = stdout;
@@ -305,7 +321,9 @@ parse_fn (
         "create various debug files", 1, "");
     parser->add_long_option ("H", "histogram-prefix", 
         "create MI histograms files with the specified prefix", 1, "");
-
+    parser->add_long_option ("", "input-search-dir",
+        "input file containing search direction", 1, "");
+        
     /* Parse the command line arguments */
     parser->parse (argc,argv);
 
@@ -363,6 +381,9 @@ parse_fn (
     parms->moving_fn = (*parser)[1];
     if (parser->have_option ("input-xform")) {
         parms->input_xf_fn = parser->get_string("input-xform");
+    }
+    if (parser->have_option ("input-search-dir")) {
+        parms->input_search_dir_fn = parser->get_string("input-search-dir");
     }
     if (parser->have_option ("output")) {
         parms->output_fn = parser->get_string("output");
