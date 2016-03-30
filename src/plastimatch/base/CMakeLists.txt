@@ -28,6 +28,7 @@ set (PLMBASE_LIBRARY_SRC
   direction_cosines.cxx 
   direction_matrices.cxx 
   exchkeys.cxx
+  float_pair_list.cxx float_pair_list.h
   gaussian.cxx gaussian.h 
   hnd_io.cxx
   interpolate.cxx

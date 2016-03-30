@@ -7,8 +7,8 @@
 #include "plmbase_config.h"
 #include "volume.h"
 
-PLMBASE_API 
 template<class T> 
+PLMBASE_API 
 void volume_fill (
     Volume* vol,
     T val
