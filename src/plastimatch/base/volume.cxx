@@ -848,7 +848,7 @@ void
 Volume::move_origin_to_idx (const plm_long ijk[3])
 {
     float new_origin[3];
-    this->coords (new_origin, ijk);
+    this->position (new_origin, ijk);
     this->set_origin (new_origin);
 }
 
