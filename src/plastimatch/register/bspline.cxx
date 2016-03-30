@@ -146,7 +146,7 @@ void find_knots (
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-dump_smetric_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
+dump_total_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
 {
     int i;
     FILE* fp;
@@ -154,7 +154,7 @@ dump_smetric_gradient (Bspline_xform* bxf, Bspline_score* ssd, const char* fn)
     make_parent_directories (fn);
     fp = fopen (fn, "wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-        fprintf (fp, "%20.20f\n", ssd->smetric_grad[i]);
+        fprintf (fp, "%20.20f\n", ssd->total_grad[i]);
     }
     fclose (fp);
 }
@@ -188,15 +188,10 @@ bspline_save_debug_state (
         std::string fn;
         char buf[1024];
 
-        if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
-            sprintf (buf, "%02d_grad_mi_%03d_%03d.txt", 
-                parms->debug_stage, bst->it, bst->feval);
-        } else {
-            sprintf (buf, "%02d_grad_mse_%03d_%03d.txt", 
-                parms->debug_stage, bst->it, bst->feval);
-        }
+        sprintf (buf, "%02d_grad_%03d_%03d.txt", 
+            parms->debug_stage, bst->it, bst->feval);
         fn = parms->debug_dir + "/" + buf;
-        dump_smetric_gradient (bxf, &bst->ssd, fn.c_str());
+        dump_total_gradient (bxf, &bst->ssd, fn.c_str());
 
         sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
             parms->debug_stage, bst->it, bst->feval);
