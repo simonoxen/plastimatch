@@ -326,14 +326,15 @@ report_score (
     Bspline_landmarks* blm = parms->blm;
 
     int i;
-    float ssd_grad_norm, ssd_grad_mean;
+    double ssd_grad_norm, ssd_grad_mean;
 
     /* Compute gradient statistics */
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
         ssd_grad_mean += bst->ssd.total_grad[i];
-        ssd_grad_norm += fabs (bst->ssd.total_grad[i]);
+        ssd_grad_norm += (double) bst->ssd.total_grad[i]
+            * (double) bst->ssd.total_grad[i];
     }
 
     /* Compute total time */
@@ -357,8 +358,8 @@ report_score (
     }
     logfile_print_score (ssd->score);
     logfile_printf (
-        "NV %6d GM %9.3f GN %9.3f [ %9.3f s ]\n",
-        ssd->num_vox, ssd_grad_mean, ssd_grad_norm, total_time);
+        "NV %6d GM %9.3f GN %9.3g [ %9.3f s ]\n",
+        ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line - smetric(s) */
     if (ssd->smetric.size() > 1) {
