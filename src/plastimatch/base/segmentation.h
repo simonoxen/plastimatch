@@ -88,6 +88,9 @@ public:
         UCharImageType::Pointer itk_image, 
         const char *structure_name = 0,
         const char *structure_color = 0);
+    Rtss_roi* add_rtss_roi (
+        const char *structure_name = 0,
+        const char *structure_color = 0);
 
     bool have_ss_img ();
     void set_ss_img (UCharImageType::Pointer ss_img);
