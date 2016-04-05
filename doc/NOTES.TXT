@@ -1,4 +1,13 @@
 ******************************************************************************
+WED
+2016-03-09
+
+Temporarily (?) removed functionality
+- Computing aperture and range compensator (mode 2)
+- Looping through angles (mode 3)
+
+
+******************************************************************************
 Proj_volume coordinates
 2016-02-08
 
@@ -26,9 +35,13 @@ What files might the wed program create?
 - dew_dose = dose in proj coordinates
 
 What conversions are important?
-- Convert ct to proj_wed, proj_ct
+- Convert ct to proj_wed
+-- rpl.compute_rpl_PrSTRP_no_rgc
+- Convert ct to proj_ct
 - Convert proj_wed to ct
 
+This thing needs removal
+- compute_target_distance_limits_slicerRt
 
 ******************************************************************************
 Rpl_volume
@@ -46,11 +59,6 @@ Main functions:
   get_rgdepth - lookup values in volume
   compute_ray_data - this is called internally, but also by dose code;
        
-  compute_rpl_ct_density - 
-  compute_rpl_HU 
-  compute_rpl_void 
-  compute_rpl_range_length_rgc
-  compute_rpl_PrSTRP_no_rgc
 
   compute_farthest_penetrating_ray_on_nrm
 
@@ -67,15 +75,29 @@ Main functions:
 
   rpl_ray_trace - call ray_trace_uniform on a single ray
 
-  Why are there so many of these?
-  (For now, fine.  In future, replace with LUT.)
-  rpl_ray_trace_callback_ct_density (called)
-    -> Schneider density equation
-  rpl_ray_trace_callback_ct_HU (called)
-  rpl_ray_trace_callback_PrSTPR (called)
+  Why are there so many of these
+  ------------------------------
+  compute_rpl_void 
+    -> No ray tracing performed
+    -> WTF ?
+  compute_rpl_ct_density
+    -> rpl_ray_trace_callback_ct_density
+    -> Schneider density, not accumulated
+  compute_rpl_HU 
+    -> rpl_ray_trace_callback_ct_HU
+    -> HU, not accumulated
+  compute_rpl_PrSTRP_no_rgc
+    -> rpl_ray_trace_callback_PrSTPR
+    -> Schneider stopping power, not accumulated
+  compute_rpl_range_length_rgc
+    -> rpl_ray_trace_callback_range_length
+    -> Schneider stopping power, accumulated
   rpl_ray_trace_callback_PrSTPR_XiO_MGH (not called)
-  rpl_ray_trace_callback_range_length (called)
 
+  Answer.  There are limitations in the ray tracing design which limit 
+  reusability.
+    -> May accumulate or not
+    -> No real world coordinates / li_values
 
 ******************************************************************************
 ITK Origin and Index
@@ -91,7 +113,6 @@ Either, use the region and the (ITK) origin:
     const typename ImageType::SpacingType& sp = input->GetSpacing();
 
 Or, use the dimension and the (plastimatch) origin:
-
 
 
 ******************************************************************************
@@ -130,8 +151,8 @@ Bspline_parms
    stage_parms.
 
 ******************************************************************************
-Proj_volume, Rpl_volume, and dose calculation
-2015-05-06
+Proj_volume, Proj_image, Rpl_volume, and dose calculation
+2015-05-06, 2016-03-16
 
 :: Proj_volume
 
@@ -165,8 +186,25 @@ Proj_volume, Rpl_volume, and dose calculation
    - Can be used by Siddon approach, does not depend on uniform steps
    - Has no knowledge of projection plane dimension, spacing
 
-:: Aperture
+:: Proj_image
+    int dim[2];              /* dim[0] = cols, dim[1] = rows */
+    double xy_offset[2];     /* Offset of center pixel */
+    Proj_matrix *pmat;
+      double ic[2];
+      double matrix[12];
+      double sad;
+      double sid;
+      double cam[3];
+      double nrm[3];
+      double extrinsic[16];
+      double intrinsic[12];
+    float* img;		     /* Pixel data */
 
+* Note use of raw pixel data
+* Spacing gets encoded in pmat
+* Proj_image could be a 1D Proj_vol
+
+:: Aperture
    Private:
     Plm_image::Pointer aperture_image;
     Plm_image::Pointer range_compensator_image;
@@ -185,8 +223,11 @@ Proj_volume, Rpl_volume, and dose calculation
     double prt[3];        /* unit vec: right */
     double tmp[3];
 
-* Conflates projection plane geometry and proton artifacts
-* Duplications with Proj_matrix and Proj_volume
+* Projection plane geometry and proton hardware
+* Maybe two separate distances would be helpful
+* Reimplements concepts of Proj_matrix
+* Why not two separate Proj_image with same Proj_matrix?
+* Why pdn instead of pup?
 
 :: Projection
     Canonical
@@ -213,7 +254,6 @@ Proj_volume, Rpl_volume, and dose calculation
       double ul_room[3];     // ic_room - ic[0] * incr_c - ic[1] * incr_r
 
 * Replaces Proj_matrix and Aperture
-* Why pdn instead of pup ?
 
 :: IEC
       double gantry_angle;
@@ -255,6 +295,16 @@ Proj_volume, Rpl_volume, and dose calculation
 * Strangely, no Image Plane module seems required (or even allowed?), 
   which would define Image Position Patient, Image Orientation Patient
 
+:: Other thoughts
+
+* The Aperture class demonstrates that you may have multiple 
+proj_image with same proj_matrix.  A few mild assumptions are used:
+image pixels are matched and clipping plane is same.
+Backprojection will map voxels correctly in both proj_image.
+
+Alternative implementation as master-slave, using Proj_image 
+for aperture_image and Volume for range_compensator_image could also 
+be considered.
 
 ******************************************************************************
 Older stuff
@@ -482,7 +532,6 @@ To convert an index into a position, you do this:
   pos[0] = origin[0] + idx[0]*step[0] + idx[1]*step[1] + idx[2]*step[2]
   pos[1] = origin[1] + idx[0]*step[3] + idx[1]*step[4] + idx[2]*step[5]
   pos[2] = origin[2] + idx[0]*step[6] + idx[1]*step[7] + idx[2]*step[8]
-
 
 ***** How to delete items from conquest *****
 
