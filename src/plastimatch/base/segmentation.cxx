@@ -295,7 +295,7 @@ Segmentation::add_rtss_roi (
         /* GCS FIX: In principle, I should convert existing ss_image 
            planes into rtss format first */
         d_ptr->m_rtss = Rtss::New();
-        d_ptr->m_ss_img = 0;
+        d_ptr->m_ss_img = Plm_image::New();
         d_ptr->m_rtss_valid = true;
         d_ptr->m_ss_img_valid = false;
     }
