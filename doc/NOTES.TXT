@@ -1,4 +1,14 @@
 ******************************************************************************
+xvi archive
+2016-04-13
+
+1) Handle multiple Rx
+2) Handle HFP/FFS/FFP
+3) Handle rotations
+4) Some form of series description and study description
+5) Some form of window/level (?)
+
+******************************************************************************
 WED
 2016-03-09
 
