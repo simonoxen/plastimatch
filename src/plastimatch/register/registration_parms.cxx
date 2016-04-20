@@ -865,6 +865,15 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "gridsearch_min_steps") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%d %d %d", 
+                &(stage->gridsearch_min_steps[0]), 
+                &(stage->gridsearch_min_steps[1]), 
+                &(stage->gridsearch_min_steps[2])) != 3) {
+            goto error_exit;
+        }
+    }
     else if (key == "gridsearch_strategy") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (val == "global") {

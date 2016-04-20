@@ -133,6 +133,9 @@ Stage_parms::Stage_parms ()
     gridsearch_step_size[0] = 10;
     gridsearch_step_size[1] = 10;
     gridsearch_step_size[2] = 10;
+    gridsearch_min_steps[0] = 0;
+    gridsearch_min_steps[1] = 0;
+    gridsearch_min_steps[2] = 0;
     /* Landmarks */
     landmark_stiffness = 1.0;
     landmark_flavor = 'a';
@@ -250,6 +253,9 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     gridsearch_step_size[0] = s.gridsearch_step_size[0];
     gridsearch_step_size[1] = s.gridsearch_step_size[1];
     gridsearch_step_size[2] = s.gridsearch_step_size[2];
+    gridsearch_min_steps[0] = s.gridsearch_min_steps[0];
+    gridsearch_min_steps[1] = s.gridsearch_min_steps[1];
+    gridsearch_min_steps[2] = s.gridsearch_min_steps[2];
     /* Landmarks */
     landmark_stiffness = s.landmark_stiffness;
     landmark_flavor = s.landmark_flavor;
