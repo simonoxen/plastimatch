@@ -17,7 +17,6 @@ class Metadata;
 class Plm_image;
 class Rt_plan;
 class Rt_study_private;
-class Slice_index;
 class Volume;
 class Xio_ct_transform;
 

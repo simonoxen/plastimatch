@@ -22,7 +22,6 @@
 #include "logfile.h"
 #include "rt_study_metadata.h"
 #include "plm_image.h"
-#include "plm_image_set.h"
 #include "plm_image_header.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
@@ -35,7 +34,6 @@ void
 Dcmtk_loader::image_load ()
 {
     /* Set up outputs */
-    Plm_image_set::Pointer pli_set = Plm_image_set::New();
     Plm_image::Pointer pli = Plm_image::New();
     d_ptr->img = pli;
 
@@ -46,7 +44,7 @@ Dcmtk_loader::image_load ()
     /* Create a container to hold different groups of files */
     std::list<Dcmtk_file_list> group_list;
 
-    /* Insert files into groups according to direction cosines */
+    /* Arrange files into groups according to direction cosines */
     {
         //printf ("----------\n");
         Dcmtk_file_list::const_iterator it;

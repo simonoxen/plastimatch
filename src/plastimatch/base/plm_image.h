@@ -16,7 +16,6 @@ class Plm_image_header;
 class Plm_image;
 class Plm_image_private;
 class Rt_study_metadata;
-class Slice_index;
 
 /*! \brief 
  * The Plm_image class represents a three-dimensional volume.  

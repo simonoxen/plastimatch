@@ -17,7 +17,6 @@ class Plm_image_header;
 class Rt_study;
 class Segmentation_private;
 class Rtss_roi;
-class Slice_index;
 class Xio_ct_transform;
 class Warp_parms;
 
