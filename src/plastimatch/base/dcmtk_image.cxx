@@ -108,10 +108,9 @@ Dcmtk_loader::image_load ()
     if (flist.size() < 2) {
         return;
     }
-    
+
     /* Get first slice */
-    std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
-    const Dcmtk_file* df = (*it).get();
+    const Dcmtk_file* df = (*flist.begin()).get();
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
@@ -141,7 +140,86 @@ Dcmtk_loader::image_load ()
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
     }
 
-    /* Get next slice */
+    /* Divine image type */
+    uint16_t samp_per_pix, bits_alloc, bits_stored, high_bit, pixel_rep;
+    const char* phot_interp;
+    bool rc = df->get_uint16 (DCM_SamplesPerPixel, &samp_per_pix);
+    if (!rc) {
+        return;
+    }
+    phot_interp = df->get_cstr (DCM_PhotometricInterpretation);
+    if (!phot_interp) {
+        return;
+    }
+    rc = df->get_uint16 (DCM_BitsAllocated, &bits_alloc);
+    if (!rc) {
+        return;
+    }
+    rc = df->get_uint16 (DCM_BitsStored, &bits_stored);
+    if (!rc) {
+        return;
+    }
+    rc = df->get_uint16 (DCM_HighBit, &high_bit);
+    if (!rc) {
+        return;
+    }
+    rc = df->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
+    if (!rc) {
+        return;
+    }
+
+    float rescale_slope, rescale_intercept;
+    rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
+    if (!rc) {
+        rescale_intercept = 0;
+    }
+    rc = df->get_ds_float (DCM_RescaleSlope, &rescale_slope);
+    if (!rc) {
+        rescale_slope = 1;
+    }
+
+    lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
+    lprintf ("Phot_interp: %s\n", phot_interp);
+    lprintf ("Bits_alloc: %d\n", (int) bits_alloc);
+    lprintf ("Bits_stored: %d\n", (int) bits_stored);
+    lprintf ("High_bit: %d\n", (int) high_bit);
+    lprintf ("Pixel_rep: %d\n", (int) pixel_rep);
+    lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
+
+    /* Some kinds of images we don't know how to deal with.  
+       Don't load these. */
+    if (samp_per_pix != 1) {
+        lprintf ("Sorry, couldn't load image: samp_per_pix\n");
+        return;
+    }
+    if (strcmp (phot_interp, "MONOCHROME2")) {
+        lprintf ("Sorry, couldn't load image: phot_interp\n");
+        return;
+    }
+    if (bits_alloc != 16 && bits_alloc != 8) {
+        lprintf ("Sorry, couldn't load image: bits_alloc\n");
+        return;
+    }
+    if (bits_stored != high_bit + 1) {
+        lprintf ("Sorry, couldn't load image: bits_stored/high_bit\n");
+        return;
+    }
+    if (pixel_rep != 0 && pixel_rep != 1) {
+        lprintf ("Sorry, couldn't load image: pixel_rep\n");
+        return;
+    }
+
+    /* If PLM_CONFIG_VOL_LIST is enabled, the image will be loaded 
+       into a PLM_IMG_TYPE_GPUIT_LIST */
+#if (PLM_CONFIG_VOL_LIST)
+    /* Loop through groups */
+    std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
+    for (it = flist.begin(); it != flist.end(); ++it) {
+    }
+
+#else
+    /* Get next slice in first chunk */
+    std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
     ++it; ++slice_no;
     df = (*it).get();
     z_diff = df->get_z_position() - z_prev;
@@ -236,84 +314,6 @@ Dcmtk_loader::image_load ()
     lprintf ("\n");
 #endif
 
-    /* Divine image type */
-    df = (*flist.begin()).get();
-    uint16_t samp_per_pix, bits_alloc, bits_stored, high_bit, pixel_rep;
-    const char* phot_interp;
-    bool rc = df->get_uint16 (DCM_SamplesPerPixel, &samp_per_pix);
-    if (!rc) {
-	//return pli;
-        return;
-    }
-    phot_interp = df->get_cstr (DCM_PhotometricInterpretation);
-    if (!phot_interp) {
-	//return pli;
-        return;
-    }
-    rc = df->get_uint16 (DCM_BitsAllocated, &bits_alloc);
-    if (!rc) {
-	//return pli;
-        return;
-    }
-    rc = df->get_uint16 (DCM_BitsStored, &bits_stored);
-    if (!rc) {
-	//return pli;
-        return;
-    }
-    rc = df->get_uint16 (DCM_HighBit, &high_bit);
-    if (!rc) {
-	//return pli;
-        return;
-    }
-    rc = df->get_uint16 (DCM_PixelRepresentation, &pixel_rep);
-    if (!rc) {
-	//return pli;
-        return;
-    }
-    lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
-    lprintf ("Phot_interp: %s\n", phot_interp);
-    lprintf ("Bits_alloc: %d\n", (int) bits_alloc);
-    lprintf ("Bits_stored: %d\n", (int) bits_stored);
-    lprintf ("High_bit: %d\n", (int) high_bit);
-    lprintf ("Pixel_rep: %d\n", (int) pixel_rep);
-
-    float rescale_slope, rescale_intercept;
-    rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
-    if (!rc) {
-        rescale_intercept = 0;
-    }
-    rc = df->get_ds_float (DCM_RescaleSlope, &rescale_slope);
-    if (!rc) {
-        rescale_slope = 1;
-    }
-
-    lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
-
-    /* Some kinds of images we don't know how to deal with.  
-       Don't load these. */
-    if (samp_per_pix != 1) {
-        lprintf ("Sorry, couldn't load image: samp_per_pix\n");
-        return;
-    }
-    if (strcmp (phot_interp, "MONOCHROME2")) {
-        lprintf ("Sorry, couldn't load image: phot_interp\n");
-        return;
-    }
-    if (bits_alloc != 16 && bits_alloc != 8) {
-        lprintf ("Sorry, couldn't load image: bits_alloc\n");
-        return;
-    }
-    if (bits_stored != high_bit + 1) {
-        lprintf ("Sorry, couldn't load image: bits_stored/high_bit\n");
-        return;
-    }
-    if (pixel_rep != 0 && pixel_rep != 1) {
-        lprintf ("Sorry, couldn't load image: pixel_rep\n");
-        return;
-    }
-
-    lprintf ("Image looks ok.  Try to load.\n");
-
     pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
     pli->m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
     Volume* vol = new Volume (vh, PT_FLOAT, 1);
@@ -381,6 +381,7 @@ Dcmtk_loader::image_load ()
             d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
         }
     }
+#endif
     if (d_ptr->m_drs) {
         d_ptr->m_drs->set_slice_list_complete ();
     }
