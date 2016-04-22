@@ -456,8 +456,6 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     dcmtk_copy_from_metadata (dataset, image_metadata, 
         DCM_PatientPosition, "HFS");
 
-    
-
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         drs->get_ct_series_uid());
     dcmtk_copy_from_metadata (dataset, image_metadata, DCM_SeriesNumber, "1");
@@ -494,8 +492,10 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
     //dataset->putAndInsertString (DCM_RescaleSlope, "1");
     dataset->putAndInsertString (DCM_RescaleType, "HU");
 
-    dataset->putAndInsertString (DCM_WindowCenter, "40");
-    dataset->putAndInsertString (DCM_WindowWidth, "400");
+    dcmtk_copy_from_metadata (dataset, image_metadata,
+        DCM_WindowCenter, "40");
+    dcmtk_copy_from_metadata (dataset, image_metadata,
+        DCM_WindowWidth, "400");
 
     /* Convert to 16-bit signed int */
     for (size_t i = 0; i < dsd->slice_size; i++) {

@@ -125,7 +125,8 @@ public:
       The origin is defined as the location in world coordinates 
       of the center of the first voxel in the volume.
     */
-    const float* get_origin (void);
+    const float* get_origin (void) const;
+    void get_origin (float *) const;
     /*! \brief Set the origin.
       The origin is defined as the location in world coordinates 
       of the center of the first voxel in the volume.

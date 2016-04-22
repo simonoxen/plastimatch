@@ -8,6 +8,7 @@
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
 
+#include "dcmtk_metadata.h"
 #include "dcmtk_module_general_series.h"
 #include "dcmtk_module_general_study.h"
 #include "dcmtk_module_patient.h"
@@ -45,16 +46,14 @@ Dcmtk_sro::save (
             "are not yet supported.\n");
     }
 
-    /* Not sure about this... */
-    rsm = rsm_src;
-    study_meta = rsm_src->get_study_metadata ();
-
     /* Patient module, general study module */
-    Dcmtk_module_patient::set (dataset, study_meta);
-    Dcmtk_module_general_study::set (dataset, rsm);
+    Dcmtk_module_patient::set (dataset, rsm_src->get_study_metadata ());
+    Dcmtk_module_general_study::set (dataset, rsm_src);
+    dcmtk_copy_from_metadata (dataset, rsm_reg->get_study_metadata (),
+        DCM_StudyDescription, "");
 
     /* General series module */
-    Dcmtk_module_general_series::set_sro (dataset, rsm);
+    Dcmtk_module_general_series::set_sro (dataset, rsm_reg);
 
     /* Spatial registration specific items */
     std::string sro_sop_instance_uid = dicom_uid(PLM_UID_PREFIX);
@@ -67,6 +66,10 @@ Dcmtk_sro::save (
     /* Content time is again tricky.  Which reference image should be used?
        The below is correct for xvi_archive program, but could be made 
        more general. */
+    dataset->putAndInsertOFStringArray (DCM_StudyDate,
+        rsm_reg->get_study_date());
+    dataset->putAndInsertOFStringArray (DCM_StudyTime,
+        rsm_reg->get_study_time());
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 
         rsm_reg->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_ContentTime, 

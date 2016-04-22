@@ -34,22 +34,21 @@
 #include "string_util.h"
 #include "xvi_archive.h"
 
-void
-do_xvi_archive (Xvi_archive_parms *parms)
+Rt_study::Pointer
+load_reference_ct (
+    const std::string& patient_ct_set_dir,
+    const std::string& cbct_ref_uid)
 {
-    std::string patient_ct_set_dir = compose_filename (
-        parms->patient_dir, "CT_SET");
-    std::string patient_images_dir = compose_filename (
-        parms->patient_dir, "IMAGES");
-
-    /* Load one of the reference CTs */
+    /* Get directory list */
     Dir_list ct_set_dir (patient_ct_set_dir);
     if (ct_set_dir.num_entries == 0) {
         printf ("Error.  No CT_SET found.\n");
-        return;
+        return Rt_study::Pointer();
     }
-    Rt_study reference_study;
+
+    /* Search for reference CT with matching UID */
     std::string reference_uid;
+    Rt_study::Pointer reference_study = Rt_study::New();
     for (int i = 0; i < ct_set_dir.num_entries; i++) {
         if (ct_set_dir.entries[i][0] == '.') {
             continue;
@@ -58,20 +57,27 @@ do_xvi_archive (Xvi_archive_parms *parms)
             patient_ct_set_dir.c_str(), ct_set_dir.entries[i]);
         if (is_directory (fn)) {
             printf ("Loaded reference study (%s)\n", fn.c_str());
-            reference_study.load (fn);
+            reference_study->load (fn);
             reference_uid = ct_set_dir.entries[i];
+        }
+        if (cbct_ref_uid == reference_uid) {
             break;
         }
     }
-    if (!reference_study.have_image()) {
-        printf ("Error.  No reference CT loaded.\n");
-        return;
+    if (!reference_study->have_image()) {
+        printf ("Error.  No matching reference CT found.\n");
+        return Rt_study::Pointer();
     }
-    Rt_study_metadata::Pointer& reference_meta = 
-        reference_study.get_rt_study_metadata ();
-    printf ("Reference Meta: %s %s\n",
-        reference_meta->get_patient_name().c_str(),
-        reference_meta->get_patient_id().c_str());
+    return reference_study;
+}
+
+void
+do_xvi_archive (Xvi_archive_parms *parms)
+{
+    std::string patient_ct_set_dir = compose_filename (
+        parms->patient_dir, "CT_SET");
+    std::string patient_images_dir = compose_filename (
+        parms->patient_dir, "IMAGES");
 
     Dir_list images_dir (patient_images_dir);
     if (images_dir.num_entries == 0) {
@@ -118,15 +124,46 @@ do_xvi_archive (Xvi_archive_parms *parms)
             string_format ("%s^%s",
                 recon_ini.Get ("IDENTIFICATION", "LastName", "").c_str(),
                 recon_ini.Get ("IDENTIFICATION", "FirstName", "").c_str());
-
+        std::string status_line_string = 
+            recon_ini.Get ("XVI", "StatusLineText", "");
+        std::string linac_string = "";
+        size_t n = status_line_string.find ("Plan Description:");
+        if (n != std::string::npos) {
+            linac_string = status_line_string.substr (
+                n + strlen ("Plan Description:"));
+            n = linac_string.find_first_not_of (" \t\r\n");
+            linac_string = linac_string.substr (n);
+            n = linac_string.find_first_of (" \t\r\n");
+            if (n != std::string::npos) {
+                linac_string = linac_string.substr (0, n);
+            }
+        }
         printf ("name = %s\n", patient_name.c_str());
         printf ("reference_uid = %s\n", cbct_ref_uid.c_str());
+        printf ("linac_string = %s\n", linac_string.c_str());
 
+#if defined (commentout)
         /* Verify if the file belongs to this reference CT */
         if (cbct_ref_uid != reference_uid) {
             printf ("Reference UID mismatch.  Skipping.\n");
             continue;
         }
+#endif
+
+        /* Load the matching reference CT */
+        Rt_study::Pointer reference_study = load_reference_ct (
+            patient_ct_set_dir, cbct_ref_uid);
+        if (!reference_study) {
+            printf ("No matching CT for this CBCT.  Skipping.\n");
+            continue;
+        }
+
+        /* Extract metadata from reference CT */
+        Rt_study_metadata::Pointer& reference_meta = 
+            reference_study->get_rt_study_metadata ();
+        printf ("Reference Meta: %s %s\n",
+            reference_meta->get_patient_name().c_str(),
+            reference_meta->get_patient_id().c_str());
 
         /* Load the INI.XVI file */
         INIReader recon_xvi (recon_xvi_fn);
@@ -158,32 +195,72 @@ do_xvi_archive (Xvi_archive_parms *parms)
         /* Load the .SCAN */
         Rt_study cbct_study;
         cbct_study.load_image (scan_fn);
-
         if (!cbct_study.have_image()) {
             printf ("ERROR: decompression failure with patient %s\n",
                 reference_meta->get_patient_id().c_str());
             exit (1);
         }
 
-        /* Write the DICOM image */
-        std::string output_dir = string_format (
-            "cbct_output/%s/%s", 
-            reference_meta->get_patient_id().c_str(),
-            images_dir.entries[i]);
-
+        /* Set DICOM image header fields */
         Rt_study_metadata::Pointer& cbct_meta 
             = cbct_study.get_rt_study_metadata ();
+        cbct_meta->set_patient_name (patient_name);
         if (parms->patient_id_override != "") {
             cbct_meta->set_patient_id (parms->patient_id_override);
         } else {
             cbct_meta->set_patient_id (
                 reference_meta->get_patient_id().c_str());
         }
-        cbct_meta->set_patient_name (patient_name);
         if (date_string != "" && time_string != "") {
             cbct_meta->set_study_date (date_string);
             cbct_meta->set_study_time (time_string);
+            cbct_meta->set_image_metadata(0x0008, 0x0012, date_string);
+            cbct_meta->set_image_metadata(0x0008, 0x0013, time_string);
         }
+        std::string study_description = "CBCT: " + linac_string;
+        cbct_meta->set_study_metadata (0x0008, 0x1030, study_description);
+        cbct_meta->set_image_metadata (0x0028, 0x1050, "500");  // Window
+        cbct_meta->set_image_metadata (0x0028, 0x1051, "2000"); // Level
+        std::string patient_position
+            = reference_meta->get_image_metadata(0x0018, 0x5100);
+        cbct_meta->set_image_metadata (0x0018, 0x5100, patient_position);
+        printf ("Patient position is %s\n", patient_position.c_str());
+
+        /* Fix patient orientation based on reference CT */
+        float dc[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+        if (patient_position == "HFS") {
+            /* Do nothing */
+        }
+        else if (patient_position == "HFP") {
+            // dc = { -1, 0, 0, 0, -1, 0, 0, 0, 1 };
+            dc[0] = dc[4] = -1;
+            cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+        }
+        else if (patient_position == "FFS") {
+            // dc = { -1, 0, 0, 0, 1, 0, 0, 0, -1 };
+            dc[0] = dc[8] = -1;
+            cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+        }
+        else if (patient_position == "FFP") {
+            // dc = { 1, 0, 0, 0, -1, 0, 0, 0, -1 };
+            dc[4] = dc[8] = -1;
+            cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+        }
+        else {
+            /* Punt */
+        }
+        float origin[3];
+        cbct_study.get_image()->get_volume()->get_origin(origin);
+        origin[0] = dc[0] * origin[0];
+        origin[1] = dc[4] * origin[1];
+        origin[2] = dc[8] * origin[2];
+        cbct_study.get_image()->get_volume()->set_origin (origin);
+        
+        /* Write the DICOM image */
+        std::string output_dir = string_format (
+            "cbct_output/%s/%s", 
+            reference_meta->get_patient_id().c_str(),
+            images_dir.entries[i]);
         cbct_study.save_dicom (output_dir);
 
         /* Create the DICOM SRO */
@@ -202,6 +279,12 @@ do_xvi_archive (Xvi_archive_parms *parms)
             exit (1);
         }
 
+        printf ("%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n", 
+            xvip[0], xvip[1], xvip[2], xvip[3], 
+            xvip[4], xvip[5], xvip[6], xvip[7], 
+            xvip[8], xvip[9], xvip[10], xvip[11], 
+            xvip[12], xvip[13], xvip[14], xvip[15]);
+        
         // dicom rotation = [0 0 1; 0 1 0; -1 0 0] * xvi rotation
         xfp[0] =   xvip[8];
         xfp[1] =   xvip[9];
@@ -212,6 +295,17 @@ do_xvi_archive (Xvi_archive_parms *parms)
         xfp[6] = - xvip[0];
         xfp[7] = - xvip[1];
         xfp[8] = - xvip[2];
+
+        // handle patient position in above
+        xfp[0] = dc[0] * xfp[0];
+        xfp[1] = dc[0] * xfp[1];
+        xfp[2] = dc[0] * xfp[2];
+        xfp[3] = dc[4] * xfp[3];
+        xfp[4] = dc[4] * xfp[4];
+        xfp[5] = dc[4] * xfp[5];
+        xfp[6] = dc[8] * xfp[6];
+        xfp[7] = dc[8] * xfp[7];
+        xfp[8] = dc[8] * xfp[8];
 
         // dicom translation = - 10 * dicom_rotation * xvi translation
         xfp[9]  = -10 * (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
@@ -226,7 +320,8 @@ do_xvi_archive (Xvi_archive_parms *parms)
 #endif
 
         Dcmtk_sro::save (
-            xf, reference_study.get_rt_study_metadata (),
+            xf,
+            reference_study->get_rt_study_metadata (),
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
     }
@@ -278,7 +373,7 @@ parse_fn (
 
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
     Xvi_archive_parms parms;
 

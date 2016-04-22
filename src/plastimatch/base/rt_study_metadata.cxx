@@ -322,6 +322,14 @@ Rt_study_metadata::get_image_metadata () const
     return d_ptr->image_metadata;
 }
 
+const std::string& 
+Rt_study_metadata::get_image_metadata (
+    unsigned short key1, 
+    unsigned short key2
+) {
+    d_ptr->image_metadata->get_metadata (key1, key2);
+}
+
 void
 Rt_study_metadata::set_image_metadata (
     unsigned short key1, 

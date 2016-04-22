@@ -215,9 +215,17 @@ Volume::create (
 }
 
 const float*
-Volume::get_origin ()
+Volume::get_origin () const
 {
     return this->origin;
+}
+
+void
+Volume::get_origin (float *origin) const
+{
+    for (int d = 0; d < 3; d++) {
+        origin[d] = this->origin[d];
+    }
 }
 
 void

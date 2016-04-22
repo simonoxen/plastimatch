@@ -71,6 +71,8 @@ public:
         const std::string& val);
     Metadata::Pointer& get_image_metadata ();
     const Metadata::Pointer& get_image_metadata () const;
+    const std::string& get_image_metadata (unsigned short key1, 
+        unsigned short key2);
     void set_image_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
     Metadata::Pointer& get_rtss_metadata ();

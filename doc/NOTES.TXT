@@ -2,11 +2,14 @@
 xvi archive
 2016-04-13
 
-1) Handle multiple Rx
+1) Handle multiple Rx (done)
 2) Handle HFP/FFS/FFP
 3) Handle rotations
-4) Some form of series description and study description
-5) Some form of window/level (?)
+4) Some form of series description and study description (done)
+5) Correct dates (done)
+6) Mark as CBCT (done)
+7) Some form of window/level (not supported by MIM?)
+
 
 ******************************************************************************
 WED
