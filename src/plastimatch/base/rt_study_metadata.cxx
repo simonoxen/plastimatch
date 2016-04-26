@@ -327,7 +327,7 @@ Rt_study_metadata::get_image_metadata (
     unsigned short key1, 
     unsigned short key2
 ) {
-    d_ptr->image_metadata->get_metadata (key1, key2);
+    return d_ptr->image_metadata->get_metadata (key1, key2);
 }
 
 void
