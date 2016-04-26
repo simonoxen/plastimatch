@@ -65,10 +65,12 @@ void
 Proj_image::clear ()
 {
     if (this->pmat) {
-        free (this->pmat);
+        delete pmat;
+        this->pmat = 0;
     }
     if (this->img) {
         free (this->img);
+        this->img = 0;
     }
 }
 
