@@ -235,16 +235,19 @@ do_xvi_archive (Xvi_archive_parms *parms)
             // dc = { -1, 0, 0, 0, -1, 0, 0, 0, 1 };
             dc[0] = dc[4] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+            continue;
         }
         else if (patient_position == "FFS") {
             // dc = { -1, 0, 0, 0, 1, 0, 0, 0, -1 };
             dc[0] = dc[8] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+            continue;
         }
         else if (patient_position == "FFP") {
             // dc = { 1, 0, 0, 0, -1, 0, 0, 0, -1 };
             dc[4] = dc[8] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
+            continue;
         }
         else {
             /* Punt */
@@ -297,6 +300,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
         xfp[8] = - xvip[2];
 
         // handle patient position in above
+#if defined (commentout)
         xfp[0] = dc[0] * xfp[0];
         xfp[1] = dc[0] * xfp[1];
         xfp[2] = dc[0] * xfp[2];
@@ -306,7 +310,17 @@ do_xvi_archive (Xvi_archive_parms *parms)
         xfp[6] = dc[8] * xfp[6];
         xfp[7] = dc[8] * xfp[7];
         xfp[8] = dc[8] * xfp[8];
-
+#endif
+        xfp[0] = dc[0] * xfp[0];
+        xfp[1] = dc[4] * xfp[1];
+        xfp[2] = dc[8] * xfp[2];
+        xfp[3] = dc[0] * xfp[3];
+        xfp[4] = dc[4] * xfp[4];
+        xfp[5] = dc[8] * xfp[5];
+        xfp[6] = dc[0] * xfp[6];
+        xfp[7] = dc[4] * xfp[7];
+        xfp[8] = dc[8] * xfp[8];
+        
         // dicom translation = - 10 * dicom_rotation * xvi translation
         xfp[9]  = -10 * (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
         xfp[10] = -10 * (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
@@ -324,6 +338,8 @@ do_xvi_archive (Xvi_archive_parms *parms)
             reference_study->get_rt_study_metadata (),
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
+
+        break;
     }
 }
 
