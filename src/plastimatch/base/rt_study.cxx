@@ -430,6 +430,30 @@ Rt_study::save_dicom_dose (const char *dicom_dir)
 }
 
 void
+Rt_study::save_image (const std::string& fname)
+{
+    if (fname != "") {
+        d_ptr->m_img->save_image (fname);
+    }
+}
+
+void
+Rt_study::save_image (const char* fname)
+{
+    if (d_ptr->m_img) {
+        d_ptr->m_img->save_image (fname);
+    }
+}
+
+void
+Rt_study::save_image (const char* fname, Plm_image_type image_type)
+{
+    if (d_ptr->m_img) {
+        d_ptr->m_img->convert_and_save (fname, image_type);
+    }
+}
+
+void
 Rt_study::save_dose (const std::string& fname)
 {
     if (fname != "") {

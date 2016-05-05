@@ -63,6 +63,10 @@ public:
         bool filenames_with_uid = true);
     void save_dicom_dose (const char *output_dir);
 
+    void save_image (const std::string& fname);
+    void save_image (const char* fname);
+    void save_image (const char* fname, Plm_image_type image_type);
+
     void save_dose (const std::string& fname);
     void save_dose (const char* fname);
     void save_dose (const char* fname, Plm_image_type image_type);

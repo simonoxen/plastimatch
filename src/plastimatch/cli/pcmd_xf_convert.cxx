@@ -28,6 +28,8 @@ public:
     std::string fixed_rcs;
     std::string moving_rcs;
 
+    std::string series_description;
+
     /* Geometry options */
     bool m_have_dim;
     bool m_have_origin;
@@ -232,6 +234,9 @@ parse_fn (
     parser->add_long_option ("", "moving-rcs", 
         "Directory containing DICOM image with reference "
         "coordinate system of moving image", 
+        1, "");
+    parser->add_long_option ("", "series-description",
+        "DICOM Series Description",
         1, "");
 
     /* Parse options */

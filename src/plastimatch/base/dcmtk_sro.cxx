@@ -145,53 +145,51 @@ Dcmtk_sro::save (
     rtc_item->putAndInsertString (DCM_CodeMeaning, "Visual Alignment");
     mr_item->findOrCreateSequenceItem (DCM_MatrixSequence, m_item, -2);
     std::string matrix_string;
+
     const AffineTransformType::MatrixType& itk_aff_mat 
         = itk_aff->GetMatrix ();
     const AffineTransformType::OutputVectorType& itk_aff_off 
         = itk_aff->GetOffset ();
+
+    printf ("ITK_AFF_OFF\n%f %f %f\n",
+        itk_aff_off[0], itk_aff_off[1], itk_aff_off[2]);
+    
+    /* Nb. ITK does not easily create an inverse affine transform. 
+       Therefore we play with the matrices. */
+    vnl_matrix_fixed< double, 3, 3 > itk_aff_mat_inv =
+        itk_aff_mat.GetInverse();
+    
     matrix_string = string_format (
         "%f\\%f\\%f\\%f\\"
         "%f\\%f\\%f\\%f\\"
         "%f\\%f\\%f\\%f\\"
         "0.0\\0.0\\0.0\\1.0",
-#if defined (commentout)
-        itk_aff_mat[0][0],
-        itk_aff_mat[0][1],
-        itk_aff_mat[0][2],
-        itk_aff_off[0],
-        itk_aff_mat[1][0],
-        itk_aff_mat[1][1],
-        itk_aff_mat[1][2],
-        itk_aff_off[1],
-        itk_aff_mat[2][0],
-        itk_aff_mat[2][1],
-        itk_aff_mat[2][2],
-        itk_aff_off[2]
-#endif
-        itk_aff_mat[0][0],
-        itk_aff_mat[1][0],
-        itk_aff_mat[2][0],
-        - itk_aff_mat[0][0] * itk_aff_off[0]
-        - itk_aff_mat[0][1] * itk_aff_off[1]
-        - itk_aff_mat[0][2] * itk_aff_off[2],
-        itk_aff_mat[0][1],
-        itk_aff_mat[1][1],
-        itk_aff_mat[2][1],
-        - itk_aff_mat[1][0] * itk_aff_off[0]
-        - itk_aff_mat[1][1] * itk_aff_off[1]
-        - itk_aff_mat[1][2] * itk_aff_off[2],
-        itk_aff_mat[0][2],
-        itk_aff_mat[1][2],
-        itk_aff_mat[2][2],
-        - itk_aff_mat[2][0] * itk_aff_off[0]
-        - itk_aff_mat[2][1] * itk_aff_off[1]
-        - itk_aff_mat[2][2] * itk_aff_off[2]
+        itk_aff_mat_inv[0][0],
+        itk_aff_mat_inv[0][1],
+        itk_aff_mat_inv[0][2],
+        - itk_aff_mat_inv[0][0] * itk_aff_off[0]
+        - itk_aff_mat_inv[0][1] * itk_aff_off[1]
+        - itk_aff_mat_inv[0][2] * itk_aff_off[2],
+        itk_aff_mat_inv[1][0],
+        itk_aff_mat_inv[1][1],
+        itk_aff_mat_inv[1][2],
+        - itk_aff_mat_inv[1][0] * itk_aff_off[0]
+        - itk_aff_mat_inv[1][1] * itk_aff_off[1]
+        - itk_aff_mat_inv[1][2] * itk_aff_off[2],
+        itk_aff_mat_inv[2][0],
+        itk_aff_mat_inv[2][1],
+        itk_aff_mat_inv[2][2],
+        - itk_aff_mat_inv[2][0] * itk_aff_off[0]
+        - itk_aff_mat_inv[2][1] * itk_aff_off[1]
+        - itk_aff_mat_inv[2][2] * itk_aff_off[2]
     );
     m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
         matrix_string.c_str());
     m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrixType,
         "RIGID");
 
+    printf ("SRO\n%s\n", matrix_string.c_str());
+    
     /* Prepare output file */
     std::string sro_fn;
     if (filenames_with_uid) {
