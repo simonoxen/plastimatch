@@ -271,6 +271,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
         }
         else {
             /* Punt */
+            patient_position = "HFS";
         }
         float origin[3];
         cbct_study.get_image()->get_volume()->get_origin(origin);
@@ -310,30 +311,71 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xvip[8], xvip[9], xvip[10], xvip[11], 
             xvip[12], xvip[13], xvip[14], xvip[15]);
         
-        // HFS: 
-        // dicom rotation = [0 0 1; 0 1 0; -1 0 0] * xvi rotation
-        // Old, "perfect" HFS setting
-        xfp[0] =   xvip[8];
-        xfp[1] =   xvip[9];
-        xfp[2] =   xvip[10];
-        xfp[3] =   xvip[4];
-        xfp[4] =   xvip[5];
-        xfp[5] =   xvip[6];
-        xfp[6] = - xvip[0];
-        xfp[7] = - xvip[1];
-        xfp[8] = - xvip[2];
+        if (patient_position == "HFS") {
+            xfp[0] =   xvip[8];
+            xfp[1] =   xvip[4];
+            xfp[2] = - xvip[0];
+            xfp[3] =   xvip[9];
+            xfp[4] =   xvip[5];
+            xfp[5] = - xvip[1];
+            xfp[6] =   xvip[10];
+            xfp[7] =   xvip[6];
+            xfp[8] = - xvip[2];
 
-#if defined (commentout)
-        xfp[0] = - xvip[8];
-        xfp[1] = - xvip[4];
-        xfp[2] = - xvip[0];
-        xfp[3] =   xvip[9];
-        xfp[4] =   xvip[5];
-        xfp[5] =   xvip[1];
-        xfp[6] =   xvip[10];
-        xfp[7] =   xvip[6];
-        xfp[8] =   xvip[2];
-#endif
+            xfp[9]  = (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] = (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        }
+        else if (patient_position == "HFP") {
+            xfp[0] =   xvip[8];
+            xfp[1] =   xvip[4];
+            xfp[2] =   xvip[0];
+            xfp[3] =   xvip[9];
+            xfp[4] =   xvip[5];
+            xfp[5] =   xvip[1];
+            xfp[6] = - xvip[10];
+            xfp[7] = - xvip[6];
+            xfp[8] = - xvip[2];
+
+            xfp[9]  = - (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] =   (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        }
+        else if (patient_position == "FFS") {
+            xfp[0] = - xvip[8];
+            xfp[1] = - xvip[9];
+            xfp[2] = - xvip[10];
+            xfp[3] =   xvip[4];
+            xfp[4] =   xvip[5];
+            xfp[5] =   xvip[6];
+            xfp[6] =   xvip[0];
+            xfp[7] =   xvip[1];
+            xfp[8] =   xvip[2];
+
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            xfp[10] =   (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
+            xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
+        }
+        else if (patient_position == "FFP") {
+            xfp[0] = - xvip[8];
+            xfp[1] =   xvip[9];
+            xfp[2] =   xvip[10];
+            xfp[3] = - xvip[4];
+            xfp[4] =   xvip[5];
+            xfp[5] =   xvip[6];
+            xfp[6] = - xvip[0];
+            xfp[7] =   xvip[1];
+            xfp[8] =   xvip[2];
+
+            xfp[9]  = (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            xfp[10] = (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
+            xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
+        }
+
+        // Convert cm to mm
+        xfp[9]  *= 10;
+        xfp[10] *= 10;
+        xfp[11] *= 10;
         
         printf ("XFORM\n%f %f %f\n%f %f %f\n%f %f %f\n",
             xfp[0],
@@ -346,6 +388,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xfp[7],
             xfp[8]);
 
+#if defined (commentout)
         aff->SetParametersByValue (xfp);
         vnl_matrix_fixed< double, 3, 3 > xfp_rot_inv = 
             aff->GetMatrix().GetInverse();
@@ -359,14 +402,15 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xfp_rot_inv[2][0],
             xfp_rot_inv[2][1],
             xfp_rot_inv[2][2]);
+#endif
         
         // dicom translation = - 10 * dicom_rotation * xvi translation
         // Old, "perfect" HFS setting
+#if defined (commentout)
         xfp[9]  = -10 * (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
         xfp[10] = -10 * (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
         xfp[11] = -10 * (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
 
-#if defined (commentout)
         xfp[9]  = -10 * (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
         xfp[10] = -10 * (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
         xfp[11] = -10 * (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
@@ -402,7 +446,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
 
-        //break;
+        break;
     }
 }
 
