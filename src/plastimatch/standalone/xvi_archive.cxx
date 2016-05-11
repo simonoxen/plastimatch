@@ -39,42 +39,6 @@ load_reference_ct (
     const std::string& patient_ct_set_dir,
     const std::string& cbct_ref_uid)
 {
-#if defined (commentout)
-    /* Get directory list */
-    Dir_list ct_set_dir (patient_ct_set_dir);
-    if (ct_set_dir.num_entries == 0) {
-        printf ("Error.  No CT_SET found.\n");
-        return Rt_study::Pointer();
-    }
-
-    /* Search for reference CT with matching UID */
-    std::string reference_uid;
-    Rt_study::Pointer reference_study = Rt_study::New();
-    for (int i = 0; i < ct_set_dir.num_entries; i++) {
-        if (ct_set_dir.entries[i][0] == '.') {
-            continue;
-        }
-        printf (">> %s\n>> %s\n",
-            cbct_ref_uid.c_str(),
-            ct_set_dir.entries[i]);
-        std::string fn = string_format ("%s/%s",
-            patient_ct_set_dir.c_str(), ct_set_dir.entries[i]);
-        if (is_directory (fn)) {
-            printf ("Loaded reference study (%s)\n", fn.c_str());
-            reference_study->load (fn);
-            reference_uid = ct_set_dir.entries[i];
-        }
-        if (cbct_ref_uid == reference_uid) {
-            break;
-        }
-    }
-    if (!reference_study->have_image()) {
-        printf ("Error.  No matching reference CT found.\n");
-        return Rt_study::Pointer();
-    }
-    return reference_study;
-#endif
-    
     std::string reference_ct_dir = string_format ("%s/%s",
         patient_ct_set_dir.c_str(), cbct_ref_uid.c_str());
     if (is_directory (reference_ct_dir)) {
@@ -313,33 +277,47 @@ do_xvi_archive (Xvi_archive_parms *parms)
         
         if (patient_position == "HFS") {
             xfp[0] =   xvip[8];
-            xfp[1] =   xvip[4];
-            xfp[2] = - xvip[0];
-            xfp[3] =   xvip[9];
+            xfp[1] =   xvip[9];
+            xfp[2] =   xvip[10];
+            xfp[3] =   xvip[4];
             xfp[4] =   xvip[5];
-            xfp[5] = - xvip[1];
-            xfp[6] =   xvip[10];
-            xfp[7] =   xvip[6];
+            xfp[5] =   xvip[6];
+            xfp[6] = - xvip[0];
+            xfp[7] = - xvip[1];
             xfp[8] = - xvip[2];
 
-            xfp[9]  = (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
-            xfp[10] = (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
-            xfp[11] = (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+            // B
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            xfp[10] =   (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
+            xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
+
+            // "A", Verified
+            xfp[9]  = - (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] = - (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        
         }
         else if (patient_position == "HFP") {
             xfp[0] =   xvip[8];
-            xfp[1] =   xvip[4];
-            xfp[2] =   xvip[0];
-            xfp[3] =   xvip[9];
+            xfp[1] =   xvip[9];
+            xfp[2] = - xvip[10];
+            xfp[3] =   xvip[4];
             xfp[4] =   xvip[5];
-            xfp[5] =   xvip[1];
-            xfp[6] = - xvip[10];
-            xfp[7] = - xvip[6];
+            xfp[5] = - xvip[6];
+            xfp[6] =   xvip[0];
+            xfp[7] =   xvip[1];
             xfp[8] = - xvip[2];
 
-            xfp[9]  = - (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
-            xfp[10] =   (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            // "A", Unlikely
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] = - (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
             xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        
+            // "B", Possible
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            xfp[10] =   (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
+            xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
+
         }
         else if (patient_position == "FFS") {
             xfp[0] = - xvip[8];
@@ -352,23 +330,36 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xfp[7] =   xvip[1];
             xfp[8] =   xvip[2];
 
-            xfp[9]  =   (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            // "B", Unlikely
+            xfp[9]  = - (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
             xfp[10] =   (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
             xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
+
+            // "A", Possible
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] = - (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        
         }
         else if (patient_position == "FFP") {
             xfp[0] = - xvip[8];
-            xfp[1] =   xvip[9];
+            xfp[1] = - xvip[9];
             xfp[2] =   xvip[10];
-            xfp[3] = - xvip[4];
+            xfp[3] =   xvip[4];
             xfp[4] =   xvip[5];
-            xfp[5] =   xvip[6];
+            xfp[5] = - xvip[6];
             xfp[6] = - xvip[0];
-            xfp[7] =   xvip[1];
+            xfp[7] = - xvip[1];
             xfp[8] =   xvip[2];
 
-            xfp[9]  = (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
-            xfp[10] = (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
+            // A
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] =   (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        
+            // "B", Mostly Verified
+            xfp[9]  =   (xfp[0]*xvip[12] + xfp[3]*xvip[13] + xfp[6]*xvip[14]);
+            xfp[10] =   (xfp[1]*xvip[12] + xfp[4]*xvip[13] + xfp[7]*xvip[14]);
             xfp[11] = - (xfp[2]*xvip[12] + xfp[5]*xvip[13] + xfp[8]*xvip[14]);
         }
 
@@ -377,17 +368,6 @@ do_xvi_archive (Xvi_archive_parms *parms)
         xfp[10] *= 10;
         xfp[11] *= 10;
         
-        printf ("XFORM\n%f %f %f\n%f %f %f\n%f %f %f\n",
-            xfp[0],
-            xfp[1],
-            xfp[2],
-            xfp[3],
-            xfp[4],
-            xfp[5],
-            xfp[6],
-            xfp[7],
-            xfp[8]);
-
 #if defined (commentout)
         aff->SetParametersByValue (xfp);
         vnl_matrix_fixed< double, 3, 3 > xfp_rot_inv = 
@@ -419,7 +399,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
         Xform::Pointer xf = Xform::New();
         xf->set_aff (xfp);
 
-        printf ("XFORM-1\n%f %f %f\n%f %f %f\n%f %f %f\n%f %f %f\n",
+        printf ("XFORM\n%f %f %f\n%f %f %f\n%f %f %f\n%f %f %f\n",
             xfp[0],
             xfp[1],
             xfp[2],
@@ -446,7 +426,7 @@ do_xvi_archive (Xvi_archive_parms *parms)
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
 
-        break;
+        //break;
     }
 }
 
