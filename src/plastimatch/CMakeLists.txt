@@ -19,8 +19,6 @@ option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
 option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
     "Prefer to use the patched version of certain ITK files" ON)
-option (PLM_CONFIG_USE_SS_IMAGE_VEC
-    "Save structure sets as ITK UCHAR VEC images" ON)
 option (PLM_CONFIG_VOL_LIST
     "Native support for volumes with irregular slice thicknesses" OFF)
 

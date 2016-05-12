@@ -702,12 +702,7 @@ Segmentation::rasterize (
     /* Rasterize structure sets */
     Rasterizer rasterizer;
 
-#if (PLM_CONFIG_USE_SS_IMAGE_VEC)
-    printf ("Setting use_ss_img_vec to true!\n");
     bool use_ss_img_vec = true;
-#else
-    bool use_ss_img_vec = false;
-#endif
 
     printf ("Rasterizing...\n");
     rasterizer.rasterize (d_ptr->m_rtss.get(), pih, false, want_labelmap, true,
