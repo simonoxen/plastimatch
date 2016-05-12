@@ -10,8 +10,6 @@ project (src_plastimatch)
 ##-----------------------------------------------------------------------------
 
 # Plastimatch software configuration options
-option (PLM_CONFIG_ALT_DCOS
-    "Use alternative direction cosines rules" OFF)
 option (PLM_CONFIG_CLANG_COMPLETE
     "Generate .clang_complete for hipster Vim-ers" OFF)
 option (PLM_CONFIG_DISABLE_VISCOUS
