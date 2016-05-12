@@ -944,6 +944,7 @@ endif ()
 ##    avoid this (i.e. no good suggestions on CMake/CTest email list.  
 ##    This is the purpose of the PATH_HACK code below.
 ##-----------------------------------------------------------------------------
+if (ITK_FOUND)
 if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLM_PLASTIMATCH_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Release)
@@ -973,6 +974,7 @@ else ()
   set (PLM_ITK_LIBRARY_PATH_HACK "")
   set (PLM_PLASTIMATCH_PATH_HACK "")
   set (PLM_FFTW_PATH_HACK "")
+endif ()
 endif ()
 
 macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)

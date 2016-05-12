@@ -105,7 +105,11 @@ if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
 endif ()
 
 if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
-  add_subdirectory (plastimatch)
+  if (NOT ITK_FOUND)
+    message (STATUS "Plastimatch will not be built (ITK not found)")
+  else ()
+    add_subdirectory (plastimatch)
+  endif ()
 endif ()
 
 set (PLM_BUILD_ORAIFUTILS 1)

@@ -46,7 +46,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLM_CONFIG_USE_PATCHED_ITK 0)
 if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
-    set (PLM_CONFIG_USE_PATCHED_ITK 1)
+  set (PLM_CONFIG_USE_PATCHED_ITK 1)
 endif ()
 
 
