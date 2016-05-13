@@ -18,6 +18,7 @@ set (PLMSYS_LIBRARY_SRC
   compiler_warnings.h
   delayload.c delayload.h
   dir_list.cxx dir_list.h
+  double_align8.h
   dlib_threads.cxx dlib_threads.h 
   file_util.cxx file_util.h
   logfile.cxx logfile.h
@@ -29,10 +30,13 @@ set (PLMSYS_LIBRARY_SRC
   plm_int.h
   plm_macros.h
   plm_math.h
+  plm_return_code.h
   plm_sleep.cxx plm_sleep.h 
-  plm_timer.cxx plm_timer.h
+  plm_timer.cxx plm_timer.h plm_timer_p.h
+  plm_va_copy.h
   plm_version.h 
   print_and_exit.cxx print_and_exit.h
+  smart_pointer.h
   string_util.cxx string_util.h
   )
 

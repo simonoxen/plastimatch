@@ -40,6 +40,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_dicom_load.cxx itk_dicom_load.h
   itk_dicom_save.cxx itk_dicom_save.h
   itk_directions.cxx itk_directions.h
+  itk_image.cxx itk_image.h
   itk_image_accumulate.cxx itk_image_accumulate.h
   itk_image_cast.cxx itk_image_cast.h
   itk_image_clone.cxx itk_image_clone.h
