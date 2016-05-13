@@ -1,5 +1,10 @@
 project (plastimatch_api_example)
 
+cmake_minimum_required (VERSION 2.8.12)
+if (COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif ()
+
 find_package (Plastimatch)
 
 # If you have multiple ITK installed on the computer, use the one 

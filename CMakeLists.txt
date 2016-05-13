@@ -140,32 +140,27 @@ option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)
 option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
+
 # GCS 2012-03-15: We prefer f2c over fortran because bspline optimization
 # fails when compiling fortran in debug mode with gcc 4.5.0
-option (PLM_PREFER_F2C 
-  "Prefer using f2c over native fortran compiler" ON)
-option (PLM_PREFER_SYSTEM_F2C 
-  "Prefer the system f2c over the included f2c" ON)
-option (PLM_PREFER_NO_FORTRAN_NO_F2C
-  "Prefer no fortran, no f2c" ON)
+option (PLM_PREFER_F2C "Prefer using f2c over native fortran compiler" ON)
+option (PLM_PREFER_SYSTEM_F2C "Prefer the system f2c over the included f2c" ON)
+option (PLM_PREFER_NO_FORTRAN_NO_F2C "Prefer no fortran, no f2c" ON)
 
 # Testing
-option (PLM_BUILD_TESTING 
-  "Enable regression testing" ON)
+option (PLM_BUILD_TESTING "Enable regression testing" ON)
 
 # Installer Options
-option (PLM_INSTALL_RPATH 
-  "Add full RPATH to install" OFF)
-option (PLM_CONFIG_INSTALL_LIBRARIES 
-  "Include libraries in install" ON)
-option (PLM_PACKAGE_32BIT 
-  "Set this when building 32-bit packages on a 64-bit machine" OFF)
-option (PLM_PACKAGE_NSIS 
-  "Set to ON when packaging binaries with NSIS" OFF)
-option (PLM_PACKAGE_WIX
-  "Set to ON when packaging binaries with WIX" OFF)
+option (PLM_INSTALL_RPATH "Add full RPATH to install" OFF)
+option (PLM_CONFIG_INSTALL_LIBRARIES "Include libraries in install" ON)
 
-# Update options if library build is selected  
+# Packaging
+option (PLM_PACKAGE_32BIT
+    "Set this when building 32-bit packages on a 64-bit machine" OFF)
+option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
+option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
+
+# Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_ISE ON)
   set (PLM_CONFIG_DISABLE_FATM ON)
