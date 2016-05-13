@@ -290,6 +290,9 @@ endif ()
 #if (PLMLIB_CONFIG_ENABLE_SCRIPT)
 #  set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} lua plmscript)
 #endif ()
+
+
+if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 export (TARGETS 
   ${EXPORT_TARGET_LIST}
   FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
@@ -303,7 +306,7 @@ endif ()
 file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
   "${PLM_INSTALL_INCLUDE_DIR}")
 configure_file (
-  "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in" 
+  "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig-Legacy.cmake.in" 
   "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
   @ONLY)
 configure_file (
@@ -322,6 +325,44 @@ install (EXPORT PlastimatchLibraryDepends
   DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
   # COMPONENT dev
   )
+
+
+else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
+
+  include (CMakePackageConfigHelpers)
+
+  # Make the version file
+  write_basic_package_version_file (
+    "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
+    VERSION ${PLM_DEFAULT_VERSION_STRING}
+    COMPATIBILITY AnyNewerVersion
+    )
+
+  # Make the targets file
+  export (EXPORT PlastimatchLibraryDepends
+    FILE "${CMAKE_BINARY_DIR}/PlastimatchConfigTargets.cmake"
+    #NAMESPACE Plastimatch::
+    )
+  
+  # Make the config file
+  configure_file (
+    "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in" 
+    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+    @ONLY)
+  
+  # Install the files
+  install (EXPORT PlastimatchLibraryDepends
+    #NAMESPACE Plastimatch::
+    DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
+    )
+  install (FILES 
+    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
+    DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
+    COMPONENT Devel
+    )
+
+endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
 ##-----------------------------------------------------------------------------
 ##  DOXYGEN

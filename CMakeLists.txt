@@ -38,86 +38,7 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  SETUP IMPORTANT LOCATIONS
-##-----------------------------------------------------------------------------
-set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
-set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Offer the user the choice of overriding the installation directories
-set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
-  "Installation directory for libraries")
-set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
-  "Installation directory for executables")
-set (PLM_INSTALL_INCLUDE_DIR include CACHE PATH
-  "Installation directory for header files")
-if (WIN32 AND NOT CYGWIN)
-  set (DEF_INSTALL_CMAKE_DIR CMake)
-else()
-  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
-endif()
-set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
-  "Installation directory for CMake files")
-mark_as_advanced (
-  PLM_INSTALL_LIB_DIR 
-  PLM_INSTALL_BIN_DIR 
-  PLM_INSTALL_INCLUDE_DIR 
-  PLM_INSTALL_CMAKE_DIR)
-
-# GCS 2015-07-08.  The below workflow is described here:
-#   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
-# However, it creates install targets with absolute paths, which is 
-# not allowed for NSIS targets.
-# It is possible this is resolved by newer documentation, which is referred
-# by the above link:
-#   http://www.cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
-# Needs further investigation
-
-# Make relative install paths absolute (needed later on)
-foreach (p LIB BIN INCLUDE CMAKE)
-  set (var PLM_INSTALL_${p}_DIR)
-  if (NOT IS_ABSOLUTE "${${var}}")
-    set (${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif ()
-endforeach ()
-
-##-----------------------------------------------------------------------------
-##  CMake include files
-##-----------------------------------------------------------------------------
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
-include (cmake/PlmMacros.cmake)
-include (CTest)
-include (CheckFunctionExists)
-include (CheckIncludeFiles)
-include (CheckTypeSize)
-include (TestBigEndian)
-
-# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
-# http://www.cmake.org/Bug/view.php?id=15117
-set (CMAKE_INSTALL_OPENMP_LIBRARIES ON)
-if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.1)
-    include (InstallRequiredSystemLibrariesPatched)
-else ()
-    include (InstallRequiredSystemLibraries)
-endif ()
-
-# http://www.cmake.org/Bug/view.php?id=9220
-include (cmake/language_support.cmake)
-
-# Superbuild
-if (PLM_SUPERBUILD)
-  include (ExternalProject)
-endif ()
-
-# Machine precision
-include (cmake/CheckEpsilon)
-
-# Is char signed or unsigned?
-include (cmake/CheckCharSign)
-
-##-----------------------------------------------------------------------------
-##  Plastimatch configuration variables
+##  Define plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
@@ -159,6 +80,8 @@ option (PLM_PACKAGE_32BIT
     "Set this when building 32-bit packages on a 64-bit machine" OFF)
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
 option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
+option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
+  "Use the old code for creating PlastimatchConfig.cmake and friends" ON)
 
 # Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
@@ -170,6 +93,87 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_PREFER_SYSTEM_F2C OFF)
 endif ()
   
+##-----------------------------------------------------------------------------
+##  SETUP IMPORTANT LOCATIONS
+##-----------------------------------------------------------------------------
+set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
+set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Offer the user the choice of overriding the installation directories
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+  "Installation directory for libraries")
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+  "Installation directory for executables")
+set (PLM_INSTALL_INCLUDE_DIR include CACHE PATH
+  "Installation directory for header files")
+if (WIN32 AND NOT CYGWIN)
+  set (DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
+endif()
+set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for CMake files")
+mark_as_advanced (
+  PLM_INSTALL_LIB_DIR 
+  PLM_INSTALL_BIN_DIR 
+  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_CMAKE_DIR)
+
+# GCS 2015-07-08.  The below workflow is described here:
+#   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
+# However, it creates install targets with absolute paths, which is 
+# not allowed for NSIS targets.
+# It is possible this is resolved by newer documentation, which is referred
+# by the above link:
+#   http://www.cmake.org/cmake/help/git-master/manual/cmake-packages.7.html#creating-packages
+# Needs further investigation
+
+# Make relative install paths absolute (needed later on)
+if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
+foreach (p LIB BIN INCLUDE CMAKE)
+  set (var PLM_INSTALL_${p}_DIR)
+  if (NOT IS_ABSOLUTE "${${var}}")
+    set (${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif ()
+endforeach ()
+endif ()
+
+##-----------------------------------------------------------------------------
+##  CMake include files
+##-----------------------------------------------------------------------------
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+include (cmake/PlmMacros.cmake)
+include (CTest)
+include (CheckFunctionExists)
+include (CheckIncludeFiles)
+include (CheckTypeSize)
+include (TestBigEndian)
+
+# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
+# http://www.cmake.org/Bug/view.php?id=15117
+set (CMAKE_INSTALL_OPENMP_LIBRARIES ON)
+if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.1)
+    include (InstallRequiredSystemLibrariesPatched)
+else ()
+    include (InstallRequiredSystemLibraries)
+endif ()
+
+# http://www.cmake.org/Bug/view.php?id=9220
+include (cmake/language_support.cmake)
+
+# Superbuild
+if (PLM_SUPERBUILD)
+  include (ExternalProject)
+endif ()
+
+# Machine precision
+include (cmake/CheckEpsilon)
+
+# Is char signed or unsigned?
+include (cmake/CheckCharSign)
+
 ##-----------------------------------------------------------------------------
 ##  Figure out plastimatch version number
 ##-----------------------------------------------------------------------------
