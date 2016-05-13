@@ -13,7 +13,7 @@ set (PLM_VERSION_PATCH "3")
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
 ##-----------------------------------------------------------------------------
-cmake_minimum_required (VERSION 2.6.0)
+cmake_minimum_required (VERSION 2.8.12)
 
 # CMP0003: Libraries linked via full path no longer produce linker search
 #  paths.
@@ -28,9 +28,7 @@ endif ()
 # Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
 # policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
 # older CMake versions.
-if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.4)
-  cmake_policy (SET CMP0017 NEW)
-endif ()
+cmake_policy (SET CMP0017 NEW)
 
 # Default to release
 if (NOT CMAKE_BUILD_TYPE)
@@ -108,7 +106,7 @@ endif ()
 include (cmake/language_support.cmake)
 
 # Superbuild
-if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
+if (PLM_SUPERBUILD)
   include (ExternalProject)
 endif ()
 
@@ -1063,16 +1061,14 @@ set (CPACK_SOURCE_IGNORE_FILES
 
 # NSIS stuff
 #set(CPACK_NSIS_INSTALLED_ICON_NAME "${APP_LOW_NAME}.ico")
-set(CPACK_NSIS_HELP_LINK "http://plastimatch.org")
-set(CPACK_NSIS_URL_INFO_ABOUT "http://plastimatch.org")
-set(CPACK_NSIS_CONTACT "plastimatch@googlegroups.com")
-
+set (CPACK_NSIS_HELP_LINK "http://plastimatch.org")
+set (CPACK_NSIS_URL_INFO_ABOUT "http://plastimatch.org")
+set (CPACK_NSIS_CONTACT "plastimatch@googlegroups.com")
 set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
 
 # WIX stuff
-if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.12)
-  set(CPACK_WIX_HELP_LINK "http://plastimatch.org")
-endif ()
+set (CPACK_WIX_HELP_LINK "http://plastimatch.org")
+
 
 # Write files to extra_stuff directory.  These is sets the release date 
 # and version number correctly into the changelog, without needing 
