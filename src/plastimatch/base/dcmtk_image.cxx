@@ -111,9 +111,6 @@ Dcmtk_loader::image_load ()
 
     /* Get first slice */
     const Dcmtk_file* df = (*flist.begin()).get();
-    float z_init, z_prev, z_diff, z_last;
-    int slice_no = 0;
-    float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
     
     /* Store UIDs */
     if (d_ptr->m_drs) {
@@ -212,13 +209,85 @@ Dcmtk_loader::image_load ()
     /* If PLM_CONFIG_VOL_LIST is enabled, the image will be loaded 
        into a PLM_IMG_TYPE_GPUIT_LIST */
 #if (PLM_CONFIG_VOL_LIST)
+
     /* Loop through groups */
-    std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
-    for (it = flist.begin(); it != flist.end(); ++it) {
+    std::list<Dcmtk_file_list>::iterator grit;
+    for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
+
+        //Dcmtk_file_list& dfl = *grit;
+
+        /* Get first slice of group */
+        Dcmtk_file_list::iterator it = grit->begin();
+        const Dcmtk_file* df = it->get();
+
+        /* Get next slice in group */
+        float z_init, z_prev, z_diff, z_last;
+        int slice_no = 0;
+        float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
+
+        ++it; ++slice_no;
+        df = (*it).get();
+        z_diff = df->get_z_position() - z_prev;
+        z_last = z_prev = df->get_z_position();
+
+        /* We want to find the number and spacing for each chunk 
+           within the group.  These are used to set the dim and 
+           spacing of the volume. */
+        int this_chunk_start = 0, best_chunk_start = 0;
+        float this_chunk_diff = z_diff, best_chunk_diff = z_diff;
+        int this_chunk_len = 2, best_chunk_len = 2;
+
+        /* Loop through remaining slices */
+        while (++it != flist.end())
+        {
+            ++slice_no;
+            printf ("Slice no: %d\n", slice_no);
+            df = (*it).get();
+            z_diff = df->get_z_position() - z_prev;
+            z_last = z_prev = df->get_z_position();
+
+            if (fabs (this_chunk_diff - z_diff) > 0.11) {
+                /* Start a new chunk if difference in thickness is 
+                   more than 0.1 millimeter */
+                this_chunk_start = slice_no - 1;
+                this_chunk_len = 2;
+                this_chunk_diff = z_diff;
+            } else {
+                /* Same thickness, increase size of this chunk */
+                this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
+                    / (this_chunk_len + 1);
+                this_chunk_len++;
+
+                /* Check if this chunk is now the best chunk */
+                if (this_chunk_len > best_chunk_len) {
+                    best_chunk_start = this_chunk_start;
+                    best_chunk_len = this_chunk_len;
+                    best_chunk_diff = this_chunk_diff;
+                    best_chunk_z_start = z_prev 
+                        - (best_chunk_len-1) * best_chunk_diff;
+                }
+            }
+        }
+
+#if defined (commentout)        
+        Dcmtk_file_list& flp = *grit;
+        const Dcmtk_file::Pointer dfp = grit->front();
+        Volume::Pointer vol = Volume::New (
+            const plm_long dim[3], 
+            const float origin[3], 
+            const float spacing[3], 
+            &dfp->get_direction_cosines(),
+            vh,
+            PT_FLOAT, 1);
+#endif
     }
 
 #else
     /* Get next slice in first chunk */
+    float z_init, z_prev, z_diff, z_last;
+    int slice_no = 0;
+    float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
+
     std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
     ++it; ++slice_no;
     df = (*it).get();
