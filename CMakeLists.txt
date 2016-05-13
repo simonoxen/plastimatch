@@ -169,6 +169,8 @@ option (PLM_PACKAGE_32BIT
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
 option (PLM_PACKAGE_NSIS 
   "Set to ON when packaging binaries with NSIS" OFF)
+option (PLM_PACKAGE_WIX
+  "Set to ON when packaging binaries with WIX" OFF)
 
 # Update options if library build is selected  
 if (PLM_CONFIG_LIBRARY_BUILD)
@@ -1036,7 +1038,9 @@ endif ()
 ##    ...from within your build directory
 ##-----------------------------------------------------------------------------
 # Choose generator
-if (PLM_PACKAGE_NSIS)
+if (PLM_PACKAGE_WIX)
+  set (CPACK_GENERATOR "WIX")
+elseif (PLM_PACKAGE_NSIS)
   set (CPACK_GENERATOR "NSIS")
 else ()
   set (CPACK_GENERATOR "ZIP")
@@ -1046,6 +1050,7 @@ set (CPACK_SOURCE_GENERATOR "TBZ2")
 # General stuff
 set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
 set (CPACK_PACKAGE_NAME "plastimatch")
+set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "Plastimatch - A Medical Imaging Application")
 set (CPACK_PACKAGE_VENDOR "Plastimatch Dev Team")
 set (CPACK_PACKAGE_VERSION_MAJOR "${PLM_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${PLM_VERSION_MINOR}")
@@ -1063,6 +1068,11 @@ set(CPACK_NSIS_URL_INFO_ABOUT "http://plastimatch.org")
 set(CPACK_NSIS_CONTACT "plastimatch@googlegroups.com")
 
 set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
+
+# WIX stuff
+if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.12)
+  set(CPACK_WIX_HELP_LINK "http://plastimatch.org")
+endif ()
 
 # Write files to extra_stuff directory.  These is sets the release date 
 # and version number correctly into the changelog, without needing 
@@ -1092,7 +1102,7 @@ set (CPACK_SOURCE_INSTALLED_DIRECTORIES
 #set (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 #set (CPACK_PACKAGING_INSTALL_PREFIX "")
 
-if (NOT CPACK_GENERATOR STREQUAL "NSIS")
+if (CPACK_GENERATOR STREQUAL "ZIP")
   set (CPACK_SET_DESTDIR ON)
 endif ()
 set (CPACK_INSTALL_PREFIX "")
