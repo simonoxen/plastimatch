@@ -52,8 +52,7 @@ before you can build plastimatch.  Download from here:
 
   http://cmake.org/
 
-Cmake 2.6 or higher is required.  Cmake 2.8 is required if you 
-want to compile reg-2-3.
+Cmake 2.8.12 or higher is required.
 
 C/C++ Compiler (required)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
