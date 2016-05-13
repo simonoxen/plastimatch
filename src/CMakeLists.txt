@@ -84,13 +84,13 @@ endif ()
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_DEBIAN_BUILD)
-  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_ISE ON)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
 endif ()
 
-if (PLM_BUILD_ISE)
+if (NOT PLM_CONFIG_DISABLE_ISE)
   add_subdirectory (ise)
 endif ()
 

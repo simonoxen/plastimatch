@@ -121,7 +121,8 @@ include (cmake/CheckCharSign)
 ##-----------------------------------------------------------------------------
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
-option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" OFF)
+option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" ON)
+option (PLM_CONFIG_DISABLE_ISE "Build ISE fluoro program" ON)
 option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
@@ -135,16 +136,10 @@ option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 
-# Optional components
-option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
-
 # Compile and link options
-option (PLM_SUPERBUILD
-  "Download missing external libraries" OFF)
-option (PLM_PREFER_EXTERNAL_ITK
-  "Prefer external ITK to local one" OFF)
-option (BUILD_SHARED_LIBS 
-  "Build plastimatch as shared library" OFF)
+option (PLM_SUPERBUILD "Download missing external libraries" OFF)
+option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
+option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 # GCS 2012-03-15: We prefer f2c over fortran because bspline optimization
 # fails when compiling fortran in debug mode with gcc 4.5.0
 option (PLM_PREFER_F2C 
@@ -172,7 +167,7 @@ option (PLM_PACKAGE_WIX
 
 # Update options if library build is selected  
 if (PLM_CONFIG_LIBRARY_BUILD)
-  set (PLM_BUILD_ISE OFF)
+  set (PLM_CONFIG_DISABLE_ISE ON)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
