@@ -81,7 +81,7 @@ option (PLM_PACKAGE_32BIT
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
 option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
 option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
-  "Use the old code for creating PlastimatchConfig.cmake and friends" ON)
+  "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
 # Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
@@ -104,7 +104,7 @@ set (PLM_INSTALL_LIB_DIR lib CACHE PATH
   "Installation directory for libraries")
 set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
   "Installation directory for executables")
-set (PLM_INSTALL_INCLUDE_DIR include CACHE PATH
+set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
   "Installation directory for header files")
 if (WIN32 AND NOT CYGWIN)
   set (DEF_INSTALL_CMAKE_DIR CMake)

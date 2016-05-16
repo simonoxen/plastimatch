@@ -1,4 +1,48 @@
 ******************************************************************************
+cmake upgrade
+2016-05-16
+
+The cmake infrastructure will benefit from using the new tools for
+creating packages.  New tools are available with CMake 2.8.11,
+available since May 2013.  Here is my understanding of how this stuff
+is supposed to work.
+
+1) Create target 
+
+add_library (libr src.cxx)
+
+2) Assign property to library target
+
+target_include_directories (libr INTERFACE
+    $<INSTALL_INTERFACE:include/libr>)
+
+I think you can also set target_link_libraries, which
+would track library dependencies.
+
+3) Install target with EXPORT option
+
+install (TARGETS libr
+    EXPORT LibrTargets
+    )
+
+It seems step 2 can be omitted by using the INCLUDES DESTINATION
+option in install(TARGETS).  
+
+4) Install export set
+
+install (EXPORT LibrTargets
+  DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
+  )
+
+Do I need to specify the DESTINATION?  Will it do the right thing regardless?
+
+5) Using the library
+
+No need to do anything.  By creating an executable which depends on a
+library target, the include directories are set appropriately.
+
+
+******************************************************************************
 xvi archive
 2016-04-13
 
