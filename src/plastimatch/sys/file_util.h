@@ -7,7 +7,7 @@
 #include "plmsys_config.h"
 #include <string>
 #include <stdio.h>
-#include "sys/plm_int.h"
+#include "plm_int.h"
 
 PLMSYS_API int file_exists (const char *filename);
 PLMSYS_API int file_exists (const std::string& filename);
