@@ -2332,7 +2332,7 @@ set_tests_properties (plm-reg-itk-similarity PROPERTIES
 set_tests_properties (plm-reg-itk-similarity-stats-1 PROPERTIES
   DEPENDS plm-reg-itk-similarity)
 set_tests_properties (plm-reg-itk-similarity-check-1 PROPERTIES
-  DEPENDS plm-reg-itk-similaritystats-1)
+  DEPENDS plm-reg-itk-similarity-stats-1)
 set_tests_properties (plm-reg-itk-similarity-stats-2 PROPERTIES
   DEPENDS plm-reg-itk-similarity)
 set_tests_properties (plm-reg-itk-similarity-check-2 PROPERTIES

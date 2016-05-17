@@ -333,9 +333,23 @@ if (PLM_CONFIG_DEBIAN_BUILD)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "proton-dose-1"
+    "proton-dose-1-stats"
+    "proton-dose-1-check"
     "proton-dose-2"
+    "proton-dose-2-stats"
+    "proton-dose-2-check"
     "proton-dose-3"
-    "proton-dose-4"
+    "proton-dose-3-stats"
+    "proton-dose-3-check"
+    "proton-dose-5a"
+    "proton-dose-5a-stats"
+    "proton-dose-5a-check"
+    "proton-dose-5g"
+    "proton-dose-5g-stats"
+    "proton-dose-5g-check"
+    "proton-dose-6a"
+    "proton-dose-6a-stats"
+    "proton-dose-6a-check"
     )
 endif ()
 
