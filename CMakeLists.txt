@@ -821,9 +821,10 @@ add_subdirectory (src)
 ##  Additional install files
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
-  if (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
-    install (FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
-  endif ()
+    file (GLOB DLLFILES "${ITK_DIR}/bin/release/*.dll")
+    if (DLLFILES)
+      install (FILES ${DLLFILES} DESTINATION bin)
+    endif ()
 endif ()
 
 if (CUDA_FOUND)
@@ -1062,7 +1063,7 @@ set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VE
 
 # WIX stuff
 set (CPACK_WIX_HELP_LINK "http://plastimatch.org")
-
+set (CPACK_WIX_UPGRADE_GUID "AA7C7964-14D7-4890-9CD1-EA1D80E4DC8C")
 
 # Write files to extra_stuff directory.  These is sets the release date 
 # and version number correctly into the changelog, without needing 
