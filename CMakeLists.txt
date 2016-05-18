@@ -1040,6 +1040,11 @@ else ()
 endif ()
 set (CPACK_SOURCE_GENERATOR "TBZ2")
 
+# For WiX install, and possibly for debian -dev targets,
+# we should properly set up the install components.
+# Until then, let's just kill it
+set (CPACK_MONOLITHIC_INSTALL 1)
+
 # General stuff
 set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
 set (CPACK_PACKAGE_NAME "plastimatch")
