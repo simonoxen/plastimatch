@@ -20,7 +20,7 @@ Setting up a build system for the first time
 
 #. Install the requisite packages::
 
-     sudo apt-get install devscripts pbuilder debhelper gcc-5 git-buildpackage
+     sudo apt-get install devscripts pbuilder debhelper git-buildpackage cowbuilder
 
    Note: devscripts must be 2.14.2 or higher, and gcc must be 5.0 
    or higher.  To set up gcc, you might need to do something like this:
@@ -80,10 +80,20 @@ tarball has everything it needs.
 
      sudo git-pbuilder --update
 
+#. Refresh your pbuilder environment (if needed)::
+
+     sudo pbuilder --clean && sudo pbuilder --update
+
+#. Test parallel regression tests::
+
+     cd ~/build/plastimatch-3.20.0
+     ctest -j 4
+
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch
      dch -v 1.6.3+dfsg-1
+     git commit -a -m "Update changelog"
 
 #. Run gbp import-orig.  This will update your source code from the tarball
    into the directory and local git repository, without pushing these changes
@@ -142,39 +152,7 @@ tarball has everything it needs.
 
      gbp buildpackage --git-pbuilder --git-ignore-new -j16
 
-
-Step 1: Preliminary testing (obsolete version)
-----------------------------------------------
-The preliminary testing is performed to make sure that the upstream 
-tarball has everything it needs.
-
-#. Update changelog (in an terminal, not emacs)::
-
-     cd plastimatch
-     dch -v 1.5.4+dfsg-1
-     git commit -a -m "Update changelog"
-
-#. Run rebundle.pl until satisfied::
-
-     rebundle.pl
-
-#. Refresh your pbuilder environment (if needed)::
-
-     sudo pbuilder --clean && sudo pbuilder --update
-
-#. Test out by running debuild::
-
-     run_debuild.pl
-
-#. Test out again by running pbuilder::
-
-     run_pbuilder.pl
-
-#. Test parallel regression tests::
-
-      cd ~/build/plastimatch-3.20.0
-      ctest -j 4
-
+      
 Step 2: Build the tarball
 -------------------------
 #. Make sure the changelog is up-to-date
