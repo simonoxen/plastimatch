@@ -55,7 +55,7 @@ Setting up a build system for the first time
      cd debian-med/plastimatch
      ln -s ~/work/plastimatch/extra/debian/* .
 
-#. Initial setup of pbuilder environment::
+#. Initial setup of pbuilder environment (if needed)::
 
      sudo apt-get install debian-archive-keyring
      sudo pbuilder create --distribution sid --mirror ftp://ftp.us.debian.org/debian/ --debootstrapopts "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
@@ -68,7 +68,15 @@ Setting up a build system for the first time
      sudo apt-get install debian-archive-keyring
      git-pbuilder create
 
-   See this link for more information https://wiki.debian.org/git-pbuilder
+Install packages into git-pbuilder.  This saves time when running
+multiple times::
+
+  git-pbuilder login --save-after-login
+  apt-get update
+  apt-get install libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
+  
+
+See this link for more information https://wiki.debian.org/git-pbuilder
 
 
 Step 1: Preliminary testing
