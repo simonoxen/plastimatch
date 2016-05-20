@@ -18,6 +18,12 @@ class Plm_image_header;
 class Slice_list;
 class Volume;
 
+/*! \brief 
+ * The Rt_study_metadata encapsulate DICOM metadata for an Rt_study. 
+ * The Rt_study_metadata includes separate metadata for image, dose, 
+ * and structure set (rtss), as well as a study_metadata which is 
+ * shared by all components.  Items such as Patient Name or Study Description
+ * will be held in study_metadata. */
 class PLMBASE_API Rt_study_metadata {
 public:
     SMART_POINTER_SUPPORT (Rt_study_metadata);

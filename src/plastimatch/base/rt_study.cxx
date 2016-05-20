@@ -498,28 +498,57 @@ Rt_study::get_rt_study_metadata ()
 }
 
 void 
-Rt_study::set_study_metadata (std::vector<std::string>& metadata)
+Rt_study::set_study_metadata (const std::vector<std::string>& metadata)
 {
     Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
-
-    std::vector<std::string>::iterator it = metadata.begin();
-    while (it < metadata.end()) {
-        const std::string& str = (*it);
-        size_t eq_pos = str.find_first_of ('=');
-        if (eq_pos != std::string::npos) {
-            std::string key = str.substr (0, eq_pos);
-            std::string val = str.substr (eq_pos+1);
-#if defined (commentout)
-            /* Set older-style metadata, used by gdcm */
-            d_ptr->m_meta->set_metadata (key, val);
-#endif
-            /* Set newer-style metadata, used by dcmtk */
-            study_metadata->set_metadata (key, val);
-        }
-        ++it;
-    }
-
+    study_metadata->set_metadata (metadata);
+    /* GCS FIX.  This is the wrong place for this. */
     d_ptr->m_xio_transform->set (d_ptr->m_drs->get_image_metadata());
+}
+
+Metadata::Pointer&
+Rt_study::get_study_metadata (void)
+{
+    return d_ptr->m_drs->get_study_metadata();
+}
+
+void 
+Rt_study::set_image_metadata (const std::vector<std::string>& metadata)
+{
+    Metadata::Pointer& image_metadata = d_ptr->m_drs->get_image_metadata ();
+    image_metadata->set_metadata (metadata);
+}
+
+Metadata::Pointer&
+Rt_study::get_image_metadata (void)
+{
+    return d_ptr->m_drs->get_image_metadata();
+}
+
+void 
+Rt_study::set_dose_metadata (const std::vector<std::string>& metadata)
+{
+    Metadata::Pointer& dose_metadata = d_ptr->m_drs->get_dose_metadata ();
+    dose_metadata->set_metadata (metadata);
+}
+
+Metadata::Pointer&
+Rt_study::get_dose_metadata (void)
+{
+    return d_ptr->m_drs->get_dose_metadata();
+}
+
+void 
+Rt_study::set_rtss_metadata (const std::vector<std::string>& metadata)
+{
+    Metadata::Pointer& rtss_metadata = d_ptr->m_drs->get_rtss_metadata ();
+    rtss_metadata->set_metadata (metadata);
+}
+
+Metadata::Pointer&
+Rt_study::get_rtss_metadata (void)
+{
+    return d_ptr->m_drs->get_rtss_metadata();
 }
 
 bool
@@ -639,12 +668,6 @@ const std::string&
 Rt_study::get_xio_dose_filename (void) const
 {
     return d_ptr->m_xio_dose_filename;
-}
-
-Metadata::Pointer&
-Rt_study::get_metadata (void)
-{
-    return d_ptr->m_drs->get_study_metadata();
 }
 
 Volume::Pointer

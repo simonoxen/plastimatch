@@ -375,7 +375,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         d_ptr->rt_study_metadata->get_dose_series_uid());
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
-    dataset->putAndInsertString (DCM_SeriesNumber, "");
+    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_SeriesNumber, "1");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     
     s = string_format ("%g\\%g\\%g", dose_volume->origin[0], 

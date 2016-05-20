@@ -74,10 +74,25 @@ public:
     void save_prefix (const std::string& output_prefix, 
         const std::string& extension = "mha");
 
+    /*! \brief Get the Rt_study_metadata */
     const Rt_study_metadata::Pointer& get_rt_study_metadata () const;
     Rt_study_metadata::Pointer& get_rt_study_metadata ();
-    void set_study_metadata (std::vector<std::string>& metadata);
-    Metadata::Pointer& get_metadata ();
+    /*! \brief Set metadata items into study_metadata portion of Rt_study_metadata */
+    void set_study_metadata (const std::vector<std::string>& metadata);
+    /*! \brief Get the study_metadata portion of Rt_study_metadata */
+    Metadata::Pointer& get_study_metadata ();
+    /*! \brief Set metadata items into image portion of Rt_study_metadata */
+    void set_image_metadata (const std::vector<std::string>& metadata);
+    /*! \brief Get the image portion of Rt_study_metadata */
+    Metadata::Pointer& get_image_metadata ();
+    /*! \brief Set metadata items into dose portion of Rt_study_metadata */
+    void set_dose_metadata (const std::vector<std::string>& metadata);
+    /*! \brief Get the dose portion of Rt_study_metadata */
+    Metadata::Pointer& get_dose_metadata ();
+    /*! \brief Set metadata items into rtss portion of Rt_study_metadata */
+    void set_rtss_metadata (const std::vector<std::string>& metadata);
+    /*! \brief Get the rtss portion of Rt_study_metadata */
+    Metadata::Pointer& get_rtss_metadata ();
 
     bool have_image ();
     void set_image (ShortImageType::Pointer& itk_image);
