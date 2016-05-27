@@ -858,15 +858,25 @@ if (CUDA_FOUND)
       )
     endif ()
   else ()
-    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
-    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
+#    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
+#    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
+#05/27/2016 YKP (for window users only): will copy dll files to bin for packaging.
+    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_65.dll")
+    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_65.dll")
+    set (CUFFT_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cufft32_65.dll")
+    set (CUFFT_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cufft64_65.dll")
 
     if (MACHINE_IS_32_BIT AND EXISTS "${CUDART_WIN32}")
       set (CUDART_FILE "${CUDART_WIN32}")
     endif ()
-
-    if (MACHINE_IS_64_BIT AND EXISTS "${CUDART_WIN64}")
-      set (CUDART_FILE "${CUDART_WIN64}")
+    if (MACHINE_IS_32_BIT AND EXISTS "${CUFFT_WIN32}")
+      set (CUFFT_FILE "${CUFFT_WIN32}")
+    endif ()
+    if (MACHINE_IS_64_BIT AND EXISTS "${CUDART_WIN64}")	
+      set (CUDART_FILE "${CUDART_WIN64}")	  
+    endif ()
+    if (MACHINE_IS_64_BIT AND EXISTS "${CUFFT_WIN64}")		
+      set (CUFFT_FILE "${CUFFT_WIN64}")	  
     endif ()
 
     # Override for packagers building 32-bit packages on 64-bit machine
@@ -882,12 +892,65 @@ if (CUDA_FOUND)
       install (FILES "${CUDART_FILE}" DESTINATION bin)
     endif ()
   endif ()
+
+  if (EXISTS "${CUFFT_FILE}")
+    if (UNIX)
+      install (FILES "${CUFFT_FILE}" DESTINATION lib)
+    else ()
+      install (FILES "${CUFFT_FILE}" DESTINATION bin)
+    endif ()
+  endif ()
 endif ()
 
+#Add QT dlls to Install
+if (QT4_FOUND)
+  if (UNIX)
+    # YKP: should be implemented soon
+  else ()	
+    set (QT4_CORE_DLL_WIN "${QT_LIBRARY_DIR}/QtCore4.dll")
+    set (QT4_GUI_DLL_WIN "${QT_LIBRARY_DIR}/QtGui4.dll")
+    if (EXISTS "${QT4_CORE_DLL_WIN}")
+		install (FILES "${QT4_CORE_DLL_WIN}" DESTINATION bin)
+    endif ()
+	if (EXISTS "${QT4_GUI_DLL_WIN}")
+		install (FILES "${QT4_GUI_DLL_WIN}" DESTINATION bin)
+    endif ()
+  endif ()
+endif ()
+
+#Add FFT dlls to Install
 if (FFTW_FOUND)
   if (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
-    install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
+    install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)	
   endif ()
+    #YKP 05/27/2016: no need of libfftw3f-3.dll and libfftw3l-3.dll?
+endif ()
+
+# Add sample directory/files to Install Only for windows users
+if (WIN32 OR WIN64)
+	set (PLM_STANDALONE_SAMPLE_DIR "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/sample")
+	set (PLM_STANDALONE_PACKAGE_DIR "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/package")
+	set (PLM_GAMMA_COLORMAP1 "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/colormap_customgamma.txt")
+	set (PLM_GAMMA_COLORMAP2 "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/colormap_jet.txt")
+	#YKP 05/27/2016: This batch file will create a shortcut of command prompt for windows users.
+	set (PLM_PROMPT_MACRO_WIN "${PLM_STANDALONE_PACKAGE_DIR}/Launch_cmd_prompt.bat")
+
+	#Copy the entire sample directory (CT and MRI image sets are contained)
+	if (EXISTS "${PLM_STANDALONE_SAMPLE_DIR}" AND IS_DIRECTORY "${PLM_STANDALONE_SAMPLE_DIR}")
+		install(DIRECTORY "${PLM_STANDALONE_SAMPLE_DIR}" DESTINATION bin)
+	endif()
+
+	if (EXISTS "${PLM_STANDALONE_PACKAGE_DIR}" AND IS_DIRECTORY "${PLM_STANDALONE_PACKAGE_DIR}")
+		if (EXISTS "${PLM_GAMMA_COLORMAP1}")
+			install(FILES "${PLM_GAMMA_COLORMAP1}" DESTINATION bin)
+		endif()
+		if (EXISTS "${PLM_GAMMA_COLORMAP2}")
+			install(FILES "${PLM_GAMMA_COLORMAP2}" DESTINATION bin)
+		endif()
+		if (EXISTS "${PLM_PROMPT_MACRO_WIN}")
+			install(FILES "${PLM_PROMPT_MACRO_WIN}" DESTINATION bin)
+		endif()		
+	endif()    
 endif ()
 
 # JAS 2011.01.24
