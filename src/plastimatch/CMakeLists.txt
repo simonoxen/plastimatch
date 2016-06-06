@@ -29,6 +29,8 @@ option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
   "Use legacy code for reading and writing b-spline xform files" ON)
 option (PLM_CONFIG_LEGACY_MI_METRIC
   "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
+option (PLM_CONFIG_LEGACY_PROJ_GEO
+  "Use legacy method for specifying projection geometry" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries
