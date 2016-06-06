@@ -83,6 +83,11 @@ option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
 option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
   "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
+# Use legacy packaging if cmake version is < 3.0
+if (CMAKE_VERSION VERSION_LESS "3.0")
+  set (PLM_PACKAGE_LEGACY_CMAKE_CONFIG ON CACHE BOOL)
+endif ()
+
 # Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_ISE ON)
