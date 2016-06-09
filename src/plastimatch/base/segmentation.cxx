@@ -180,9 +180,6 @@ Segmentation::load_prefix (const char *prefix_dir)
 
             first = false;
         } else {
-            printf ("---\n");
-            pih.print();
-            printf ("\n");
             ss_img_pih.print();
             if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
                 print_and_exit ("Image size mismatch when loading prefix_dir\n");

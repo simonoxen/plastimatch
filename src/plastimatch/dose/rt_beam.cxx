@@ -250,6 +250,12 @@ Rt_beam::set_isocenter_position (const double* position)
     }
 }
 
+double 
+Rt_beam::get_source_distance () const
+{
+    return vec3_dist (d_ptr->isocenter, d_ptr->source);
+}
+
 char
 Rt_beam::get_flavor (void) const
 {
