@@ -72,9 +72,19 @@ The main issue with the proj volume is that its coordinates are
 both difficult to understand and poorly documented.
 
 What makes it difficult?
-- ires vs image_dim
+- ires vs image_dim vs dim
+-- use image_dim
+- is first index row or column?
+-- dim[0] = cols, dim[1] = rows
+-- loop (j=0;j<dim[1]-1;j++) {
+--   loop (i=0;i<dim[0]-1;i++) { } }
 - image_center vs image_origin
+-- both are potentially useful
+-- either should be specified, but internal storage as image origin
 - location of first data point (at clipping plane or inside volume?)
+-- ?
+- different code for drr and wed
+-- need to unify
 
 What does ray_data contain?
 - ray_data is computed from reference volume
