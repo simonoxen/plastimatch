@@ -180,8 +180,12 @@ Segmentation::load_prefix (const char *prefix_dir)
 
             first = false;
         } else {
+            printf ("---\n");
+            pih.print();
+            printf ("\n");
+            ss_img_pih.print();
             if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
-                print_and_exit ("Image size mismatch when loading prefix_dir");
+                print_and_exit ("Image size mismatch when loading prefix_dir\n");
             }
         }
 
@@ -197,7 +201,7 @@ Segmentation::load_prefix (const char *prefix_dir)
         unsigned int bit_no = bit % 8;
         unsigned char bit_mask = 1 << bit_no;
         if (uchar_no > ss_img->GetVectorLength()) {
-            print_and_exit ("Error.  Ss_img vector is too small.");
+            print_and_exit ("Error.  Ss_img vector is too small.\n");
         }
 
         /* Set up iterators for looping through images */
@@ -256,7 +260,7 @@ Segmentation::add_structure (
         /* Make sure image size is the same */
         Plm_image_header ss_img_pih (d_ptr->m_ss_img);
         if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
-            print_and_exit ("Image size mismatch when adding structure");
+            print_and_exit ("Image size mismatch when adding structure\n");
         }
     }
 
@@ -491,7 +495,7 @@ Segmentation::save_ss_image (const std::string& ss_img_fn)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
-            "Error: save_ss_image() tried to write a non-existant ss_img");
+            "Error: save_ss_image() tried to write a non-existant ss_img\n");
     }
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
         || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
@@ -651,7 +655,7 @@ Segmentation::convert_to_uchar_vec (void)
 {
     if (!d_ptr->m_ss_img) {
         print_and_exit (
-            "Error: convert_to_uchar_vec() requires an image");
+            "Error: convert_to_uchar_vec() requires an image\n");
     }
     d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 }
