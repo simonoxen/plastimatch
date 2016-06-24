@@ -933,29 +933,11 @@ endif ()
 
 # Add sample directory/files to Install Only for windows users
 if (WIN32 OR WIN64)
-	set (PLM_STANDALONE_SAMPLE_DIR "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/sample")
-	set (PLM_STANDALONE_PACKAGE_DIR "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/package")
-	set (PLM_GAMMA_COLORMAP1 "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/colormap_customgamma.txt")
-	set (PLM_GAMMA_COLORMAP2 "${CMAKE_SOURCE_DIR}/src/plastimatch/standalone/colormap_jet.txt")
-	#YKP 05/27/2016: This batch file will create a shortcut of command prompt for windows users.
-	set (PLM_PROMPT_MACRO_WIN "${PLM_STANDALONE_PACKAGE_DIR}/Launch_cmd_prompt.bat")
-
-	#Copy the entire sample directory (CT and MRI image sets are contained)
-	if (EXISTS "${PLM_STANDALONE_SAMPLE_DIR}" AND IS_DIRECTORY "${PLM_STANDALONE_SAMPLE_DIR}")
-		install(DIRECTORY "${PLM_STANDALONE_SAMPLE_DIR}" DESTINATION bin)
-	endif()
-
-	if (EXISTS "${PLM_STANDALONE_PACKAGE_DIR}" AND IS_DIRECTORY "${PLM_STANDALONE_PACKAGE_DIR}")
-		if (EXISTS "${PLM_GAMMA_COLORMAP1}")
-			install(FILES "${PLM_GAMMA_COLORMAP1}" DESTINATION bin)
-		endif()
-		if (EXISTS "${PLM_GAMMA_COLORMAP2}")
-			install(FILES "${PLM_GAMMA_COLORMAP2}" DESTINATION bin)
-		endif()
-		if (EXISTS "${PLM_PROMPT_MACRO_WIN}")
-			install(FILES "${PLM_PROMPT_MACRO_WIN}" DESTINATION bin)
-		endif()		
-	endif()    
+  set (PLM_WINDOWS_INSTALL_DIR "${CMAKE_SOURCE_DIR}/extra/windows-install")
+  install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_customgamma.txt}" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_jet.txt}" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_command_prompt.txt}" DESTINATION bin)
 endif ()
 
 # JAS 2011.01.24
