@@ -1,5 +1,19 @@
 Version 1.6.3 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+* WiX based windows install
+* Many proton dose enhancements
+* Many MABS enhancements
+* Gamma_gui and register_gui programs
+* DICOM metadata enhancements
+* Default MI metric for ITK implementations is now Mattes
+* Vector fields can now be saved as any ITK format
+* Multi-DRR options can now use any starting angle and can save details file
+* Dij matrix warping works again
+* You can now select gpuid in registration command file
+* Fix image convert failure for when resampling without supplied xform
+* Fix image resize crash
+* Fix for loading ITK volumes with non-zero index attributes
+* Fix DICOM loading RTDOSE with non-identity direction cosines
 
 Version 1.6.2 (build 5130)
 Tue Jul 28 14:38:04 EDT 2015

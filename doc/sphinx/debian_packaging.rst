@@ -22,8 +22,8 @@ Setting up a build system for the first time
 
      sudo apt-get install devscripts pbuilder debhelper git-buildpackage cowbuilder
 
-   Note: devscripts must be 2.14.2 or higher, and gcc must be 5.0 
-   or higher.  To set up gcc, you might need to do something like this:
+   Note: if your host is not sid, you might need to install a newer gcc version 
+   than exists on the native release.  You can do something like this:
 
       http://lektiondestages.blogspot.com/2013/05/installing-and-switching-gccg-versions.html
 
@@ -55,14 +55,6 @@ Setting up a build system for the first time
      cd debian-med/plastimatch
      ln -s ~/work/plastimatch/extra/debian/* .
 
-#. Initial setup of pbuilder environment (if needed)::
-
-     sudo apt-get install debian-archive-keyring
-     sudo pbuilder create --distribution sid --mirror ftp://ftp.us.debian.org/debian/ --debootstrapopts "--keyring=/usr/share/keyrings/debian-archive-keyring.gpg"
-
-   See this link for an explanation https://wiki.ubuntu.com/PbuilderHowto, 
-   but use the sid distribution instead of squeeze.
-
 #. Initial setup of pbuilder environment::
 
      sudo apt-get install debian-archive-keyring
@@ -75,7 +67,6 @@ multiple times::
   apt-get update
   apt-get install libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
   
-
 See this link for more information https://wiki.debian.org/git-pbuilder
 
 
@@ -87,10 +78,6 @@ tarball has everything it needs.
 #. Refresh your git-pbuilder environment (if needed)::
 
      sudo git-pbuilder --update
-
-#. Refresh your pbuilder environment (if needed)::
-
-     sudo pbuilder --clean && sudo pbuilder --update
 
 #. Test parallel regression tests::
 
