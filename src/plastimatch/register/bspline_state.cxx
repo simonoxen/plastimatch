@@ -14,6 +14,7 @@
 #include "bspline.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
+#include "cuda_util.h"
 #endif
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
@@ -149,14 +150,20 @@ bspline_cuda_state_create (
 )
 {
 #if (CUDA_FOUND)
+    /* Set the gpuid */
+    LOAD_LIBRARY_SAFE (libplmcuda);
+    LOAD_SYMBOL (CUDA_selectgpu, libplmcuda);
+    CUDA_selectgpu (parms->gpuid);
+    UNLOAD_LIBRARY (libplmcuda);
+    
     Volume *fixed = parms->fixed;
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
 
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
-
     bst->dev_ptrs = dev_ptrs;
+    
     if ((parms->threading == BTHR_CUDA) && (parms->metric_type[0] == REGISTRATION_METRIC_MSE)) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);

@@ -48,6 +48,8 @@ Stage_parms::Stage_parms ()
     optim_subtype = OPTIMIZATION_SUB_FSF;
     alg_flavor = 0;
     threading_type = THREADING_CPU_OPENMP;
+    gpuid = 0;
+    /* Similarity metric */
     metric_type.push_back (REGISTRATION_METRIC_MSE);
     metric_lambda.push_back (1.0);
     regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
@@ -167,6 +169,8 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     optim_subtype = s.optim_subtype;
     alg_flavor = s.alg_flavor;
     threading_type = s.threading_type;
+    gpuid = s.gpuid;
+    /* Similarity metric */
     metric_type = s.metric_type;
     metric_lambda = s.metric_lambda;
     regularization_type = s.regularization_type;

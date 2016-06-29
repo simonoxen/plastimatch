@@ -299,6 +299,11 @@ Bspline_stage::initialize ()
     }
     logfile_printf ("Algorithm flavor = %c\n", bsp_parms->implementation);
 
+    if (stage->threading_type == THREADING_CUDA) {
+        bsp_parms->gpuid = stage->gpuid;
+        logfile_printf ("GPU ID = %d\n", bsp_parms->gpuid);
+    }
+    
     /* Regularization */
     bsp_parms->reg_parms->lambda = stage->regularization_lambda;
     switch (stage->regularization_type) {

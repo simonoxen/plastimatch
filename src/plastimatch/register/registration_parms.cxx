@@ -523,6 +523,12 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "gpuid") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%d", &stage->gpuid) != 1) {
+            goto error_exit;
+        }
+    }
     else if (key == "metric" || key == "smetric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         std::vector<std::string> metric_vec = string_split (val, ',');
