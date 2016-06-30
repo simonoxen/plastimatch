@@ -168,24 +168,13 @@ Then, do a few small things to get ready for next time
 
 Step 3: Build the debian package
 --------------------------------
-#. Commit changes to debian files
+#. Patch git with upstream::
 
-#. Clean up files from previous version::
+     gbp import-orig --pristine-tar --uscan -u 1.6.3+dfsg
 
-     ./clean_directory.sh
+#. Push changes to server::
 
-#. Repackage tarball::
-
-     cd trunk
-     uscan --verbose --force-download
-
-#. Test out by running debuild::
-
-     run_debuild.pl
-
-#. Test out again by running pbuilder::
-
-     run_pbuilder.pl
+     git push --all origin
 
 Various hints
 -------------
