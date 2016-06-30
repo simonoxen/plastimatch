@@ -1,5 +1,8 @@
-Version 1.6.3 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.6.4 (build @PLASTIMATCH_SVN_VERSION@)
 @TIMESTAMP@
+
+Version 1.6.3 (build 5341)
+Wed Jun 29 17:08:12 EDT 2016
 * WiX based windows install
 * Many proton dose enhancements
 * Many MABS enhancements
