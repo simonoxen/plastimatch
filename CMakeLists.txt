@@ -935,9 +935,9 @@ endif ()
 if (WIN32 OR WIN64)
   set (PLM_WINDOWS_INSTALL_DIR "${CMAKE_SOURCE_DIR}/extra/windows-install")
   install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)
-  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_customgamma.txt}" DESTINATION bin)
-  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_jet.txt}" DESTINATION bin)
-  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_command_prompt.txt}" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_customgamma.txt" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_jet.txt" DESTINATION bin)
+  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_cmd_prompt.bat" DESTINATION bin)
 endif ()
 
 # JAS 2011.01.24
@@ -1119,6 +1119,9 @@ set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VE
 # WIX stuff
 set (CPACK_WIX_HELP_LINK "http://plastimatch.org")
 set (CPACK_WIX_UPGRADE_GUID "AA7C7964-14D7-4890-9CD1-EA1D80E4DC8C")
+set (CPACK_WIX_LICENSE_RTF  "${PLM_WINDOWS_INSTALL_DIR}/License.rtf")
+set (CPACK_WIX_UI_BANNER  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo.jpg")
+set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 
 # Write files to extra_stuff directory.  These is sets the release date 
 # and version number correctly into the changelog, without needing 
