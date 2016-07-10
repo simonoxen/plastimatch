@@ -150,6 +150,7 @@ public:
     float grad_tol;
     /* LBGFGB optimizer */
     float pgtol;
+    int lbfgsb_mmax;
     /* Versor & RSG optimizer */
     float max_step;
     float min_step;

@@ -651,6 +651,12 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "lbfgsb_mmax") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%d", &stage->lbfgsb_mmax) != 1) {
+            goto error_exit;
+        }
+    }
     else if (key == "max_step") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->max_step) != 1) {

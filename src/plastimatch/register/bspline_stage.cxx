@@ -258,6 +258,7 @@ Bspline_stage::initialize ()
         bsp_parms->optimization = BOPT_LBFGSB;
     }
     bsp_parms->lbfgsb_pgtol = stage->pgtol;
+    bsp_parms->lbfgsb_mmax = stage->lbfgsb_mmax;
 
     /* Metric */
     bsp_parms->metric_type = stage->metric_type;

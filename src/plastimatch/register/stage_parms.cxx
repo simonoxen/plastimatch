@@ -74,6 +74,7 @@ Stage_parms::Stage_parms ()
     grad_tol = 1.5;
     /* LBGFGB optimizer */
     pgtol = 1.0e-5;
+    lbfgsb_mmax = -1;
     /* Versor & RSG optimizer */
     max_step = 1.00;
     min_step = 0.001;
@@ -194,6 +195,7 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     grad_tol = s.grad_tol;
     /* LBGFGB optimizer */
     pgtol = s.pgtol;
+    lbfgsb_mmax = s.lbfgsb_mmax;
     /* Versor & RSG optimizer */
     max_step = s.max_step;
     min_step = s.min_step;
