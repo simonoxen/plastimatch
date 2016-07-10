@@ -362,11 +362,11 @@ report_score (
         ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line - smetric(s) */
+    logfile_printf ("         ");
     if (ssd->smetric.size() > 1) {
         std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
         std::vector<Registration_metric_type>::const_iterator it_st
             = parms->metric_type.begin();
-        logfile_printf ("         ");
         while (it_sm != ssd->smetric.end()) {
             logfile_printf ("%-6s",
                 registration_metric_type_string (*it_st));
@@ -374,9 +374,10 @@ report_score (
             ++it_sm, ++it_st;
         }
         logfile_printf ("\n");
+        logfile_printf ("         ");
     }
     
-    /* Second line - extra stats if regularization is enabled */
+    /* Second line continued */
     if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
         /* Part 2 - regularization metric */
         if (reg_parms->lambda > 0) {
