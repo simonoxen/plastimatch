@@ -361,9 +361,12 @@ report_score (
         "NV %6d GM %9.3f GN %9.3g [ %9.3f s ]\n",
         ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
-    /* Second line - smetric(s) */
-    logfile_printf ("         ");
-    if (ssd->smetric.size() > 1) {
+    /* Second line */
+    if (reg_parms->lambda > 0 || blm->num_landmarks > 0
+        || parms->metric_type.size() > 1)
+    {
+        logfile_printf ("         ");
+        /* Part 1 - smetric(s) */   
         std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
         std::vector<Registration_metric_type>::const_iterator it_st
             = parms->metric_type.begin();
@@ -373,29 +376,30 @@ report_score (
             logfile_print_score (*it_sm);
             ++it_sm, ++it_st;
         }
-        logfile_printf ("\n");
-        logfile_printf ("         ");
-    }
-    
-    /* Second line continued */
-    if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
-        /* Part 2 - regularization metric */
-        if (reg_parms->lambda > 0) {
-            logfile_printf ("RM %9.3f ", 
-                reg_parms->lambda * bst->ssd.rmetric);
-        }
-        /* Part 3 - landmark metric */
-        if (blm->num_landmarks > 0) {
-            logfile_printf ("LM %9.3f ", 
-                blm->landmark_stiffness * bst->ssd.lmetric);
-        }
-        /* Part 4 - timing */
-        if (reg_parms->lambda > 0) {
-            logfile_printf ("[ %9.3f | %9.3f ]\n", 
-                ssd->time_smetric[0], ssd->time_rmetric);
-        } else {
+        if (ssd->smetric.size() > 1
+            && (reg_parms->lambda > 0 || blm->num_landmarks > 0))
+        {
             logfile_printf ("\n");
+            logfile_printf ("         ");
         }
+        if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
+            /* Part 2 - regularization metric */
+            if (reg_parms->lambda > 0) {
+                logfile_printf ("RM %9.3f ", 
+                    reg_parms->lambda * bst->ssd.rmetric);
+            }
+            /* Part 3 - landmark metric */
+            if (blm->num_landmarks > 0) {
+                logfile_printf ("LM %9.3f ", 
+                    blm->landmark_stiffness * bst->ssd.lmetric);
+            }
+            /* Part 4 - timing */
+            if (reg_parms->lambda > 0) {
+                logfile_printf ("[ %9.3f | %9.3f ]", 
+                    ssd->time_smetric[0], ssd->time_rmetric);
+            }
+        }
+        logfile_printf ("\n");
     }
 }
 
