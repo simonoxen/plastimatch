@@ -175,6 +175,7 @@ Dcmtk_loader::image_load ()
         rescale_slope = 1;
     }
 
+#if defined (commentout)
     lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
     lprintf ("Phot_interp: %s\n", phot_interp);
     lprintf ("Bits_alloc: %d\n", (int) bits_alloc);
@@ -182,7 +183,8 @@ Dcmtk_loader::image_load ()
     lprintf ("High_bit: %d\n", (int) high_bit);
     lprintf ("Pixel_rep: %d\n", (int) pixel_rep);
     lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
-
+#endif
+    
     /* Some kinds of images we don't know how to deal with.  
        Don't load these. */
     if (samp_per_pix != 1) {
@@ -298,7 +300,7 @@ Dcmtk_loader::image_load ()
        be used to resample in the case of irregular spacing. */
     int this_chunk_start = 0, best_chunk_start = 0;
     float this_chunk_diff = z_diff, best_chunk_diff = z_diff;
-    int this_chunk_len = 2, best_chunk_len = 2;
+    size_t this_chunk_len = 2, best_chunk_len = 2;
 
     /* Loop through remaining slices */
     while (++it != flist.end())
@@ -332,14 +334,17 @@ Dcmtk_loader::image_load ()
     }
 
     /* Report information about best chunk */
-    lprintf ("Best chunck:\n  Slices %d to %d from (0 to %d)\n"
-	"  Z_loc = %f %f\n" 
-	"  Slice spacing = %f\n", 
-	best_chunk_start, best_chunk_start + best_chunk_len - 1, slice_no, 
-	best_chunk_z_start, 
-	best_chunk_z_start + (best_chunk_len - 1) * best_chunk_diff, 
-	best_chunk_diff);
-
+    if (best_chunk_len != flist.size()) {
+        lprintf ("** Warning, inequal slice spacing detected when loading DICOM.\n");
+        lprintf ("Best chunck:\n  Slices %d to %d from (0 to %d)\n"
+            "  Z_loc = %f %f\n" 
+            "  Slice spacing = %f\n", 
+            best_chunk_start, best_chunk_start + best_chunk_len - 1, slice_no, 
+            best_chunk_z_start, 
+            best_chunk_z_start + (best_chunk_len - 1) * best_chunk_diff, 
+            best_chunk_diff);
+    }
+    
     /* Some debugging info */
 #if defined (commentout)
     lprintf ("Slices: ");
