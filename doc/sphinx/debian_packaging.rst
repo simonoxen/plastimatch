@@ -172,9 +172,15 @@ Step 3: Build the debian package
 
      gbp import-orig --pristine-tar --uscan -u 1.6.3+dfsg
 
+#. Test::
+
+     gbp buildpackage
+
+Do I need --pristine-tar here?
+     
 #. Push changes to server::
 
-     git push --all origin
+     git push --all --tags origin
 
 Various hints
 -------------
