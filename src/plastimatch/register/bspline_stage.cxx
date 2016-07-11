@@ -299,6 +299,7 @@ Bspline_stage::initialize ()
         print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
     logfile_printf ("Algorithm flavor = %c\n", bsp_parms->implementation);
+    logfile_printf ("Threading = %d\n", bsp_parms->threading);
 
     if (stage->threading_type == THREADING_CUDA) {
         bsp_parms->gpuid = stage->gpuid;
