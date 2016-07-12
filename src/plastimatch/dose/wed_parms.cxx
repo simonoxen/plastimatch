@@ -177,7 +177,7 @@ Wed_Parms::set_key_val (
             this->input_dose_fn = val;
         }
         //If reverse wed procedure, input dose_wed
-        else if (!strcmp (key, "wed_dose")) {
+        else if (!strcmp (key, "wed_dose") || !strcmp (key, "dose_wed")) {
             this->input_wed_dose_fn = val;
         }
         //If in depth/segmentation mode, input segment
@@ -211,7 +211,8 @@ Wed_Parms::set_key_val (
         else if (!strcmp (key, "dew_ct")) {
             this->output_dew_ct_fn = val;
         }
-        else if (!strcmp (key, "dew_dose")) {
+        /* dose is legacy term */
+        else if (!strcmp (key, "dew_dose") || !strcmp (key, "dose")) {
             this->output_dew_dose_fn = val;
         }
 #if defined (commentout)

@@ -297,6 +297,14 @@ do_wed (Wed_Parms *parms)
         proj_wed->load_rpl (parms->input_proj_wed_fn);
     }
 
+    /* Load the input wed_dose */
+    Plm_image::Pointer wed_dose;
+    if (parms->input_wed_dose_fn != "") {
+        printf("Loading input wed_dose: %s\n",parms->input_wed_dose_fn.c_str());
+        wed_dose = plm_image_load (parms->input_wed_dose_fn.c_str(), 
+            PLM_IMG_TYPE_ITK_FLOAT);
+    }
+
     /* Load the skin */
     if (parms->input_skin_fn != "") {
         printf ("Skin file defined.  Modifying input ct...\n");
@@ -371,6 +379,16 @@ do_wed (Wed_Parms *parms)
         Plm_image(dew_vol).save_image(parms->output_dew_ct_fn);
     }
 
+    if (parms->output_dew_dose_fn != "") {
+        if (!wed_dose) {
+            print_and_exit ("Error, dew_dose requested but no wed_dose supplied.\n");
+        }
+        Volume* dew_vol = create_dew_volume (parms, wed_dose->get_volume_float());
+        rpl.compute_dew_volume (wed_dose->get_volume_float().get(), 
+            dew_vol, -1000);
+        Plm_image(dew_vol).save_image(parms->output_dew_dose_fn);
+    }
+
     if (parms->output_wed_ct_fn != "") {
         printf ("Computing wed ct volume...\n");
 	Volume *wed_vol = create_wed_volume (parms, &rpl);
@@ -394,6 +412,7 @@ do_wed (Wed_Parms *parms)
         rpl.compute_rpl_HU ();
         rpl.save (parms->output_proj_ct_fn);
     }
+
 }
 
 int
