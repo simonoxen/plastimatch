@@ -385,7 +385,7 @@ do_wed (Wed_Parms *parms)
         }
         Volume* dew_vol = create_dew_volume (parms, wed_dose->get_volume_float());
         rpl.compute_dew_volume (wed_dose->get_volume_float().get(), 
-            dew_vol, -1000);
+            dew_vol, 0);
         Plm_image(dew_vol).save_image(parms->output_dew_dose_fn);
     }
 
