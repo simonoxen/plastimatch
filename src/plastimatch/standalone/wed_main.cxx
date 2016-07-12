@@ -297,6 +297,7 @@ do_wed (Wed_Parms *parms)
         proj_wed->load_rpl (parms->input_proj_wed_fn);
     }
 
+    /* Load the skin */
     if (parms->input_skin_fn != "") {
         printf ("Skin file defined.  Modifying input ct...\n");
  
@@ -313,6 +314,7 @@ do_wed (Wed_Parms *parms)
         }
     }
   
+    /* Set up the beam */
     Aperture::Pointer aperture = Aperture::New();
     aperture->set_distance (parms->ap_offset);
     aperture->set_spacing (parms->ap_spacing);
@@ -370,11 +372,20 @@ do_wed (Wed_Parms *parms)
     }
 
     if (parms->output_wed_ct_fn != "") {
-        printf ("Computing patient wed volume...\n");
+        printf ("Computing wed ct volume...\n");
 	Volume *wed_vol = create_wed_volume (parms, &rpl);
         rpl.compute_wed_volume (wed_vol, ct_vol->get_volume_float().get(), 
             background[0]);
         Plm_image(wed_vol).save_image(parms->output_wed_ct_fn);
+        printf ("done.\n");
+    }
+
+    if (parms->output_wed_dose_fn != "") {
+        printf ("Computing wed dose volume...\n");
+	Volume *wed_vol = create_wed_volume (parms, &rpl);
+        rpl.compute_wed_volume (wed_vol, dose_vol->get_volume_float().get(), 
+            background[1]);
+        Plm_image(wed_vol).save_image(parms->output_wed_dose_fn);
         printf ("done.\n");
     }
 
