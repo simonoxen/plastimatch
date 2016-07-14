@@ -340,6 +340,11 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xfp[10] = - (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
             xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
         
+            // "C", Possible
+            xfp[9]  = - (xfp[0]*xvip[12] + xfp[1]*xvip[13] + xfp[2]*xvip[14]);
+            xfp[10] = - (xfp[3]*xvip[12] + xfp[4]*xvip[13] + xfp[5]*xvip[14]);
+            xfp[11] = - (xfp[6]*xvip[12] + xfp[7]*xvip[13] + xfp[8]*xvip[14]);
+        
         }
         else if (patient_position == "FFP") {
             xfp[0] = - xvip[8];
