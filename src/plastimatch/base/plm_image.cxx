@@ -110,6 +110,7 @@ void
 Plm_image::free ()
 {
     d_ptr->m_vol.reset ();
+    d_ptr->m_vol_list.clear ();
 
     m_original_type = PLM_IMG_TYPE_UNDEFINED;
     m_type = PLM_IMG_TYPE_UNDEFINED;
