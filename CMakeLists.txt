@@ -52,10 +52,12 @@ option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
-set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
-option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
-option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
+
 option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
+option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
+option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
+option (PLM_CONFIG_NOMANIFEST "Set to ON to build windows DLLs without manifests" OFF)
+set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Compile and link options
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)

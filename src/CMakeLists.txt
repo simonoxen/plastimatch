@@ -80,6 +80,10 @@ if (UNIX AND NOT PLM_PREFER_NO_FORTRAN_NO_F2C AND NOT PLM_USE_INCLUDED_F2C)
   set (PLASTIMATCH_LDFLAGS "${PLASTIMATCH_LDFLAGS} -u MAIN__")
 endif ()
 
+if (PLM_CONFIG_NOMANIFEST AND WIN32)
+  set (PLASTIMATCH_LDFLAGS "${PLASTIMATCH_LDFLAGS} /MANIFEST:NO")
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
