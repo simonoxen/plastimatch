@@ -132,10 +132,17 @@ macro (plm_download_and_extract DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   if (NOT IS_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
     file (MAKE_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
   endif ()
-  if (NOT EXISTS ${DOWNLOAD_FILENAME})
-    message (STATUS "Downloading test data")
-    file (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
-  endif ()
+  set (download_retries 3)
+  while (NOT EXISTS ${DOWNLOAD_FILENAME} AND download_retries)
+    message (STATUS "Downloading test data: ${DOWNLOAD_FILENAME}")
+    file (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}"
+      STATUS download_status)
+    message (STATUS "Download status[${download_retries}]: ${download_status}")
+    list (GET download_status 0 dl_status)
+    if (dl_status)
+      math (EXPR download_retries "${download_retries}-1")
+    endif ()
+  endwhile ()
   if (NOT EXISTS ${DOWNLOAD_DIR})
     message (STATUS "Untarring test data: ${DOWNLOAD_FILENAME}")
     execute_process (
@@ -150,69 +157,63 @@ macro (plm_download_and_extract DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
 endmacro ()
 
 if (PLM_DOWNLOAD_TEST_DATA)
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1929/headphantom.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/headphantom.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/headphantom")
 
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1613/foot-dicomrt-aw-4.4.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/foot-dicomrt-aw-4.4.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1632/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2160/dicomrt-corvus-6.2.2.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-corvus-6.2.2.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2162/dicomrt_xio-4.60-irregular-spacing.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt_xio-4.60-irregular-spacing.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/rando-dicomrt-pinnacle3-8.2g")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-
-  plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2227/dicomrt-33-structures.tar.gz"
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-33-structures.tar.gz/download"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-33-structures.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/dicomrt-33-structures")
 
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/varian-catphan")
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-aw-4.4-foot.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-aw-4.4-foot.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-aw-4.4-foot")
 
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2159/rtog-corvus-6.2.2.tar.gz"
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-corvus-6.2.2.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-corvus-6.2.2.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-corvus-6.2.2")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-pinnacle3-8.2g-rando.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-pinnacle3-8.2g-rando.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-pinnacle3-8.2g-rando")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-xio-4.33.02-chest-phantom.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-xio-4.33.02-chest-phantom.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/dicomrt-xio-4.60-irregular-spacing.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/dicomrt-xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.60-irregular-spacing")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/headphantom.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/headphantom.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/headphantom")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/rtog-corvus-6.2.2.tar.gz/download"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rtog-corvus-6.2.2.tar.gz"
     "${PLM_BUILD_TESTING_DIR}/rtog-corvus-6.2.2")
 
   plm_download_and_extract (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
-    "${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02")
-endif ()
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/varian-catphan-subset.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan-subset.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/varian-catphan-subset")
 
-#### This seems to be a duplicate of the dicom-rt data, not the xio data
-# if (PLM_DOWNLOAD_XIO_IRREGULAR)
-#   plm_download_and_extract (
-#     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/2163/xio-4.60-irregular-spacing.tar.gz"
-#     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
-#     "${PLM_BUILD_TESTING_DIR}/20110509")
-# endif ()
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/xio-4.33.02-chest-phantom.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.33.02-chest-phantom.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/xio-4.33.02-chest-phantom")
+
+  plm_download_and_extract (
+    "https://sourceforge.net/projects/plastimatch/files/Sample%20Data/xio-4.60-irregular-spacing.tar.gz/download"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_BUILD_TESTING_DIR}/xio-4.60-irregular-spacing")
+
+endif ()
 
 ## -------------------------------------------------------------------------
 ## Custom test command
@@ -950,7 +951,7 @@ set_tests_properties (fdk-cpu-a-check PROPERTIES DEPENDS fdk-cpu-a-stats)
 plm_add_test (
   "fdk-cpu-b"
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan;-f;none;-a;0 20 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-b.mha"
+  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;none;-a;0 20 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-b.mha"
   )
 plm_add_test (
   "fdk-cpu-b-stats"
@@ -969,7 +970,7 @@ set_tests_properties (fdk-cpu-b-check PROPERTIES DEPENDS fdk-cpu-b-stats)
 plm_add_test (
   "fdk-cpu-c"
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan;-f;ramp;-a;0 50 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-c.mha"
+  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;ramp;-a;0 50 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-c.mha"
   )
 plm_add_test (
   "fdk-cpu-c-stats"
@@ -1497,7 +1498,7 @@ plm_add_test (
 plm_add_test (
   "plm-convert-dicom-aw-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
+  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-aw-4.4-foot/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
   )
 plm_add_test (
   "plm-convert-dicom-aw-a-stats" 
@@ -1512,7 +1513,7 @@ plmtest_check_string ("plm-convert-dicom-aw-a-check"
 plm_add_test (
   "plm-convert-dicom-aw-b" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/foot-dicomrt-aw-4.4/20101202FFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-dose.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-aw-4.4-foot/20101202FFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-b-dose.mha"
   )
 set_tests_properties (plm-convert-dicom-aw-a-stats PROPERTIES 
   DEPENDS plm-convert-dicom-aw-a)
@@ -1522,11 +1523,11 @@ set_tests_properties (plm-convert-dicom-aw-a-check PROPERTIES
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (cerr)
 ## -------------------------------------------------------------------------
-plm_add_test (
-  "plm-convert-dicom-cerr-a" 
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-dose.mha"
-  )
+# plm_add_test (
+#   "plm-convert-dicom-cerr-a" 
+#   ${PLM_PLASTIMATCH_PATH}/plastimatch
+#   "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-cerr-a-dose.mha"
+#   )
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (corvus)
@@ -1543,7 +1544,7 @@ plm_add_test (
 plm_add_test (
   "plm-convert-dicom-pinnacle-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/rando-dicomrt-pinnacle3-8.2g;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-dose.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-pinnacle3-8.2g-rando;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-pinnacle-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------
@@ -1560,7 +1561,7 @@ plm_add_test (
 plm_add_test (
   "plm-convert-dicom-xio-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha"
   )
 plm_add_test (
   "plm-convert-dicom-xio-a-stats"
@@ -1581,7 +1582,7 @@ set_tests_properties (plm-convert-dicom-xio-a-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-xio-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-ss.mha;--referenced-ct;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-b-ss.mha;--referenced-ct;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom"
   )
 plm_add_test (
   "plm-convert-dicom-xio-b-stats"
@@ -1602,7 +1603,7 @@ set_tests_properties (plm-convert-dicom-xio-b-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-xio-c"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-ss.mha;--fixed;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c.cxt"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c-ss.mha;--fixed;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-a.mha;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-c.cxt"
   )
 plm_add_test (
   "plm-convert-dicom-xio-c-stats"
@@ -1626,7 +1627,7 @@ set_tests_properties (plm-convert-dicom-xio-c-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-xio-d"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-d-dose-img.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-d-dose-img.mha"
   )
 plm_add_test (
   "plm-convert-dicom-xio-d-stats"
@@ -1647,7 +1648,7 @@ set_tests_properties (plm-convert-dicom-xio-d-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-xio-e" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dose-img.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-e-dose-img.mha"
   )
 
 plm_add_test (
@@ -1676,13 +1677,13 @@ set_tests_properties (plm-convert-dicom-xio-f-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-xio-g"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-dose.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-xio-g-dose.mha"
   )
 
 plm_add_test (
   "plm-warp-dicom-xio-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-dicom;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a.cxt;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-xio-4.33.02-chest-phantom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-dicom;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-dicom-xio-a.cxt;--default-value;0"
   )
 plm_add_test (
   "plm-warp-dicom-xio-a-stats-1"
@@ -1807,7 +1808,7 @@ set_tests_properties (plm-convert-cxt-check PROPERTIES
 plm_add_test (
   "plm-convert-xio-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dose.mha"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/xio-4.33.02-chest-phantom;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dicom;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-a-dose.mha"
   )
 plm_add_test (
   "plm-convert-xio-a-stats"
@@ -1828,7 +1829,7 @@ set_tests_properties (plm-convert-xio-a-check PROPERTIES
 plm_add_test (
   "plm-convert-xio-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02/20080627A/plan/TRAINING4FLD;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-dicom"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/xio-4.33.02-chest-phantom/20080627A/plan/TRAINING4FLD;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b.mha;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-xio-output;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-xio-b-dicom"
   )
 plm_add_test (
   "plm-convert-xio-b-stats"
@@ -1849,7 +1850,7 @@ set_tests_properties (plm-convert-xio-b-check PROPERTIES
 plm_add_test (
   "plm-warp-xio-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.ctbl;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_BUILD_TESTING_DIR}/xio-4.33.02-chest-phantom;--output-xio;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-xio;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.nrrd;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-ss.txt;--output-labelmap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-labelmap.nrrd;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a-img.nrrd;--output-prefix;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a;--output-cxt;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.cxt;--output-colormap;${PLM_BUILD_TESTING_DIR}/plm-warp-xio-a.ctbl;--default-value;0"
   )
 plm_add_test (
   "plm-warp-xio-a-stats-1"
