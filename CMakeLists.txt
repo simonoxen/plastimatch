@@ -373,6 +373,7 @@ find_package (Dlib)
 find_package (Etags)
 #find_package (Fann)
 find_package (FFTW)
+find_package (Git)
 find_package (Liblbfgs)
 find_package (NLopt)
 if (PLM_CONFIG_ENABLE_MATLAB)
@@ -592,13 +593,12 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Get build number from subversion 
+##  Get build number
 ##-----------------------------------------------------------------------------
-set (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
+set (PLASTIMATCH_REPOSITORY_VERSION "EXPERIMENTAL")
 if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   if (Subversion_FOUND)
     set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
-    #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     execute_process (
       COMMAND 
       ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" 
@@ -609,12 +609,32 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
       )
     if (${svn_result} EQUAL 0)
       message (STATUS "Looking for version in svn - found ${svn_version}")
-      set (PLASTIMATCH_SVN_VERSION ${svn_version})
+      set (PLASTIMATCH_REPOSITORY_VERSION ${svn_version})
     else ()
       message (STATUS "Looking for version in svn - can't connect")
     endif ()
   else ()
     message (STATUS "Looking for version in svn - svn not found")
+  endif ()
+elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  if (GIT_FOUND)
+    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
+    execute_process (
+      COMMAND 
+      #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
+      ${GIT_EXECUTABLE} describe --always
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      RESULT_VARIABLE git_result
+      OUTPUT_VARIABLE git_version
+      ERROR_VARIABLE git_error
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      )
+   if (${git_result} EQUAL 0)
+      message (STATUS "Looking for version in git - found ${git_version}")
+      set (PLASTIMATCH_REPOSITORY_VERSION ${git_version})
+    else ()
+      message (STATUS "Looked for version in git but failed")
+    endif ()
   endif ()
 else ()
   set (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
@@ -1105,7 +1125,7 @@ set (CPACK_PACKAGE_VENDOR "Plastimatch Dev Team")
 set (CPACK_PACKAGE_VERSION_MAJOR "${PLM_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${PLM_VERSION_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${PLM_VERSION_PATCH}")
-set (CPACK_PACKAGE_VERSION_TWEAK ${PLASTIMATCH_SVN_VERSION})
+set (CPACK_PACKAGE_VERSION_TWEAK ${PLASTIMATCH_REPOSITORY_VERSION})
 set (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
@@ -1116,7 +1136,7 @@ set (CPACK_SOURCE_IGNORE_FILES
 set (CPACK_NSIS_HELP_LINK "http://plastimatch.org")
 set (CPACK_NSIS_URL_INFO_ABOUT "http://plastimatch.org")
 set (CPACK_NSIS_CONTACT "plastimatch@googlegroups.com")
-set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
+set (PLM_NSIS_VERSION_STRING "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_REPOSITORY_VERSION})")
 
 # WIX stuff
 set (CPACK_WIX_HELP_LINK "http://plastimatch.org")
@@ -1129,7 +1149,7 @@ set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 # and version number correctly into the changelog, without needing 
 # to commit these changes into the svn repository.
 file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_SVN_VERSION})")
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_REPOSITORY_VERSION})")
 execute_process (COMMAND date
   RESULT_VARIABLE DATE_RESULT
   OUTPUT_VARIABLE DATE_OUTPUT

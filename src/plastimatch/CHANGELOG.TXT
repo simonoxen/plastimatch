@@ -1,4 +1,4 @@
-Version 1.6.4 (build @PLASTIMATCH_SVN_VERSION@)
+Version 1.6.4 (build @PLASTIMATCH_REPOSITORY_VERSION@)
 @TIMESTAMP@
 
 Version 1.6.3 (build 5341)
