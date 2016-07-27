@@ -167,7 +167,7 @@ Dcmtk_loader::get_image ()
 Rtss::Pointer
 Dcmtk_loader::get_rtss ()
 {
-    return d_ptr->cxt;
+    return d_ptr->rtss;
 }
 
 Plm_image::Pointer

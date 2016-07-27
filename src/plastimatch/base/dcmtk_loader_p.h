@@ -24,7 +24,7 @@ public:
 
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
-    Rtss::Pointer cxt;
+    Rtss::Pointer rtss;
 
 public:
     Dcmtk_series_map m_smap;
