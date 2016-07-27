@@ -212,7 +212,8 @@ Dcmtk_loader::image_load ()
        into a PLM_IMG_TYPE_GPUIT_LIST */
 #if (PLM_CONFIG_VOL_LIST)
 
-    /* Loop through groups */
+    /* Loop through groups (grit == group iterator), one group per 
+       set of direction cosines */
     std::list<Dcmtk_file_list>::iterator grit;
     for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
 
