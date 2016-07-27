@@ -113,27 +113,27 @@ Dcmtk_loader::image_load ()
     const Dcmtk_file* df = (*flist.begin()).get();
     
     /* Store UIDs */
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_ct_series_uid (
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_ct_series_uid (
             df->get_cstr (DCM_SeriesInstanceUID));
-        d_ptr->m_drs->set_frame_of_reference_uid (
+        d_ptr->rt_meta->set_frame_of_reference_uid (
             df->get_cstr (DCM_FrameOfReferenceUID));
-        d_ptr->m_drs->set_study_uid (
+        d_ptr->rt_meta->set_study_uid (
             df->get_cstr (DCM_StudyInstanceUID));
-        d_ptr->m_drs->set_study_date (
+        d_ptr->rt_meta->set_study_date (
             df->get_cstr (DCM_StudyDate));
-        d_ptr->m_drs->set_study_time (
+        d_ptr->rt_meta->set_study_time (
             df->get_cstr (DCM_StudyTime));
 
         /* Store remaining metadata */
-        Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
+        Metadata::Pointer& study_metadata = d_ptr->rt_meta->get_study_metadata ();
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientName);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientID);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientSex);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientPosition);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_StudyID);
 
-        Metadata::Pointer& image_metadata = d_ptr->m_drs->get_image_metadata ();
+        Metadata::Pointer& image_metadata = d_ptr->rt_meta->get_image_metadata ();
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
     }
 
@@ -373,8 +373,8 @@ Dcmtk_loader::image_load ()
     vh.get_spacing()[2] = best_chunk_diff;
 
     /* Store image header */
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_image_header (Plm_image_header (vh));
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_image_header (Plm_image_header (vh));
     }
 
     /* More debugging info */
@@ -452,13 +452,13 @@ Dcmtk_loader::image_load ()
 	img += length;
 
 	/* Store slice UID */
-        if (d_ptr->m_drs) {
-            d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
+        if (d_ptr->rt_meta) {
+            d_ptr->rt_meta->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
         }
     }
 #endif
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_slice_list_complete ();
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_slice_list_complete ();
     }
 }
 

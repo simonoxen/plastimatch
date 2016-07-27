@@ -54,7 +54,7 @@ Dcmtk_loader::~Dcmtk_loader ()
 void
 Dcmtk_loader::set_rt_study_metadata (Rt_study_metadata::Pointer drs)
 {
-    d_ptr->m_drs = drs;
+    d_ptr->rt_meta = drs;
 }
 
 void
@@ -228,7 +228,7 @@ Dcmtk_loader::parse_directory (void)
 
     /* Load image */
     if (d_ptr->ds_image) {
-        d_ptr->ds_image->set_rt_study_metadata (d_ptr->m_drs);
+        d_ptr->ds_image->set_rt_study_metadata (d_ptr->rt_meta);
         this->image_load ();
     }
 

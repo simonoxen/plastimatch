@@ -599,7 +599,7 @@ Segmentation::apply_dicom_dir (const Rt_study_metadata::Pointer& rsm)
         return;
     }
 
-    d_ptr->m_rtss->apply_slice_index (rsm);
+    d_ptr->m_rtss->apply_slice_list (rsm);
 }
 
 void
