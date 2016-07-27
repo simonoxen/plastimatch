@@ -36,7 +36,7 @@ public:
     bool m_have_slice_uids;
     Plm_image_header m_pih;
 
-    std::deque<Slice_data> ungrouped_slices;
+    std::vector<Slice_data> sorted_slices;
     std::list<Slice_group> slice_groups;
     
     /* These must be sorted in order, starting with origin slice */
@@ -69,7 +69,7 @@ void
 Slice_list::set_image_header (const Plm_image_header& pih)
 {
     d_ptr->m_pih = pih;
-    d_ptr->ungrouped_slices.resize (pih.dim(2));
+    d_ptr->sorted_slices.resize (pih.dim(2));
     d_ptr->m_have_pih = true;
 }
 
@@ -86,31 +86,31 @@ Slice_list::get_slice_uid (int index) const
     if (!d_ptr->m_have_slice_uids) {
 	return "";
     }
-    if (index < 0 || ((size_t) index) >= d_ptr->ungrouped_slices.size()) {
+    if (index < 0 || ((size_t) index) >= d_ptr->sorted_slices.size()) {
 	return "";
     }
-    return d_ptr->ungrouped_slices[index].uid.c_str();
+    return d_ptr->sorted_slices[index].uid.c_str();
 }
 
 void
 Slice_list::reset_slice_uids ()
 {
-    d_ptr->ungrouped_slices.clear();
+    d_ptr->sorted_slices.clear();
     if (d_ptr->m_have_pih) {
-        d_ptr->ungrouped_slices.resize (d_ptr->m_pih.dim(2));
+        d_ptr->sorted_slices.resize (d_ptr->m_pih.dim(2));
     }
 }
 
 void
 Slice_list::set_slice_uid (int index, const char* slice_uid)
 {
-    if (index >= (int) d_ptr->ungrouped_slices.size()) {
+    if (index >= (int) d_ptr->sorted_slices.size()) {
         print_and_exit (
             "Illegal call to Slice_list::set_slice_uid.  "
             "Index %d > Size %d.\n", 
-            index, d_ptr->ungrouped_slices.size());
+            index, d_ptr->sorted_slices.size());
     }
-    d_ptr->ungrouped_slices[index].uid = std::string (slice_uid);
+    d_ptr->sorted_slices[index].uid = std::string (slice_uid);
 }
 
 bool
