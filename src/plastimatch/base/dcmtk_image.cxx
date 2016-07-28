@@ -39,101 +39,93 @@ Dcmtk_loader::image_load ()
 
     /* Make abbreviations */
     Dcmtk_series *ds_image = d_ptr->ds_image;
-    const Dcmtk_file_list& flist = ds_image->get_flist ();
+    const Dcmtk_file_list& ds_flist = ds_image->get_flist ();
 
     /* Create a container to hold different groups of files */
     std::list<Dcmtk_file_list> group_list;
 
     /* Arrange files into groups according to direction cosines */
+    for (Dcmtk_file_list::const_iterator it = ds_flist.begin();
+         it != ds_flist.end(); ++it)
     {
-        //printf ("----------\n");
-        Dcmtk_file_list::const_iterator it;
-        for (it = flist.begin(); it != flist.end(); ++it) {
-            const Dcmtk_file::Pointer& df = (*it);
-
-            //df->debug ();
-
-            bool match_found = false;
-            std::list<Dcmtk_file_list>::iterator grit;
-            for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
-                Dcmtk_file_list& flp = *grit;
-                const Dcmtk_file::Pointer& flp_df = flp.front();
-
-                if (flp_df->get_direction_cosines() 
-                    == df->get_direction_cosines())
-                {
-                    /* Add logic to append to flp */
-                    //printf ("Match found.  :)\n");
-                    match_found = true;
-                    flp.push_back (df);
-                    break;
-                }
-            }
-            if (match_found) {
-                continue;
-            }
-            /* Else insert new element into group_list */
-            //printf ("Need to insert.\n");
-            group_list.push_back (Dcmtk_file_list());
-            group_list.back().push_back (df);
-        }
-        //printf ("----------\n");
-    }
-
-    /* Sort each group in Z direction */
-    {
+        const Dcmtk_file::Pointer& df = (*it);
+        bool match_found = false;
         std::list<Dcmtk_file_list>::iterator grit;
         for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
-            grit->sort();
+            Dcmtk_file_list& flp = *grit;
+            const Dcmtk_file::Pointer& flp_df = flp.front();
+
+            if (flp_df->get_direction_cosines() 
+                == df->get_direction_cosines())
+            {
+                /* Add logic to append to flp */
+                //printf ("Match found.  :)\n");
+                match_found = true;
+                flp.push_back (df);
+                break;
+            }
+        }
+        if (match_found) {
+            continue;
+        }
+        /* Else insert new element into group_list */
+        group_list.push_back (Dcmtk_file_list());
+        group_list.back().push_back (df);
+    }
+
+    /* If multiple groups, emit a warning.  Choose the largest group. */
+    Dcmtk_file_list *flist = &group_list.front ();
+    if (group_list.size() > 1) {
+        lprintf ("Warning, DICOM series with multiple direction cosines\n");
+        std::list<Dcmtk_file_list>::iterator grit;
+        for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
+            if ((*grit).size() > flist->size()) {
+                flist = &*grit;
+            }
         }
     }
+    
+    /* Sort group in Z direction */
+    flist->sort (dcmtk_file_compare_z_position);
 
-    /* Regroup as needed according to inter-slice spacing */
-    {
-    }
-
-    /* Sort in Z direction */
-    ds_image->sort ();
-
-    /* GCS FIX:
-       (1) Direction cosines
-       (2) Minimum 2 slices
-       (3) Consistency of images w/in series
-       (4) done
-       (5) Different image types
-       (6) Refine slice spacing based on entire chunk size
-    */
+    /* 
+     * GCS FIX:
+     * Remove minimum 2 slices requirement
+     * Check consistency (dim, origin) of images w/in series
+     * Different image types
+     * Refine slice spacing based on entire chunk size
+     */
 
     /* Check for minimum 2 slices */
-    if (flist.size() < 2) {
+    if (flist->size() < 2) {
         return;
     }
 
     /* Get first slice */
-    const Dcmtk_file* df = (*flist.begin()).get();
+    const Dcmtk_file* df = (*flist->begin()).get();
     
     /* Store UIDs */
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_ct_series_uid (
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_ct_series_uid (
             df->get_cstr (DCM_SeriesInstanceUID));
-        d_ptr->m_drs->set_frame_of_reference_uid (
+        d_ptr->rt_meta->set_frame_of_reference_uid (
             df->get_cstr (DCM_FrameOfReferenceUID));
-        d_ptr->m_drs->set_study_uid (
+        d_ptr->rt_meta->set_study_uid (
             df->get_cstr (DCM_StudyInstanceUID));
-        d_ptr->m_drs->set_study_date (
+        d_ptr->rt_meta->set_study_date (
             df->get_cstr (DCM_StudyDate));
-        d_ptr->m_drs->set_study_time (
+        d_ptr->rt_meta->set_study_time (
             df->get_cstr (DCM_StudyTime));
 
         /* Store remaining metadata */
-        Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
+        Metadata::Pointer& study_metadata = d_ptr->rt_meta->get_study_metadata ();
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientName);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientID);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientSex);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_PatientPosition);
         dcmtk_copy_into_metadata (study_metadata, df, DCM_StudyID);
 
-        Metadata::Pointer& image_metadata = d_ptr->m_drs->get_image_metadata ();
+        Metadata::Pointer& image_metadata = d_ptr->rt_meta->get_image_metadata ();
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
     }
 
@@ -211,8 +203,8 @@ Dcmtk_loader::image_load ()
     /* If PLM_CONFIG_VOL_LIST is enabled, the image will be loaded 
        into a PLM_IMG_TYPE_GPUIT_LIST */
 #if (PLM_CONFIG_VOL_LIST)
-
-    /* Loop through groups */
+    /* Loop through groups (grit == group iterator), one group per 
+       set of direction cosines */
     std::list<Dcmtk_file_list>::iterator grit;
     for (grit = group_list.begin(); grit != group_list.end(); ++grit) {
 
@@ -240,7 +232,7 @@ Dcmtk_loader::image_load ()
         int this_chunk_len = 2, best_chunk_len = 2;
 
         /* Loop through remaining slices */
-        while (++it != flist.end())
+        while (++it != flist->end())
         {
             ++slice_no;
             printf ("Slice no: %d\n", slice_no);
@@ -284,13 +276,13 @@ Dcmtk_loader::image_load ()
 #endif
     }
 
-#else
+#else /* NOT VOL_LIST */
     /* Get next slice in first chunk */
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
 
-    std::list<Dcmtk_file::Pointer>::const_iterator it = flist.begin();
+    std::list<Dcmtk_file::Pointer>::const_iterator it = flist->begin();
     ++it; ++slice_no;
     df = (*it).get();
     z_diff = df->get_z_position() - z_prev;
@@ -303,7 +295,7 @@ Dcmtk_loader::image_load ()
     size_t this_chunk_len = 2, best_chunk_len = 2;
 
     /* Loop through remaining slices */
-    while (++it != flist.end())
+    while (++it != flist->end())
     {
 	++slice_no;
 	df = (*it).get();
@@ -334,7 +326,7 @@ Dcmtk_loader::image_load ()
     }
 
     /* Report information about best chunk */
-    if (best_chunk_len != flist.size()) {
+    if (best_chunk_len != flist->size()) {
         lprintf ("** Warning, inequal slice spacing detected when loading DICOM.\n");
         lprintf ("Best chunck:\n  Slices %d to %d from (0 to %d)\n"
             "  Z_loc = %f %f\n" 
@@ -348,7 +340,7 @@ Dcmtk_loader::image_load ()
     /* Some debugging info */
 #if defined (commentout)
     lprintf ("Slices: ");
-    for (it = flist.begin(); it != flist.end(); ++it) {
+    for (it = flist->begin(); it != flist->end(); ++it) {
         df = (*it).get();
 	lprintf ("%f ", df->get_z_position());
     }
@@ -365,15 +357,15 @@ Dcmtk_loader::image_load ()
     int slices_after = 
 	ROUND_INT ((z_last - best_chunk_z_start 
 		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
-    df = (*flist.begin()).get();
+    df = (*flist->begin()).get();
     vh.clone (df->get_volume_header());
     dim[2] = slices_before + best_chunk_len + slices_after;
     vh.get_origin()[2] = best_chunk_z_start - slices_before * best_chunk_diff;
     vh.get_spacing()[2] = best_chunk_diff;
 
     /* Store image header */
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_image_header (Plm_image_header (vh));
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_image_header (Plm_image_header (vh));
     }
 
     /* More debugging info */
@@ -398,10 +390,10 @@ Dcmtk_loader::image_load ()
     for (plm_long i = 0; i < dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
 	std::list<Dcmtk_file::Pointer>::const_iterator best_slice_it 
-            = flist.begin();
+            = flist->begin();
 	float best_z_dist = FLT_MAX;
 	float z_pos = vh.get_origin()[2] + i * vh.get_spacing()[2];
-	for (it = flist.begin(); it != flist.end(); ++it) {
+	for (it = flist->begin(); it != flist->end(); ++it) {
 	    float this_z_dist = fabs ((*it)->get_z_position() - z_pos);
 	    if (this_z_dist < best_z_dist) {
 		best_z_dist = this_z_dist;
@@ -451,13 +443,13 @@ Dcmtk_loader::image_load ()
 	img += length;
 
 	/* Store slice UID */
-        if (d_ptr->m_drs) {
-            d_ptr->m_drs->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
+        if (d_ptr->rt_meta) {
+            d_ptr->rt_meta->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));
         }
     }
-#endif
-    if (d_ptr->m_drs) {
-        d_ptr->m_drs->set_slice_list_complete ();
+#endif /* NOT VOL_LIST */
+    if (d_ptr->rt_meta) {
+        d_ptr->rt_meta->set_slice_list_complete ();
     }
 }
 
