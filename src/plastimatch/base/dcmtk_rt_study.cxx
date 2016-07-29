@@ -117,13 +117,13 @@ Dcmtk_rt_study::set_image (Plm_image::Pointer image)
 Rtss::Pointer&
 Dcmtk_rt_study::get_rtss ()
 {
-    return d_ptr->cxt;
+    return d_ptr->rtss;
 }
 
 void 
 Dcmtk_rt_study::set_rtss (Rtss::Pointer rtss)
 {
-    d_ptr->cxt = rtss;
+    d_ptr->rtss = rtss;
 }
 
 Plm_image::Pointer 
@@ -159,7 +159,7 @@ Dcmtk_rt_study::load (const char *dicom_path)
     dss.parse_directory ();
 
     d_ptr->img = dss.get_image ();
-    d_ptr->cxt = dss.get_rtss ();
+    d_ptr->rtss = dss.get_rtss ();
     d_ptr->dose = dss.get_dose ();
 }
 
@@ -178,7 +178,7 @@ Dcmtk_rt_study::save (const char *dicom_dir)
     if (d_ptr->img) {
         this->save_image (dicom_dir);
     }
-    if (d_ptr->cxt) {
+    if (d_ptr->rtss) {
         this->save_rtss (dicom_dir);
     }
     if (d_ptr->dose) {

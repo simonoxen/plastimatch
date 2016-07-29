@@ -30,8 +30,8 @@ public:
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
 
-    Rtss::Pointer cxt;
-    Metadata *cxt_metadata;
+    Rtss::Pointer rtss;
+    Metadata *rtss_metadata;
     //Plm_image_set::Pointer img;
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
