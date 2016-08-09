@@ -2256,7 +2256,7 @@ Rpl_volume::compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bo
 
     Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
     unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
-    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[0]; i++)
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
     {
         if (map_wed_min[i] > 0) {
             aperture_img[i] = 1;
