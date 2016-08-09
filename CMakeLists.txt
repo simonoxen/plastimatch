@@ -57,7 +57,6 @@ option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST "Set to ON to build windows DLLs without manifests" OFF)
-set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Compile and link options
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)
@@ -180,21 +179,6 @@ include (cmake/CheckEpsilon)
 
 # Is char signed or unsigned?
 include (cmake/CheckCharSign)
-
-##-----------------------------------------------------------------------------
-##  Figure out plastimatch version number
-##-----------------------------------------------------------------------------
-# For ordinary versions from svn, use the version number at the 
-# top of the file
-set (PLM_DEFAULT_VERSION_STRING
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
-
-# For official releases, a special file gets included, which contains 
-# the version number
-if (EXISTS "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt")
-  file (READ "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt"
-    PLM_RELEASE_VERSION_STRING)
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Processor and OS characteristics
@@ -399,7 +383,6 @@ if (NOT PLM_CONFIG_DISABLE_SSE2)
 else ()
   set (SSE2_FOUND false)
 endif ()
-find_package (Subversion)
 find_package (TR1)
 find_package (wxWidgets)
 
@@ -593,32 +576,16 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Get build number
+##  Set version string
 ##-----------------------------------------------------------------------------
-set (PLASTIMATCH_REPOSITORY_VERSION "EXPERIMENTAL")
-if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-  if (Subversion_FOUND)
-    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
-    execute_process (
-      COMMAND 
-      ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" 
-      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-      RESULT_VARIABLE svn_result
-      OUTPUT_VARIABLE svn_version
-      ERROR_VARIABLE svn_error
-      )
-    if (${svn_result} EQUAL 0)
-      message (STATUS "Looking for version in svn - found ${svn_version}")
-      set (PLASTIMATCH_REPOSITORY_VERSION ${svn_version})
-    else ()
-      message (STATUS "Looking for version in svn - can't connect")
-    endif ()
-  else ()
-    message (STATUS "Looking for version in svn - svn not found")
-  endif ()
-elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+set (PLM_DEFAULT_VERSION_STRING
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+set (PLASTIMATCH_VERSION_STRING
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+  set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING}-beta")
   if (GIT_FOUND)
-    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
+    set (PLASTIMATCH_HAVE_REPO_VERSION TRUE)
     execute_process (
       COMMAND 
       #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
@@ -629,15 +596,13 @@ elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
       ERROR_VARIABLE git_error
       OUTPUT_STRIP_TRAILING_WHITESPACE
       )
-   if (${git_result} EQUAL 0)
+    if (${git_result} EQUAL 0)
       message (STATUS "Looking for version in git - found ${git_version}")
-      set (PLASTIMATCH_REPOSITORY_VERSION ${git_version})
+      set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
     else ()
       message (STATUS "Looked for version in git but failed")
     endif ()
   endif ()
-else ()
-  set (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -833,11 +798,6 @@ find_package (LibYAML)
 ##  Configure include files
 ##-----------------------------------------------------------------------------
 set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-#configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
-#  ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
-
-#configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
-#  ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories

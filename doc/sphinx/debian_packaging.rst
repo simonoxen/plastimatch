@@ -150,21 +150,7 @@ tarball has everything it needs.
       
 Step 2: Build the tarball
 -------------------------
-#. Make sure the changelog is up-to-date
-#. Update source into plastimatch-pristene
-#. Run make package_source
-#. Unpack and test tarball (don't skip this step)
-#. Reboot and test tarball on windows (don't skip this step)
-#. Upload to web site
-
-Then, do a few small things to get ready for next time
-
-#. Add version number and date to changelog.  This is found in::
-
-     ~/build/plastimatch-pristene/extra_stuff
-
-#. Bump version number in CMakeLists
-#. Bump version number in doc/sphinx/conf.py
+Follow instructions in making_a_tarball
 
 Step 3: Build the debian package
 --------------------------------
