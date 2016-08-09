@@ -1,5 +1,5 @@
-Version 1.6.4 (build @PLASTIMATCH_REPOSITORY_VERSION@)
-@TIMESTAMP@
+Version 1.6.4 (tag v1.6.4)
+Tue Aug  9 18:15:58 EDT 2016
 * Convert to new gitlab host
 * Windows binary fixes
 * Allow building DLLs without manifests
