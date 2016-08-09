@@ -349,7 +349,7 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
   # Make the version file
   write_basic_package_version_file (
     "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
-    VERSION ${PLM_DEFAULT_VERSION_STRING}
+    VERSION ${PLM_BASIC_VERSION_STRING}
     COMPATIBILITY AnyNewerVersion
     )
 

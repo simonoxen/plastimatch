@@ -8,7 +8,8 @@ project (plastimatch)
 ## The version here should be equal to the "next release"
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "6")
-set (PLM_VERSION_PATCH "4")
+set (PLM_VERSION_PATCH "3")
+set (PLM_RELEASE_VERSION FALSE)
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
@@ -578,30 +579,29 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Set version string
 ##-----------------------------------------------------------------------------
-set (PLM_DEFAULT_VERSION_STRING
+set (PLM_BASIC_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
 set (PLASTIMATCH_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
-if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
-  set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING}-beta")
-  if (GIT_FOUND)
-    set (PLASTIMATCH_HAVE_REPO_VERSION TRUE)
-    execute_process (
-      COMMAND 
-      #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
-      ${GIT_EXECUTABLE} describe --always
-      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-      RESULT_VARIABLE git_result
-      OUTPUT_VARIABLE git_version
-      ERROR_VARIABLE git_error
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-    if (${git_result} EQUAL 0)
-      message (STATUS "Looking for version in git - found ${git_version}")
-      set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
-    else ()
-      message (STATUS "Looked for version in git but failed")
-    endif ()
+if (NOT PLM_RELEASE_VERSION)
+  set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING}-dev")
+endif ()
+if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
+  execute_process (
+    COMMAND 
+    #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
+    ${GIT_EXECUTABLE} describe --always
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE git_result
+    OUTPUT_VARIABLE git_version
+    ERROR_VARIABLE git_error
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  if (${git_result} EQUAL 0)
+    message (STATUS "Looking for version in git - found ${git_version}")
+    set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
+  else ()
+    message (STATUS "Looked for version in git but failed")
   endif ()
 endif ()
 
@@ -1078,6 +1078,7 @@ set (CPACK_SOURCE_GENERATOR "TBZ2")
 set (CPACK_MONOLITHIC_INSTALL 1)
 
 # General stuff
+set (CPACK_INSTALL_PREFIX "")
 set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
 set (CPACK_PACKAGE_NAME "plastimatch")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "Plastimatch - A Medical Imaging Application")
@@ -1106,37 +1107,9 @@ set (CPACK_WIX_LICENSE_RTF  "${PLM_WINDOWS_INSTALL_DIR}/License.rtf")
 set (CPACK_WIX_UI_BANNER  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo.jpg")
 set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 
-# Write files to extra_stuff directory.  These is sets the release date 
-# and version number correctly into the changelog, without needing 
-# to commit these changes into the svn repository.
-file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_REPOSITORY_VERSION})")
-execute_process (COMMAND date
-  RESULT_VARIABLE DATE_RESULT
-  OUTPUT_VARIABLE DATE_OUTPUT
-  ERROR_VARIABLE DATE_ERROR
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-if (DATE_RESULT EQUAL 0)
-  set (TIMESTAMP ${DATE_OUTPUT})
-else ()
-  set (TIMESTAMP "Unknown")
-endif ()
-configure_file (
-  ${CMAKE_SOURCE_DIR}/src/plastimatch/CHANGELOG.TXT
-  ${CMAKE_BINARY_DIR}/extra_stuff/CHANGELOG.TXT
-  @ONLY)
-set (CPACK_SOURCE_INSTALLED_DIRECTORIES
-  "${CMAKE_SOURCE_DIR};/;${CMAKE_BINARY_DIR}/extra_stuff;/src/plastimatch")
-
-## GCS 2012-09-27 Trying to fix "make package" under linux.
-## c.f. http://www.cmake.org/pipermail/cmake/2011-July/045602.html
-#set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-#set (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-#set (CPACK_PACKAGING_INSTALL_PREFIX "")
-
+# ZIP stuff
 if (CPACK_GENERATOR STREQUAL "ZIP")
   set (CPACK_SET_DESTDIR ON)
 endif ()
-set (CPACK_INSTALL_PREFIX "")
 
 include (CPack)
