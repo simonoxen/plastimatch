@@ -5,6 +5,7 @@ Technical reference
    :maxdepth: 2
 
    utility_programs
+   making_a_tarball
    debian_packaging
    windows_packaging
    special_builds
