@@ -4370,7 +4370,7 @@ plmtest_check_interval ("proton-dose-6a-check"
   "0.27"
   )
 set_tests_properties (proton-dose-6a PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-6a PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-6a PROPERTIES DEPENDS ptv-2)
 set_tests_properties (proton-dose-6a-stats
     PROPERTIES DEPENDS proton-dose-6a)
 set_tests_properties (proton-dose-6a-check
