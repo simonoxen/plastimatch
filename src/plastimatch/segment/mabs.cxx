@@ -2261,10 +2261,14 @@ Mabs::set_parms (const Mabs_parms *parms)
         d_ptr->convert_dir = string_format (
             "%s/convert", d_ptr->traindir_base.c_str());
     }
+    if (d_ptr->parms->convert_dir != "") {
+        d_ptr->prealign_dir = d_ptr->parms->prealign_dir;
+    } else {
+        d_ptr->prealign_dir = string_format (
+            "%s/prealign", d_ptr->traindir_base.c_str());
+    }
     d_ptr->atlas_train_dir = string_format (
         "%s/atlas-train", d_ptr->traindir_base.c_str());
-    d_ptr->prealign_dir = string_format (
-        "%s/prealign", d_ptr->traindir_base.c_str());
     d_ptr->mabs_train_dir = string_format (
         "%s/mabs-train", d_ptr->traindir_base.c_str());
 
