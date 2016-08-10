@@ -60,14 +60,14 @@ Setting up a build system for the first time
      sudo apt-get install debian-archive-keyring
      git-pbuilder create
 
-Install packages into git-pbuilder.  This saves time when running
-multiple times::
+   Install packages into git-pbuilder.  This saves time when running
+   multiple times::
 
-  git-pbuilder login --save-after-login
-  apt-get update
-  apt-get install libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
+     git-pbuilder login --save-after-login
+     apt-get update
+     apt-get install libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
   
-See this link for more information https://wiki.debian.org/git-pbuilder
+   See this link for more information https://wiki.debian.org/git-pbuilder
 
 
 Step 1: Preliminary testing
@@ -150,7 +150,7 @@ tarball has everything it needs.
       
 Step 2: Build the tarball
 -------------------------
-Follow instructions in making_a_tarball
+Follow instructions in :ref:`making_a_tarball`.
 
 Step 3: Build the debian package
 --------------------------------
@@ -162,7 +162,7 @@ Step 3: Build the debian package
 
      gbp buildpackage
 
-Do I need --pristine-tar here?
+   Do I need --pristine-tar here?
      
 #. Push changes to server::
 
@@ -174,18 +174,19 @@ Various hints
 Switching between git branches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Like this::
- git checkout pristine-tar
- git checkout upstream
- git checkout master
+
+  git checkout pristine-tar
+  git checkout upstream
+  git checkout master
 
 
 Rebuilding an existing debian source package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Like this::
 
- apt-get source foo
- cd foo-0.0.1
- sudo apt-get build-dep foo
- debuild -i -us -uc -b
+  apt-get source foo
+  cd foo-0.0.1
+  sudo apt-get build-dep foo
+  debuild -i -us -uc -b
 
 See: https://wiki.debian.org/HowToPackageForDebian
