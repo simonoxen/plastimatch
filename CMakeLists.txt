@@ -88,7 +88,7 @@ option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
 
 # Use legacy packaging if cmake version is < 3.0
 if (CMAKE_VERSION VERSION_LESS "3.0")
-  set (PLM_PACKAGE_LEGACY_CMAKE_CONFIG ON CACHE BOOL)
+  set (PLM_PACKAGE_LEGACY_CMAKE_CONFIG ON CACHE BOOL "Use legacy packaging routines")
 endif ()
 
 # Override some options if library build is selected
