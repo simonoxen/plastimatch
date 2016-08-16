@@ -36,11 +36,10 @@ public:
     bool m_have_slice_uids;
     Plm_image_header m_pih;
 
+    // Sorted slices in "ascending z order", starting with origin slice
     std::vector<Slice_data> sorted_slices;
+    // Slice groups are also sorted in the same order
     std::list<Slice_group> slice_groups;
-    
-    /* These must be sorted in order, starting with origin slice */
-//    std::vector<std::string> m_ct_slice_uids;
 
 public:
     Slice_list_private () {

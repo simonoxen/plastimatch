@@ -136,6 +136,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
   ${PLM_BUILD_ROOT}/plm_config.h)
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
+  ${PLM_BUILD_ROOT}/plm_version.h)
 
 if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_fortran.h.in
@@ -347,7 +349,7 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
   # Make the version file
   write_basic_package_version_file (
     "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
-    VERSION ${PLM_DEFAULT_VERSION_STRING}
+    VERSION ${PLM_BASIC_VERSION_STRING}
     COMPATIBILITY AnyNewerVersion
     )
 

@@ -9,6 +9,8 @@ project (plastimatch)
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "6")
 set (PLM_VERSION_PATCH "4")
+set (PLM_RELEASE_VERSION FALSE)
+#set (PLM_RELEASE_VERSION TRUE)
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
@@ -57,7 +59,6 @@ option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST "Set to ON to build windows DLLs without manifests" OFF)
-set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Compile and link options
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)
@@ -87,7 +88,7 @@ option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
 
 # Use legacy packaging if cmake version is < 3.0
 if (CMAKE_VERSION VERSION_LESS "3.0")
-  set (PLM_PACKAGE_LEGACY_CMAKE_CONFIG ON CACHE BOOL)
+  set (PLM_PACKAGE_LEGACY_CMAKE_CONFIG ON CACHE BOOL "Use legacy packaging routines")
 endif ()
 
 # Override some options if library build is selected
@@ -180,21 +181,6 @@ include (cmake/CheckEpsilon)
 
 # Is char signed or unsigned?
 include (cmake/CheckCharSign)
-
-##-----------------------------------------------------------------------------
-##  Figure out plastimatch version number
-##-----------------------------------------------------------------------------
-# For ordinary versions from svn, use the version number at the 
-# top of the file
-set (PLM_DEFAULT_VERSION_STRING
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
-
-# For official releases, a special file gets included, which contains 
-# the version number
-if (EXISTS "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt")
-  file (READ "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt"
-    PLM_RELEASE_VERSION_STRING)
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Processor and OS characteristics
@@ -399,7 +385,6 @@ if (NOT PLM_CONFIG_DISABLE_SSE2)
 else ()
   set (SSE2_FOUND false)
 endif ()
-find_package (Subversion)
 find_package (TR1)
 find_package (wxWidgets)
 
@@ -593,51 +578,32 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Get build number
+##  Set version string
 ##-----------------------------------------------------------------------------
-set (PLASTIMATCH_REPOSITORY_VERSION "EXPERIMENTAL")
-if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-  if (Subversion_FOUND)
-    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
-    execute_process (
-      COMMAND 
-      ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" 
-      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-      RESULT_VARIABLE svn_result
-      OUTPUT_VARIABLE svn_version
-      ERROR_VARIABLE svn_error
-      )
-    if (${svn_result} EQUAL 0)
-      message (STATUS "Looking for version in svn - found ${svn_version}")
-      set (PLASTIMATCH_REPOSITORY_VERSION ${svn_version})
-    else ()
-      message (STATUS "Looking for version in svn - can't connect")
-    endif ()
+set (PLM_BASIC_VERSION_STRING
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+set (PLASTIMATCH_VERSION_STRING
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+if (NOT PLM_RELEASE_VERSION)
+  set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING}-dev")
+endif ()
+if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
+  execute_process (
+    COMMAND 
+    #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
+    ${GIT_EXECUTABLE} describe --always
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    RESULT_VARIABLE git_result
+    OUTPUT_VARIABLE git_version
+    ERROR_VARIABLE git_error
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  if (${git_result} EQUAL 0)
+    message (STATUS "Looking for version in git - found ${git_version}")
+    set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
   else ()
-    message (STATUS "Looking for version in svn - svn not found")
+    message (STATUS "Looked for version in git but failed")
   endif ()
-elseif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
-  if (GIT_FOUND)
-    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
-    execute_process (
-      COMMAND 
-      #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
-      ${GIT_EXECUTABLE} describe --always
-      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-      RESULT_VARIABLE git_result
-      OUTPUT_VARIABLE git_version
-      ERROR_VARIABLE git_error
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-   if (${git_result} EQUAL 0)
-      message (STATUS "Looking for version in git - found ${git_version}")
-      set (PLASTIMATCH_REPOSITORY_VERSION ${git_version})
-    else ()
-      message (STATUS "Looked for version in git but failed")
-    endif ()
-  endif ()
-else ()
-  set (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -833,11 +799,6 @@ find_package (LibYAML)
 ##  Configure include files
 ##-----------------------------------------------------------------------------
 set (PLM_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-#configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
-#  ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
-
-#configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
-#  ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
@@ -1118,6 +1079,7 @@ set (CPACK_SOURCE_GENERATOR "TBZ2")
 set (CPACK_MONOLITHIC_INSTALL 1)
 
 # General stuff
+set (CPACK_INSTALL_PREFIX "")
 set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
 set (CPACK_PACKAGE_NAME "plastimatch")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "Plastimatch - A Medical Imaging Application")
@@ -1146,37 +1108,9 @@ set (CPACK_WIX_LICENSE_RTF  "${PLM_WINDOWS_INSTALL_DIR}/License.rtf")
 set (CPACK_WIX_UI_BANNER  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo.jpg")
 set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 
-# Write files to extra_stuff directory.  These is sets the release date 
-# and version number correctly into the changelog, without needing 
-# to commit these changes into the svn repository.
-file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
-  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH} (${PLASTIMATCH_REPOSITORY_VERSION})")
-execute_process (COMMAND date
-  RESULT_VARIABLE DATE_RESULT
-  OUTPUT_VARIABLE DATE_OUTPUT
-  ERROR_VARIABLE DATE_ERROR
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-if (DATE_RESULT EQUAL 0)
-  set (TIMESTAMP ${DATE_OUTPUT})
-else ()
-  set (TIMESTAMP "Unknown")
-endif ()
-configure_file (
-  ${CMAKE_SOURCE_DIR}/src/plastimatch/CHANGELOG.TXT
-  ${CMAKE_BINARY_DIR}/extra_stuff/CHANGELOG.TXT
-  @ONLY)
-set (CPACK_SOURCE_INSTALLED_DIRECTORIES
-  "${CMAKE_SOURCE_DIR};/;${CMAKE_BINARY_DIR}/extra_stuff;/src/plastimatch")
-
-## GCS 2012-09-27 Trying to fix "make package" under linux.
-## c.f. http://www.cmake.org/pipermail/cmake/2011-July/045602.html
-#set (CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-#set (CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-#set (CPACK_PACKAGING_INSTALL_PREFIX "")
-
+# ZIP stuff
 if (CPACK_GENERATOR STREQUAL "ZIP")
   set (CPACK_SET_DESTDIR ON)
 endif ()
-set (CPACK_INSTALL_PREFIX "")
 
 include (CPack)

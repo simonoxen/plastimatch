@@ -228,6 +228,9 @@ Mabs_parms_parser::set_key_value (
         else if (key == "convert_dir") {
             mp->convert_dir = val;
         }
+        else if (key == "prealign_dir") {
+            mp->prealign_dir = val;
+        }
         else if (key == "fusion_criteria") {
             if (val == "gaussian" || val == "GAUSSIAN" || val == "Gaussian") {
                 mp->fusion_criteria = "gaussian";
