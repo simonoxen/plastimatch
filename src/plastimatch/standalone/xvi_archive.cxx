@@ -29,6 +29,7 @@
 #include "file_util.h"
 #include "path_util.h"
 #include "plm_clp.h"
+#include "plm_math.h"
 #include "print_and_exit.h"
 #include "rt_study.h"
 #include "string_util.h"
@@ -171,9 +172,12 @@ do_xvi_archive (Xvi_archive_parms *parms)
             }
             printf ("time = |%s|\n", time_string.c_str());
         }
+        std::string unmatched_transform_string = 
+            recon_xvi.Get ("ALIGNMENT", "OnlineToRefTransformUnmatched", "");
+        printf ("unmatched xform = %s\n", unmatched_transform_string.c_str());
         std::string registration_string = 
             recon_xvi.Get ("ALIGNMENT", "OnlineToRefTransformCorrection", "");
-        printf ("xform = %s\n", registration_string.c_str());
+        printf ("correction xform = %s\n", registration_string.c_str());
 
         /* Load the .SCAN */
         Rt_study cbct_study;
@@ -206,14 +210,29 @@ do_xvi_archive (Xvi_archive_parms *parms)
         cbct_meta->set_image_metadata (0x0028, 0x1051, "2000"); // Level
         std::string patient_position
             = reference_meta->get_image_metadata(0x0018, 0x5100);
-        // XiO incorrectly sets this metadata in their header
         
         cbct_meta->set_image_metadata (0x0018, 0x5100, patient_position);
-        printf ("Patient position is %s\n", patient_position.c_str());
+        printf ("REF CT patient position is %s\n", patient_position.c_str());
 
-        //Force for debugging
-        //patient_position = "FFP";
-        
+        // XiO incorrectly sets patient position metadata in their header
+        // This maneuver is intended to correct this
+        std::vector<float> uta
+            = parse_float_string (unmatched_transform_string);
+        if (within_abs_tolerance (uta[2], 1.f, 0.001f)
+            && within_abs_tolerance (uta[5], 1.f, 0.001f)
+            && within_abs_tolerance (uta[8], -1.f, 0.001f))
+        {
+            if (patient_position == "HFP") {
+                patient_position = "FFP";
+                printf ("Patient position corrected to %s\n",
+                    patient_position.c_str());
+            } else if (patient_position == "HFS") {
+                patient_position = "FFS";
+                printf ("Patient position corrected to %s\n",
+                    patient_position.c_str());
+            }
+        }
+
         /* Fix patient orientation based on reference CT */
         float dc[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
         if (patient_position == "HFS") {
@@ -471,8 +490,8 @@ parse_fn (
 
     /* Other options */
     parser->add_long_option ("", "patient-id-override", 
-        "set the patient id", 1);
-    parser->add_long_option ("", "write-debug-files"
+        "set the patient id", 1, "");
+    parser->add_long_option ("", "write-debug-files",
         "write converted image and xform files for debugging", 0);
     
     /* Parse options */
@@ -500,7 +519,7 @@ int
 main (int argc, char *argv[])
 {
     Xvi_archive_parms parms;
-
+    
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 0);
 
