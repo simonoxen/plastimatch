@@ -128,6 +128,8 @@ Dcmtk_loader::image_load ()
 
         Metadata::Pointer& image_metadata = d_ptr->rt_meta->get_image_metadata ();
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
+        dcmtk_copy_into_metadata (image_metadata, df, DCM_InstanceCreationDate);
+        dcmtk_copy_into_metadata (image_metadata, df, DCM_InstanceCreationTime);
     }
 
     /* Divine image type */
@@ -470,10 +472,21 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
 
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        drs->get_study_date());
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        drs->get_study_time());
+
+    if (image_metadata->get_metadata (DCM_InstanceCreationDate) != "") {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+            image_metadata->get_metadata(DCM_InstanceCreationDate).c_str());
+    } else {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+            drs->get_study_date());
+    }
+    if (image_metadata->get_metadata (DCM_InstanceCreationTime) != "") {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+            image_metadata->get_metadata(DCM_InstanceCreationTime).c_str());
+    } else {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+            drs->get_study_time());
+    }
 
     /* The SOPClassUID depends on the modality */
     if (modality == "MR") {
