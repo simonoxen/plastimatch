@@ -514,12 +514,7 @@ Mabs::run_registration_loop ()
 
         /* Load image & structures from "prep" directory */
         timer.start();
-        std::string fn = string_format ("%s/img.nrrd", 
-            atlas_input_path.c_str());
-        rtds.load_image (fn.c_str());
-        fn = string_format ("%s/structures", 
-            atlas_input_path.c_str());
-        rtds.load_prefix (fn.c_str());
+        rtds.load_rt_study_dir (atlas_input_path);
         d_ptr->time_io += timer.report();
 
         /* Inspect the structures -- we might be able to skip the 

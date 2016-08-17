@@ -45,6 +45,8 @@ public:
     void load_image (const char *fn);
     void load_image (const std::string& fn);
     void load_xio (const char *xio_dir);
+    void load_rt_study_dir (const char *rt_study_dir);
+    void load_rt_study_dir (const std::string& rt_study_dir);
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio);
@@ -56,6 +58,7 @@ public:
 
     void load_cxt (const char *input_fn);
     void load_prefix (const char *input_fn);
+    void load_prefix (const std::string& input_fn);
 
     void save_dicom (const std::string& output_dir,
         bool filenames_with_uid = true);

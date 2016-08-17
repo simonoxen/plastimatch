@@ -22,6 +22,7 @@
 #include "rt_study_p.h"
 #include "rtss.h"
 #include "segmentation.h"
+#include "string_util.h"
 #include "volume.h"
 #include "xio_ct.h"
 #include "xio_ct_transform.h"
@@ -60,20 +61,23 @@ Rt_study::load (const char* input_path,
         this->load_image (input_path);
         break;
     case PLM_FILE_FMT_DICOM_DIR:
-        this->load_dicom_dir ((const char*) input_path);
+        this->load_dicom_dir (input_path);
         break;
     case PLM_FILE_FMT_XIO_DIR:
-        this->load_xio ((const char*) input_path);
+        this->load_xio (input_path);
+        break;
+    case PLM_FILE_FMT_RT_STUDY_DIR:
+        this->load_rt_study_dir (input_path);
         break;
     case PLM_FILE_FMT_DIJ:
         print_and_exit (
             "Warping dij files requires ctatts_in, dif_in files\n");
         break;
     case PLM_FILE_FMT_DICOM_RTSS:
-        this->load_dicom_rtss ((const char*) input_path);
+        this->load_dicom_rtss (input_path);
         break;
     case PLM_FILE_FMT_DICOM_DOSE:
-        this->load_dicom_dose ((const char*) input_path);
+        this->load_dicom_dose (input_path);
         break;
     case PLM_FILE_FMT_CXT:
         this->load_cxt (input_path);
@@ -285,6 +289,21 @@ Rt_study::load_xio (const char *xio_dir)
 }
 
 void
+Rt_study::load_rt_study_dir (const char *rt_study_dir)
+{
+    std::string fn = string_format ("%s/img.nrrd", rt_study_dir);
+    this->load_image (fn);
+    fn = string_format ("%s/structures", rt_study_dir);
+    this->load_prefix (fn);
+}
+
+void
+Rt_study::load_rt_study_dir (const std::string& rt_study_dir)
+{
+    load_rt_study_dir (rt_study_dir.c_str());
+}
+
+void
 Rt_study::load_ss_img (const char *ss_img, const char *ss_list)
 {
     d_ptr->m_rtss = Segmentation::New ();
@@ -385,6 +404,12 @@ Rt_study::load_prefix (const char *input_fn)
 {
     d_ptr->m_rtss = Segmentation::New ();
     d_ptr->m_rtss->load_prefix (input_fn);
+}
+
+void 
+Rt_study::load_prefix (const std::string& input_fn)
+{
+    this->load_prefix (input_fn.c_str());
 }
 
 void
