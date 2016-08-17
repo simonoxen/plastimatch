@@ -206,9 +206,14 @@ do_xvi_archive (Xvi_archive_parms *parms)
         cbct_meta->set_image_metadata (0x0028, 0x1051, "2000"); // Level
         std::string patient_position
             = reference_meta->get_image_metadata(0x0018, 0x5100);
+        // XiO incorrectly sets this metadata in their header
+        
         cbct_meta->set_image_metadata (0x0018, 0x5100, patient_position);
         printf ("Patient position is %s\n", patient_position.c_str());
 
+        //Force for debugging
+        //patient_position = "FFP";
+        
         /* Fix patient orientation based on reference CT */
         float dc[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
         if (patient_position == "HFS") {
@@ -244,7 +249,11 @@ do_xvi_archive (Xvi_archive_parms *parms)
         origin[2] = dc[8] * origin[2];
         cbct_study.get_image()->get_volume()->set_origin (origin);
 
-//        cbct_study.save_image ("cbct.mha");
+        if (parms->write_debug_files) {
+            /* Nb this has to be done before writing dicom, since 
+               that operation scrambles the image (!) */
+            cbct_study.save_image ("cbct.nrrd");
+        }
 
         /* Write the DICOM image */
         std::string output_dir = string_format (
@@ -419,8 +428,10 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xfp[11]
         );
 
-//        reference_study->save_image ("ct.nrrd");
-//        xf->save ("xf.tfm");
+        if (parms->write_debug_files) {
+            reference_study->save_image ("ct.nrrd");
+            xf->save ("xf.tfm");
+        }
         
 #if defined (commentout)
 #endif
@@ -461,6 +472,8 @@ parse_fn (
     /* Other options */
     parser->add_long_option ("", "patient-id-override", 
         "set the patient id", 1);
+    parser->add_long_option ("", "write-debug-files"
+        "write converted image and xform files for debugging", 0);
     
     /* Parse options */
     parser->parse (argc,argv);
@@ -477,6 +490,9 @@ parse_fn (
 
     /* Other options */
     parms->patient_id_override = parser->get_string("patient-id-override");
+    if (parser->have_option ("write-debug-files")) {
+        parms->write_debug_files = true;
+    }
 }
 
 
