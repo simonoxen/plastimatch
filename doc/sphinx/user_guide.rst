@@ -5,6 +5,7 @@ User guide
    :maxdepth: 1
 
    getting_started
+   windows_installation
    image_registration_guidebook
    registration_command_file_reference
    mabs_guidebook
