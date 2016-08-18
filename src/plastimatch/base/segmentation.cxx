@@ -688,7 +688,7 @@ Segmentation::cxt_re_extract (void)
 void
 Segmentation::prune_empty (void)
 {
-    if (d_ptr->m_rtss) {
+    if (d_ptr->m_rtss && d_ptr->m_rtss_valid) {
         d_ptr->m_rtss->prune_empty ();
     }
 }

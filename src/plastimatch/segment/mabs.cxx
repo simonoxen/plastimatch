@@ -163,9 +163,7 @@ public:
         parms = 0;
         train_segmentation = true;
         have_ref_structure = false;
-
         convert_resample = false;
-
         prealign_resample = false;
 
         registration_id = "";
@@ -760,7 +758,7 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
     /* Load the rtds for the atlas */
     timer.start();
     lprintf ("MABS loading %s\n", input_dir.c_str());
-    rtds.load (input_dir.c_str());
+    rtds.load (input_dir);
     lprintf ("MABS load complete\n");
     d_ptr->time_io += timer.report();
 
