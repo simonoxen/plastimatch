@@ -24,13 +24,13 @@ public:
     std::string dose_instance_uid;
     std::string dose_series_uid;
     std::string plan_instance_uid;
-    std::string rtss_instance_uid;
-    std::string rtss_series_uid;
+    std::string rtstruct_instance_uid;
+    std::string rtstruct_series_uid;
     Slice_list slice_list;
 
     Metadata::Pointer study_metadata;
     Metadata::Pointer image_metadata;
-    Metadata::Pointer rtss_metadata;
+    Metadata::Pointer rtstruct_metadata;
     Metadata::Pointer dose_metadata;
 
 public:
@@ -39,12 +39,12 @@ public:
 
         study_metadata = Metadata::New ();
         image_metadata = Metadata::New ();
-        rtss_metadata = Metadata::New ();
+        rtstruct_metadata = Metadata::New ();
         dose_metadata = Metadata::New ();
 
         study_metadata->create_anonymous ();
         image_metadata->set_parent (study_metadata);
-        rtss_metadata->set_parent (study_metadata);
+        rtstruct_metadata->set_parent (study_metadata);
         dose_metadata->set_parent (study_metadata);
 
         this->generate_new_study_uids ();
@@ -62,8 +62,8 @@ public:
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
         dose_series_uid = dicom_uid (PLM_UID_PREFIX);
         plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        rtss_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        rtss_series_uid = dicom_uid (PLM_UID_PREFIX);
+        rtstruct_instance_uid = dicom_uid (PLM_UID_PREFIX);
+        rtstruct_series_uid = dicom_uid (PLM_UID_PREFIX);
     }
 };
 
@@ -136,15 +136,15 @@ Rt_study_metadata::get_plan_instance_uid () const
 }
 
 const char*
-Rt_study_metadata::get_rtss_instance_uid () const
+Rt_study_metadata::get_rtstruct_instance_uid () const
 {
-    return d_ptr->rtss_instance_uid.c_str();
+    return d_ptr->rtstruct_instance_uid.c_str();
 }
 
 const char*
-Rt_study_metadata::get_rtss_series_uid () const
+Rt_study_metadata::get_rtstruct_series_uid () const
 {
-    return d_ptr->rtss_series_uid.c_str();
+    return d_ptr->rtstruct_series_uid.c_str();
 }
 
 const char*
@@ -340,24 +340,24 @@ Rt_study_metadata::set_image_metadata (
 }
 
 Metadata::Pointer&
-Rt_study_metadata::get_rtss_metadata ()
+Rt_study_metadata::get_rtstruct_metadata ()
 {
-    return d_ptr->rtss_metadata;
+    return d_ptr->rtstruct_metadata;
 }
 
 const Metadata::Pointer&
-Rt_study_metadata::get_rtss_metadata () const
+Rt_study_metadata::get_rtstruct_metadata () const
 {
-    return d_ptr->rtss_metadata;
+    return d_ptr->rtstruct_metadata;
 }
 
 void
-Rt_study_metadata::set_rtss_metadata (
+Rt_study_metadata::set_rtstruct_metadata (
     unsigned short key1, 
     unsigned short key2,
     const std::string& val
 ) {
-    d_ptr->rtss_metadata->set_metadata (key1, key2, val);
+    d_ptr->rtstruct_metadata->set_metadata (key1, key2, val);
 }
 
 Metadata::Pointer&

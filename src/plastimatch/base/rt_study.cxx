@@ -564,16 +564,16 @@ Rt_study::get_dose_metadata (void)
 }
 
 void 
-Rt_study::set_rtss_metadata (const std::vector<std::string>& metadata)
+Rt_study::set_rtstruct_metadata (const std::vector<std::string>& metadata)
 {
-    Metadata::Pointer& rtss_metadata = d_ptr->m_drs->get_rtss_metadata ();
-    rtss_metadata->set_metadata (metadata);
+    Metadata::Pointer& seg_metadata = d_ptr->m_drs->get_rtstruct_metadata ();
+    seg_metadata->set_metadata (metadata);
 }
 
 Metadata::Pointer&
-Rt_study::get_rtss_metadata (void)
+Rt_study::get_rtstruct_metadata (void)
 {
-    return d_ptr->m_drs->get_rtss_metadata();
+    return d_ptr->m_drs->get_rtstruct_metadata();
 }
 
 bool
@@ -654,19 +654,19 @@ Rt_study::get_dose ()
 }
 
 bool
-Rt_study::have_rtss ()
+Rt_study::have_segmentation ()
 {
     return (bool) d_ptr->m_rtss;
 }
 
 Segmentation::Pointer
-Rt_study::get_rtss ()
+Rt_study::get_segmentation ()
 {
     return d_ptr->m_rtss;
 }
 
 void 
-Rt_study::set_rtss (Segmentation::Pointer rtss)
+Rt_study::set_segmentation (Segmentation::Pointer rtss)
 {
     d_ptr->m_rtss = rtss;
 }
@@ -677,7 +677,7 @@ Rt_study::add_structure (
     const char *structure_name,
     const char *structure_color)
 {
-    if (!have_rtss()) {
+    if (!have_segmentation()) {
         d_ptr->m_rtss = Segmentation::New ();
     }
     d_ptr->m_rtss->add_structure (itk_image, structure_name, structure_color);

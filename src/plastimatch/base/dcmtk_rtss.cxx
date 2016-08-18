@@ -248,9 +248,9 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 {
     OFCondition ofc;
     Rtss::Pointer& rtss = d_ptr->rtss;
-    Metadata::Pointer rtss_metadata;
+    Metadata::Pointer rtstruct_metadata;
     if (d_ptr->rt_study_metadata) {
-        rtss_metadata = d_ptr->rt_study_metadata->get_rtss_metadata ();
+        rtstruct_metadata = d_ptr->rt_study_metadata->get_rtstruct_metadata ();
     }
 
     /* Prepare structure set with slice uids */
@@ -272,12 +272,12 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->rt_study_metadata->get_rtss_instance_uid());
+        d_ptr->rt_study_metadata->get_rtstruct_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
         d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
         d_ptr->rt_study_metadata->get_study_time());
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, 
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, 
         DCM_StudyDescription, "");
 
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
@@ -286,14 +286,14 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, 
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, 
         DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
 
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_PatientName, "");
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_PatientID, "");
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_PatientName, "");
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_PatientID, "");
     dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_PatientSex, "O");
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
 
@@ -306,9 +306,9 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
         d_ptr->rt_study_metadata->get_study_uid());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        d_ptr->rt_study_metadata->get_rtss_series_uid());
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_StudyID, "10001");
-    dcmtk_copy_from_metadata (dataset, rtss_metadata, DCM_SeriesNumber, "1");
+        d_ptr->rt_study_metadata->get_rtstruct_series_uid());
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_StudyID, "10001");
+    dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_SeriesNumber, "1");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     dataset->putAndInsertString (DCM_StructureSetLabel, "AutoSS");
     dataset->putAndInsertString (DCM_StructureSetName, "AutoSS");
@@ -479,7 +479,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     std::string rtss_fn;
     if (d_ptr->filenames_with_uid) {
         rtss_fn = string_format ("%s/rtss_%s.dcm", dicom_dir, 
-            d_ptr->rt_study_metadata->get_rtss_series_uid());
+            d_ptr->rt_study_metadata->get_rtstruct_series_uid());
     } else {
         rtss_fn = string_format ("%s/rtss.dcm", dicom_dir);
     }

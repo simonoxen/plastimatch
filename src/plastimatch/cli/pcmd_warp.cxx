@@ -368,7 +368,7 @@ parse_fn (
     if (parser->option ("rtss-series-description")) {
         std::string arg = parser->get_string ("rtss-series-description");
         std::string metadata_string = "0008,103e=" + arg;
-        parms->m_rtss_metadata.push_back (metadata_string);
+        parms->m_rtstruct_metadata.push_back (metadata_string);
     }
     if (parser->option ("series-number")) {
         std::string arg = parser->get_string ("series-number");
@@ -383,7 +383,7 @@ parse_fn (
     if (parser->option ("rtss-series-number")) {
         std::string arg = parser->get_string ("rtss-series-number");
         std::string metadata_string = "0020,0011=" + arg;
-        parms->m_rtss_metadata.push_back (metadata_string);
+        parms->m_rtstruct_metadata.push_back (metadata_string);
     }
 }
 

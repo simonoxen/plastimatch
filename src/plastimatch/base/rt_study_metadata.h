@@ -21,7 +21,7 @@ class Volume;
 /*! \brief 
  * The Rt_study_metadata encapsulate DICOM metadata for an Rt_study. 
  * The Rt_study_metadata includes separate metadata for image, dose, 
- * and structure set (rtss), as well as a study_metadata which is 
+ * and rtstruct, as well as a study_metadata which is 
  * shared by all components.  Items such as Patient Name or Study Description
  * will be held in study_metadata. */
 class PLMBASE_API Rt_study_metadata {
@@ -43,8 +43,8 @@ public:
     const char* get_frame_of_reference_uid () const;
     void set_frame_of_reference_uid (const char* uid);
     const char* get_plan_instance_uid () const;
-    const char* get_rtss_instance_uid () const;
-    const char* get_rtss_series_uid () const;
+    const char* get_rtstruct_instance_uid () const;
+    const char* get_rtstruct_series_uid () const;
     const char* get_study_date () const;
     void set_study_date (const char* date);
     void set_study_date (const std::string& date);
@@ -81,9 +81,9 @@ public:
         unsigned short key2);
     void set_image_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
-    Metadata::Pointer& get_rtss_metadata ();
-    const Metadata::Pointer& get_rtss_metadata () const;
-    void set_rtss_metadata (unsigned short key1, unsigned short key2,
+    Metadata::Pointer& get_rtstruct_metadata ();
+    const Metadata::Pointer& get_rtstruct_metadata () const;
+    void set_rtstruct_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
     Metadata::Pointer& get_dose_metadata ();
     const Metadata::Pointer& get_dose_metadata () const;

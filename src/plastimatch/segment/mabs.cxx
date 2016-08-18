@@ -276,7 +276,7 @@ void
 Mabs_private::extract_reference_image (const std::string& mapped_name)
 {
     this->have_ref_structure = false;
-    Segmentation::Pointer rtss = this->ref_rtds->get_rtss();
+    Segmentation::Pointer rtss = this->ref_rtds->get_segmentation();
     if (!rtss) {
         return;
     }
@@ -520,7 +520,7 @@ Mabs::run_registration_loop ()
         /* Inspect the structures -- we might be able to skip the 
            atlas if it has no relevant structures */
         bool can_skip = true;
-        Segmentation::Pointer rtss = rtds.get_rtss();
+        Segmentation::Pointer rtss = rtds.get_segmentation();
         for (size_t i = 0; i < rtss->get_num_structures(); i++) {
             std::string ori_name = rtss->get_structure_name (i);
             std::string mapped_name = d_ptr->map_structure_name (ori_name);
@@ -761,17 +761,18 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
     timer.start();
     lprintf ("MABS loading %s\n", input_dir.c_str());
     rtds.load (input_dir.c_str());
+    lprintf ("MABS load complete\n");
     d_ptr->time_io += timer.report();
 
     /* Remove structures which are not part of the atlas */
     timer.start();
-    Segmentation::Pointer rtss = rtds.get_rtss();
-    rtss->prune_empty ();
-    Rtss *cxt = rtss->get_structure_set_raw ();
-    for (size_t i = 0; i < rtss->get_num_structures(); i++) {
+    Segmentation::Pointer seg = rtds.get_segmentation();
+    seg->prune_empty ();
+    Rtss *cxt = seg->get_structure_set_raw ();
+    for (size_t i = 0; i < seg->get_num_structures(); i++) {
         /* Check structure name, make sure it is something we 
            want to segment */
-        std::string ori_name = rtss->get_structure_name (i);
+        std::string ori_name = seg->get_structure_name (i);
         std::string mapped_name = d_ptr->map_structure_name (ori_name);
         lprintf ("Structure i (%s), checking for mapped name\n",
             ori_name.c_str());
@@ -783,12 +784,12 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
             continue;
         }
         lprintf ("Resetting structure name to %s\n", mapped_name.c_str());
-        rtss->set_structure_name (i, mapped_name);
+        seg->set_structure_name (i, mapped_name);
     }
 
     /* Rasterize structure set */
     Plm_image_header pih (rtds.get_image().get());
-    rtss->rasterize (&pih, false, false);
+    seg->rasterize (&pih, false, false);
     d_ptr->time_extract += timer.report();
 
     /* If so specified, resample the images */
@@ -806,7 +807,7 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
 
     /* Save structures which are part of the atlas */
     std::string prefix = string_format ("%s/structures", output_dir.c_str());
-    rtss->save_prefix (prefix, "nrrd");
+    seg->save_prefix (prefix, "nrrd");
     d_ptr->time_io += timer.report();
 }
 
@@ -1341,7 +1342,7 @@ Mabs::atlas_prealign ()
     /* PAOLO ZAFFINO
      * set fixed ROI if defined into the prealign section */ 
     if (d_ptr->parms->prealign_roi_cfg_name != "") {
-        Segmentation::Pointer fixed_rtss = ref_rtds->get_rtss();
+        Segmentation::Pointer fixed_rtss = ref_rtds->get_segmentation();
         size_t target_roi_index = -1;
         for (size_t i = 0; i < fixed_rtss->get_num_structures(); i++) {
             std::string struct_name = fixed_rtss->get_structure_name (i);
@@ -2462,8 +2463,8 @@ Mabs::segment ()
     /* GCS TBD: For now, we delete any existing structures. 
        This avoids (pushes into the future) any additional development
        needed to update existing structure sets.  */
-    if (d_ptr->ref_rtds->have_rtss()) {
-        d_ptr->ref_rtds->get_rtss()->clear ();
+    if (d_ptr->ref_rtds->have_segmentation()) {
+        d_ptr->ref_rtds->get_segmentation()->clear ();
     }
 
     /* Parse atlas directory */

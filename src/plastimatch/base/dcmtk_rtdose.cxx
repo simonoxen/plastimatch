@@ -483,7 +483,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_RTStructureSetStorage);
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
-        d_ptr->rt_study_metadata->get_rtss_instance_uid());
+        d_ptr->rt_study_metadata->get_rtstruct_instance_uid());
 
     /* Convert image bytes to integer, then add to dataset */
     if (dose_metadata 

@@ -92,10 +92,11 @@ public:
     void set_dose_metadata (const std::vector<std::string>& metadata);
     /*! \brief Get the dose portion of Rt_study_metadata */
     Metadata::Pointer& get_dose_metadata ();
-    /*! \brief Set metadata items into rtss portion of Rt_study_metadata */
-    void set_rtss_metadata (const std::vector<std::string>& metadata);
-    /*! \brief Get the rtss portion of Rt_study_metadata */
-    Metadata::Pointer& get_rtss_metadata ();
+    /*! \brief Set metadata items into rtstruct portion 
+      of Rt_study_metadata */
+    void set_rtstruct_metadata (const std::vector<std::string>& metadata);
+    /*! \brief Get the rtstruct portion of Rt_study_metadata */
+    Metadata::Pointer& get_rtstruct_metadata ();
 
     bool have_image ();
     void set_image (ShortImageType::Pointer& itk_image);
@@ -111,9 +112,9 @@ public:
     void set_dose (const Plm_image::Pointer& pli);
     Plm_image::Pointer get_dose ();
 
-    bool have_rtss ();
-    Segmentation::Pointer get_rtss ();
-    void set_rtss (Segmentation::Pointer rtss);
+    bool have_segmentation ();
+    Segmentation::Pointer get_segmentation ();
+    void set_segmentation (Segmentation::Pointer segmentation);
 
     void add_structure (
         const UCharImageType::Pointer& itk_image, 

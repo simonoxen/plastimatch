@@ -44,7 +44,7 @@ do_simplify (Rt_study *rtds, float percentage)
 //      exit(-1);
 //    }
 
-    Rtss *rtss_ss = rtds->get_rtss()->get_structure_set_raw ();
+    Rtss *rtss_ss = rtds->get_segmentation()->get_structure_set_raw ();
     num_structures = rtss_ss->num_structures;
 
     for(int j=0;j<num_structures;j++){
