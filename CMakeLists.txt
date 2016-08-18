@@ -71,6 +71,9 @@ option (PLM_PREFER_F2C "Prefer using f2c over native fortran compiler" ON)
 option (PLM_PREFER_SYSTEM_F2C "Prefer the system f2c over the included f2c" ON)
 option (PLM_PREFER_NO_FORTRAN_NO_F2C "Prefer no fortran, no f2c" ON)
 
+# GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
+option (PLM_PREFER_SYSTEM_DLIB "Prefer the system dlib over the included dlib" OF)
+
 # Testing
 option (PLM_BUILD_TESTING "Enable regression testing" ON)
 
@@ -355,7 +358,9 @@ else ()
     set (DCMTK_FOUND FALSE)
   endif ()
 endif ()
-find_package (Dlib)
+if (PLM_PREFER_SYSTEM_DLIB)
+  find_package (Dlib)
+endif ()
 find_package (Etags)
 #find_package (Fann)
 find_package (FFTW)
