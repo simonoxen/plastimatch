@@ -760,7 +760,7 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
     /* Load the rtds for the atlas */
     timer.start();
     lprintf ("MABS loading %s\n", input_dir.c_str());
-    rtds.load_dicom_dir (input_dir.c_str());
+    rtds.load (input_dir.c_str());
     d_ptr->time_io += timer.report();
 
     /* Remove structures which are not part of the atlas */
