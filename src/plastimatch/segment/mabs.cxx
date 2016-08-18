@@ -1430,13 +1430,11 @@ Mabs::parse_registration_dir (const std::string& registration_config)
     }
 }
 
-
 void 
 Mabs::set_executed_command (const std::string& executed_command)
 {
     d_ptr->executed_command = executed_command;
 }
-
 
 FloatImageType::Pointer
 Mabs::compute_dmap (
@@ -1482,7 +1480,6 @@ Mabs::compute_dmap (
 
     return dmap_image;
 }
-
 
 void
 Mabs::no_voting (
