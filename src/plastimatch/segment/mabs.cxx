@@ -414,24 +414,6 @@ Mabs::~Mabs () {
 }
 
 void
-Mabs::sanity_checks ()
-{
-    /* Do a few sanity checks */
-    /*
-    if (!is_directory (d_ptr->parms->atlas_dir)) {
-        print_and_exit ("Atlas dir (%s) is not a directory\n",
-            d_ptr->parms->atlas_dir.c_str());
-    }
-    if (!is_directory (d_ptr->parms->registration_config)) {
-        if (!file_exists (d_ptr->parms->registration_config)) {
-            print_and_exit ("Couldn't find registration config (%s)\n", 
-                d_ptr->parms->registration_config.c_str());
-        }
-    }
-    */
-}
-
-void
 Mabs::load_process_dir_list (const std::string& dir)
 {
     /* Clear process_dir_list to avoid multiple entries in case of multiple
@@ -812,9 +794,6 @@ Mabs::convert (const std::string& input_dir, const std::string& output_dir)
 void
 Mabs::atlas_convert ()
 {
-    /* Do a few sanity checks */
-    this->sanity_checks ();
-
     /* Parse atlas directory */
     this->load_process_dir_list (d_ptr->parms->atlas_dir);
 
@@ -1270,9 +1249,6 @@ Mabs::train_atlas_selection ()
 void
 Mabs::atlas_prealign ()
 {
-    /* Do a few sanity checks */
-    this->sanity_checks ();
-
     /* Open logfile */
     std::string logfile_path = string_format (
         "%s/%s", d_ptr->prealign_dir.c_str(), "logfile.txt");
@@ -2329,9 +2305,6 @@ Mabs::train_internal ()
     Plm_timer timer_total;
     timer_total.start();
 
-    /* Do a few sanity checks */
-    this->sanity_checks ();
-
     /* Open logfile */
     std::string logfile_path = string_format (
         "%s/%s", d_ptr->mabs_train_dir.c_str(), "logfile.txt");
@@ -2436,9 +2409,6 @@ Mabs::train_internal ()
 void
 Mabs::segment ()
 {
-    /* Do a few sanity checks */
-    this->sanity_checks ();
-    
     /* Yeah, I guess this is fine. */
     d_ptr->write_dicom_rt_struct = true;
     
