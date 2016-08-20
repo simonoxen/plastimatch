@@ -149,7 +149,7 @@ QT4_ADD_RESOURCES (nki2mha_converter_SRC
 	nki2mha_converter.qrc)
 
 	
-set(GAMMA_GUI_SRC
+set(GAMMA_GUI_BASE_SRC
 	gamma_gui_main.cpp	
 	gamma_gui.cpp
 	gamma_gui.h
@@ -176,11 +176,16 @@ QT4_WRAP_UI(GAMMA_GUI_UI
 	DlgGammaView.ui)
 
 set(GAMMA_GUI_SRC
-	${GAMMA_GUI_SRC}
-	${GAMMA_GUI_MOC}
-	${GAMMA_GUI_UI}
-	)
+    ${GAMMA_GUI_BASE_SRC}
+    ${GAMMA_GUI_MOC}
+    ${GAMMA_GUI_UI}
+    )
 
+# Don't compile the files which include generated headers until
+# generated headers are built.
+set_source_files_properties (${GAMMA_GUI_BASE_SRC}
+    PROPERTIES OBJECT_DEPENDS "${GAMMA_GUI_UI}")
+    
 set(REGISTER_GUI_SRC
 	register_gui_main.cpp
 	register_gui.cpp 
