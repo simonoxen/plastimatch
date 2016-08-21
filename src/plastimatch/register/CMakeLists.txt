@@ -97,19 +97,12 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLMREGISTER_LIBRARY_DEPENDENCIES)
 
-if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-  set (PLMREGISTER_LIBRARY_DEPENDENCIES 
-    ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-    nocedal)
-endif ()
-
 set (PLMREGISTER_LIBRARY_DEPENDENCIES 
   ${PLMREGISTER_LIBRARY_DEPENDENCIES}
   ${LIBLBFGS_LIBRARIES}
   plmbase
   plmsys
   plmutil
-  ${PLM_FORTRAN_LIBRARIES}
   )
 
 if (CUDA_FOUND)

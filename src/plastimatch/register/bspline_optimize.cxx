@@ -83,16 +83,7 @@ bspline_optimize_select (
 
     switch (parms->optimization) {
     case BOPT_LBFGSB:
-#if (FORTRAN_FOUND)
-        //bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
         bspline_optimize_lbfgsb (bod);
-#else
-        logfile_printf (
-            "Plastimatch was not compiled against Nocedal LBFGSB.\n"
-            "Reverting to liblbfgs.\n"
-        );
-        bspline_optimize_liblbfgs (bod);
-#endif
         break;
     case BOPT_STEEPEST:
         bspline_optimize_steepest (bod);

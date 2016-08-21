@@ -64,8 +64,6 @@ if (QT4_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
 endif ()
 
-set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FORTRAN_LIBRARIES})
-
 ##-----------------------------------------------------------------------------
 ##  DETERMINE LINKER FLAGS
 ##-----------------------------------------------------------------------------
@@ -73,11 +71,6 @@ set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
 if (PLM_USE_GPU_PLUGINS AND WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLASTIMATCH_LDFLAGS
  "${PLASTIMATCH_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmreconstructcuda.dll")
-endif ()
-# Work around issue with f2c on linux.  See:
-#   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=337460
-if (UNIX AND NOT PLM_PREFER_NO_FORTRAN_NO_F2C AND NOT PLM_USE_INCLUDED_F2C)
-  set (PLASTIMATCH_LDFLAGS "${PLASTIMATCH_LDFLAGS} -u MAIN__")
 endif ()
 
 if (PLM_CONFIG_NOMANIFEST AND WIN32)

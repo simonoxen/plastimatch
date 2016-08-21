@@ -65,12 +65,6 @@ option (PLM_SUPERBUILD "Download missing external libraries" OFF)
 option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
-# GCS 2012-03-15: We prefer f2c over fortran because bspline optimization
-# fails when compiling fortran in debug mode with gcc 4.5.0
-option (PLM_PREFER_F2C "Prefer using f2c over native fortran compiler" ON)
-option (PLM_PREFER_SYSTEM_F2C "Prefer the system f2c over the included f2c" ON)
-option (PLM_PREFER_NO_FORTRAN_NO_F2C "Prefer no fortran, no f2c" ON)
-
 # GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
 option (PLM_PREFER_SYSTEM_DLIB "Prefer the system dlib over the included dlib" OF)
 
@@ -100,8 +94,6 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
-  set (PLM_CONFIG_PREFER_F2C ON)
-  set (PLM_PREFER_SYSTEM_F2C OFF)
 endif ()
   
 ##-----------------------------------------------------------------------------
@@ -170,9 +162,6 @@ if (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.1)
 else ()
     include (InstallRequiredSystemLibraries)
 endif ()
-
-# http://www.cmake.org/Bug/view.php?id=9220
-include (cmake/language_support.cmake)
 
 # Superbuild
 if (PLM_SUPERBUILD)
@@ -276,69 +265,12 @@ set (BUILD_ALWAYS 1)
 set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
-##  Set the math library -- need this variable to configure libf2c
+##  Set the math library
 ##-----------------------------------------------------------------------------
 if (UNIX)
   set (MATH_LIB -lm)
 else ()
   set (MATH_LIB)
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Figure out FORTRAN madness
-##  This needs to be done before add_subdirectory() calls 
-##   to set PLM_FORTRAN_LIBRARIES properly
-##-----------------------------------------------------------------------------
-if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-if (NOT MINGW)
-  # For some reason, CMake tries to invoke devenv instead of gfortran
-  # for mingw.
-  include (cmake/PLM_FindFortran.cmake)
-
-  # The FortranCInterface is not included on CMake 2.6.2
-  # INCLUDE (FortranCInterface)
-endif ()
-
-# Choose between f2c or fortran
-set (PLM_USE_F2C FALSE)
-if (NOT PLM_CONFIG_DEBIAN_BUILD AND (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS))
-  set (PLM_USE_F2C TRUE)
-endif ()
-
-if (PLM_USE_F2C)
-  # If the user wants the system f2c, check for it
-  if (PLM_PREFER_SYSTEM_F2C)
-    find_package (F2C)
-  endif ()
-
-  # If the user doesn't want system f2c, or didn't find it, build the 
-  # included f2c
-  if (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
-    set (PLM_USE_INCLUDED_F2C 1)
-    add_subdirectory (libs/libf2c)
-    set (F2C_LIBRARY f2c1)
-    set (F2C_INCLUDE_DIR libs/libf2c)
-  endif ()
-endif ()
-
-if (PLM_USE_F2C)
-  set (PLM_FORTRAN_LIBRARIES ${F2C_LIBRARY})
-#  if (UNIX AND NOT PLM_USE_INCLUDED_F2C)
-#    set (PLM_FORTRAN ${PLM_FORTRAN} f2c_helper)
-#  endif ()
-else ()
-  # It would seem that mixed-language programs need to set compiler and 
-  # linker flags manually
-  #   http://www.vtk.org/Wiki/CMakeForFortranExample
-  # In theory, this is fixed in a future release
-  #   http://www.cmake.org/Bug/view.php?id=9195
-  message (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
-  if (Fortran_COMPILER_NAME STREQUAL "gfortran" 
-      OR Fortran_COMPILER_NAME STREQUAL "f95")
-    set (PLM_FORTRAN_LIBRARIES gfortran)
-  endif ()
-endif ()
-message (STATUS "PLM_FORTRAN_LIBRARIES: ${PLM_FORTRAN_LIBRARIES}")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -434,14 +366,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (INIH_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/inih-r29")
 add_subdirectory (libs/inih-r29)
-
-##-----------------------------------------------------------------------------
-##  Only use local nocedal
-##-----------------------------------------------------------------------------
-if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-  add_subdirectory (libs/nocedal)
-  link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  LUA 5.1.4

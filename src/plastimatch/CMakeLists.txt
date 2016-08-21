@@ -139,11 +139,6 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
   ${PLM_BUILD_ROOT}/plm_version.h)
 
-if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_fortran.h.in
-  ${PLM_BUILD_ROOT}/plm_fortran.h)
-endif ()
-
 ##-----------------------------------------------------------------------------
 ## Option to generate .clang_complete for hip Vim users using clang_complete
 ##-----------------------------------------------------------------------------
@@ -270,18 +265,10 @@ if (PLMLIB_CONFIG_ENABLE_DOSE)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} specfun plmdose)
 endif ()
 if (PLMLIB_CONFIG_ENABLE_REGISTER)
-  if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-    set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} nocedal)
-  endif ()
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} lbfgs plmregister)
 endif ()
 if (PLMLIB_CONFIG_ENABLE_RECONSTRUCT)
   set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} plmreconstruct)
-endif ()
-if (NOT PLM_PREFER_NO_FORTRAN_NO_F2C)
-  if (PLM_USE_INCLUDED_F2C)
-    set (EXPORT_TARGET_LIST ${EXPORT_TARGET_LIST} f2c1)
-  endif ()
 endif ()
 if (CUDA_FOUND)
   if (PLMLIB_CONFIG_ENABLE_REGISTER OR PLMLIB_CONFIG_ENABLE_RECONSTRUCT)
