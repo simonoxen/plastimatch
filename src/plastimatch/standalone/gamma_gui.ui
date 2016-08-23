@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1225</width>
-    <height>857</height>
+    <width>1210</width>
+    <height>862</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Plastimatch EasyGamma3D (bug report to: ykpark@mgh.harvard.edu)</string>
+   <string>Plastimatch EasyGamma3D</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="pushButton_Open_RD_Ref">
@@ -274,7 +274,7 @@
       <rect>
        <x>390</x>
        <y>80</y>
-       <width>111</width>
+       <width>101</width>
        <height>31</height>
       </rect>
      </property>
@@ -690,7 +690,7 @@
       <x>980</x>
       <y>520</y>
       <width>201</width>
-      <height>281</height>
+      <height>251</height>
      </rect>
     </property>
    </widget>
@@ -699,7 +699,7 @@
      <rect>
       <x>980</x>
       <y>480</y>
-      <width>201</width>
+      <width>211</width>
       <height>31</height>
      </rect>
     </property>
@@ -1026,7 +1026,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1225</width>
+     <width>1210</width>
      <height>21</height>
     </rect>
    </property>
@@ -1088,6 +1088,11 @@
   <action name="actionLoad_proton_dose_file_set">
    <property name="text">
     <string>Import proton dose file (*.set)</string>
+   </property>
+  </action>
+  <action name="actionExport_Comp_Profile_as_RFA300">
+   <property name="text">
+    <string>Export Comp Profile as RFA300</string>
    </property>
   </action>
  </widget>
@@ -1624,5 +1629,6 @@
   <slot>SLT_SetWorkDir()</slot>
   <slot>SLTM_ExportBatchReport()</slot>
   <slot>SLTM_LoadProtonDoseSetFile()</slot>
+  <slot>SLTM_ExportCompProfileRFA300_ASC()</slot>
  </slots>
 </ui>

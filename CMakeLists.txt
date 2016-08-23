@@ -846,9 +846,7 @@ endif ()
 # Add sample directory/files to Install Only for windows users
 if (WIN32 OR WIN64)
   set (PLM_WINDOWS_INSTALL_DIR "${CMAKE_SOURCE_DIR}/extra/windows-install")
-  install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)
-  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_customgamma.txt" DESTINATION bin)
-  install (FILES "${PLM_WINDOWS_INSTALL_DIR}/colormap_jet.txt" DESTINATION bin)
+  install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)  
   install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_cmd_prompt.bat" DESTINATION bin)
 endif ()
 
