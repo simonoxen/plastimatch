@@ -50,8 +50,8 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
     //QUTIL::LoadColorTableFromFile("colormap_jet.txt", m_vColormapDose);
     //QUTIL::LoadColorTableFromFile("colormap_customgamma.txt", m_vColormapGamma);
 
-    QUTIL::LoadColorTableInternal(m_vColormapDose, enCOLOR_TABLE::COL_TABLE_JET);
-    QUTIL::LoadColorTableInternal(m_vColormapGamma, enCOLOR_TABLE::COL_TABLE_GAMMA);
+    QUTIL::LoadColorTableInternal(m_vColormapDose, COL_TABLE_JET);
+    QUTIL::LoadColorTableInternal(m_vColormapGamma, COL_TABLE_GAMMA);
     
 
     m_pCurImageRef->SetColorTable(m_vColormapDose);
@@ -95,7 +95,7 @@ gamma_gui::gamma_gui(QWidget *parent, Qt::WFlags flags)
     connect(ui.labelGammaMap2D, SIGNAL(Mouse_Released_Right()), this, SLOT(SLT_MouseReleasedRightGamma2D())); //added    
 
 
-    if (m_vColormapDose.size() < 1 || m_vColormapGamma.size() < 1 || m_vColormapGamma.size() < 1)
+    if (m_vColormapDose.size() < 1 || m_vColormapGamma.size() < 1)
     {
         cout << "Fatal error!: colormap is not ready. Colormap table should be checked." << endl;
     }

@@ -29,7 +29,9 @@ void QUTIL::Set2DTo3D(FloatImage2DType::Pointer& spSrcImg2D, UShortImageType::Po
     if (!spSrcImg2D || !spTargetImg3D) //Target image should be also ready.
         return;
 
-    int idxHor, idxVer, idxZ;
+    int idxHor = 0;
+    int idxVer = 0;
+    int idxZ = 0;
 
     switch (iDirection)
     {
@@ -129,7 +131,9 @@ void QUTIL::Get2DFrom3DByIndex(UShortImageType::Pointer& spSrcImg3D, UShortImage
     if (!spSrcImg3D)
         return;
 
-    int idxHor, idxVer, idxZ;
+    int idxHor = 0;
+    int idxVer = 0;
+    int idxZ = 0;
 
     switch (iDirection)
     {
@@ -254,7 +258,9 @@ void QUTIL::Get2DFrom3DByIndex(FloatImageType::Pointer& spSrcImg3D, FloatImage2D
     if (!spSrcImg3D)
         return;
 
-    int idxHor, idxVer, idxZ;
+    int idxHor = 0;
+    int idxVer = 0;
+    int idxZ = 0;
 
     switch (iDirection)
     {
@@ -373,7 +379,9 @@ void QUTIL::Get2DFrom3DByPosition(UShortImageType::Pointer& spSrcImg3D, UShortIm
     if (!spSrcImg3D)
         return;
 
-    int idxHor, idxVer, idxZ;
+    int idxHor = 0;
+    int idxVer = 0;
+    int idxZ = 0;
 
     switch (iDirection)
     {
@@ -499,7 +507,9 @@ void QUTIL::Get2DFrom3DByPosition(FloatImageType::Pointer& spSrcImg3D, FloatImag
     if (!spSrcImg3D)
         return;
 
-    int idxHor, idxVer, idxZ;
+    int idxHor = 0;
+    int idxVer = 0;
+    int idxZ = 0;
     //bool bUpDownFlip = false;
 
     switch (iDirection)
