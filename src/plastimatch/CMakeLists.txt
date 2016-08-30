@@ -26,7 +26,7 @@ option (PLM_CONFIG_VOL_LIST
 option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
   "Use legacy code for extending b-spline domain" OFF)
 option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
-  "Use legacy code for reading and writing b-spline xform files" ON)
+  "Use legacy code for reading and writing b-spline xform files" OFF)
 option (PLM_CONFIG_LEGACY_MI_METRIC
   "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
 option (PLM_CONFIG_LEGACY_PROJ_GEO

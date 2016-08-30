@@ -41,7 +41,7 @@ public:
     int num_coeff;               /* Total number of coefficents (= product(cdims) * 3) */
     float* coeff;                /* Coefficients.  Vector directions interleaved. */
 
-    Lut_type lut_type;
+    Lut_type lut_type;           /* Which kind of LUT is used */
 
     /* Aligned grid (3D) LUTs */
     plm_long* cidx_lut;          /* Lookup volume for region number */
