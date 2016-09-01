@@ -2190,6 +2190,75 @@ plmtest_check_interval ("plm-gamma-d-check"
 set_tests_properties (plm-gamma-d PROPERTIES DEPENDS "rectarr-03;rectarr-04")
 set_tests_properties (plm-gamma-d-check PROPERTIES DEPENDS plm-gamma-d)
 
+## -------------------------------------------------------------------------
+## plastimatch maximum
+##  plm-maximum       Set image containing maximum pixel values across list of images
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-maximum-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "maximum;--output;${PLM_BUILD_TESTING_DIR}/plm-maximum.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  )
+plm_add_test (
+  "plm-maximum-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-maximum-a.nrrd"
+  )
+plmtest_check_interval ("plm-maximum-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-maximum-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0"
+  "0.0"
+  )
+set_tests_properties (plm-maximum-a PROPERTIES DEPENDS "rect-1;rect-3")
+set_tests_properties (plm-maximum-a-stats PROPERTIES DEPENDS plm-maximum-a)
+set_tests_properties (plm-maximum-a-check PROPERTIES DEPENDS plm-maximum-a-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch multiply
+##  plm-multiply-a      Multiply two images
+##  plm-multiply-vf-a   Multiply two vector fields
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-multiply-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "multiply;--output;${PLM_BUILD_TESTING_DIR}/plm-multiply-a.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  )
+plm_add_test (
+  "plm-multiply-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-multiply-a.nrrd"
+  )
+plmtest_check_interval ("plm-multiply-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-multiply-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.0"
+  "0.0"
+  )
+set_tests_properties (plm-multiply-a PROPERTIES DEPENDS "rect-1;rect-3")
+set_tests_properties (plm-multiply-a-stats PROPERTIES DEPENDS plm-multiply-a)
+set_tests_properties (plm-multiply-a-check PROPERTIES DEPENDS plm-multiply-a-stats)
+
+
+plm_add_test (
+  "plm-multiply-vf-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "multiply;--output;${PLM_BUILD_TESTING_DIR}/plm-multiply-vf-a.nrrd;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha"
+  )
+plm_add_test (
+  "plm-multiply-vf-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-multiply-vf-a.nrrd"
+  )
+plmtest_check_interval ("plm-multiply-vf-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-multiply-vf-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "100.000"
+  "100.000"
+  )
+set_tests_properties (plm-multiply-vf-a PROPERTIES DEPENDS vf-trans-1)
+set_tests_properties (plm-multiply-vf-a-stats PROPERTIES DEPENDS plm-multiply-vf-a)
+set_tests_properties (plm-multiply-vf-a-check PROPERTIES DEPENDS plm-multiply-vf-a-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch usage
