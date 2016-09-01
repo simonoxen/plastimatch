@@ -16,6 +16,7 @@ class Register_gui_load_dialog
 public:
     Register_gui_load_dialog ();
     ~Register_gui_load_dialog ();
+    QString get_fixed_pattern ();
 };
 
 #endif

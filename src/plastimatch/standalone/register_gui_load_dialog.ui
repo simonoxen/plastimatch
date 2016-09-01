@@ -29,7 +29,7 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButtonBrowseWorkingDir">
+  <widget class="QPushButton" name="pushButton_browseFixed">
    <property name="geometry">
     <rect>
      <x>600</x>
@@ -42,7 +42,7 @@
     <string>Browse</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditDefaultDirPath">
+  <widget class="QLineEdit" name="lineEdit_fixedPattern">
    <property name="geometry">
     <rect>
      <x>213</x>
@@ -78,7 +78,7 @@
     <string>Moving pattern</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButtonBrowseWorkingDir_2">
+  <widget class="QPushButton" name="pushButton_browseMoving">
    <property name="geometry">
     <rect>
      <x>597</x>
@@ -91,7 +91,7 @@
     <string>Browse</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditDefaultDirPath_2">
+  <widget class="QLineEdit" name="lineEdit_movingPattern">
    <property name="geometry">
     <rect>
      <x>210</x>

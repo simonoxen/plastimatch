@@ -12,3 +12,9 @@ Register_gui_load_dialog::~Register_gui_load_dialog ()
 {
     
 }
+
+QString
+Register_gui_load_dialog::get_fixed_pattern ()
+{
+    return lineEdit_fixedPattern->text ();
+}
