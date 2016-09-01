@@ -1,4 +1,37 @@
 ******************************************************************************
+register_gui
+2016-09-01
+
+Use cases for register_gui
+
+A) Multiple jobs, each with one fixed and one moving
+
+   job1/fix.mha
+   job1/mov.mha
+   job2/fix.mha
+   job2/mov.mha
+
+B) Multiple jobs, each with one fixed and many moving
+
+   job1/fix.mha
+   job1/mov1.mha
+   job1/mov2.mha
+   job2/fix.mha
+   job2/mov1.mha
+   job2/mov2.mha
+
+C) Multiple jobs, all-to-all
+
+   job1/img1.mha
+   job1/img2.mha
+   job1/img3.mha
+   job2/img1.mha
+   job2/img2.mha
+   job2/img3.mha
+
+
+
+******************************************************************************
 cmake upgrade
 2016-05-16
 
