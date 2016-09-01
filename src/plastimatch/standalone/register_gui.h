@@ -17,6 +17,14 @@ class QStandardItemModel;
 class YKThreadRegi;
 class QTimer;
 
+class Datapool_item
+{
+public:
+    QString m_group;
+    QString m_path;
+    QString m_role;
+};
+
 class register_gui : public QMainWindow
 {
     Q_OBJECT
@@ -73,78 +81,78 @@ public:
     void ImportDataPool(QString& strPathImportTxt);
     void ExportDataPool(QString& strPathImportTxt);    
 
-    public slots:                
-        void SLT_SetDefaultDir();        
-        void SLT_LoadFixedFiles();
-        void SLT_LoadMovingFiles();
-        void SLT_LoadCommandFiles();       
-        
-        void SLT_ReadCommandFile_Main(QModelIndex index); //(QModelIndex& index) didn't work
-        void SLT_ReadCommandFile_Que(QModelIndex index); //(QModelIndex& index) didn't work        
-        void SLT_SelectionChangedMain(QItemSelection curItem, QItemSelection prevItem); //prevItem is not being used now
-        void SLT_ItemClickedMain(); //single clicked
+public slots:                
+    void SLT_SetDefaultDir();        
+    void SLT_LoadImages();
+    void SLT_LoadFixedFiles();
+    void SLT_LoadMovingFiles();
+    void SLT_LoadCommandFiles();       
+    
+    void SLT_ReadCommandFile_Main(QModelIndex index); //(QModelIndex& index) didn't work
+    void SLT_ReadCommandFile_Que(QModelIndex index); //(QModelIndex& index) didn't work        
+    void SLT_SelectionChangedMain(QItemSelection curItem, QItemSelection prevItem); //prevItem is not being used now
+    void SLT_ItemClickedMain(); //single clicked
+    
+    void SLT_SelectionChangedQue(QItemSelection curItem, QItemSelection prevItem);
+    void SLT_ItemClickedQue(); //single clicked
+    
+    void SLT_SaveCommandText();       
+    void SLT_SaveCommandFileAsTemplate();
+    
+    void SLT_AddSingleToQue();
+    void SLT_AddMultipleToQueByLine();
+    void SLT_AddMultipleToQueByPermu();
+    //void SLT_CopySelectionToAll_Command();
+    void SLT_CopyCommandFile();
+    void SLT_ClearCommandFiles();
+    
+    void SLT_UpdateFileList();//renaming, etc
+    void SLT_SortSelectedColumn(); //main only
+    
+    void SLT_ClearQueAll();
+    void SLT_RemoveSelectedQue();
+    
+    void SLT_RunSingleSelected();
+    void SLT_RunBatchSequential();
+    void SLT_RunBatchMultiThread();
+    
+    void SLT_TimerRunSEQ();
+    void SLT_TimerRunMT();
+    
+    void SLTM_ExportQueResult();
+    void SLT_CopyTableQueToClipboard();
+    void SLT_SetDefaultViewer();
+    
+    void SLT_OpenSelectedOutputDir();
+    void SLT_ViewSelectedImg();
+    //void SLT_CreateSampleRigid();
+    //void SLT_CreateSampleDeform();
+    void SLT_CommandTemplateSelected();
+    void SLT_CopyCommandTemplateToDataPool();    
+    void SLT_BrowseWorkingDir();
+    void SLT_BrowseTemplateDir();
+    void SLT_DeleteSingleTemplate();
+    
+    void SLTM_ImportDataPool();
+    void SLTM_ExportDataPool();
 
-        void SLT_SelectionChangedQue(QItemSelection curItem, QItemSelection prevItem);
-        void SLT_ItemClickedQue(); //single clicked
-
-        void SLT_SaveCommandText();       
-        void SLT_SaveCommandFileAsTemplate();
-
-        void SLT_AddSingleToQue();
-        void SLT_AddMultipleToQueByLine();
-        void SLT_AddMultipleToQueByPermu();
-        //void SLT_CopySelectionToAll_Command();
-        void SLT_CopyCommandFile();
-        void SLT_ClearCommandFiles();
-
-        void SLT_UpdateFileList();//renaming, etc
-        void SLT_SortSelectedColumn(); //main only
-
-        void SLT_ClearQueAll();
-        void SLT_RemoveSelectedQue();
-
-        void SLT_RunSingleSelected();
-        void SLT_RunBatchSequential();
-        void SLT_RunBatchMultiThread();
-
-        void SLT_TimerRunSEQ();
-        void SLT_TimerRunMT();
-        
-        void SLTM_ExportQueResult();
-        void SLT_CopyTableQueToClipboard();
-        void SLT_SetDefaultViewer();
-
-        void SLT_OpenSelectedOutputDir();
-        void SLT_ViewSelectedImg();
-        //void SLT_CreateSampleRigid();
-        //void SLT_CreateSampleDeform();
-        void SLT_CommandTemplateSelected();
-        void SLT_CopyCommandTemplateToDataPool();    
-        void SLT_BrowseWorkingDir();
-        void SLT_BrowseTemplateDir();
-        void SLT_DeleteSingleTemplate();
-
-        
-        void SLTM_ImportDataPool();
-        void SLTM_ExportDataPool();
-
-        
-
-public:    
+public:
     QStringList m_strlistPath_Fixed;
     QStringList m_strlistPath_Moving;
     QStringList m_strlistPath_Command;
-
+    
     QStringList m_strlistBaseName_Fixed;
     QStringList m_strlistBaseName_Moving;
     QStringList m_strlistBaseName_Command;
-
+    
     QStringList m_strlistPathOutputImg;
     QStringList m_strlistPathOutputXf;
 
     QString m_strPathDirDefault;
     QString m_strPathReadImageApp;
     QString m_strPathCommandTemplateDir;
+
+    std::list<Datapool_item> m_datapoolItems;
 
     void SetWorkDir(const QString& strPath);
     void SetReadImageApp(const QString& strPath);

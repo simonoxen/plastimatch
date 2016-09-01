@@ -29,8 +29,6 @@ C) Multiple jobs, all-to-all
    job2/img2.mha
    job2/img3.mha
 
-
-
 ******************************************************************************
 cmake upgrade
 2016-05-16

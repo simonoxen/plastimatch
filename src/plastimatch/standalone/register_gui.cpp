@@ -1,5 +1,4 @@
 ﻿#include "plm_config.h"
-#include "register_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
@@ -22,11 +21,13 @@
 #include <QMessageBox>
 
 #include "qt_util.h"
+#include "register_gui.h"
+#include "register_gui_load_dialog.h"
 
 using namespace std;
 
 register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
-: QMainWindow(parent, flags)
+    : QMainWindow(parent, flags)
 {
     ui.setupUi(this);
     m_pTableModelMain = NULL;       
@@ -265,6 +266,17 @@ void register_gui::InitTableMain(int rowCnt, int columnCnt)
 
     QItemSelectionModel *select = ui.tableView_main->selectionModel();
     //connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedMain(QItemSelection, QItemSelection)));  
+}
+
+void
+register_gui::SLT_LoadImages()
+{
+    // Display modal dialog
+    Register_gui_load_dialog *load_dlg = new Register_gui_load_dialog;
+    load_dlg->exec ();
+    // Process modal dialog
+
+    delete load_dlg;
 }
 
 void register_gui::SLT_LoadFixedFiles()

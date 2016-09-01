@@ -593,6 +593,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionLoad_images"/>
     <addaction name="actionLoad_fixed_images"/>
     <addaction name="actionLoad_moving_images"/>
     <addaction name="actionLoad_command_files"/>
@@ -654,6 +655,14 @@
   <action name="actionExport_data_pool">
    <property name="text">
     <string>Export data pool</string>
+   </property>
+  </action>
+  <action name="actionLoad_images">
+   <property name="text">
+    <string>Load images</string>
+   </property>
+   <property name="toolTip">
+    <string>Load images</string>
    </property>
   </action>
  </widget>
@@ -1172,6 +1181,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionLoad_images</sender>
+   <signal>triggered()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_LoadImages()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>428</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_SetDefaultDir()</slot>
@@ -1209,5 +1234,6 @@
   <slot>SLTM_ExportDataPool()</slot>
   <slot>SLT_ItemClickedMain()</slot>
   <slot>SLT_ItemClickedQue()</slot>
+  <slot>SLT_LoadImages()</slot>
  </slots>
 </ui>

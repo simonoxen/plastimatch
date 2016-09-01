@@ -185,30 +185,34 @@ set_source_files_properties (${GAMMA_GUI_BASE_SRC}
     PROPERTIES OBJECT_DEPENDS "${GAMMA_GUI_UI}")
     
 set(REGISTER_GUI_SRC
-	register_gui_main.cpp
-	register_gui.cpp 
-	register_gui.h
-	qyklabel.h
-	qyklabel.cpp
-	YK16GrayImage.cxx
-	YK16GrayImage.h
-	qt_util.h
-	qt_util.cxx
-	qcustomplot.h
-	qcustomplot.cpp
-	yk_config.h
-	YKThreadRegi.h
-	YKThreadRegi.cpp
-	)
+  register_gui_main.cpp
+  register_gui.cpp
+  register_gui.h
+  register_gui_load_dialog.cxx
+  register_gui_load_dialog.h
+  qyklabel.h
+  qyklabel.cpp
+  YK16GrayImage.cxx
+  YK16GrayImage.h
+  qt_util.h
+  qt_util.cxx
+  qcustomplot.h
+  qcustomplot.cpp
+  yk_config.h
+  YKThreadRegi.h
+  YKThreadRegi.cpp
+  )
 
 QT4_WRAP_CPP(REGISTER_GUI_SRC	
-	qyklabel.h
-	qcustomplot.h
-	register_gui.h
-	YKThreadRegi.h)
+  qyklabel.h
+  qcustomplot.h
+  register_gui.h
+  register_gui_load_dialog.h
+  YKThreadRegi.h)
 QT4_WRAP_UI(REGISTER_GUI_SRC
-	register_gui.ui
-	)
+  register_gui.ui
+  register_gui_load_dialog.ui
+  )
 
 set(BEAMDATA_GEN_GUI_SRC	
 	beamdata_gen_gui.h
