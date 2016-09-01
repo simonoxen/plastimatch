@@ -26,7 +26,9 @@
 #include "pcmd_jacobian.h"
 #include "pcmd_mabs.h"
 #include "pcmd_mask.h"
+#include "pcmd_maximum.h"
 #include "pcmd_ml_convert.h"
+#include "pcmd_multiply.h"
 #include "pcmd_probe.h"
 #include "pcmd_register.h"
 #include "pcmd_resample.h"
@@ -85,21 +87,23 @@ print_usage (int return_code)
         "  jacobian    "
         "  mabs        "
         "  mask        "
-        "  ml-convert  "
+        "  maximum     "
         "\n"
+        "  ml-convert  "
+        "  multiply    "
         "  probe       "
         "  register    "
         "  resample    "
+        "\n"
         "  scale       "
         "  segment     "
 //        "  sift        "
-        "\n"
         "  stats       "
         "  synth       "
         "  synth-vf    "
+        "\n"
         "  threshold   "
         "  thumbnail   "
-        "\n"
         "  union       "
         "  warp        "
         "  xf-convert  "
@@ -199,8 +203,14 @@ do_command (int argc, char* argv[])
         /* fill and mask are the same */
         do_command_mask (argc, argv);
     }
+    else if (!strcmp (command, "maximum")) {
+        do_command_maximum (argc, argv);
+    }
     else if (!strcmp (command, "ml-convert")) {
         do_command_ml_convert (argc, argv);
+    }
+    else if (!strcmp (command, "multiply")) {
+        do_command_multiply (argc, argv);
     }
     else if (!strcmp (command, "probe")) {
         do_command_probe (argc, argv);
