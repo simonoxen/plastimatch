@@ -35,8 +35,12 @@ find_package_handle_standard_args (DLIB DEFAULT_MSG
   DLIB_LIBRARY 
   DLIB_INCLUDE_DIR)
 
+set (DLIB_HAVE_LIBRARY FALSE)
 if (DLIB_FOUND)
-  set (DLIB_LIBRARIES ${DLIB_LIBRARY})
+    set (DLIB_LIBRARIES ${DLIB_LIBRARY})
+    if (DLIB_LIBRARY)
+	set (DLIB_HAVE_LIBRARY TRUE)
+    endif ()
 else (DLIB_FOUND)
   set (DLIB_LIBRARIES)
 endif (DLIB_FOUND)

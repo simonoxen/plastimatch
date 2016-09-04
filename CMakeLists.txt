@@ -58,7 +58,8 @@ option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
-option (PLM_CONFIG_NOMANIFEST "Set to ON to build windows DLLs without manifests" OFF)
+option (PLM_CONFIG_NOMANIFEST
+    "Set to ON to build windows DLLs without manifests" OFF)
 
 # Compile and link options
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)
@@ -66,7 +67,8 @@ option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
-option (PLM_PREFER_SYSTEM_DLIB "Prefer the system dlib over the included dlib" OF)
+option (PLM_PREFER_SYSTEM_DLIB
+    "Prefer the system dlib over the included dlib" ON)
 
 # Testing
 option (PLM_BUILD_TESTING "Enable regression testing" ON)
@@ -81,7 +83,7 @@ option (PLM_PACKAGE_32BIT
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
 option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
 option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
-  "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
+    "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
 # Use legacy packaging if cmake version is < 3.0
 if (CMAKE_VERSION VERSION_LESS "3.0")
@@ -356,9 +358,8 @@ add_subdirectory (libs/devillard)
 ##  Only use local dlib
 ##-----------------------------------------------------------------------------
 if (NOT DLIB_INCLUDE_DIR)
-  #  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
-  # set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.46")
-  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-18.7")
+  # set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-18.7")
+  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
 endif ()
 
 ##-----------------------------------------------------------------------------
