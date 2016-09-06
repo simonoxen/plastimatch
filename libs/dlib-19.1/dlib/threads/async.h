@@ -4,7 +4,7 @@
 #define DLIB_AsYNC_Hh_ 
 
 // C++11 things don't work in old versions of visual studio 
-#if !defined( _MSC_VER) ||  _MSC_VER >= 1900
+#if __cplusplus >= 201103L ||  _MSC_VER >= 1900
 
 #include "async_abstract.h"
 #include "thread_pool_extension.h"
