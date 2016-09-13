@@ -51,7 +51,7 @@ option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
-option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
+option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" ON)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 
@@ -662,16 +662,16 @@ endif ()
 ##  QT
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_DISABLE_QT)
-    set (QT4_FOUND false)
+  set (QT4_FOUND false)
 else ()
-    #Edited by YPark, in VS2013 with win7, QtWebkit was not able to be compiled.(.lib file is not generated.) QtWebkit is only used by Reg23.
-    if (PLM_CONFIG_DISABLE_REG23)
-	message (STATUS "Due to the REG23 disabled, QtWebkit is no longer needed")
-	find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
-    else ()
-	message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
-	find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
-    endif ()	
+  # In VS2013 with win7, QtWebkit was not able to be compiled.(.lib file
+  # is not generated.) QtWebkit is only used by Reg23.
+  if (PLM_CONFIG_DISABLE_REG23)
+    find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
+  else ()
+    message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
+    find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
+  endif ()
 endif ()
 
 if (QT4_FOUND)
