@@ -8,6 +8,7 @@
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_rtdose.h"
 #include "dcmtk_rtss.h"
+#include "dcmtk_rtplan.h"
 #elif PLM_DCM_USE_GDCM1
 #include "gdcm1_dose.h"
 #include "gdcm1_rtss.h"
@@ -37,6 +38,19 @@ dicom_probe_dose (const char *fn)
     return dcmtk_dose_probe (fn);
 #elif PLM_DCM_USE_GDCM1
     return gdcm1_dose_probe (fn);
+#else
+    return false;
+#endif
+}
+
+/* Return true if the file is a dicom rtplan */
+bool
+dicom_probe_rtplan(const char *rtplan_fn)
+{
+#if PLM_DCM_USE_DCMTK
+    return dcmtk_rtplan_probe(rtplan_fn);
+#elif PLM_DCM_USE_GDCM1    
+    return false;
 #else
     return false;
 #endif

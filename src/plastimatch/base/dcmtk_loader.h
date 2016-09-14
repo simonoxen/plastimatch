@@ -10,6 +10,7 @@
 #include "plm_image.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtplan.h"
 
 class Dcmtk_loader_private;
 class Dcmtk_series;
@@ -34,10 +35,12 @@ public:
     Plm_image::Pointer get_image ();
     Rtss::Pointer get_rtss ();
     Plm_image::Pointer get_dose ();
-
+    Rtplan::Pointer get_rtplan();   
+    
     void image_load ();
     void rtss_load ();
     void rtdose_load ();
+    void rtplan_load();
 
     void insert_file (const char* fn);
     void insert_directory (const char* fn);

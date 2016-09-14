@@ -12,6 +12,7 @@
 #include "plm_int.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtplan.h"
 #include "volume.h"
 
 class Dcmtk_rt_study_private;
@@ -47,6 +48,9 @@ public:
     Rtss::Pointer& get_rtss ();
     void set_rtss (Rtss::Pointer rtss);
 
+    Rtplan::Pointer& get_rtplan();
+    void set_rtplan(Rtplan::Pointer rtplan);
+
     Plm_image::Pointer get_dose ();
     void set_dose (Plm_image::Pointer image);
 
@@ -57,7 +61,7 @@ public:
     void save_image (const char *dicom_path);
     void save_dose (const char *dicom_path);
     void save_rtss (const char *dicom_path);
-
+    void save_rtplan(const char *dicom_path);//not yet implemented
 };
 
 #endif

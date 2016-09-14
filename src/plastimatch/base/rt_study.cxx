@@ -79,6 +79,9 @@ Rt_study::load (const char* input_path,
     case PLM_FILE_FMT_DICOM_DOSE:
         this->load_dicom_dose (input_path);
         break;
+    case PLM_FILE_FMT_DICOM_RTPLAN:
+        this->load_dicom_rtplan((const char*)input_path);
+        break;
     case PLM_FILE_FMT_CXT:
         this->load_cxt (input_path);
         break;
@@ -156,6 +159,19 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
     /* Do nothing */
 #endif
 }
+
+void
+Rt_study::load_dicom_rtplan(const char *dicom_path)
+{    
+#if PLM_DCM_USE_DCMTK
+    this->load_dcmtk(dicom_path);
+#elif PLM_DCM_USE_GDCM1
+    //not yet implemented
+#else
+    /* Do nothing */
+#endif
+}
+
 
 void
 Rt_study::load_dicom_dose (const char *dicom_path)

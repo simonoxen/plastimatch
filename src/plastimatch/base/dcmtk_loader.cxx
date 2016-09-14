@@ -170,6 +170,13 @@ Dcmtk_loader::get_rtss ()
     return d_ptr->rtss;
 }
 
+Rtplan::Pointer
+Dcmtk_loader::get_rtplan()
+{
+    return d_ptr->rtplan;
+}
+
+
 Plm_image::Pointer
 Dcmtk_loader::get_dose ()
 {
@@ -183,6 +190,7 @@ Dcmtk_loader::parse_directory (void)
     d_ptr->ds_image = 0;
     d_ptr->ds_rtss = 0;
     d_ptr->ds_rtdose = 0;
+    d_ptr->ds_rtplan = 0;
 
     /* Loop through all series in directory, and find image, ss, dose */
     size_t best_image_slices = 0;
@@ -204,6 +212,13 @@ Dcmtk_loader::parse_directory (void)
 	    d_ptr->ds_rtdose = ds;
 	    continue;
 	}
+
+        /* Check for rtplan */
+        if (!d_ptr->ds_rtplan && ds->get_modality() == "RTPLAN") {
+            printf("Found RTPLAN, UID=%s\n", key.c_str());
+            d_ptr->ds_rtplan = ds;
+            continue;
+        }
 
 	/* Check for image.  An image is anything with a PixelData.
            Current heuristic: load the image with the most slices
@@ -240,6 +255,11 @@ Dcmtk_loader::parse_directory (void)
     /* Load dose */
     if (d_ptr->ds_rtdose) {
         this->rtdose_load ();
+    }
+
+    /* Load plan */
+    if (d_ptr->ds_rtplan) {        
+        this->rtplan_load();
     }
 }
 

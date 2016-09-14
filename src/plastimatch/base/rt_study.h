@@ -42,6 +42,7 @@ public:
     void load_dicom (const char *dicom_dir); 
     void load_dicom_dose (const char *dicom_path);
     void load_dicom_rtss (const char *dicom_path);
+    void load_dicom_rtplan(const char *dicom_path);
     void load_image (const char *fn);
     void load_image (const std::string& fn);
     void load_xio (const char *xio_dir);
