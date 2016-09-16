@@ -11,6 +11,7 @@
 #include "plm_image.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtplan.h"
 
 class Dcmtk_rt_study;
 
@@ -25,6 +26,8 @@ public:
     Plm_image::Pointer img;
     Plm_image::Pointer dose;
     Rtss::Pointer rtss;
+    Rtplan::Pointer rtplan;
+
 
 public:
     Dcmtk_series_map m_smap;
@@ -32,12 +35,14 @@ public:
     Dcmtk_series *ds_image;
     Dcmtk_series *ds_rtss;
     Dcmtk_series *ds_rtdose;
+    Dcmtk_series *ds_rtplan;  
 
 public:
     Dcmtk_loader_private () {
         ds_image = 0;
         ds_rtss = 0;
         ds_rtdose = 0;
+        ds_rtplan = 0;
     }
     ~Dcmtk_loader_private () {
         /* Delete Dicom_series objects in map */

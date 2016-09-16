@@ -9,6 +9,7 @@
 //#include "plm_image_set.h"
 #include "rt_study_metadata.h"
 #include "rtss.h"
+#include "rtplan.h"
 
 class Dcmtk_series;
 class Dcmtk_slice_data;
@@ -29,9 +30,11 @@ public:
 
     Dcmtk_series *ds_rtdose;
     Dcmtk_series *ds_rtss;
+    Dcmtk_series *ds_rtplan;
 
     Rtss::Pointer rtss;
     Metadata *rtss_metadata;
+    Rtplan::Pointer plan;
     //Plm_image_set::Pointer img;
     Plm_image::Pointer img;
     Plm_image::Pointer dose;

@@ -40,6 +40,10 @@
 
 #include <algorithm>
 
+#include "dcmtk_rt_study.h"
+#include "rtplan.h"
+#include "rtplan_beam.h"
+#include "rtplan_control_pt.h"
 
 beamdata_gen_gui::beamdata_gen_gui(QWidget *parent, Qt::WFlags flags)
 : QMainWindow(parent, flags)
@@ -100,8 +104,56 @@ beamdata_gen_gui::beamdata_gen_gui(QWidget *parent, Qt::WFlags flags)
     m_bMousePressedRightSagittal = false;
     m_bMousePressedRightFrontal = false;    
 
-    //QUTIL::CreateItkDummyImg(m_spDummyLowMemImg, 10, 10, 10, 1.0);
-    //m_iLastLoadedIndex = -1;
+    //Test code for dicom rt plan loading
+
+    Dcmtk_rt_study* pRTstudyRP = new Dcmtk_rt_study();
+    QString strTest = "D:/dcmrt_plan.dcm";
+    Plm_file_format file_type_dcm_plan = plm_file_format_deduce(strTest.toLocal8Bit().constData());
+
+    if (file_type_dcm_plan == PLM_FILE_FMT_DICOM_RTPLAN)
+    {
+        pRTstudyRP->load(strTest.toLocal8Bit().constData());
+    }
+
+
+    Rtplan::Pointer rtplan = pRTstudyRP->get_rtplan();
+    if (!rtplan)
+    {
+        cout << "Error! no dcm plan is loaded" << endl;        
+        return;
+    }
+
+    int iCntBeam = rtplan->num_beams;
+    if (iCntBeam < 1)
+    {
+        cout << "Error! no beam is found" << endl;
+        return;
+    }
+
+    float* final_iso_pos = NULL;
+    for (int i = 0; i < iCntBeam; i++)
+    {
+        Rtplan_beam *curBeam = rtplan->beamlist[i];
+
+        int iCntCP = curBeam->num_cp;
+
+        for (int j = 0; j < iCntCP; j++)
+        {
+            float* cur_iso_pos = curBeam->cplist[j]->get_isocenter();
+            cout << "Beam ID: " << curBeam->id << ", Control point ID: " << curBeam->cplist[j]->control_pt_no << ", Isocenter pos : " << cur_iso_pos[0] << "/" << cur_iso_pos[1] << "/" << cur_iso_pos[2] << endl;
+
+            if (i == 0 && j == 0) //choose first beam's isocenter
+                final_iso_pos = curBeam->cplist[j]->get_isocenter();
+        }
+    }
+    if (final_iso_pos == NULL)
+    {
+        cout << "Error!  No isocenter position was found. " << endl;
+        return;
+    }
+
+    cout << final_iso_pos[0] << " " << final_iso_pos[1] << " " << final_iso_pos[1] << endl;
+    delete pRTstudyRP;    
 }
 
 beamdata_gen_gui::~beamdata_gen_gui()
