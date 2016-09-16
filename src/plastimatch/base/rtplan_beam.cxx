@@ -92,7 +92,7 @@ Rtplan_beam::check_isocenter_identical()
 
     float currIso[3];
 
-    for (int i = 1; i < this->num_cp; i++){
+    for (size_t i = 1; i < this->num_cp; i++){
         currIso[0] = this->cplist[i]->iso_pos[0];
         currIso[1] = this->cplist[i]->iso_pos[1];
         currIso[2] = this->cplist[i]->iso_pos[2];
@@ -105,7 +105,7 @@ Rtplan_beam::check_isocenter_identical()
     if (!bSame){
         lprintf("Warning! Isocenter positions are not same across the control points!\n");
 
-        for (int i = 1; i < this->num_cp; i++){
+        for (size_t i = 1; i < this->num_cp; i++){
             lprintf("Control point idx: %d, isocenter: %3.2f / %3.2f / %3.2f. \n",
                 cplist[i]->control_pt_no, cplist[i]->iso_pos[0], cplist[i]->iso_pos[1],
                 cplist[i]->iso_pos[2]);
