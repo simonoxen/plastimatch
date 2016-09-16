@@ -80,7 +80,7 @@ Dcmtk_loader::rtplan_load(void)
     /* FIX: load metadata such as patient name, etc. */
 
     /*const char *val2 = ds_rtplan->get_cstr(DCM_PatientName);
-    const char *val3 = ds_rtplan->get_cstr(DCM_PatientID);*/
+      const char *val3 = ds_rtplan->get_cstr(DCM_PatientID);*/
 
 
     /* Load Beam sequence */

@@ -1,4 +1,4 @@
-﻿#ifndef REGISTER_GUI_H
+#ifndef REGISTER_GUI_H
 #define REGISTER_GUI_H
 
 #include <QtGui/QMainWindow>

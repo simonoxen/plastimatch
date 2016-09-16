@@ -1,4 +1,4 @@
-﻿#ifndef GAMMA_GUI_H
+#ifndef GAMMA_GUI_H
 #define GAMMA_GUI_H
 
 #include <QtGui/QMainWindow>

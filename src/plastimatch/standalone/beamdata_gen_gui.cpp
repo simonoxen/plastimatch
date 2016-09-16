@@ -1,4 +1,4 @@
-﻿#include "beamdata_gen_gui.h"
+#include "beamdata_gen_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>

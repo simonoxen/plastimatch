@@ -1,4 +1,4 @@
-﻿#ifndef BEAMDATA_GEN_GUI_H
+#ifndef BEAMDATA_GEN_GUI_H
 #define BEAMDATA_GEN_GUI_H
 
 #include <QtGui/QMainWindow>

@@ -1,4 +1,4 @@
-﻿#include "gamma_gui.h"
+#include "gamma_gui.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>

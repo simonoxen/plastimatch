@@ -1,4 +1,4 @@
-﻿#include "plm_config.h"
+#include "plm_config.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
