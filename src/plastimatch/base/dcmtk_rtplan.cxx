@@ -87,7 +87,7 @@ Dcmtk_loader::rtplan_load(void)
 
     DcmSequenceOfItems *seq = 0;
     bool rc = ds_rtplan->get_sequence(DCM_BeamSequence, seq);
-    int iNumOfBeam = seq->card();
+    unsigned long iNumOfBeam = seq->card();
     if (rc) {
         for (unsigned long i = 0; i < iNumOfBeam; i++) {
             Rtplan_beam *curr_beam;
@@ -119,7 +119,7 @@ Dcmtk_loader::rtplan_load(void)
             DcmSequenceOfItems *cp_seq = 0;
             orc = item->findAndGetSequence(DCM_ControlPointSequence, cp_seq);
 
-            int iNumOfCP = cp_seq->card();
+            unsigned long iNumOfCP = cp_seq->card();
 
             for (unsigned long j = 0; j <iNumOfCP; j++) {                
                 DcmItem *c_item = cp_seq->getItem(j);

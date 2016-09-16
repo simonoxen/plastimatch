@@ -57,6 +57,7 @@ Rtplan_beam::add_control_pt(int index)
 }
 
 /* first beam isocenter position*/
+#if defined (commentout)
 float*
 Rtplan_beam::get_isocenter_pos()
 {
@@ -76,6 +77,7 @@ Rtplan_beam::get_isocenter_pos()
 
     return isopos;
 }
+#endif
 
 bool 
 Rtplan_beam::check_isocenter_identical()
