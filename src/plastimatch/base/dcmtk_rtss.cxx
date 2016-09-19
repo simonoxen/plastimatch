@@ -10,8 +10,6 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
-#include "dcmtk_loader.h"
-#include "dcmtk_loader_p.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
@@ -60,7 +58,7 @@ dcmtk_rtss_probe (const char *rtss_fn)
 }
 
 void
-Dcmtk_loader::rtss_load (void)
+Dcmtk_rt_study::rtss_load (void)
 {
     Dcmtk_series *ds_rtss = d_ptr->ds_rtss;
     d_ptr->rtss = Rtss::New();
@@ -426,7 +424,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
                 curr_contour->x[0],
                 curr_contour->y[0],
                 curr_contour->z[0]);
-	    for (int k = 1; k < curr_contour->num_vertices; k++) {
+	    for (size_t k = 1; k < curr_contour->num_vertices; k++) {
                 std::string tmp2 = string_format ("\\%.8g\\%.8g\\%.8g",
 		    curr_contour->x[k],
 		    curr_contour->y[k],

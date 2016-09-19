@@ -460,7 +460,7 @@ Segmentation::save_fcsv (
 
     for (size_t j = 0; j < curr_structure->num_contours; j++) {
         Rtss_contour *curr_polyline = curr_structure->pslist[j];
-        for (int k = 0; k < curr_polyline->num_vertices; k++) {
+        for (size_t k = 0; k < curr_polyline->num_vertices; k++) {
             pointset.insert_lps ("", curr_polyline->x[k],
                 curr_polyline->y[k], curr_polyline->z[k]);
         }

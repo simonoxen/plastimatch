@@ -20,8 +20,8 @@
 #include <QStandardItemModel>
 #include <QClipboard>
 
-#include "dcmtk_loader.h"
-#include "dcmtk_loader_p.h"
+#include "dcmtk_rt_study.h"
+#include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
 
 #include "dcmtk_config.h"
@@ -1308,7 +1308,7 @@ void beamdata_gen_gui::RenameFileByDCMInfo(QStringList& filenameList)
         crntFilePath = filenameList.at(a);
 
         //1) contructor
-        Dcmtk_loader dss(crntFilePath.toLocal8Bit().constData());
+        Dcmtk_rt_study dss(crntFilePath.toLocal8Bit().constData());
         //2) parse directory: this will link dicome seriese to proper one (e.g. ds_dose)
         dss.parse_directory();       
 

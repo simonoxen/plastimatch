@@ -244,13 +244,11 @@ Rtss::adjust_structure_names (void)
 
     for (size_t i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
-	bool changed = false;
         std::string tmp = curr_structure->name;
-	for (int j = 0; j < curr_structure->name.length(); j++) {
+	for (size_t j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
-		changed = true;
 	    }
 	}
     }
@@ -346,7 +344,7 @@ Rtss::find_rasterization_geometry (
 	Rtss_roi *curr_structure = this->slist[i];
 	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    Rtss_contour *curr_polyline = curr_structure->pslist[j];
-	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
+	    for (size_t k = 0; k < curr_polyline->num_vertices; k++) {
 		z_values.insert (curr_polyline->z[k]);
 		if (first) {
 		    min_x = max_x = curr_polyline->x[k];
