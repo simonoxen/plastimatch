@@ -1,4 +1,4 @@
-﻿#include "qt_util.h"
+#include "qt_util.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

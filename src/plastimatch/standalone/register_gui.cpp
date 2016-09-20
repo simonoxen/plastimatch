@@ -1,5 +1,4 @@
-﻿#include "plm_config.h"
-#include "register_gui.h"
+#include "plm_config.h"
 #include <QString>
 #include <QFileDialog>
 #include <QListView>
@@ -22,11 +21,13 @@
 #include <QMessageBox>
 
 #include "qt_util.h"
+#include "register_gui.h"
+#include "register_gui_load_dialog.h"
 
 using namespace std;
 
 register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
-: QMainWindow(parent, flags)
+    : QMainWindow(parent, flags)
 {
     ui.setupUi(this);
     m_pTableModelMain = NULL;       
@@ -267,6 +268,23 @@ void register_gui::InitTableMain(int rowCnt, int columnCnt)
     //connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedMain(QItemSelection, QItemSelection)));  
 }
 
+void
+register_gui::SLT_LoadImages()
+{
+    // Display modal dialog
+    // TODO, make modeless
+    Register_gui_load_dialog *load_dlg = new Register_gui_load_dialog;
+    if (load_dlg->exec () == QDialog::Rejected) {
+        delete load_dlg;
+        return;
+    }
+
+    ui.statusBar->showMessage(load_dlg->get_fixed_pattern());
+    
+    // Process modal dialog
+    delete load_dlg;
+}
+
 void register_gui::SLT_LoadFixedFiles()
 {
     QFileDialog w;    
@@ -352,7 +370,7 @@ void register_gui::UpdateBaseAndComboFromFullPath() //Base and ComboList
 void register_gui::SLT_LoadMovingFiles()
 {
     //include DICOM dir as well
-  //  QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", m_strPathDirDefault, "image files (*.dcm *.mha *.nrrd)");
+    //  QStringList tmpList = QFileDialog::getOpenFileNames(this, "Select one or more files to open", m_strPathDirDefault, "image files (*.dcm *.mha *.nrrd)");
 
     QFileDialog w;
     w.setFileMode(QFileDialog::AnyFile);//both files and directories are displayed 

@@ -51,14 +51,15 @@ option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
-option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" OFF)
+option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" ON)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 
 option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
 option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
-option (PLM_CONFIG_NOMANIFEST "Set to ON to build windows DLLs without manifests" OFF)
+option (PLM_CONFIG_NOMANIFEST
+    "Set to ON to build windows DLLs without manifests" OFF)
 
 # Compile and link options
 option (PLM_SUPERBUILD "Download missing external libraries" OFF)
@@ -66,7 +67,8 @@ option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
-option (PLM_PREFER_SYSTEM_DLIB "Prefer the system dlib over the included dlib" OF)
+option (PLM_PREFER_SYSTEM_DLIB
+    "Prefer the system dlib over the included dlib" ON)
 
 # Testing
 option (PLM_BUILD_TESTING "Enable regression testing" ON)
@@ -81,7 +83,7 @@ option (PLM_PACKAGE_32BIT
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
 option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
 option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
-  "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
+    "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
 # Use legacy packaging if cmake version is < 3.0
 if (CMAKE_VERSION VERSION_LESS "3.0")
@@ -291,7 +293,9 @@ else ()
   endif ()
 endif ()
 if (PLM_PREFER_SYSTEM_DLIB)
-  find_package (Dlib)
+    find_package (Dlib)
+    # The cmake file supplied by debian is broken
+    # find_package (dlib)
 endif ()
 find_package (Etags)
 #find_package (Fann)
@@ -353,12 +357,14 @@ set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
 add_subdirectory (libs/devillard)
 
 ##-----------------------------------------------------------------------------
-##  Only use local dlib
+##  If using local dlib
 ##-----------------------------------------------------------------------------
-if (NOT DLIB_INCLUDE_DIR)
-  #  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
-  # set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.46")
-  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-18.7")
+if (NOT DLIB_FOUND)
+    message (STATUS ">> NO DLIB FOUND")
+    # set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-18.7")
+    set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
+    set (DLIB_LIBRARIES "")
+    set (DLIB_HAVE_LIBRARY FALSE)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -656,16 +662,16 @@ endif ()
 ##  QT
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_DISABLE_QT)
-    set (QT4_FOUND false)
+  set (QT4_FOUND false)
 else ()
-    #Edited by YPark, in VS2013 with win7, QtWebkit was not able to be compiled.(.lib file is not generated.) QtWebkit is only used by Reg23.
-    if (PLM_CONFIG_DISABLE_REG23)
-	message (STATUS "Due to the REG23 disabled, QtWebkit is no longer needed")
-	find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
-    else ()
-	message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
-	find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
-    endif ()	
+  # In VS2013 with win7, QtWebkit was not able to be compiled.(.lib file
+  # is not generated.) QtWebkit is only used by Reg23.
+  if (PLM_CONFIG_DISABLE_REG23)
+    find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtDesigner)
+  else ()
+    message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
+    find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
+  endif ()
 endif ()
 
 if (QT4_FOUND)

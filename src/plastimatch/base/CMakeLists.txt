@@ -110,6 +110,9 @@ set (PLMBASE_LIBRARY_SRC
   rtss.cxx rtss.h 
   rtss_contour.cxx rtss_contour.h 
   rtss_roi.cxx rtss_roi.h 
+  rtplan.cxx rtplan.h 
+  rtplan_beam.cxx rtplan_beam.h 
+  rtplan_control_pt.cxx rtplan_control_pt.h
   segmentation.cxx segmentation.h 
   slice_extract.cxx slice_extract.h
   slice_list.cxx slice_list.h
@@ -173,8 +176,6 @@ if (PLM_DCM_USE_DCMTK)
     dcmtk_config.h
     dcmtk_file.cxx dcmtk_file.h
     dcmtk_image.cxx 
-    dcmtk_loader.cxx dcmtk_loader.h
-    dcmtk_loader_p.h
     dcmtk_metadata.cxx dcmtk_metadata.h
     dcmtk_module_general_series.cxx dcmtk_module_general_series.h
     dcmtk_module_general_study.cxx dcmtk_module_general_study.h
@@ -182,9 +183,11 @@ if (PLM_DCM_USE_DCMTK)
     dcmtk_rdd.cxx dcmtk_rdd.h
     dcmtk_rtdose.cxx dcmtk_rtdose.h
     dcmtk_rtss.cxx dcmtk_rtss.h
+    dcmtk_rtplan.cxx dcmtk_rtplan.h
     dcmtk_rt_study.cxx dcmtk_rt_study.h
     dcmtk_rt_study_p.cxx dcmtk_rt_study_p.h
     dcmtk_series.cxx dcmtk_series.h
+    dcmtk_series_map.h
     dcmtk_sro.cxx dcmtk_sro.h
     dcmtk_uid.cxx dcmtk_uid.h
     dcmtk_util.cxx dcmtk_util.h

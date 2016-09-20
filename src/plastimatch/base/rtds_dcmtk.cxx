@@ -5,7 +5,6 @@
 
 #include "compiler_warnings.h"
 #if PLM_DCM_USE_DCMTK
-#include "dcmtk_loader.h"
 #include "dcmtk_rt_study.h"
 #endif
 #include "logfile.h"

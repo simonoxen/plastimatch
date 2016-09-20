@@ -108,6 +108,21 @@ plm_file_format_deduce (const char* path)
 	return PLM_FILE_FMT_IMG;
     }
 
+    /* Maybe dicom rtss? */
+    if (dicom_probe_rtss(path)) {
+        return PLM_FILE_FMT_DICOM_RTSS;
+    }
+
+    /* Maybe dicom dose */
+    if (dicom_probe_dose(path)) {
+        return PLM_FILE_FMT_DICOM_DOSE;
+    }
+
+    /* Maybe dicom plan */
+    if (dicom_probe_rtplan(path)) {
+        return PLM_FILE_FMT_DICOM_RTPLAN;
+    }
+
     itk::ImageIOBase::IOPixelType pixel_type;
     itk::ImageIOBase::IOComponentType component_type;
     int num_dimensions, num_components;
@@ -128,15 +143,7 @@ plm_file_format_deduce (const char* path)
 	/* else fall through */
     }
 
-    /* Maybe dicom rtss? */
-    if (dicom_probe_rtss (path)) {
-	return PLM_FILE_FMT_DICOM_RTSS;
-    }
-
-    /* Maybe dicom dose */
-    if (dicom_probe_dose (path)) {
-	return PLM_FILE_FMT_DICOM_DOSE;
-    }
+ 
 
     return PLM_FILE_FMT_IMG;
 }

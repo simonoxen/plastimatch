@@ -1,4 +1,4 @@
-﻿#ifndef QT_UTIL_H
+#ifndef QT_UTIL_H
 #define QT_UTIL_H
 
 #include "yk_config.h"

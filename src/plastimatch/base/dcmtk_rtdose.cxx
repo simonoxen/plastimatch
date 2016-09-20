@@ -9,8 +9,6 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_file.h"
-#include "dcmtk_loader.h"
-#include "dcmtk_loader_p.h"
 #include "dcmtk_metadata.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
@@ -73,7 +71,7 @@ dcmtk_dose_copy (float *img_out, T *img_in, int nvox, float scale)
 }
 
 void
-Dcmtk_loader::rtdose_load ()
+Dcmtk_rt_study::rtdose_load ()
 {
     int rc;
     const char *val;

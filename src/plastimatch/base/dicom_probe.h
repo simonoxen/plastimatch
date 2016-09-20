@@ -14,4 +14,8 @@ PLMBASE_C_API
 bool
 dicom_probe_rtss (const char *fn);
 
+PLMBASE_C_API
+bool
+dicom_probe_rtplan(const char *fn);
+
 #endif
