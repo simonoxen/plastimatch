@@ -45,16 +45,22 @@ public:
     const char* get_plan_instance_uid () const;
     const char* get_rtstruct_instance_uid () const;
     const char* get_rtstruct_series_uid () const;
+
     const char* get_study_date () const;
     void set_study_date (const char* date);
     void set_study_date (const std::string& date);
+
     const char* get_study_time () const;
     void set_study_time (const char* time);
     void set_study_time (const std::string& time);
+
     const char* get_study_uid () const;
     void set_study_uid (const char* uid);
+
     const std::string& get_patient_name ();
+    void set_patient_name (const char* name);
     void set_patient_name (const std::string& name);
+
     const std::string& get_patient_id ();
     void set_patient_id (const std::string& id);
 

@@ -10,6 +10,7 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_module.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtplan.h"
@@ -162,8 +163,45 @@ Dcmtk_rt_study::rtplan_load(void)
 }
 
 void
-Dcmtk_rt_study::save_rtplan(const char *dicom_dir)
+Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
 {
-    //to be implemented
+    /* Required modules (ref DICOM PS3.3 2016c)
+       Patient
+       General Study
+       RT Series
+       Frame of Reference
+       General Equipment
+       RT General Plan
+       SOP Common
+    */
 
+    /* Prepare varibles */
+    const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
+
+    /* Prepare dcmtk */
+    OFCondition ofc;
+    DcmFileFormat fileformat;
+    DcmDataset *dataset = fileformat.getDataset();
+
+    /* Patient module, general study module */
+    Dcmtk_module_patient::set (dataset, rsm->get_study_metadata ());
+    Dcmtk_module_general_study::set (dataset, rsm);
+
+    /* ----------------------------------------------------------------- */
+    /*     Write the output file                                         */
+    /* ----------------------------------------------------------------- */
+    std::string filename;
+    if (d_ptr->filenames_with_uid) {
+        filename = string_format ("%s/rtplan_%s.dcm", dicom_dir,
+            d_ptr->rt_study_metadata->get_dose_series_uid());
+    } else {
+        filename = string_format ("%s/rtplan.dcm", dicom_dir);
+    }
+    make_parent_directories (filename);
+
+    ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
+    if (ofc.bad()) {
+        print_and_exit ("Error: cannot write DICOM RTPLAN (%s)\n", 
+            ofc.text());
+    }
 }

@@ -177,9 +177,7 @@ if (PLM_DCM_USE_DCMTK)
     dcmtk_file.cxx dcmtk_file.h
     dcmtk_image.cxx 
     dcmtk_metadata.cxx dcmtk_metadata.h
-    dcmtk_module_general_series.cxx dcmtk_module_general_series.h
-    dcmtk_module_general_study.cxx dcmtk_module_general_study.h
-    dcmtk_module_patient.cxx dcmtk_module_patient.h
+    dcmtk_module.cxx dcmtk_module.h
     dcmtk_rdd.cxx dcmtk_rdd.h
     dcmtk_rtdose.cxx dcmtk_rtdose.h
     dcmtk_rtss.cxx dcmtk_rtss.h

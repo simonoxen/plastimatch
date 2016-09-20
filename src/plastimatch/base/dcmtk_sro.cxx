@@ -9,9 +9,7 @@
 #include "dcmtk/dcmdata/dctk.h"
 
 #include "dcmtk_metadata.h"
-#include "dcmtk_module_general_series.h"
-#include "dcmtk_module_general_study.h"
-#include "dcmtk_module_patient.h"
+#include "dcmtk_module.h"
 #include "dcmtk_sro.h"
 #include "dicom_util.h"
 #include "file_util.h"
@@ -46,13 +44,9 @@ Dcmtk_sro::save (
             "are not yet supported.\n");
     }
 
-    /* Patient module, general study module */
+    /* Patient module, general study, general series modules */
     Dcmtk_module_patient::set (dataset, rsm_fixed->get_study_metadata ());
     Dcmtk_module_general_study::set (dataset, rsm_fixed);
-    dcmtk_copy_from_metadata (dataset, rsm_fixed->get_study_metadata (),
-        DCM_StudyDescription, "");
-
-    /* General series module */
     Dcmtk_module_general_series::set_sro (dataset, rsm_fixed);
 
     /* Spatial registration specific items */

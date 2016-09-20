@@ -116,7 +116,7 @@ Dcmtk_rt_study::get_slice_data ()
     return d_ptr->slice_data;
 }
 
-Plm_image::Pointer
+Plm_image::Pointer&
 Dcmtk_rt_study::get_image ()
 {
     return d_ptr->img;
@@ -129,7 +129,7 @@ Dcmtk_rt_study::get_image_volume_float ()
 }
 
 void 
-Dcmtk_rt_study::set_image (Plm_image::Pointer image)
+Dcmtk_rt_study::set_image (const Plm_image::Pointer& image)
 {
     d_ptr->img = image;
 }
@@ -141,7 +141,7 @@ Dcmtk_rt_study::get_rtss ()
 }
 
 void 
-Dcmtk_rt_study::set_rtss (Rtss::Pointer rtss)
+Dcmtk_rt_study::set_rtss (const Rtss::Pointer& rtss)
 {
     d_ptr->rtss = rtss;
 }
@@ -153,26 +153,26 @@ Dcmtk_rt_study::get_rtplan()
 }
 
 void
-Dcmtk_rt_study::set_rtplan(Rtplan::Pointer rtplan)
+Dcmtk_rt_study::set_rtplan (const Rtplan::Pointer& rtplan)
 {
     d_ptr->rtplan = rtplan;
 }
 
-Plm_image::Pointer 
+Plm_image::Pointer&
 Dcmtk_rt_study::get_dose ()
 {
     return d_ptr->dose;
 }
 
 void 
-Dcmtk_rt_study::set_dose (Plm_image::Pointer image)
+Dcmtk_rt_study::set_dose (const Plm_image::Pointer& image)
 {
     d_ptr->dose = image;
 }
 
 void 
 Dcmtk_rt_study::set_rt_study_metadata (
-    Rt_study_metadata::Pointer rt_study_metadata)
+    const Rt_study_metadata::Pointer& rt_study_metadata)
 {
     d_ptr->rt_study_metadata = rt_study_metadata;
 }
@@ -216,7 +216,7 @@ Dcmtk_rt_study::save (const char *dicom_dir)
         this->save_dose (dicom_dir);
     }
     if (d_ptr->rtplan) {
-        this->save_rtplan(dicom_dir);
+        this->save_rtplan (dicom_dir);
     }
 }
 

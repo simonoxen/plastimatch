@@ -205,9 +205,15 @@ Rt_study_metadata::get_patient_name ()
 }
 
 void
+Rt_study_metadata::set_patient_name (const char* name)
+{
+    d_ptr->image_metadata->set_metadata (0x0010, 0x0010, name);
+}
+
+void
 Rt_study_metadata::set_patient_name (const std::string& name)
 {
-    d_ptr->image_metadata->set_metadata (0x0010, 0x0010, name.c_str());
+    set_patient_name (name.c_str());
 }
 
 const std::string& 
