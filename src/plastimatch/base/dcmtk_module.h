@@ -10,21 +10,21 @@
 
 class DcmDataset;
 
-class PLMBASE_API Dcmtk_module_patient {
+class PLMBASE_API Dcmtk_module {
 public:
-    static void set (DcmDataset *dataset, const Metadata::Pointer& meta);
-};
-
-class PLMBASE_API Dcmtk_module_general_study {
-public:
-    static void set (DcmDataset *dataset, 
+    static void set_patient (
+        DcmDataset *dataset,
+        const Metadata::Pointer& meta);
+    static void set_general_study (
+        DcmDataset *dataset, 
         const Rt_study_metadata::Pointer& rsm);
-};
-
-class PLMBASE_API Dcmtk_module_general_series {
-public:
-    static void set_sro (DcmDataset *dataset, 
+    static void set_general_series_sro (
+        DcmDataset *dataset, 
         const Rt_study_metadata::Pointer& rsm);
+    static void set_rt_series (
+        DcmDataset *dataset, 
+        const Metadata::Pointer& rsm,
+        const char* modality);
 };
 
 #endif

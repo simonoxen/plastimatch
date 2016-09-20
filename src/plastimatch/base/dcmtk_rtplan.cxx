@@ -177,6 +177,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
 
     /* Prepare varibles */
     const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
+    const Metadata::Pointer& rtplan_metadata = rsm->get_rtplan_metadata ();
 
     /* Prepare dcmtk */
     OFCondition ofc;
@@ -184,8 +185,14 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     DcmDataset *dataset = fileformat.getDataset();
 
     /* Patient module, general study module */
-    Dcmtk_module_patient::set (dataset, rsm->get_study_metadata ());
-    Dcmtk_module_general_study::set (dataset, rsm);
+    Dcmtk_module::set_patient (dataset, rsm->get_study_metadata ());
+    Dcmtk_module::set_general_study (dataset, rsm);
+
+    /* RT series module */
+    Dcmtk_module::set_rt_series (dataset, rtplan_metadata, "RTPLAN");
+
+    /* Frame of reference */
+    dataset->putAndInsertOFStringArray (DCM_Modality, "RTPLAN");
 
     /* ----------------------------------------------------------------- */
     /*     Write the output file                                         */

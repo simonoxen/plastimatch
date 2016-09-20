@@ -45,9 +45,9 @@ Dcmtk_sro::save (
     }
 
     /* Patient module, general study, general series modules */
-    Dcmtk_module_patient::set (dataset, rsm_fixed->get_study_metadata ());
-    Dcmtk_module_general_study::set (dataset, rsm_fixed);
-    Dcmtk_module_general_series::set_sro (dataset, rsm_fixed);
+    Dcmtk_module::set_patient (dataset, rsm_fixed->get_study_metadata ());
+    Dcmtk_module::set_general_study (dataset, rsm_fixed);
+    Dcmtk_module::set_general_series_sro (dataset, rsm_fixed);
 
     /* Spatial registration specific items */
     std::string sro_sop_instance_uid = dicom_uid (PLM_UID_PREFIX);

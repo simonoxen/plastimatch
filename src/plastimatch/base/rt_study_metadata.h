@@ -95,6 +95,10 @@ public:
     const Metadata::Pointer& get_dose_metadata () const;
     void set_dose_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
+    Metadata::Pointer& get_rtplan_metadata ();
+    const Metadata::Pointer& get_rtplan_metadata () const;
+    void set_rtplan_metadata (unsigned short key1, unsigned short key2,
+        const std::string& val);
     void generate_new_study_uids ();
     void generate_new_series_uids ();
 };

@@ -13,7 +13,8 @@
 #include "plm_uid_prefix.h"
 
 void
-Dcmtk_module_patient::set (DcmDataset *dataset, const Metadata::Pointer& meta)
+Dcmtk_module::set_patient (
+    DcmDataset *dataset, const Metadata::Pointer& meta)
 {
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientID, "");
@@ -22,7 +23,7 @@ Dcmtk_module_patient::set (DcmDataset *dataset, const Metadata::Pointer& meta)
 }
 
 void
-Dcmtk_module_general_study::set (
+Dcmtk_module::set_general_study (
     DcmDataset *dataset, 
     const Rt_study_metadata::Pointer& rsm)
 {
@@ -41,7 +42,7 @@ Dcmtk_module_general_study::set (
 }
 
 void
-Dcmtk_module_general_series::set_sro (
+Dcmtk_module::set_general_series_sro (
     DcmDataset *dataset, 
     const Rt_study_metadata::Pointer& rsm)
 {
@@ -51,3 +52,21 @@ Dcmtk_module_general_series::set_sro (
     dataset->putAndInsertString (DCM_SeriesNumber, "");
 }
 
+void
+Dcmtk_module::set_rt_series (
+    DcmDataset *dataset,
+    const Metadata::Pointer& meta,
+    const char* modality)
+{
+    dataset->putAndInsertOFStringArray (DCM_Modality, modality);
+    /* Series Instance UID, this gets copied from e.g. 
+        d_ptr->rt_study_metadata->get_dose_series_uid(), 
+        in order to correctly make cross references between series.
+        It is safe to set here, and allow caller to override. */
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
+        dicom_uid(PLM_UID_PREFIX).c_str());
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesNumber, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDescription, "");
+    /* Series Date, Series Time go here */
+    dataset->putAndInsertString (DCM_OperatorsName, "");
+}

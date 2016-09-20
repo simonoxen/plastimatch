@@ -10,6 +10,7 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_module.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtdose.h"
@@ -299,16 +300,26 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 {
     OFCondition ofc;
     std::string s;
-    Metadata::Pointer dose_metadata;
-    if (d_ptr->rt_study_metadata) {
-        dose_metadata = d_ptr->rt_study_metadata->get_dose_metadata ();
+    const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
+    if (!rsm) {
+        print_and_exit ("Called Dcmtk_rt_study::save_dose without valid rsm\n");
     }
+    const Metadata::Pointer& dose_metadata = rsm->get_dose_metadata ();
     Volume::Pointer dose_volume = d_ptr->dose->get_volume_float ();
 
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
     DcmItem *dcm_item = 0;
+
+    /* Patient module, general study module */
+    Dcmtk_module::set_patient (dataset, rsm->get_study_metadata ());
+    Dcmtk_module::set_general_study (dataset, rsm);
+
+    /* RT series module */
+    Dcmtk_module::set_rt_series (dataset, dose_metadata, "RTDOSE");
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
+        d_ptr->rt_study_metadata->get_dose_series_uid());
 
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
@@ -324,21 +335,11 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
         d_ptr->rt_study_metadata->get_dose_instance_uid());
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, 
-        d_ptr->rt_study_metadata->get_study_date());
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, 
-        d_ptr->rt_study_metadata->get_study_time());
-    dcmtk_copy_from_metadata (dataset, dose_metadata, 
-        DCM_StudyDescription, "");
 
-    dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
-    dataset->putAndInsertOFStringArray (DCM_Modality, "RTDOSE");
     dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
     dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
     dataset->putAndInsertString (DCM_StationName, "");
-    dcmtk_copy_from_metadata (dataset, dose_metadata, 
-        DCM_SeriesDescription, "");
     dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
 
 #if defined (commentout)
@@ -361,19 +362,10 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
         d_ptr->rt_study_metadata->get_ct_series_uid());
 
-    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientName, "");
-    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientID, "");
-    dataset->putAndInsertString (DCM_PatientBirthDate, "");
-    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_PatientSex, "O");
     dataset->putAndInsertString (DCM_SliceThickness, "");
     dataset->putAndInsertString (DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
-    dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->rt_study_metadata->get_study_uid());
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        d_ptr->rt_study_metadata->get_dose_series_uid());
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
-    dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_SeriesNumber, "1");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     
     s = string_format ("%g\\%g\\%g", dose_volume->origin[0], 

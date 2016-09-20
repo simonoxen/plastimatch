@@ -32,6 +32,7 @@ public:
     Metadata::Pointer image_metadata;
     Metadata::Pointer rtstruct_metadata;
     Metadata::Pointer dose_metadata;
+    Metadata::Pointer rtplan_metadata;
 
 public:
     Rt_study_metadata_private () {
@@ -41,11 +42,13 @@ public:
         image_metadata = Metadata::New ();
         rtstruct_metadata = Metadata::New ();
         dose_metadata = Metadata::New ();
+        rtplan_metadata = Metadata::New ();
 
         study_metadata->create_anonymous ();
         image_metadata->set_parent (study_metadata);
         rtstruct_metadata->set_parent (study_metadata);
         dose_metadata->set_parent (study_metadata);
+        rtplan_metadata->set_parent (study_metadata);
 
         this->generate_new_study_uids ();
         this->generate_new_series_uids ();
@@ -385,6 +388,27 @@ Rt_study_metadata::set_dose_metadata (
     const std::string& val
 ) {
     d_ptr->dose_metadata->set_metadata (key1, key2, val);
+}
+
+Metadata::Pointer&
+Rt_study_metadata::get_rtplan_metadata ()
+{
+    return d_ptr->rtplan_metadata;
+}
+
+const Metadata::Pointer&
+Rt_study_metadata::get_rtplan_metadata () const
+{
+    return d_ptr->rtplan_metadata;
+}
+
+void
+Rt_study_metadata::set_rtplan_metadata (
+    unsigned short key1, 
+    unsigned short key2,
+    const std::string& val
+) {
+    d_ptr->rtplan_metadata->set_metadata (key1, key2, val);
 }
 
 void
