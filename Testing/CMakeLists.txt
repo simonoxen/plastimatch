@@ -2197,7 +2197,7 @@ set_tests_properties (plm-gamma-d-check PROPERTIES DEPENDS plm-gamma-d)
 plm_add_test (
   "plm-maximum-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "maximum;--output;${PLM_BUILD_TESTING_DIR}/plm-maximum.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  "maximum;--output;${PLM_BUILD_TESTING_DIR}/plm-maximum-a.nrrd;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
   )
 plm_add_test (
   "plm-maximum-a-stats"
