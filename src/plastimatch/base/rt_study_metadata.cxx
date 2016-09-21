@@ -204,13 +204,19 @@ Rt_study_metadata::set_study_uid (const char* uid)
 const std::string& 
 Rt_study_metadata::get_patient_name ()
 {
-    return d_ptr->image_metadata->get_metadata (0x0010, 0x0010);
+    return d_ptr->study_metadata->get_metadata (0x0010, 0x0010);
 }
 
 void
 Rt_study_metadata::set_patient_name (const char* name)
 {
-    d_ptr->image_metadata->set_metadata (0x0010, 0x0010, name);
+    d_ptr->study_metadata->set_metadata (0x0010, 0x0010, name);
+
+    /* GCS FIX: Should I remove from child metadata?
+       Logically it seems necessary, but it is an ugly design 
+       that it is needed.  Existing code does not seem to rely 
+       on this, as patient name is not stored within child metadata. */
+    // d_ptr->image_metadata->remove_metadata (0x0010, 0x0010);
 }
 
 void
@@ -222,13 +228,13 @@ Rt_study_metadata::set_patient_name (const std::string& name)
 const std::string& 
 Rt_study_metadata::get_patient_id ()
 {
-    return d_ptr->image_metadata->get_metadata (0x0010, 0x0020);
+    return d_ptr->study_metadata->get_metadata (0x0010, 0x0020);
 }
 
 void
 Rt_study_metadata::set_patient_id (const std::string& id)
 {
-    d_ptr->image_metadata->set_metadata (0x0010, 0x0020, id.c_str());
+    d_ptr->study_metadata->set_metadata (0x0010, 0x0020, id.c_str());
 }
 
 const Plm_image_header*

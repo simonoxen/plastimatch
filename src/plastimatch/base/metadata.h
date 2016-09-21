@@ -43,12 +43,20 @@ public:
 #if PLM_DCM_USE_DCMTK
     const std::string& get_metadata (const DcmTagKey& key) const;
 #endif
+
     /*! \brief Copy a list of strings of the form "XXXX,YYYY=string"
       into the metadata map. */
     void set_metadata (const std::vector<std::string>& metadata);
+
+    /*! \brief Attach a parent to this metadata set.  The parent metadata
+      is used when there is no match in the child metadata. */
     void set_parent (const Metadata::Pointer& parent) {
         m_parent = parent;
     }
+
+    /*! \brief Remove a key from the metadata, if the key exists. */
+    void remove_metadata (unsigned short key1, unsigned short key2);
+
     void create_anonymous ();
     void print_metadata () const;
 

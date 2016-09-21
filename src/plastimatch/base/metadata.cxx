@@ -25,19 +25,6 @@ Metadata::~Metadata ()
 {
 }
 
-void
-Metadata::create_anonymous ()
-{
-    /* PatientsName */
-    this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
-    /* PatientID */
-    this->set_metadata (0x0010, 0x0020, dicom_anon_patient_id());
-    /* PatientSex */
-    this->set_metadata (0x0010, 0x0040, "O");
-    /* PatientPosition */
-    this->set_metadata (0x0018, 0x5100, "HFS");
-}
-
 std::string
 Metadata::make_key (unsigned short key1, unsigned short key2) const
 {
@@ -113,6 +100,25 @@ Metadata::set_metadata (const std::vector<std::string>& metadata)
         }
         ++it;
     }
+}
+
+void
+Metadata::remove_metadata (unsigned short key1, unsigned short key2)
+{
+    m_data.erase (make_key (key1, key2));
+}
+
+void
+Metadata::create_anonymous ()
+{
+    /* PatientsName */
+    this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
+    /* PatientID */
+    this->set_metadata (0x0010, 0x0020, dicom_anon_patient_id());
+    /* PatientSex */
+    this->set_metadata (0x0010, 0x0040, "O");
+    /* PatientPosition */
+    this->set_metadata (0x0018, 0x5100, "HFS");
 }
 
 void
