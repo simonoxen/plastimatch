@@ -25,6 +25,8 @@ public:
         DcmDataset *dataset, 
         const Metadata::Pointer& rsm,
         const char* modality);
+    static void set_general_equipment (
+        DcmDataset *dataset);
 };
 
 #endif

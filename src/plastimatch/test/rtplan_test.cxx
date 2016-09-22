@@ -7,6 +7,7 @@
 #include <string.h>
 #include "compiler_warnings.h"
 #include "dcmtk_rt_study.h"
+#include "string_util.h"
 
 int
 main (int argc, char *argv[])
@@ -31,6 +32,10 @@ main (int argc, char *argv[])
     rsm->set_patient_name ("Test^Rtplan");
 
     /* Fill in plan data */
+    for (size_t i = 0; i < 2; i++) {
+        std::string beam_name = string_format ("Beam %d", (int) i);
+        Rtplan_beam *beam = rtplan->add_beam (beam_name, (int) i);
+    }
 
     /* Save to file */
     drs.save (dicom_dir);

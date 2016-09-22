@@ -48,7 +48,7 @@ public:
     ~Rtplan();
     void init (void);
     void clear (void);
-    Rtplan_beam* add_beam(
+    Rtplan_beam* add_beam (
         const std::string& beam_name,         
 	int beam_id);
     void delete_beam (int index);

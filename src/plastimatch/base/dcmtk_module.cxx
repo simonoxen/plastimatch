@@ -11,6 +11,7 @@
 #include "dicom_util.h"
 #include "metadata.h"
 #include "plm_uid_prefix.h"
+#include "plm_version.h"
 
 void
 Dcmtk_module::set_patient (
@@ -69,4 +70,15 @@ Dcmtk_module::set_rt_series (
     dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDescription, "");
     /* Series Date, Series Time go here */
     dataset->putAndInsertString (DCM_OperatorsName, "");
+}
+
+void
+Dcmtk_module::set_general_equipment (DcmDataset *dataset)
+{
+    dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
+    dataset->putAndInsertString (DCM_InstitutionName, "");
+    dataset->putAndInsertString (DCM_StationName, "");
+    dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
+    dataset->putAndInsertString (DCM_SoftwareVersions,
+        PLASTIMATCH_VERSION_STRING);
 }

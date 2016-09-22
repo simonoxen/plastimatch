@@ -20,7 +20,6 @@
 #include "plm_image.h"
 #include "plm_math.h"
 #include "plm_uid_prefix.h"
-#include "plm_version.h"
 #include "print_and_exit.h"
 #include "string_util.h"
 #include "volume.h"
@@ -321,26 +320,32 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         d_ptr->rt_study_metadata->get_dose_series_uid());
 
+    /* Frame of reference module */
+    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
+        rsm->get_frame_of_reference_uid());
+    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
+
+    /* General equipment module */
+    Dcmtk_module::set_general_equipment (dataset);
+
+    /* SOP common module */
+    dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+        d_ptr->rt_study_metadata->get_dose_instance_uid());
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+        d_ptr->rt_study_metadata->get_study_date());
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+        d_ptr->rt_study_metadata->get_study_time());
+
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
     dataset->putAndInsertString (DCM_ImageType, 
         "DERIVED\\SECONDARY\\REFORMATTED");
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-        d_ptr->rt_study_metadata->get_study_date());
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-        d_ptr->rt_study_metadata->get_study_time());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
-    dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->rt_study_metadata->get_dose_instance_uid());
 
-    dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
-    dataset->putAndInsertString (DCM_InstitutionName, "");
     dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
-    dataset->putAndInsertString (DCM_StationName, "");
-    dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
 
 #if defined (commentout)
     /* (0008,1110) DCM_ReferencedStudySequence -- probably not needed */
@@ -363,8 +368,6 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
         d_ptr->rt_study_metadata->get_ct_series_uid());
 
     dataset->putAndInsertString (DCM_SliceThickness, "");
-    dataset->putAndInsertString (DCM_SoftwareVersions,
-        PLASTIMATCH_VERSION_STRING);
     dcmtk_copy_from_metadata (dataset, dose_metadata, DCM_StudyID, "10001");
     dataset->putAndInsertString (DCM_InstanceNumber, "1");
     
@@ -381,8 +384,6 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dose_volume->direction_cosines[4],
     dose_volume->direction_cosines[7]);
     dataset->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
-    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        d_ptr->rt_study_metadata->get_frame_of_reference_uid());
 
     dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
     dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");

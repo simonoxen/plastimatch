@@ -191,9 +191,49 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     /* RT series module */
     Dcmtk_module::set_rt_series (dataset, rtplan_metadata, "RTPLAN");
 
-    /* Frame of reference */
-    dataset->putAndInsertOFStringArray (DCM_Modality, "RTPLAN");
+    /* Frame of reference module */
+    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
+        rsm->get_frame_of_reference_uid());
+    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
 
+    /* General equipment module */
+    Dcmtk_module::set_general_equipment (dataset);
+
+    /* RT general plan module */
+    dataset->putAndInsertString (DCM_RTPlanLabel, "TESTONLY");
+    dataset->putAndInsertString (DCM_RTPlanName, "TESTONLY");
+    dataset->putAndInsertString (DCM_RTPlanDescription, "This is only a test");
+    dataset->putAndInsertString (DCM_RTPlanDate, "");
+    dataset->putAndInsertString (DCM_RTPlanTime, "");
+
+    /* GCS TODO: Add support for PATIENT at some point */
+    // dataset->putAndInsertString (DCM_RTPlanGeometry, "PATIENT");
+    dataset->putAndInsertString (DCM_RTPlanGeometry, "TREATMENT_DEVICE");
+
+    /* SOP common module */
+    /* GCS TODO: Figure out whether to use Plan or Ion Plan */
+    // dataset->putAndInsertString (DCM_SOPClassUID, UID_RTPlanStorage);
+    dataset->putAndInsertString (DCM_SOPClassUID, UID_RTIonPlanStorage);
+    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+        d_ptr->rt_study_metadata->get_dose_instance_uid());
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+        d_ptr->rt_study_metadata->get_study_date());
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+        d_ptr->rt_study_metadata->get_study_time());
+
+    /* GCS TODO: RT fraction scheme module, RT prescription module */
+    
+    /* RT ion beams module */
+    Rtplan::Pointer& rtplan = d_ptr->rtplan;
+    for (size_t b = 0; b < rtplan->num_beams; b++) {
+        DcmItem *ib_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_IonBeamSequence, ib_item, -2);
+        std::string s = PLM_to_string (b);
+        ib_item->putAndInsertString (DCM_BeamNumber, s.c_str());
+    }
+    
+    
     /* ----------------------------------------------------------------- */
     /*     Write the output file                                         */
     /* ----------------------------------------------------------------- */
