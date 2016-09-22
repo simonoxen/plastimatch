@@ -9,26 +9,21 @@
 
 class Rtplan_control_pt;
 
+/*! \brief 
+ * The Rtplan_beam class describes a single beam within an Rtplan.
+ */
 class PLMBASE_API Rtplan_beam {
 public:
+    /*! \brief Beam name */
     std::string name;    
-    int id;                    /* Used for import/export (must be >= 1) */
+    /*! \brief Beam description */
+    std::string description;
+    /*! \brief Used for import/export (must be >= 1) */
+    int id;
+    /*! \brief Number of control points */
     size_t num_cp;
-    Rtplan_control_pt** cplist; //control point list
-
-    //int bit;                   /* Used for ss-img (-1 for no bit) */
-    //size_t num_contours;
-    //Rtss_contour** pslist;
-
-    //isocenter position
-    //Beam weighting
-    //metersetb
-
-    //
-
-    //control points
-    
-
+    /*! \brief Control point list */
+    Rtplan_control_pt** cplist;
 
 public:
     Rtplan_beam();

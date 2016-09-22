@@ -231,8 +231,34 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             DCM_IonBeamSequence, ib_item, -2);
         std::string s = PLM_to_string (b);
         ib_item->putAndInsertString (DCM_BeamNumber, s.c_str());
+
+        Rtplan_beam *beam = rtplan->beamlist[b];
+        ib_item->putAndInsertString (DCM_BeamName, beam->name.c_str());
+        ib_item->putAndInsertString (DCM_BeamDescription,
+            beam->description.c_str());
+        ib_item->putAndInsertString (DCM_BeamType, "STATIC");
+        ib_item->putAndInsertString (DCM_RadiationType, "PROTON");
+        ib_item->putAndInsertString (DCM_ScanMode, "MODULATED_SPEC");
+        ib_item->putAndInsertString (DCM_ModulatedScanModeType,
+            "STATIONARY");
+        ib_item->putAndInsertString (DCM_TreatmentMachineName,
+            "Reference machine");
+        ib_item->putAndInsertString (DCM_PrimaryDosimeterUnit, "NP");
+        ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances,
+            "2000\\2000");
+        ib_item->putAndInsertString (DCM_TreatmentDeliveryType, "TREATMENT");
+        ib_item->putAndInsertString (DCM_NumberOfWedges, "0");
+        ib_item->putAndInsertString (DCM_NumberOfCompensators, "0");
+        ib_item->putAndInsertString (DCM_NumberOfBoli, "0");
+        ib_item->putAndInsertString (DCM_NumberOfBlocks, "0");
+        ib_item->putAndInsertString (DCM_NumberOfRangeShifters, "0");
+        ib_item->putAndInsertString (DCM_NumberOfLateralSpreadingDevices, "0");
+        ib_item->putAndInsertString (DCM_NumberOfRangeModulators, "0");
+        ib_item->putAndInsertString (DCM_PatientSupportType, "TABLE");
+
+        /* Left off on FinalCumulativeMetersetWeight, which will require 
+           actual beam information. */
     }
-    
     
     /* ----------------------------------------------------------------- */
     /*     Write the output file                                         */
