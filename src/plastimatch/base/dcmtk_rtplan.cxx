@@ -238,9 +238,12 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             beam->description.c_str());
         ib_item->putAndInsertString (DCM_BeamType, "STATIC");
         ib_item->putAndInsertString (DCM_RadiationType, "PROTON");
+        ib_item->putAndInsertString (DCM_ScanMode, "MODULATED");
+#if defined (commentout)
         ib_item->putAndInsertString (DCM_ScanMode, "MODULATED_SPEC");
         ib_item->putAndInsertString (DCM_ModulatedScanModeType,
             "STATIONARY");
+#endif
         ib_item->putAndInsertString (DCM_TreatmentMachineName,
             "Reference machine");
         ib_item->putAndInsertString (DCM_PrimaryDosimeterUnit, "NP");
