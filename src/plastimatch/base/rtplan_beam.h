@@ -30,10 +30,10 @@ public:
     ~Rtplan_beam();
 
     void clear ();
-    Rtplan_control_pt* add_control_pt(int index);
-    bool check_isocenter_identical();
+    Rtplan_control_pt* add_control_pt ();
+    bool check_isocenter_identical ();
 #if defined (commentout)
-    float* get_isocenter_pos(); //float[3], dicom coordinate    
+    float* get_isocenter_pos (); //float[3], dicom coordinate
 #endif
 };
 

@@ -437,6 +437,7 @@ bool split_tag_val (
 
 /* Explicit instantiations */
 template PLMSYS_API std::string PLM_to_string(size_t value);
+template PLMSYS_API std::string PLM_to_string(float value);
 template PLMSYS_API std::string PLM_to_string(double value);
 template PLMSYS_API std::string PLM_to_string(int *value, int n);
 template PLMSYS_API std::string PLM_to_string(double *value, int n);

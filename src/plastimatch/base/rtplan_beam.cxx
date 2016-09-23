@@ -40,19 +40,18 @@ Rtplan_beam::clear()
 }
 
 Rtplan_control_pt*
-Rtplan_beam::add_control_pt(int index)
+Rtplan_beam::add_control_pt ()
 {
     Rtplan_control_pt* new_control_pt;
 
     this->num_cp++;
-    this->cplist = (Rtplan_control_pt**)realloc (this->cplist,
+    this->cplist = (Rtplan_control_pt**) realloc (this->cplist,
         this->num_cp * sizeof(Rtplan_control_pt*));
 
     new_control_pt
         = this->cplist[this->num_cp - 1]
         = new Rtplan_control_pt;
 
-    new_control_pt->control_pt_no = index;
     return new_control_pt;
 }
 
@@ -86,31 +85,26 @@ Rtplan_beam::check_isocenter_identical()
     if (this->num_cp < 1)
         return false;
 
-    float firstIso[3];
-
-    firstIso[0] = this->cplist[0]->iso_pos[0];
-    firstIso[1] = this->cplist[0]->iso_pos[1];
-    firstIso[2] = this->cplist[0]->iso_pos[2];
-
-    float currIso[3];
+    float *firstIso = this->cplist[0]->get_isocenter();
 
     for (size_t i = 1; i < this->num_cp; i++){
-        currIso[0] = this->cplist[i]->iso_pos[0];
-        currIso[1] = this->cplist[i]->iso_pos[1];
-        currIso[2] = this->cplist[i]->iso_pos[2];
-
-        if (firstIso[0] != currIso[0] || firstIso[1] != currIso[1] || firstIso[2] != currIso[2]){
+        float *currIso = this->cplist[i]->get_isocenter();
+        if (firstIso[0] != currIso[0] || firstIso[1] != currIso[1]
+            || firstIso[2] != currIso[2])
+        {
             bSame = false;
+            break;
         }
     }
     /* list isocenter positions */
-    if (!bSame){
-        lprintf("Warning! Isocenter positions are not same across the control points!\n");
+    if (!bSame) {
+        lprintf ("Warning! Isocenter positions are not same across the control points!\n");
 
-        for (size_t i = 1; i < this->num_cp; i++){
-            lprintf("Control point idx: %d, isocenter: %3.2f / %3.2f / %3.2f. \n",
-                cplist[i]->control_pt_no, cplist[i]->iso_pos[0], cplist[i]->iso_pos[1],
-                cplist[i]->iso_pos[2]);
+        for (size_t i = 0; i < this->num_cp; i++){
+            float *iso = this->cplist[i]->get_isocenter();
+            lprintf ("Control point idx: %d,"
+                " isocenter: %3.2f / %3.2f / %3.2f. \n",
+                (int) i, iso[0], iso[1], iso[2]);
         }
     }
     return bSame;

@@ -123,12 +123,9 @@ Dcmtk_rt_study::rtplan_load(void)
         for (unsigned long j = 0; j <iNumOfCP; j++) {                
             DcmItem *c_item = cp_seq->getItem(j);
 
-            int control_pt_idx = 0;
-
             c_item->findAndGetLongInt(DCM_ControlPointIndex, iVal);
-            control_pt_idx = (int)iVal;
             //std::string strIsocenter;
-            Rtplan_control_pt* curr_cp = curr_beam->add_control_pt(control_pt_idx);
+            Rtplan_control_pt* curr_cp = curr_beam->add_control_pt ();
 
             /* ContourGeometricType */
             orc = c_item->findAndGetString(DCM_IsocenterPosition,strVal);
@@ -137,11 +134,9 @@ Dcmtk_rt_study::rtplan_load(void)
             }
 
             float iso_pos[3];
-            int rc = parse_dicom_float3(iso_pos, strVal);
+            int rc = parse_dicom_float3 (iso_pos, strVal);
             if (!rc) {
-                curr_cp->iso_pos[0] = iso_pos[0];
-                curr_cp->iso_pos[1] = iso_pos[1];
-                curr_cp->iso_pos[2] = iso_pos[2];
+                curr_cp->set_isocenter (iso_pos);
             }
             strVal = 0;
 
@@ -178,6 +173,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     /* Prepare varibles */
     const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
     const Metadata::Pointer& rtplan_metadata = rsm->get_rtplan_metadata ();
+    std::string s; // Dummy string
 
     /* Prepare dcmtk */
     OFCondition ofc;
@@ -229,7 +225,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         DcmItem *ib_item = 0;
         dataset->findOrCreateSequenceItem (
             DCM_IonBeamSequence, ib_item, -2);
-        std::string s = PLM_to_string (b);
+        s = PLM_to_string (b);
         ib_item->putAndInsertString (DCM_BeamNumber, s.c_str());
 
         Rtplan_beam *beam = rtplan->beamlist[b];
@@ -259,8 +255,28 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         ib_item->putAndInsertString (DCM_NumberOfRangeModulators, "0");
         ib_item->putAndInsertString (DCM_PatientSupportType, "TABLE");
 
-        /* Left off on FinalCumulativeMetersetWeight, which will require 
-           actual beam information. */
+        /* GCS TODO: Still need FinalCumulativeMetersetWeight */
+
+        s = PLM_to_string (beam->num_cp);
+        ib_item->putAndInsertString (DCM_NumberOfControlPoints, s.c_str());
+        for (size_t c = 0; c < beam->num_cp; c++) {
+            DcmItem *cp_item = 0;
+            dataset->findOrCreateSequenceItem (
+                DCM_IonControlPointSequence, cp_item, -2);
+            s = PLM_to_string (c);
+            cp_item->putAndInsertString (DCM_ControlPointIndex, s.c_str());
+
+            Rtplan_control_pt *cp = beam->cplist[c];
+            s = PLM_to_string (cp->cumulative_meterset_weight);
+            cp_item->putAndInsertString (DCM_CumulativeMetersetWeight,
+                s.c_str());
+            s = PLM_to_string (cp->nominal_beam_energy);
+            cp_item->putAndInsertString (DCM_NominalBeamEnergy, s.c_str());
+            s = PLM_to_string (cp->gantry_angle);
+            cp_item->putAndInsertString (DCM_GantryAngle, s.c_str());
+            cp_item->putAndInsertString (DCM_GantryRotationDirection,
+                cp->gantry_rotation_direction.c_str());
+        }
     }
     
     /* ----------------------------------------------------------------- */

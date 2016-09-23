@@ -140,7 +140,9 @@ beamdata_gen_gui::beamdata_gen_gui(QWidget *parent, Qt::WFlags flags)
         for (int j = 0; j < iCntCP; j++)
         {
             float* cur_iso_pos = curBeam->cplist[j]->get_isocenter();
-            cout << "Beam ID: " << curBeam->id << ", Control point ID: " << curBeam->cplist[j]->control_pt_no << ", Isocenter pos : " << cur_iso_pos[0] << "/" << cur_iso_pos[1] << "/" << cur_iso_pos[2] << endl;
+            cout << "Beam ID: " << curBeam->id
+                << ", Control point ID: " << j
+                << ", Isocenter pos : " << cur_iso_pos[0] << "/" << cur_iso_pos[1] << "/" << cur_iso_pos[2] << endl;
 
             if (i == 0 && j == 0) //choose first beam's isocenter
                 final_iso_pos = curBeam->cplist[j]->get_isocenter();
