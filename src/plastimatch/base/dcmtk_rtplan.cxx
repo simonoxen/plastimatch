@@ -276,6 +276,16 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             cp_item->putAndInsertString (DCM_GantryAngle, s.c_str());
             cp_item->putAndInsertString (DCM_GantryRotationDirection,
                 cp->gantry_rotation_direction.c_str());
+
+            /* Dcmtk has no putAndInsertFloat32Array, so we must 
+               use more primitive methods */
+            DcmFloatingPointSingle *fele
+                = new DcmFloatingPointSingle (DCM_ScanSpotPositionMap);
+            Float32 f[2];
+            f[0] = 0.53;
+            f[1] = 1.02;
+            ofc = fele->putFloat32Array (f, 2);
+            ofc = cp_item->insert (fele);
         }
     }
     
