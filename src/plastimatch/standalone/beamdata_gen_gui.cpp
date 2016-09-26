@@ -123,7 +123,7 @@ beamdata_gen_gui::beamdata_gen_gui(QWidget *parent, Qt::WFlags flags)
         return;
     }
 
-    int iCntBeam = rtplan->num_beams;
+    int iCntBeam = rtplan->beamlist.size();
     if (iCntBeam < 1)
     {
         cout << "Error! no beam is found" << endl;
@@ -135,12 +135,11 @@ beamdata_gen_gui::beamdata_gen_gui(QWidget *parent, Qt::WFlags flags)
     {
         Rtplan_beam *curBeam = rtplan->beamlist[i];
 
-        int iCntCP = curBeam->num_cp;
-
+        int iCntCP = curBeam->cplist.size();
         for (int j = 0; j < iCntCP; j++)
         {
             float* cur_iso_pos = curBeam->cplist[j]->get_isocenter();
-            cout << "Beam ID: " << curBeam->id
+            cout << "Beam ID: " << j
                 << ", Control point ID: " << j
                 << ", Isocenter pos : " << cur_iso_pos[0] << "/" << cur_iso_pos[1] << "/" << cur_iso_pos[2] << endl;
 

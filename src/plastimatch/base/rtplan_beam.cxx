@@ -14,10 +14,6 @@
 
 Rtplan_beam::Rtplan_beam()
 {
-    this->id = -1;    
-    this->name = "";
-    this->cplist = 0;
-    this->num_cp = 0;
 }
 
 Rtplan_beam::~Rtplan_beam()
@@ -28,30 +24,21 @@ Rtplan_beam::~Rtplan_beam()
 void
 Rtplan_beam::clear()
 {  
-    for (size_t i = 0; i < this->num_cp; i++) {
+    this->name = "";
+    this->description = "";
+    this->final_cumulative_meterset_weight = 0.f;
+
+    for (size_t i = 0; i < this->cplist.size(); i++) {
         delete this->cplist[i];
     }
-    free(this->cplist);
-
-    this->name = "";    
-    this->id = -1;
-    this->cplist = 0;
-    this->num_cp = 0;
+    this->cplist.clear ();
 }
 
 Rtplan_control_pt*
 Rtplan_beam::add_control_pt ()
 {
-    Rtplan_control_pt* new_control_pt;
-
-    this->num_cp++;
-    this->cplist = (Rtplan_control_pt**) realloc (this->cplist,
-        this->num_cp * sizeof(Rtplan_control_pt*));
-
-    new_control_pt
-        = this->cplist[this->num_cp - 1]
-        = new Rtplan_control_pt;
-
+    Rtplan_control_pt* new_control_pt = new Rtplan_control_pt;
+    this->cplist.push_back (new_control_pt);
     return new_control_pt;
 }
 
@@ -82,12 +69,12 @@ bool
 Rtplan_beam::check_isocenter_identical()
 {
     bool bSame = true;
-    if (this->num_cp < 1)
+    if (this->cplist.size() < 1) {
         return false;
-
+    }
     float *firstIso = this->cplist[0]->get_isocenter();
 
-    for (size_t i = 1; i < this->num_cp; i++){
+    for (size_t i = 1; i < this->cplist.size(); i++){
         float *currIso = this->cplist[i]->get_isocenter();
         if (firstIso[0] != currIso[0] || firstIso[1] != currIso[1]
             || firstIso[2] != currIso[2])
@@ -100,7 +87,7 @@ Rtplan_beam::check_isocenter_identical()
     if (!bSame) {
         lprintf ("Warning! Isocenter positions are not same across the control points!\n");
 
-        for (size_t i = 0; i < this->num_cp; i++){
+        for (size_t i = 0; i < this->cplist.size(); i++){
             float *iso = this->cplist[i]->get_isocenter();
             lprintf ("Control point idx: %d,"
                 " isocenter: %3.2f / %3.2f / %3.2f. \n",

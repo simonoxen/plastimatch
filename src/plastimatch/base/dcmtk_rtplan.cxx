@@ -15,6 +15,7 @@
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtplan.h"
 #include "dcmtk_series.h"
+#include "dcmtk_util.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "metadata.h"
@@ -221,7 +222,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     
     /* RT ion beams module */
     Rtplan::Pointer& rtplan = d_ptr->rtplan;
-    for (size_t b = 0; b < rtplan->num_beams; b++) {
+    for (size_t b = 0; b < rtplan->beamlist.size(); b++) {
         DcmItem *ib_item = 0;
         dataset->findOrCreateSequenceItem (
             DCM_IonBeamSequence, ib_item, -2);
@@ -256,12 +257,13 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         ib_item->putAndInsertString (DCM_PatientSupportType, "TABLE");
 
         /* GCS TODO: Still need FinalCumulativeMetersetWeight */
+        dcmtk_put (ib_item, DCM_FinalCumulativeMetersetWeight,
+            beam->final_cumulative_meterset_weight);
 
-        s = PLM_to_string (beam->num_cp);
-        ib_item->putAndInsertString (DCM_NumberOfControlPoints, s.c_str());
-        for (size_t c = 0; c < beam->num_cp; c++) {
+        dcmtk_put (ib_item, DCM_NumberOfControlPoints, beam->cplist.size());
+        for (size_t c = 0; c < beam->cplist.size(); c++) {
             DcmItem *cp_item = 0;
-            dataset->findOrCreateSequenceItem (
+            ib_item->findOrCreateSequenceItem (
                 DCM_IonControlPointSequence, cp_item, -2);
             s = PLM_to_string (c);
             cp_item->putAndInsertString (DCM_ControlPointIndex, s.c_str());
@@ -279,14 +281,33 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
 
             /* Dcmtk has no putAndInsertFloat32Array, so we must 
                use more primitive methods */
-            DcmFloatingPointSingle *fele
-                = new DcmFloatingPointSingle (DCM_ScanSpotPositionMap);
+            size_t num_spots = cp->scan_spot_position_map.size() / 2;
+            if (num_spots != cp->scan_spot_meterset_weights.size()) {
+                lprintf ("Warning, scan spot positions (%d) and weights (%d)"
+                    " are mismatched.\n", 
+                    (int) cp->scan_spot_position_map.size(),
+                    (int) cp->scan_spot_meterset_weights.size());
+                if (cp->scan_spot_meterset_weights.size() < num_spots) {
+                    num_spots = cp->scan_spot_meterset_weights.size();
+                }
+            }
+            DcmFloatingPointSingle *fele;
+            Float32 *f;
+            fele = new DcmFloatingPointSingle (DCM_ScanSpotPositionMap);
 #if __cplusplus >= 201103L
-            Float32 *f = cp->scan_spot_position_map.data ();
+            f = cp->scan_spot_position_map.data ();
 #else
-            Float32 *f = &cp->scan_spot_position_map[0];
+            f = &cp->scan_spot_position_map[0];
 #endif
-            ofc = fele->putFloat32Array (f, 2);
+            ofc = fele->putFloat32Array (f, 2*num_spots);
+            ofc = cp_item->insert (fele);
+            fele = new DcmFloatingPointSingle (DCM_ScanSpotMetersetWeights);
+#if __cplusplus >= 201103L
+            f = cp->scan_spot_meterset_weights.data ();
+#else
+            f = &cp->scan_spot_meterset_weights[0];
+#endif
+            ofc = fele->putFloat32Array (f, num_spots);
             ofc = cp_item->insert (fele);
         }
     }

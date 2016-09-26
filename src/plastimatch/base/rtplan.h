@@ -21,17 +21,8 @@ class PLMBASE_API Rtplan {
 public:
     SMART_POINTER_SUPPORT(Rtplan);
 public:
-    /* Patient information [to be implemented]*/
-    /* std::string patient_ID;
-     std::string patient_Name;
-     std::string plan_name;
-     std::string plan_description;
-     std::string plan_date;
-     std::string TPS_manufacturer;*/
-
     /* Structures */
-    size_t num_beams;
-    Rtplan_beam **beamlist;
+    std::vector<Rtplan_beam*> beamlist;
 public:
     Rtplan();
     ~Rtplan();
@@ -41,7 +32,7 @@ public:
         const std::string& beam_name,         
 	int beam_id);
     void delete_beam (int index);
-    Rtplan_beam* find_beam_by_id (int structure_id);
+    Rtplan_beam* find_beam_by_id (size_t index);
     std::string get_beam_name (size_t index);
     void set_beam_name (size_t index, const std::string& name);
     void debug (void);

@@ -18,12 +18,11 @@ public:
     std::string name;    
     /*! \brief Beam description */
     std::string description;
-    /*! \brief Used for import/export (must be >= 1) */
-    int id;
-    /*! \brief Number of control points */
-    size_t num_cp;
+    /*! \brief Meterset at end of all control points */
+    float final_cumulative_meterset_weight;
+
     /*! \brief Control point list */
-    Rtplan_control_pt** cplist;
+    std::vector<Rtplan_control_pt*> cplist;
 
 public:
     Rtplan_beam();

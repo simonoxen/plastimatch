@@ -19,7 +19,6 @@
 
 Rtplan::Rtplan()
 {
-    this->init ();
 }
 
 Rtplan::~Rtplan()
@@ -30,19 +29,16 @@ Rtplan::~Rtplan()
 void
 Rtplan::init(void)
 {
-    this->num_beams = 0;
-    this->beamlist = 0;
+    this->clear ();
 }
 
 void
 Rtplan::clear(void)
 {
-    for (size_t i = 0; i < this->num_beams; i++) {
-        delete (this->beamlist[i]);
+    for (size_t i = 0; i < this->beamlist.size(); i++) {
+        delete this->beamlist[i];
     }
-    free(this->beamlist);
-
-    this->init ();
+    this->beamlist.clear ();
 }
 
 /* Add structure (if it doesn't already exist) */
@@ -58,42 +54,29 @@ Rtplan::add_beam (
         return new_beam;
     }
 
-    this->num_beams++;
-    this->beamlist = (Rtplan_beam **) realloc (this->beamlist, 
-        this->num_beams * sizeof(Rtplan_beam*));
-    new_beam 
-	= this->beamlist[this->num_beams - 1] 
-	= new Rtplan_beam;
-
+    new_beam = new Rtplan_beam;
     new_beam->name = beam_name;
     if (beam_name == "") {
         new_beam->name = "Unknown beam";
     }
     new_beam->name = string_trim (new_beam->name);
-    new_beam->id = beam_id;
 
+    this->beamlist.push_back (new_beam);
     return new_beam;
 }
 
 void
 Rtplan::delete_beam(int index)
 {
-    Rtplan_beam* curr_beam = this->beamlist[index];
-    delete curr_beam;
-
-    this->beamlist[index] = this->beamlist[this->num_beams - 1];
-    this->num_beams--;
+    delete this->beamlist[index];
+    this->beamlist.erase (this->beamlist.begin() + index);
 }
 
 Rtplan_beam*
-Rtplan::find_beam_by_id (int beam_id)
+Rtplan::find_beam_by_id (size_t index)
 {
-    for (size_t i = 0; i < this->num_beams; i++) {
-	Rtplan_beam* curr_beam;
-	curr_beam = this->beamlist[i];
-	if (curr_beam->id == beam_id) {
-	    return curr_beam;
-	}
+    if (index < this->beamlist.size()) {
+        return this->beamlist[index];
     }
     return 0;
 }
@@ -101,16 +84,16 @@ Rtplan::find_beam_by_id (int beam_id)
 void 
 Rtplan::set_beam_name (size_t index, const std::string& name)
 {
-    if (index < this->num_beams) {
-        this->beamlist[index]->name = name.c_str();
+    if (index < this->beamlist.size()) {
+        this->beamlist[index]->name = name;
     }
 }
 
 std::string
 Rtplan::get_beam_name(size_t index)
 {
-    if (index < this->num_beams) {
-        return std::string (this->beamlist[index]->name.c_str());
+    if (index < this->beamlist.size()) {
+        return this->beamlist[index]->name;
     } else {
         return "";
     }

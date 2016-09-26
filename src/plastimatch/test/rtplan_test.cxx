@@ -52,14 +52,14 @@ main (int argc, char *argv[])
                 cp->meterset_rate = 400;
                 cp->snout_position = snout_pos;
 
-                cp->scan_spot_position_map.push_back (-10 - seg);
-                cp->scan_spot_position_map.push_back (-10);
-                cp->scan_spot_position_map.push_back (+10 + seg);
-                cp->scan_spot_position_map.push_back (-10);
-                cp->scan_spot_position_map.push_back (-10 - seg);
-                cp->scan_spot_position_map.push_back (+10);
-                cp->scan_spot_position_map.push_back (+10 + seg);
-                cp->scan_spot_position_map.push_back (+10);
+                cp->scan_spot_position_map.push_back (-10.f - seg);
+                cp->scan_spot_position_map.push_back (-10.f);
+                cp->scan_spot_position_map.push_back (+10.f + seg);
+                cp->scan_spot_position_map.push_back (-10.f);
+                cp->scan_spot_position_map.push_back (-10.f - seg);
+                cp->scan_spot_position_map.push_back (+10.f);
+                cp->scan_spot_position_map.push_back (+10.f + seg);
+                cp->scan_spot_position_map.push_back (+10.f);
 
                 cp->scan_spot_meterset_weights.push_back (5);
                 cp->scan_spot_meterset_weights.push_back (5);
@@ -68,6 +68,7 @@ main (int argc, char *argv[])
             }
             cum_gp += gp;
         }
+        beam->final_cumulative_meterset_weight = cum_gp;
     }
 
     /* Save to file */
