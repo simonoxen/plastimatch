@@ -281,9 +281,11 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
                use more primitive methods */
             DcmFloatingPointSingle *fele
                 = new DcmFloatingPointSingle (DCM_ScanSpotPositionMap);
-            Float32 f[2];
-            f[0] = 0.53;
-            f[1] = 1.02;
+#if __cplusplus >= 201103L
+            Float32 *f = cp->scan_spot_position_map.data ();
+#else
+            Float32 *f = &cp->scan_spot_position_map[0];
+#endif
             ofc = fele->putFloat32Array (f, 2);
             ofc = cp_item->insert (fele);
         }
