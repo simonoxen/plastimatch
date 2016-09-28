@@ -341,9 +341,11 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     )
 
   # Make the targets file
-  export (EXPORT PlastimatchLibraryDepends
-    FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake"
-    )
+  if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.0)
+    export (EXPORT PlastimatchLibraryDepends
+      FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake"
+      )
+  endif ()
   
   # Make the config file
   configure_file (
