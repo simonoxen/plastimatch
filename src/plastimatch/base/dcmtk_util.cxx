@@ -40,5 +40,12 @@ dcmtk_put (DcmItem* item, const DcmTag &tag, T t)
     return item->putAndInsertString (tag, s.c_str());
 }
 
-template PLMBASE_API OFCondition dcmtk_put (DcmItem*, const DcmTag &, float);
+OFCondition
+dcmtk_put (DcmItem* item, const DcmTag &tag, const std::string& s)
+{
+    return item->putAndInsertString (tag, s.c_str());
+}
+
+template PLMBASE_API OFCondition dcmtk_put (DcmItem*, const DcmTag &, int);
 template PLMBASE_API OFCondition dcmtk_put (DcmItem*, const DcmTag &, size_t);
+template PLMBASE_API OFCondition dcmtk_put (DcmItem*, const DcmTag &, float);

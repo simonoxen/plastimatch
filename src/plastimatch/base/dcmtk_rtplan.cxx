@@ -175,6 +175,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
     const Metadata::Pointer& rtplan_metadata = rsm->get_rtplan_metadata ();
     std::string s; // Dummy string
+    Rtplan::Pointer& rtplan = d_ptr->rtplan;
 
     /* Prepare dcmtk */
     OFCondition ofc;
@@ -218,10 +219,50 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
         d_ptr->rt_study_metadata->get_study_time());
 
-    /* GCS TODO: RT fraction scheme module, RT prescription module */
-    
+    /* RT prescription module * GCS TODO */
+        
+    /* RT tolerance tables */
+    if (rtplan->tolerance_table_label != "") {
+        DcmItem *iots_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_IonToleranceTableSequence, iots_item, -2);
+        dcmtk_put (iots_item, DCM_ToleranceTableNumber, 0);
+        dcmtk_put (iots_item, DCM_ToleranceTableLabel,
+            rtplan->tolerance_table_label);
+        dcmtk_put (iots_item, DCM_GantryAngleTolerance,
+            rtplan->tolerance_gantry_angle);
+        dcmtk_put (iots_item, DCM_PatientSupportAngleTolerance,
+            rtplan->tolerance_patient_support_angle);
+        dcmtk_put (iots_item, DCM_TableTopVerticalPositionTolerance,
+            rtplan->tolerance_table_top_vertical);
+        dcmtk_put (iots_item, DCM_TableTopLongitudinalPositionTolerance,
+            rtplan->tolerance_table_top_longitudinal);
+        dcmtk_put (iots_item, DCM_TableTopLateralPositionTolerance,
+            rtplan->tolerance_table_top_lateral);
+        dcmtk_put (iots_item, DCM_SnoutPositionTolerance,
+            rtplan->tolerance_snout_position);
+    }
+        
+    /* RT fraction scheme module */
+    DcmItem *fgs_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_FractionGroupSequence, fgs_item, -2);
+    dcmtk_put (fgs_item, DCM_FractionGroupNumber, 0);
+    dcmtk_put (fgs_item, DCM_NumberOfFractionsPlanned,
+        rtplan->number_of_fractions_planned);
+    dcmtk_put (fgs_item, DCM_NumberOfBeams, rtplan->beamlist.size());
+    for (size_t b = 0; b < rtplan->beamlist.size(); b++) {
+        DcmItem *rbs_item = 0;
+        fgs_item->findOrCreateSequenceItem (
+            DCM_ReferencedBeamSequence, rbs_item, -2);
+        dcmtk_put (rbs_item, DCM_ReferencedBeamNumber, b);
+        Rtplan_beam *beam = rtplan->beamlist[b];
+        dcmtk_put (rbs_item, DCM_BeamMeterset, 
+            beam->final_cumulative_meterset_weight);
+    }
+    dcmtk_put (fgs_item, DCM_NumberOfBrachyApplicationSetups, 0);
+
     /* RT ion beams module */
-    Rtplan::Pointer& rtplan = d_ptr->rtplan;
     for (size_t b = 0; b < rtplan->beamlist.size(); b++) {
         DcmItem *ib_item = 0;
         dataset->findOrCreateSequenceItem (
@@ -244,6 +285,9 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         ib_item->putAndInsertString (DCM_TreatmentMachineName,
             "Reference machine");
         ib_item->putAndInsertString (DCM_PrimaryDosimeterUnit, "NP");
+        if (rtplan->tolerance_table_label != "") {
+            dcmtk_put (ib_item, DCM_ReferencedToleranceTableNumber, 0);
+        }
         ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances,
             "2000\\2000");
         ib_item->putAndInsertString (DCM_TreatmentDeliveryType, "TREATMENT");
@@ -251,12 +295,47 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         ib_item->putAndInsertString (DCM_NumberOfCompensators, "0");
         ib_item->putAndInsertString (DCM_NumberOfBoli, "0");
         ib_item->putAndInsertString (DCM_NumberOfBlocks, "0");
+        if (rtplan->snout_id != "") {
+            DcmItem *snout_item = 0;
+            ib_item->findOrCreateSequenceItem (
+                DCM_SnoutSequence, snout_item, -2);
+            snout_item->putAndInsertString (DCM_SnoutID,
+                rtplan->snout_id.c_str());
+        }
+        if (rtplan->general_accessory_id != "") {
+            DcmItem *ga_item = 0;
+            ib_item->findOrCreateSequenceItem (
+                DCM_GeneralAccessorySequence, ga_item, -2);
+            ga_item->putAndInsertString (DCM_GeneralAccessoryNumber, "0");
+            ga_item->putAndInsertString (DCM_GeneralAccessoryID,
+                rtplan->general_accessory_id.c_str());
+            ga_item->putAndInsertString (DCM_AccessoryCode,
+                rtplan->general_accessory_code.c_str());
+        }
+        if (rtplan->range_shifter_id != "") {
+            DcmItem *rs_item = 0;
+            ib_item->findOrCreateSequenceItem (
+                DCM_RangeShifterSequence, rs_item, -2);
+            rs_item->putAndInsertString (DCM_RangeShifterNumber, "0");
+            rs_item->putAndInsertString (DCM_RangeShifterID,
+                rtplan->range_shifter_id.c_str());
+            rs_item->putAndInsertString (DCM_AccessoryCode,
+                rtplan->range_shifter_code.c_str());
+        }
+        if (rtplan->range_modulator_id != "") {
+            DcmItem *rm_item = 0;
+            ib_item->findOrCreateSequenceItem (
+                DCM_RangeModulatorSequence, rm_item, -2);
+            rm_item->putAndInsertString (DCM_RangeModulatorNumber, "0");
+            rm_item->putAndInsertString (DCM_RangeModulatorID,
+                rtplan->range_modulator_id.c_str());
+            rm_item->putAndInsertString (DCM_AccessoryCode,
+                rtplan->range_modulator_code.c_str());
+        }
         ib_item->putAndInsertString (DCM_NumberOfRangeShifters, "0");
         ib_item->putAndInsertString (DCM_NumberOfLateralSpreadingDevices, "0");
         ib_item->putAndInsertString (DCM_NumberOfRangeModulators, "0");
         ib_item->putAndInsertString (DCM_PatientSupportType, "TABLE");
-
-        /* GCS TODO: Still need FinalCumulativeMetersetWeight */
         dcmtk_put (ib_item, DCM_FinalCumulativeMetersetWeight,
             beam->final_cumulative_meterset_weight);
 
@@ -310,23 +389,23 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             ofc = fele->putFloat32Array (f, num_spots);
             ofc = cp_item->insert (fele);
         }
-    }
+        }
     
-    /* ----------------------------------------------------------------- */
-    /*     Write the output file                                         */
-    /* ----------------------------------------------------------------- */
-    std::string filename;
-    if (d_ptr->filenames_with_uid) {
-        filename = string_format ("%s/rtplan_%s.dcm", dicom_dir,
-            d_ptr->rt_study_metadata->get_dose_series_uid());
-    } else {
-        filename = string_format ("%s/rtplan.dcm", dicom_dir);
-    }
-    make_parent_directories (filename);
+            /* ----------------------------------------------------------------- */
+            /*     Write the output file                                         */
+            /* ----------------------------------------------------------------- */
+            std::string filename;
+            if (d_ptr->filenames_with_uid) {
+            filename = string_format ("%s/rtplan_%s.dcm", dicom_dir,
+                d_ptr->rt_study_metadata->get_dose_series_uid());
+        } else {
+            filename = string_format ("%s/rtplan.dcm", dicom_dir);
+        }
+            make_parent_directories (filename);
 
-    ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
-    if (ofc.bad()) {
-        print_and_exit ("Error: cannot write DICOM RTPLAN (%s)\n", 
-            ofc.text());
-    }
-}
+            ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
+            if (ofc.bad()) {
+            print_and_exit ("Error: cannot write DICOM RTPLAN (%s)\n", 
+                ofc.text());
+        }
+        }

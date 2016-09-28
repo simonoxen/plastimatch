@@ -17,5 +17,7 @@ dcmtk_get_date_time (
 
 PLMBASE_API template<class T> OFCondition
 dcmtk_put (DcmItem*, const DcmTag &, T);
+PLMBASE_API OFCondition
+dcmtk_put (DcmItem*, const DcmTag &, const std::string&);
 
 #endif

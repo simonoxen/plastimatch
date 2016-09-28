@@ -21,7 +21,21 @@ class PLMBASE_API Rtplan {
 public:
     SMART_POINTER_SUPPORT(Rtplan);
 public:
-    /* Structures */
+    size_t number_of_fractions_planned;
+    std::string snout_id;
+    std::string general_accessory_id;
+    std::string general_accessory_code;
+    std::string range_shifter_id;
+    std::string range_shifter_code;
+    std::string range_modulator_id;
+    std::string range_modulator_code;
+    std::string tolerance_table_label;
+    std::string tolerance_gantry_angle;
+    std::string tolerance_patient_support_angle;
+    std::string tolerance_table_top_vertical;
+    std::string tolerance_table_top_longitudinal;
+    std::string tolerance_table_top_lateral;
+    std::string tolerance_snout_position;
     std::vector<Rtplan_beam*> beamlist;
 public:
     Rtplan();
