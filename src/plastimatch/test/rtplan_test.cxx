@@ -57,6 +57,8 @@ main (int argc, char *argv[])
         std::string beam_name = string_format ("Beam %d", (int) i);
         Rtplan_beam *beam = rtplan->add_beam (beam_name, (int) i);
         beam->description = string_format ("Beam %d description", (int) i);
+        beam->beam_dose_specification_point = "0\\-10.5\\0";
+        beam->beam_dose = 2.f;
 
         float cum_gp = 0.f;
         for (size_t seg = 0; seg < 3; seg++) {

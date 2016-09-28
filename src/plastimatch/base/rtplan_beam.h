@@ -20,6 +20,10 @@ public:
     std::string description;
     /*! \brief Meterset at end of all control points */
     float final_cumulative_meterset_weight;
+    /*! \brief Coordiates of point where beam dose is specified */
+    std::string beam_dose_specification_point;
+    /*! \brief Dose in Gy at beam specification point */
+    float beam_dose;
 
     /*! \brief Control point list */
     std::vector<Rtplan_control_pt*> cplist;

@@ -259,6 +259,10 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         Rtplan_beam *beam = rtplan->beamlist[b];
         dcmtk_put (rbs_item, DCM_BeamMeterset, 
             beam->final_cumulative_meterset_weight);
+	dcmtk_put (rbs_item, DCM_BeamDoseSpecificationPoint, 
+	    beam->beam_dose_specification_point);
+	dcmtk_put (rbs_item, DCM_BeamDose,
+	    beam->beam_dose);
     }
     dcmtk_put (fgs_item, DCM_NumberOfBrachyApplicationSetups, 0);
 
