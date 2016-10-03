@@ -20,6 +20,7 @@ set (PLMBASE_LIBRARY_SRC
   bspline_interpolate.cxx bspline_interpolate.h
   bspline_warp.cxx bspline_warp.h
   bspline_xform.cxx bspline_xform.h
+  bspline_xform_legacy.cxx bspline_xform_legacy.h
   clamp.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h
