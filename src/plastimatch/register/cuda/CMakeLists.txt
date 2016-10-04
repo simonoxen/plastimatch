@@ -57,7 +57,7 @@ set (PLMREGISTERCUDA_LIBRARY_SRC
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
 set (PLMREGISTERCUDA_LIBRARY_DEPENDENCIES
-  plmbase plmcuda ${PLM_CUDA_LIBRARIES})
+  plmutil plmbase plmcuda ${PLM_CUDA_LIBRARIES})
 if (PLM_BUILD_VISCOUS)
   set (PLMREGISTERCUDA_LIBRARY_DEPENDENCIES 
     ${PLMREGISTERCUDA_LIBRARY_DEPENDENCIES}
