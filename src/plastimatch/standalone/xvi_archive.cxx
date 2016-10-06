@@ -89,11 +89,13 @@ do_xvi_archive (Xvi_archive_parms *parms)
                 string_format ("%s.INI.XVI", recon_uid.c_str()));
             break;
         }
+        printf ("Recon dir is \"%s\".\n", recon_dir.c_str());
         if (scan_fn == ""
             || !file_exists (scan_fn) 
             || !file_exists (recon_ini_fn)
             || !file_exists (recon_xvi_fn))
         {
+            printf ("Missing file in Recon dir.  Skipping.\n");
             continue;
         }
 
@@ -178,6 +180,10 @@ do_xvi_archive (Xvi_archive_parms *parms)
         std::string registration_string = 
             recon_xvi.Get ("ALIGNMENT", "OnlineToRefTransformCorrection", "");
         printf ("correction xform = %s\n", registration_string.c_str());
+        if (unmatched_transform_string == "") {
+            printf ("No unmatched xform for this CBCT.  Skipping.\n");
+            continue;
+        }
 
         /* Load the .SCAN */
         Rt_study cbct_study;
@@ -237,25 +243,21 @@ do_xvi_archive (Xvi_archive_parms *parms)
         float dc[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
         if (patient_position == "HFS") {
             /* Do nothing */
-            //continue;
         }
         else if (patient_position == "HFP") {
             // dc = { -1, 0, 0, 0, -1, 0, 0, 0, 1 };
             dc[0] = dc[4] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
-            //continue;
         }
         else if (patient_position == "FFS") {
             // dc = { -1, 0, 0, 0, 1, 0, 0, 0, -1 };
             dc[0] = dc[8] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
-            //continue;
         }
         else if (patient_position == "FFP") {
             // dc = { 1, 0, 0, 0, -1, 0, 0, 0, -1 };
             dc[4] = dc[8] = -1;
             cbct_study.get_image()->get_volume()->set_direction_cosines (dc);
-            //continue;
         }
         else {
             /* Punt */
@@ -452,16 +454,11 @@ do_xvi_archive (Xvi_archive_parms *parms)
             xf->save ("xf.tfm");
         }
         
-#if defined (commentout)
-#endif
-
         Dcmtk_sro::save (
             xf,
             reference_study->get_rt_study_metadata (),
             cbct_study.get_rt_study_metadata (),
             output_dir, true);
-
-        //break;
     }
 }
 
