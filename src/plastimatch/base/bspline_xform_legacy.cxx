@@ -33,7 +33,6 @@ bspline_xform_legacy_load (const char* filename)
         goto free_exit;
     }
 
-
     /* Read header */
     rc = fscanf (fp, "img_origin = %f %f %f\n", 
         &img_origin[0], &img_origin[1], &img_origin[2]);

@@ -1,4 +1,26 @@
 ******************************************************************************
+Slice_list
+2016-10-05
+
+Used in:
+
+base/dcmtk_rtss.cxx
+base/rtss.cxx
+base/rtss.h
+base/rt_study_metadata.cxx
+
+Slice_list is encapsulated inside rt_study_metadata.cxx.
+- The get/set image_header function is based on Slice_list
+- slice_list_apply
+-- What does it mean?
+--- called on rtss 
+-- When is it called
+- slice_list_complete
+-- What does it mean?
+--- set_image_header() and set_slice_list_complete() both were called
+-- When is it called
+
+******************************************************************************
 register_gui
 2016-09-01
 
@@ -802,68 +824,6 @@ rt_study.save ("output_directory");
 
 PatientPosition ?
 StudyID ?
-
-***** Slice list, slice index *****
-
-Slice_list
-    bool m_loaded;
-    Plm_image_header m_pih;
-    std::vector<Pstring> m_ct_slice_uids;
-
-Slice_index
-    bool m_loaded;
-    Plm_image_header m_pih;
-    Metadata m_demographics;
-    Pstring m_study_id;
-    Pstring m_ct_study_uid;
-    Pstring m_ct_series_uid;
-    Pstring m_ct_fref_uid;
-    std::vector<Pstring> m_ct_slice_uids;
-
-Dicom_rt_study --> Rename to Rt_study_metadata
-    bool m_loaded;
-    Plm_image_header m_pih;
-
-    std::string date_string;
-    std::string time_string;
-    std::string ct_series_uid;
-    std::string dose_instance_uid;
-    std::string dose_series_uid;
-    std::string for_uid;
-    std::string rtss_instance_uid;
-    std::string rtss_series_uid;
-    std::string study_uid;
-    Slice_list slice_list;
-
-    Metadata study_metadata;
-    Metadata image_metadata;
-    Metadata rtss_metadata;
-    Metadata dose_metadata;
-
--- References
-
-Slice_index
-    cxt_io
-        UIDs are loaded and saved
-    dcmtk_rdd
-    dicom_util
-    gdcm1_dose
-    gdcm1_rdd
-    gdcm1_rtss
-        UIDs, image header, demographics are loaded
-    itk_dicom_save
-    itk_image_save (cxx only)
-    plm_image
-    rtss
-    xio_ct (h only)
-    xio_ct_transform
-    rt_study
-    segmentation
-
-Slice_list
-    dicom_rt_study
-    rtss
-
 
 ***** Rtss, rtss_structure_set, ... *****
 
