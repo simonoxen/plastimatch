@@ -34,9 +34,9 @@ for i=1:length(interp_idx)
     rpm_out.time(this_idx+i) = ...
         (rpm.time(this_idx) + rpm.time(this_idx+1)) / 2;
     rpm_out.valid(this_idx+i) = 0;
-    rpm_out.ttlin(this_idx+i) = rpm_out.ttlin(this_idx);
+    rpm_out.ttlin(this_idx+i) = rpm.ttlin(this_idx);
     rpm_out.mark(this_idx+i) = 0;
-    rpm_out.ttlout(this_idx+i) = rpm_out.ttlout(this_idx);
+    rpm_out.ttlout(this_idx+i) = rpm.ttlout(this_idx);
     
 
     %% Copy over values that don't need interpolation
