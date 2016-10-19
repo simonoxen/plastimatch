@@ -3,7 +3,11 @@ DICOM export entry points
 2016-10-19
 
 
+Rt_study::save_dcmtk
+Dcmtk_rt_study::save
+
 Rt_study::save_gdcm
+Segmentation::save_gdcm_rtss
 
 
 ******************************************************************************

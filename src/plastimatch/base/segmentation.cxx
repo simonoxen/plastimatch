@@ -694,6 +694,14 @@ Segmentation::prune_empty (void)
 }
 
 void
+Segmentation::keyholize ()
+{
+    if (d_ptr->m_rtss && d_ptr->m_rtss_valid) {
+        d_ptr->m_rtss->keyholize ();
+    }
+}
+
+void
 Segmentation::rasterize (
     Plm_image_header *pih,
     bool want_labelmap,

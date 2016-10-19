@@ -46,7 +46,7 @@ Rt_study::save_dcmtk (const char *dicom_dir, bool filenames_with_uid)
            logic should be improved to better keep track of 
            when structure names are valid to avoid this. */
         d_ptr->m_seg->prune_empty ();
-
+        d_ptr->m_seg->keyholize ();
         drs.set_rtss (d_ptr->m_seg->get_structure_set());
     }
     drs.set_dose (d_ptr->m_dose);
