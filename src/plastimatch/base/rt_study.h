@@ -115,7 +115,7 @@ public:
 
     bool have_segmentation ();
     Segmentation::Pointer get_segmentation ();
-    void set_segmentation (Segmentation::Pointer segmentation);
+    void set_segmentation (Segmentation::Pointer seg);
 
     void add_structure (
         const UCharImageType::Pointer& itk_image, 

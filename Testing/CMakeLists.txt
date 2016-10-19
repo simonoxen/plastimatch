@@ -1435,8 +1435,8 @@ set_tests_properties (plm-convert-dicom-f PROPERTIES DEPENDS "rect-1;rect2")
 ## These tests are designed to check the handling of overlapping structures 
 ## in DICOM-RT format.  The tests assume that the original synthetic donut 
 ## DICOM-RT files are generated without keyholing.
-##   plastimatch-convert-dicom-donut-a   From DICOM to ss-img (or semantics)
-##   plastimatch-convert-dicom-donut-b   From DICOM to ss-img (xor semantics)
+##   plm-convert-dicom-donut-a   From DICOM to ss-img (or semantics)
+##   plm-convert-dicom-donut-b   From DICOM to ss-img (xor semantics)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-donut-a"
@@ -1487,12 +1487,12 @@ set_tests_properties (plm-convert-dicom-donut-b-check PROPERTIES
 ## These tests are designed to check the handling of overlapping structures 
 ## in DICOM-RT format.  Converts donut topology structure into keyholized 
 ## rtstruct.
-##   plastimatch-convert-dicom-donut-c   From ss-img to DICOM
+##   plm-convert-dicom-donut-c   From ss-img to DICOM
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-dicom-donut-c"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-c"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--dicom-with-uids;false;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-c"
   )
 set_tests_properties (plm-convert-dicom-donut-c PROPERTIES DEPENDS donut-1)
 
