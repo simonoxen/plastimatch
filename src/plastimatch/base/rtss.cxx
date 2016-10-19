@@ -557,7 +557,6 @@ Rtss::set_geometry (
 void
 Rtss::keyholize (void)
 {
-#if defined (PLM_CONFIG_KEYHOLIZE)
     lprintf ("Keyholizing...\n");
 
     /* Loop through structures */
@@ -635,5 +634,4 @@ Rtss::keyholize (void)
 	    }
 	}
     }
-#endif
 }

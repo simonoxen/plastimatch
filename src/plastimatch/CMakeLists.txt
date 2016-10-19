@@ -16,7 +16,6 @@ option (PLM_CONFIG_DISABLE_VISCOUS
     "Disable experimental viscous fluid registration algorithm" ON)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
     "Enable experimental plastimatch_qt executable" OFF)
-option (PLM_CONFIG_KEYHOLIZE "Enable RT structure keyholization" OFF)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
     "Prefer to use the patched version of certain ITK files" ON)
 option (PLM_CONFIG_VOL_LIST

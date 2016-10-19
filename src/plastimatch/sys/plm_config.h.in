@@ -45,7 +45,6 @@
 
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
-#cmakedefine PLM_CONFIG_KEYHOLIZE 1
 #cmakedefine PLM_CONFIG_USE_PATCHED_ITK 1
 #cmakedefine PLM_CONFIG_VOL_LIST 1
 
