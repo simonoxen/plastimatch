@@ -293,9 +293,15 @@ else ()
   endif ()
 endif ()
 if (PLM_PREFER_SYSTEM_DLIB)
-    find_package (Dlib)
-    # The cmake file supplied by debian is broken
-    # find_package (dlib)
+  # Use this version if you want to use the internal cmake find. 
+  # The internal version has issue finding the correct BLAS library
+  # for Debian, so we prefer Debian version.
+  # find_package (Dlib)
+  
+  # However, the Debian cmake find is broken.  Its breakage can
+  # be worked around by setting dlib_BINARY_DIR.
+  set (dlib_BINARY_DIR 1)
+  find_package (dlib)
 endif ()
 find_package (Etags)
 #find_package (Fann)
@@ -554,7 +560,9 @@ if (PLM_SUPERBUILD)
   endif ()
 endif ()
 if (ITK_FOUND)
+  message (STATUS "Loading ITK USE file")
   include (${ITK_USE_FILE})
+  message (STATUS "Completed load of ITK USE file")
   set (ITK_VERSION 
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
   if (${ITK_VERSION} VERSION_LESS "3.16.0")
@@ -582,8 +590,7 @@ message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
 ##-----------------------------------------------------------------------------
 ##  GDCM
 ##-----------------------------------------------------------------------------
-# If we have ITK, then we will use GDCM 
-if (ITK_FOUND)
+if (NOT DCMTK_FOUND AND ITK_FOUND)
   # The default case is that ITK_USE_SYSTEM_GDCM was used, 
   # the gdcm use file was already loaded from UseITK.cmake, and therefore
   # GDCM_VERSION is already known.  If this is not the case, we look 
@@ -624,12 +631,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Figure out if we should use gdcm or dcmtk
 ##-----------------------------------------------------------------------------
-##  GCS Temporary hack
-##  -- I had moved this to the src/plastimatch directory, but it needs to 
-##     be used to configure the tests as well...
-##  -- The final solution is probably to move Testing into src/plastimatch
-##-----------------------------------------------------------------------------
-
 set (PLM_DCM_USE_DCMTK 0)
 set (PLM_DCM_USE_GDCM1 0)
 set (PLM_DCM_USE_GDCM2 0)
@@ -642,21 +643,22 @@ else ()
     set (PLM_DCM_USE_GDCM1 1)
 endif ()
 
-
 ##-----------------------------------------------------------------------------
 ##  VTK
 ##-----------------------------------------------------------------------------
-find_package (VTK)
-if (VTK_FOUND)
-  message (STATUS "VTK version ${VTK_VERSION}")
-else ()
-  message (STATUS "VTK not found")
+if (NOT PLM_CONFIG_DISABLE_REG23)
+  find_package (VTK)
+  if (VTK_FOUND)
+    message (STATUS "VTK version ${VTK_VERSION}")
+  else ()
+    message (STATUS "VTK not found")
+  endif ()
+  # GCS 2012-05-14: Including VTK_USE_FILE causes VTK to pollute the 
+  # include directory list, which causes cuda to fail to compile
+  #if (VTK_FOUND)
+  #  include (${VTK_USE_FILE})
+  #endif ()
 endif ()
-# GCS 2012-05-14: Including VTK_USE_FILE causes VTK to pollute the 
-# include directory list, which causes cuda to fail to compile
-#if (VTK_FOUND)
-#  include (${VTK_USE_FILE})
-#endif ()
 
 ##-----------------------------------------------------------------------------
 ##  QT
