@@ -560,9 +560,16 @@ if (PLM_SUPERBUILD)
   endif ()
 endif ()
 if (ITK_FOUND)
-  message (STATUS "Loading ITK USE file")
+  # GCS 2016-10-20
+  # The GDCM USE file spews out copious extraneous warnings on Debian.
+  # If we are not using GDCM, this might be avoided by setting
+  # ITK_USE_SYSTEM_GDCM to FALSE.  However, this has the undesirable
+  # effect of removing gdcm includes from include list and gdcm libraries
+  # from library list.
+  #if (DCMTK_FOUND)
+  # set (ITK_USE_SYSTEM_GDCM FALSE)
+  #endif ()
   include (${ITK_USE_FILE})
-  message (STATUS "Completed load of ITK USE file")
   set (ITK_VERSION 
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
   if (${ITK_VERSION} VERSION_LESS "3.16.0")
