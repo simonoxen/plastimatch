@@ -1936,7 +1936,7 @@ set_tests_properties (plm-warp-xio-a-check-6 PROPERTIES DEPENDS plm-warp-xio-a)
 plm_add_test (
   "plm-convert-prefix-fcsv"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-ss-1.mha;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv"
+  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv"
   )
 set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS donut-1)
 
