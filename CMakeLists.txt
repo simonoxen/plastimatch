@@ -301,7 +301,7 @@ if (PLM_PREFER_SYSTEM_DLIB)
   # However, the Debian cmake find is broken.  Its breakage can
   # be worked around by setting dlib_BINARY_DIR.
   set (dlib_BINARY_DIR 1)
-  find_package (dlib)
+  find_package (dlib QUIET)
 endif ()
 find_package (Etags)
 #find_package (Fann)
@@ -366,8 +366,6 @@ add_subdirectory (libs/devillard)
 ##  If using local dlib
 ##-----------------------------------------------------------------------------
 if (NOT DLIB_FOUND)
-    message (STATUS ">> NO DLIB FOUND")
-    # set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-18.7")
     set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
     set (DLIB_LIBRARIES "")
     set (DLIB_HAVE_LIBRARY FALSE)
