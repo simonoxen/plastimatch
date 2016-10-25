@@ -557,13 +557,13 @@ Rtss::set_geometry (
 void
 Rtss::keyholize (void)
 {
-    lprintf ("Keyholizing...\n");
-
     /* Loop through structures */
     for (int i = 0; i < this->num_structures; i++) {
+        lprintf ("Keyholizing structure %d.\n", i);
 	Rtss_roi *curr_structure = this->slist[i];
 
 	/* Find groups of contours which lie on the same slice */
+	/* GCS FIX: This algorithm does not work on tilted slices */
 	std::vector<bool> used_contours;
 	used_contours.assign (curr_structure->num_contours, false);
 
@@ -594,15 +594,28 @@ Rtss::keyholize (void)
 
 	    /* We have now found a group */
 	    lprintf ("Keyholizing group:");
-	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+	    for (size_t k = 0; k < group_contours.size(); k++) {
 		lprintf (" %d", group_contours[k]);
 	    }
 	    lprintf ("\n");
 
+	    /* Find xmin for each contour in group */
+	    std::vector<float> group_xmin;
+            group_xmin.assign (group_contours.size(), FLT_MAX);
+            for (size_t k = 0; k < group_contours.size(); k++) {
+		int cidx = group_contours[k];
+		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
+		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+		    if (curr_polyline->x[l] < group_xmin[k]) {
+                        group_xmin[k] = curr_polyline->x[l];
+		    }
+		}
+            }
+            
 	    /* Find an outermost contour in group */
 	    int cidx_xmin = -1;
 	    float xmin = FLT_MAX;
-	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+	    for (size_t k = 0; k < group_contours.size(); k++) {
 		int cidx = group_contours[k];
 		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
 
@@ -618,19 +631,31 @@ Rtss::keyholize (void)
 		    xmin = curr_xmin;
 		}
 	    }
-	    
+
+#if defined (commentout)
+            Rtss_contour *outer_polyline = curr_structure->pslist[
+#endif
+	    lprintf ("Outermost contour %d, x=%f\n", cidx_xmin, xmin);
+
 	    /* Loop through other contours, find contours contained 
 	       in this contour */
-	    for (unsigned int k = 0; k < group_contours.size(); k++) {
+	    for (size_t k = 0; k < group_contours.size(); k++) {
 		int cidx = group_contours[k];
 		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
 		if (cidx == cidx_xmin) {
 		    continue;
 		}
 
-		float x = curr_polyline->x[0];
-		float y = curr_polyline->y[0];
-		
+#if defined (commentout)
+                /* Got to make a DAG ... ugh! */
+                if (contour_in_contour (curr_polyline, ...)
+#endif
+                    
+		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+                    float x = curr_polyline->x[0];
+                    float y = curr_polyline->y[0];
+                    
+		}
 	    }
 	}
     }
