@@ -172,8 +172,9 @@ if (strcmp(rpm.version,'DAT 1.4'))
     rpm.ttlin = rpm_data(:,6);
     rpm.beam = rpm_data(:,7);
 elseif (strcmp(rpm.version,'DAT 1.7'))
-    %% <Signal_Value>,<Phase_Value>,<Timestamp>,<Valid_Flag>,<Video_Idx>,
-    %%   <TTL_In>,<Beam_On>
+    %% <Signal_Value>,<Unknown>,<Unknown>,<Phase_Value>,
+    %%   <Timestamp>,<Valid_Flag>,<Video_Idx>,
+    %%   <TTL_In>,<Beam_On>,<Unknown>,<Unknown>
     while (1)
         %% Store this line into p, break if end
 	s = fgets(fp);
