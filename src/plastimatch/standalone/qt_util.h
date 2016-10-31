@@ -15,6 +15,7 @@ using namespace std;
 class QStandardItemModel;
 class gamma_gui;
 
+
 namespace QUTIL{    
     void Set2DTo3D(FloatImage2DType::Pointer& spSrcImg2D, UShortImageType::Pointer& spTargetImg3D, int idx, enPLANE iDirection);    
 
@@ -73,11 +74,8 @@ namespace QUTIL{
 
     void ResampleFloatImg(FloatImageType::Pointer& spFloatInput, FloatImageType::Pointer& spFloatOutput, VEC3D& newSpacing);
 
-
+    const char *c_str (const QString& s);
 };
-
-
-
 
 #define NUM_OF_TBL_ITEM_JET 64
 #define NUM_OF_TBL_ITEM_GAMMA 100

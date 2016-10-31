@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <QString>
 #include <QFileDialog>
@@ -24,8 +27,6 @@
 #include "register_gui.h"
 #include "register_gui_load_dialog.h"
 
-using namespace std;
-
 register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
 {
@@ -46,9 +47,9 @@ register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     InitTableQue(DEFAULT_MAXNUM_QUE, DEFAULT_NUM_COLUMN_QUE);
 
     /*if (m_pArrThreadRegi != NULL)
-    {
-        DeleteRemainingThreads();
-    }*/
+      {
+      DeleteRemainingThreads();
+      }*/
 
     m_pArrThreadRegi = new YKThreadRegi*[m_iNumOfThreadAll]; //200 threads object, double pointer
     for (int i = 0; i < m_iNumOfThreadAll; i++)
@@ -92,7 +93,7 @@ void register_gui::InitConfig()
         QSettings::UserScope, /* Get user directory, not system direcory */
         "Plastimatch",        /* Orginazation name (subfolder within path) */
         "register_gui"        /* Application name (file name with subfolder) */
-        );
+    );
 
     QString strPathTemplateBase = QFileInfo(tmpSetting.fileName()).absolutePath();//C:\Users\ykp1\AppData\Roaming/plastimatch. however, the directory was not found
     m_strPathCommandTemplateDir = strPathTemplateBase + "/" + "CommandTemplate";    
@@ -151,19 +152,18 @@ register_gui::~register_gui()
 
 void register_gui::SLT_SetDefaultDir()
 {    
-    QString dirPath = QFileDialog::getExistingDirectory(this, tr("Open Work Directory"),
-        m_strPathDirDefault, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);   
-
+    QString dirPath = QFileDialog::getExistingDirectory (
+        this, tr("Open Work Directory"),
+        m_strPathDirDefault,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);   
 
     if (dirPath.length() < 1)
         return;    
     
     dirPath.replace(QString("\\"), QString("/"));
     SetWorkDir(dirPath);
-
     WriteDefaultConfig();
 }
-
 
 void register_gui::SLT_SetDefaultViewer()
 {
@@ -279,7 +279,30 @@ register_gui::SLT_LoadImages()
         return;
     }
 
-    ui.statusBar->showMessage(load_dlg->get_fixed_pattern());
+    Job_group_type action_pattern = load_dlg->get_action_pattern ();
+    QString fixed_pattern = load_dlg->get_fixed_pattern ();
+    QString moving_pattern = load_dlg->get_moving_pattern ();
+    bool repeat_for_peers = load_dlg->get_repeat_for_peers ();
+
+    printf ("Action: %d\n", action_pattern);
+    printf ("Fixed:  %s\n", fixed_pattern.toUtf8().constData());
+    printf ("Moving: %s\n", moving_pattern.toUtf8().constData());
+    printf ("Repeat: %s\n", repeat_for_peers ? "true" : "false");
+
+    m_actions.append (action_pattern);
+    m_strlistPath_Fixed.append (fixed_pattern);
+    m_strlistPath_Moving.append (moving_pattern);
+
+    /*for (int i = 0; i < iCntPaths; i++)
+    {      
+        QFileInfo tmpInfo = QFileInfo(m_strlistPath_Fixed.at(i));
+        m_strlistBaseName_Fixed.push_back(tmpInfo.fileName());
+    }*/
+
+    UpdateBaseAndComboFromFullPath();
+    UpdateTable_Main(DATA2GUI); //When updating table, also do it for combo boxes
+    
+//    ui.statusBar->showMessage(load_dlg->get_fixed_pattern());
     
     // Process modal dialog
     delete load_dlg;
@@ -447,11 +470,11 @@ void register_gui::EmptyTableModel(QStandardItemModel* pTableModel)
 //When updating table, also do it for combo boxes
 void register_gui::UpdateTable_Main(enUpdateDirection updateDirection)
 {   
-  /*  if (m_pTableModel != NULL)
-    {
+    /*  if (m_pTableModel != NULL)
+        {
         delete m_pTableModel;
         m_pTableModel = NULL;
-    }*/
+        }*/
 
     if (m_pTableModelMain == NULL)
     {
@@ -490,13 +513,13 @@ void register_gui::UpdateTable_Main(enUpdateDirection updateDirection)
     if (updateDirection == DATA2GUI)
     {
         /*   if (iCntFixed > 0)
-               ui.comboBox_Fixed->clear();
+             ui.comboBox_Fixed->clear();
 
-               if (iCntMoving > 0)
-               ui.comboBox_Moving->clear();
+             if (iCntMoving > 0)
+             ui.comboBox_Moving->clear();
 
-               if (iCntCommand > 0)
-               ui.comboBox_Command->clear();   */
+             if (iCntCommand > 0)
+             ui.comboBox_Command->clear();   */
 
         //Clear the table
         EmptyTableModel(m_pTableModelMain); //set all text ""
@@ -505,21 +528,21 @@ void register_gui::UpdateTable_Main(enUpdateDirection updateDirection)
         {            
             QString strFixed = m_strlistBaseName_Fixed.at(i);
             m_pTableModelMain->setItem(i, 0, new QStandardItem(strFixed));
-          //  ui.comboBox_Fixed->addItem(strFixed);
+            //  ui.comboBox_Fixed->addItem(strFixed);
         }
 
         for (int i = 0; i < iCntMoving; i++)
         {
             QString strMoving = m_strlistBaseName_Moving.at(i);
             m_pTableModelMain->setItem(i, 1, new QStandardItem(strMoving));
-          //  ui.comboBox_Moving->addItem(strMoving);
+            //  ui.comboBox_Moving->addItem(strMoving);
         }    
 
         for (int i = 0; i < iCntCommand; i++)
         {
             QString strCommand = m_strlistBaseName_Command.at(i);
             m_pTableModelMain->setItem(i, 2, new QStandardItem(strCommand));
-         //   ui.comboBox_Command->addItem(strCommand);
+            //   ui.comboBox_Command->addItem(strCommand);
         }
     }
     else if (updateDirection == GUI2DATA) //mostly, renaming command files
@@ -1259,7 +1282,76 @@ void register_gui::SLT_AddMultipleToQueByPermu()
     UpdateTable_Que();
 }
 
-void register_gui::AddSingleToQue(QString& strPathFixed, QString& strPathMoving, QString& strPathCommand)
+void
+register_gui::get_image_files (
+    QStringList& image_list,
+    const QString& pattern,
+    bool repeat_for_peers)
+{
+    QFileInfo file_info (pattern);
+    if (!file_info.exists ()) {
+        return;
+    }
+    else if (file_info.isFile ()) {
+        image_list.append (pattern);
+    }
+    else if (file_info.isDir ()) {
+        QDir dir (pattern);
+        QFileInfoList file_list = dir.entryInfoList (QDir::Files, QDir::Name);
+        for (QFileInfoList::const_iterator i = file_list.begin ();
+             i != file_list.end (); ++i)
+        {
+            printf ("FIXED: %s\n", QUTIL::c_str(i->fileName()));
+        }
+    }
+}
+
+void
+register_gui::SLT_QueueJobs ()
+{
+    int num_actions = std::min (
+        m_actions.count(),
+        std::min (
+            m_strlistPath_Fixed.count(),
+            m_strlistPath_Moving.count()));
+    int num_commands = m_strlistPath_Command.count();
+    printf ("Queuing jobs %d %d\n", num_actions, num_commands);
+    
+
+    bool repeat_for_peers = false;
+    for (int i = 0; i < num_actions; i++) {
+        Job_group_type action_pattern = m_actions.at(i);
+        QString fixed_pattern = m_strlistPath_Fixed.at(i);
+        QString moving_pattern = m_strlistPath_Moving.at(i);
+        if (fixed_pattern == "" || moving_pattern == "")
+        {
+            printf ("Refused to queue ill-formed job\n");
+            continue;
+        }
+
+        // Action pattern = f2m
+        QStringList fixed_images;
+        QStringList moving_images;
+        if (action_pattern == JOB_GROUP_MOVING_TO_FIXED) {
+            get_image_files (fixed_images, fixed_pattern, repeat_for_peers);
+        }
+
+        for (int j = 0; j < num_commands; j++) {
+            QString strCommand = m_strlistPath_Command.at(j);
+
+            printf ("Action: %d\n", action_pattern);
+            printf ("Fixed:  %s\n", fixed_pattern.toUtf8().constData());
+            printf ("Moving: %s\n", moving_pattern.toUtf8().constData());
+
+            // Do something
+        }
+    }
+    UpdateTable_Que();
+}
+
+void
+register_gui::AddSingleToQue (
+    QString& strPathFixed, QString& strPathMoving, QString& strPathCommand)
 {
     QFileInfo finfo_fixed, finfo_moving, finfo_command;
     finfo_fixed = QFileInfo(strPathFixed);
@@ -1277,7 +1369,7 @@ void register_gui::AddSingleToQue(QString& strPathFixed, QString& strPathMoving,
     }
     else
     {
-        cout << "Error! some files don't exist! ExistFlag: fixed-moving-command= " << finfo_fixed.exists() << ", " <<
+        cout << "Error! some files don't exist! ExistFlag: fixed-moving-command= x" << finfo_fixed.exists() << ", " <<
             finfo_moving.exists() << ", " <<
             finfo_command.exists() << endl;
         return;
@@ -2373,3 +2465,5 @@ void register_gui::ExportDataPool(QString& strPathExportTxt)
     fout << "%COMMAND_FILE_END%" << endl;
     fout.close();
 }
+
+

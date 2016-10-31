@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>858</width>
+    <width>903</width>
     <height>913</height>
    </rect>
   </property>
@@ -182,6 +182,13 @@
                <widget class="QPushButton" name="pushButton_SortSelected">
                 <property name="text">
                  <string>Sort selected column</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButton_QueueJobs">
+                <property name="text">
+                 <string>Queue jobs</string>
                 </property>
                </widget>
               </item>
@@ -585,8 +592,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>858</width>
-     <height>19</height>
+     <width>903</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuView">
@@ -1197,6 +1204,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_QueueJobs</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_QueueJobs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>214</x>
+     <y>338</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>451</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_SetDefaultDir()</slot>
@@ -1235,5 +1258,6 @@
   <slot>SLT_ItemClickedMain()</slot>
   <slot>SLT_ItemClickedQue()</slot>
   <slot>SLT_LoadImages()</slot>
+  <slot>SLT_QueueJobs()</slot>
  </slots>
 </ui>

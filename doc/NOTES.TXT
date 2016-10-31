@@ -1,14 +1,62 @@
 ******************************************************************************
+register_gui
+2016-10-31
+
+A) Multiple jobs, each with one fixed and one moving
+
+   job1/fix.mha
+   job1/mov.mha
+   job2/fix.mha
+   job2/mov.mha
+
+*) Choose job1/fix.mha as fixed
+*) Choose job1/mov.mha as moving
+*) Click on "repeat for peer directories"
+
+B) Multiple jobs, each with one fixed and many moving
+
+   job1/fix.mha
+   job1/mov1.mha
+   job1/mov2.mha
+   job2/fix.mha
+   job2/mov1.mha
+   job2/mov2.mha
+
+*) Choose job1/fix.mha as fixed
+*) Choose job1 as moving
+*) Click on "repeat for peer directories"
+
+C) Multiple jobs, all-to-all
+
+   job1/img1.mha
+   job1/img2.mha
+   job1/img3.mha
+   job2/img1.mha
+   job2/img2.mha
+   job2/img3.mha
+
+*) Choose job1 as fixed
+*) Click on "repeat for peer directories"
+
+D) All-to-all with different directories
+
+   dir/p1/img.mha
+   dir/p2/img.mha
+   dir/p3/img.mha
+
+*) Choose dir as fixed
+*) Click "recurse"
+*) Unclick "repeat for peer directories"
+
+******************************************************************************
 DICOM export entry points
 2016-10-19
-
 
 Rt_study::save_dcmtk
 Dcmtk_rt_study::save
 
 Rt_study::save_gdcm
 Segmentation::save_gdcm_rtss
-
 
 ******************************************************************************
 Slice_list

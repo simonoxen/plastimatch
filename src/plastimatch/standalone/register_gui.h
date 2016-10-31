@@ -1,17 +1,17 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef REGISTER_GUI_H
 #define REGISTER_GUI_H
 
+#include <vector>
+#include <QMutex>
+#include <QTime>
+#include <QStringList>
 #include <QtGui/QMainWindow>
 #include "ui_register_gui.h"
-#include <QStringList>
-#include <vector>
 #include "yk_config.h"
 #include "YKThreadRegi.h"
-#include <QMutex>
-
-#include <QTime>
-
-using namespace std;
 
 class QStandardItemModel;
 class YKThreadRegi;
@@ -23,6 +23,13 @@ public:
     QString m_group;
     QString m_path;
     QString m_role;
+};
+
+enum Job_group_type
+{
+    JOB_GROUP_MOVING_TO_FIXED,
+    JOB_GROUP_ALL_TO_FIXED,
+    JOB_GROUP_ALL_TO_ALL
 };
 
 class register_gui : public QMainWindow
@@ -136,7 +143,16 @@ public slots:
     void SLTM_ImportDataPool();
     void SLTM_ExportDataPool();
 
+    void SLT_QueueJobs ();
+
+protected:
+    void get_image_files (
+        QStringList& image_list,
+        const QString& pattern,
+        bool repeat_for_peers);
+
 public:
+    QList<Job_group_type> m_actions;
     QStringList m_strlistPath_Fixed;
     QStringList m_strlistPath_Moving;
     QStringList m_strlistPath_Command;

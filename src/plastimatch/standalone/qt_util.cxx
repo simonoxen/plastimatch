@@ -1550,3 +1550,8 @@ void QUTIL::ResampleFloatImg(FloatImageType::Pointer& spFloatInput, FloatImageTy
     }  
 }
 
+const char *
+QUTIL::c_str (const QString& s)
+{
+    return s.toUtf8().constData();
+}
