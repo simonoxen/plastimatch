@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>903</width>
+    <width>941</width>
     <height>913</height>
    </rect>
   </property>
@@ -83,52 +83,44 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QGroupBox" name="groupBox_6">
+             <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
-               <string>Que single</string>
+               <string>Registration pattern</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_5">
                <item>
-                <layout class="QGridLayout" name="gridLayout">
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_6">
+                <layout class="QVBoxLayout" name="verticalLayout_16">
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_m2f">
                    <property name="text">
-                    <string>Fixed</string>
+                    <string>Moving to fixed</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QComboBox" name="comboBox_Fixed">
-                   <property name="duplicatesEnabled">
+                   <property name="checked">
                     <bool>true</bool>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">buttonGroup_actionPattern</string>
+                   </attribute>
                   </widget>
                  </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="comboBox_Moving"/>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLabel" name="label_7">
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_a2f">
                    <property name="text">
-                    <string>Moving</string>
+                    <string>All to fixed</string>
                    </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">buttonGroup_actionPattern</string>
+                   </attribute>
                   </widget>
                  </item>
-                 <item row="2" column="2">
-                  <widget class="QComboBox" name="comboBox_Command"/>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QLabel" name="label_8">
+                 <item>
+                  <widget class="QRadioButton" name="radioButton_a2a">
                    <property name="text">
-                    <string>Command file</string>
+                    <string>All to all</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="3">
-                  <widget class="QPushButton" name="pushButton_QueSingle">
-                   <property name="text">
-                    <string>Send to Que</string>
-                   </property>
+                   <attribute name="buttonGroup">
+                    <string notr="true">buttonGroup_actionPattern</string>
+                   </attribute>
                   </widget>
                  </item>
                 </layout>
@@ -137,54 +129,68 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_7">
+             <widget class="QGroupBox" name="groupBox_Images">
               <property name="title">
-               <string>Que multiple</string>
+               <string>Images</string>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <layout class="QVBoxLayout" name="verticalLayout_17">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_9">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_QueByLine">
+                <layout class="QGridLayout" name="gridLayout">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_13">
                    <property name="text">
-                    <string>Que all lines</string>
+                    <string>Fixed pattern</string>
                    </property>
                   </widget>
                  </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_QueByPermutation">
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEdit_fixedPattern"/>
+                 </item>
+                 <item row="0" column="2">
+                  <widget class="QPushButton" name="pushButton_browseFixed">
                    <property name="text">
-                    <string>Que permutation</string>
+                    <string>Browse</string>
                    </property>
                   </widget>
                  </item>
-                 <item>
-                  <spacer name="horizontalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_14">
+                   <property name="text">
+                    <string>Moving pattern</string>
                    </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="lineEdit_movingPattern"/>
+                 </item>
+                 <item row="1" column="2">
+                  <widget class="QPushButton" name="pushButton_browseMoving">
+                   <property name="text">
+                    <string>Browse</string>
                    </property>
-                  </spacer>
+                  </widget>
                  </item>
                 </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="checkBox_repeatForPeers">
+                 <property name="text">
+                  <string>Repeat for peer directories</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pushButton_addImages">
+                 <property name="text">
+                  <string>Add images</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QPushButton" name="pushButton_SortSelected">
-                <property name="text">
-                 <string>Sort selected column</string>
-                </property>
-               </widget>
-              </item>
               <item>
                <widget class="QPushButton" name="pushButton_QueueJobs">
                 <property name="text">
@@ -592,7 +598,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>903</width>
+     <width>941</width>
      <height>22</height>
     </rect>
    </property>
@@ -600,7 +606,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad_images"/>
     <addaction name="actionLoad_fixed_images"/>
     <addaction name="actionLoad_moving_images"/>
     <addaction name="actionLoad_command_files"/>
@@ -709,54 +714,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_QueSingle</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_AddSingleToQue()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>343</x>
-     <y>202</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>568</x>
-     <y>180</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_QueByLine</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_AddMultipleToQueByLine()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>49</x>
-     <y>263</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>8</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_QueByPermutation</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_AddMultipleToQueByPermu()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>202</x>
-     <y>266</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>6</x>
-     <y>261</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>actionLoad_fixed_images</sender>
    <signal>triggered()</signal>
    <receiver>register_guiClass</receiver>
@@ -849,22 +806,6 @@
     <hint type="destinationlabel">
      <x>572</x>
      <y>349</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_SortSelected</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_SortSelectedColumn()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>129</x>
-     <y>307</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>913</x>
-     <y>71</y>
     </hint>
    </hints>
   </connection>
@@ -1220,6 +1161,54 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_browseFixed</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_BrowseFixedPattern()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>317</x>
+     <y>320</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>470</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_browseMoving</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_BrowseMovingPattern()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>317</x>
+     <y>353</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>470</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_addImages</sender>
+   <signal>released()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_AddImages()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>194</x>
+     <y>415</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>470</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_SetDefaultDir()</slot>
@@ -1259,5 +1248,11 @@
   <slot>SLT_ItemClickedQue()</slot>
   <slot>SLT_LoadImages()</slot>
   <slot>SLT_QueueJobs()</slot>
+  <slot>SLT_AddImages()</slot>
+  <slot>SLT_BrowseFixedPattern()</slot>
+  <slot>SLT_BrowseMovingPattern()</slot>
  </slots>
+ <buttongroups>
+  <buttongroup name="buttonGroup_actionPattern"/>
+ </buttongroups>
 </ui>

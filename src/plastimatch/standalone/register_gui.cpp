@@ -25,7 +25,6 @@
 
 #include "qt_util.h"
 #include "register_gui.h"
-#include "register_gui_load_dialog.h"
 
 register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags)
@@ -271,6 +270,7 @@ void register_gui::InitTableMain(int rowCnt, int columnCnt)
 void
 register_gui::SLT_LoadImages()
 {
+#if defined (commentout)
     // Display modal dialog
     // TODO, make modeless
     Register_gui_load_dialog *load_dlg = new Register_gui_load_dialog;
@@ -306,6 +306,7 @@ register_gui::SLT_LoadImages()
     
     // Process modal dialog
     delete load_dlg;
+#endif
 }
 
 void register_gui::SLT_LoadFixedFiles()
@@ -348,15 +349,13 @@ void register_gui::SLT_LoadFixedFiles()
     m_strPathInputDir = crntDir.absolutePath();*/
 }
 
-void register_gui::UpdateBaseAndComboFromFullPath() //Base and ComboList
+// Used to update Base and ComboList, but now no more combo list
+void
+register_gui::UpdateBaseAndComboFromFullPath()
 {    
     m_strlistBaseName_Fixed.clear();
     m_strlistBaseName_Moving.clear();
     m_strlistBaseName_Command.clear();
-
-    ui.comboBox_Fixed->clear();
-    ui.comboBox_Moving->clear();
-    ui.comboBox_Command->clear();
 
     int iCntFixed = m_strlistPath_Fixed.count();
     int iCntMoving = m_strlistPath_Moving.count();
@@ -370,7 +369,6 @@ void register_gui::UpdateBaseAndComboFromFullPath() //Base and ComboList
         tmpInfo = QFileInfo(m_strlistPath_Fixed.at(i));
         fileName = tmpInfo.fileName();
         m_strlistBaseName_Fixed.push_back(fileName);
-        ui.comboBox_Fixed->addItem(fileName);
     }
 
     for (int i = 0; i < iCntMoving; i++)
@@ -378,7 +376,6 @@ void register_gui::UpdateBaseAndComboFromFullPath() //Base and ComboList
         tmpInfo = QFileInfo(m_strlistPath_Moving.at(i));
         fileName = tmpInfo.fileName();
         m_strlistBaseName_Moving.push_back(fileName);
-        ui.comboBox_Moving->addItem(fileName);
     }
 
     for (int i = 0; i < iCntCommand; i++)
@@ -386,7 +383,6 @@ void register_gui::UpdateBaseAndComboFromFullPath() //Base and ComboList
         tmpInfo = QFileInfo(m_strlistPath_Command.at(i));
         fileName = tmpInfo.fileName();
         m_strlistBaseName_Command.push_back(fileName);
-        ui.comboBox_Command->addItem(fileName);
     }
 }
 
@@ -1155,6 +1151,7 @@ void register_gui::SetTableText(int row, int col, QString& inputStr)
 
 void register_gui::SLT_AddSingleToQue()
 {
+#if defined (commentout)
     QString strFixed, strMoving, strCommand;    
 
     int curIndex_fixed = ui.comboBox_Fixed->currentIndex();
@@ -1199,6 +1196,7 @@ void register_gui::SLT_AddSingleToQue()
     }   
 
     UpdateTable_Que();
+#endif
 }
 
 //Read strlistPaths and get the min number of lines to add
@@ -1282,6 +1280,79 @@ void register_gui::SLT_AddMultipleToQueByPermu()
     UpdateTable_Que();
 }
 
+Job_group_type
+register_gui::get_action_pattern ()
+{
+    if (ui.buttonGroup_actionPattern->checkedButton() == ui.radioButton_m2f)
+    {
+        return JOB_GROUP_MOVING_TO_FIXED;
+    }
+    if (ui.buttonGroup_actionPattern->checkedButton() == ui.radioButton_a2f)
+    {
+        return JOB_GROUP_ALL_TO_FIXED;
+    }
+    if (ui.buttonGroup_actionPattern->checkedButton() == ui.radioButton_a2a)
+    {
+        return JOB_GROUP_ALL_TO_ALL;
+    }
+    return JOB_GROUP_MOVING_TO_FIXED;
+}
+
+QString
+register_gui::get_fixed_pattern ()
+{
+    return ui.lineEdit_fixedPattern->text ();
+}
+
+QString
+register_gui::get_moving_pattern ()
+{
+    return ui.lineEdit_movingPattern->text ();
+}
+
+bool
+register_gui::get_repeat_for_peers ()
+{
+    return ui.checkBox_repeatForPeers->isChecked ();
+}
+
+void
+register_gui::SLT_BrowseFixedPattern ()
+{
+    QString pattern;
+    if (get_action_pattern() == JOB_GROUP_ALL_TO_ALL) {
+        QFileDialog::Options options =
+            QFileDialog::DontResolveSymlinks | QFileDialog::ShowDirsOnly;
+        pattern = QFileDialog::getExistingDirectory (
+            this, tr("Choose directory"),
+            ui.lineEdit_fixedPattern->text (),
+            options);
+    } else {
+        QFileDialog::Options options =
+            QFileDialog::DontResolveSymlinks;
+        QString filters = tr(
+            "Images (*.mha *.mhd *.nii *.nrrd);;All files (*)");
+        QString selected_filter = tr("Images (*.mha *.mhd *.nii *.nrrd)");
+        pattern = QFileDialog::getOpenFileName (
+            this, tr("Choose file"),
+            ui.lineEdit_fixedPattern->text (),
+            filters, &selected_filter, 
+            options);
+    }
+    ui.lineEdit_fixedPattern->setText (pattern);
+}
+
+void
+register_gui::SLT_BrowseMovingPattern ()
+{
+    QString dirPath = QFileDialog::getExistingDirectory (this,
+        tr("Open Work Directory"),
+        ui.lineEdit_movingPattern->text (),
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    ui.lineEdit_movingPattern->setText (dirPath);
+}
+
 void
 register_gui::get_image_files (
     QStringList& image_list,
@@ -1304,6 +1375,27 @@ register_gui::get_image_files (
             printf ("FIXED: %s\n", QUTIL::c_str(i->fileName()));
         }
     }
+}
+
+void
+register_gui::SLT_AddImages ()
+{
+    Job_group_type action_pattern = get_action_pattern ();
+    QString fixed_pattern = get_fixed_pattern ();
+    QString moving_pattern = get_moving_pattern ();
+    bool repeat_for_peers = get_repeat_for_peers ();
+
+    printf ("Action: %d\n", action_pattern);
+    printf ("Fixed:  %s\n", fixed_pattern.toUtf8().constData());
+    printf ("Moving: %s\n", moving_pattern.toUtf8().constData());
+    printf ("Repeat: %s\n", repeat_for_peers ? "true" : "false");
+
+    m_actions.append (action_pattern);
+    m_strlistPath_Fixed.append (fixed_pattern);
+    m_strlistPath_Moving.append (moving_pattern);
+
+    UpdateBaseAndComboFromFullPath();
+    UpdateTable_Main(DATA2GUI);
 }
 
 void

@@ -143,9 +143,16 @@ public slots:
     void SLTM_ImportDataPool();
     void SLTM_ExportDataPool();
 
+    void SLT_BrowseFixedPattern ();
+    void SLT_BrowseMovingPattern ();
+    void SLT_AddImages ();
     void SLT_QueueJobs ();
 
 protected:
+    Job_group_type get_action_pattern ();
+    QString get_fixed_pattern ();
+    QString get_moving_pattern ();
+    bool get_repeat_for_peers ();
     void get_image_files (
         QStringList& image_list,
         const QString& pattern,

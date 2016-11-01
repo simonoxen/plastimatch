@@ -188,8 +188,6 @@ set(REGISTER_GUI_SRC
   register_gui_main.cpp
   register_gui.cpp
   register_gui.h
-  register_gui_load_dialog.cxx
-  register_gui_load_dialog.h
   qyklabel.h
   qyklabel.cpp
   YK16GrayImage.cxx
@@ -207,11 +205,9 @@ QT4_WRAP_CPP(REGISTER_GUI_SRC
   qyklabel.h
   qcustomplot.h
   register_gui.h
-  register_gui_load_dialog.h
   YKThreadRegi.h)
 QT4_WRAP_UI(REGISTER_GUI_SRC
   register_gui.ui
-  register_gui_load_dialog.ui
   )
 
 set(BEAMDATA_GEN_GUI_SRC	
