@@ -1525,6 +1525,7 @@ register_gui::AddSingleToQue (
 
 void register_gui::SLT_CopyCommandFile()
 {
+#if defined (commentout)
     int row = m_iCurSelRow_Main;
 
     if (m_iCurSelCol_Main != 2)
@@ -1540,7 +1541,7 @@ void register_gui::SLT_CopyCommandFile()
     int curFilledCnt = m_strlistPath_Command.count();
     QFileInfo tmpInfo = QFileInfo(strPathCommand);    
 
-    int iNumOfFiles = ui.lineEdit_NumOfCopy->text().toInt();
+x1    int iNumOfFiles = ui.lineEdit_NumOfCopy->text().toInt();
 
     int iEndIndex = curFilledCnt + iNumOfFiles;
 
@@ -1559,6 +1560,7 @@ void register_gui::SLT_CopyCommandFile()
 
     UpdateTable_Main(DATA2GUI); //should be called first!
     SLT_UpdateFileList();
+#endif
 }
 
 void register_gui::SLT_ClearCommandFiles()

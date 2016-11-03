@@ -180,54 +180,73 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton_addImages">
-                 <property name="text">
-                  <string>Add images</string>
-                 </property>
-                </widget>
+                <layout class="QHBoxLayout" name="horizontalLayout">
+                 <item>
+                  <spacer name="horizontalSpacer_4">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_addImages">
+                   <property name="text">
+                    <string>Stage</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QPushButton" name="pushButton_QueueJobs">
-                <property name="text">
-                 <string>Queue jobs</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButton_UpdateFileList">
-                <property name="text">
-                 <string>Apply deleting / renaming</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QTableView" name="tableView_main">
-              <property name="enabled">
-               <bool>true</bool>
+             <widget class="QGroupBox" name="groupBox_5">
+              <property name="title">
+               <string>Stage</string>
               </property>
-              <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
-              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <item>
+                <widget class="QTableView" name="tableView_main">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode">
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <spacer name="horizontalSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_QueueJobs">
+                   <property name="text">
+                    <string>Queue jobs</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
@@ -237,51 +256,60 @@
             <item>
              <widget class="QGroupBox" name="groupBox_CommandTemplate">
               <property name="title">
-               <string>Command File Template</string>
+               <string>Command files templates</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                <widget class="QListWidget" name="listWidgetCommandTemplate">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="batchSize">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
-                  <widget class="QListWidget" name="listWidgetCommandTemplate"/>
+                  <spacer name="horizontalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
                  </item>
                  <item>
-                  <layout class="QVBoxLayout" name="verticalLayout_15">
-                   <item>
-                    <widget class="QPushButton" name="pushButtonTransferTemplate">
-                     <property name="text">
-                      <string>Transfer Selection</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonTransferTemplate_2">
-                     <property name="text">
-                      <string>Delete Selection</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QPushButton" name="pushButtonBrowseTemplateDir">
-                     <property name="text">
-                      <string>Browse Template Dir</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer name="verticalSpacer">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
+                  <widget class="QPushButton" name="pushButtonTransferTemplate_2">
+                   <property name="text">
+                    <string>Delete</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonBrowseTemplateDir">
+                   <property name="text">
+                    <string>Browse Template Dir</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButtonTransferTemplate">
+                   <property name="text">
+                    <string>Stage</string>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -298,48 +326,32 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_3">
-                 <item>
-                  <widget class="QPushButton" name="pushButton_CopyCommand">
-                   <property name="text">
-                    <string>Copy selection to</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="lineEdit_NumOfCopy">
-                   <property name="text">
-                    <string>1</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_10">
-                   <property name="text">
-                    <string>files</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_ClearCommandFiles">
-                   <property name="text">
-                    <string>Clear all</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                <widget class="QLabel" name="label_CurCommandFile">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="text">
+                  <string>Current file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPlainTextEdit" name="plainTextEdit">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                </widget>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_4">
                  <item>
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Command File Editor</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_5">
+                  <spacer name="horizontalSpacer_2">
                    <property name="orientation">
                     <enum>Qt::Horizontal</enum>
                    </property>
@@ -350,33 +362,6 @@
                     </size>
                    </property>
                   </spacer>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_CurCommandFile">
-                   <property name="text">
-                    <string>Current file</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="pushButton_SaveCommandText">
-                   <property name="text">
-                    <string>Save</string>
-                   </property>
-                  </widget>
                  </item>
                  <item>
                   <widget class="QPushButton" name="pushButton_SaveCommandAsTemplate">
@@ -385,17 +370,14 @@
                    </property>
                   </widget>
                  </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_SaveCommandText">
+                   <property name="text">
+                    <string>Stage</string>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
-               </item>
-               <item>
-                <widget class="QPlainTextEdit" name="plainTextEdit">
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>268</height>
-                  </size>
-                 </property>
-                </widget>
                </item>
               </layout>
              </widget>
@@ -599,7 +581,7 @@
      <x>0</x>
      <y>0</y>
      <width>941</width>
-     <height>22</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuView">
@@ -758,54 +740,6 @@
     <hint type="destinationlabel">
      <x>434</x>
      <y>352</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_CopyCommand</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_CopyCommandFile()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>464</x>
-     <y>552</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>570</x>
-     <y>284</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_ClearCommandFiles</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_ClearCommandFiles()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>802</x>
-     <y>552</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>897</x>
-     <y>191</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_UpdateFileList</sender>
-   <signal>released()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_UpdateFileList()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>353</x>
-     <y>307</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>572</x>
-     <y>349</y>
     </hint>
    </hints>
   </connection>
