@@ -668,7 +668,7 @@
   </connection>
   <connection>
    <sender>pushButton_CommandFileStage</sender>
-   <signal>released()</signal>
+   <signal>clicked()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_SaveCommandText()</slot>
    <hints>
@@ -892,7 +892,7 @@
   </connection>
   <connection>
    <sender>pushButton_CommandFileSaveAs</sender>
-   <signal>released()</signal>
+   <signal>clicked()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_CommandFileSaveAs()</slot>
    <hints>
@@ -1082,6 +1082,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pushButton_CommandFileSave</sender>
+   <signal>clicked()</signal>
+   <receiver>register_guiClass</receiver>
+   <slot>SLT_CommandFileSave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>707</x>
+     <y>847</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>470</x>
+     <y>456</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_SetDefaultDir()</slot>
@@ -1124,6 +1140,7 @@
   <slot>SLT_AddImages()</slot>
   <slot>SLT_BrowseFixedPattern()</slot>
   <slot>SLT_BrowseMovingPattern()</slot>
+  <slot>SLT_CommandFileSave()</slot>
  </slots>
  <buttongroups>
   <buttongroup name="buttonGroup_actionPattern"/>

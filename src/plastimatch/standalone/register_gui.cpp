@@ -1000,43 +1000,42 @@ QStringList register_gui::GetCommandViewerText()
     return resultList;
 }
 
-void register_gui::SLT_SaveCommandText()
-{    
-    QStringList strList = GetCommandViewerText();//from main
+QString
+register_gui::get_selected_command_template_name ()
+{
+    int curIdx = ui.listWidget_CommandLibrary->currentRow();
+    if (curIdx < 0) {
+        return QString("");
+    }
+    return ui.listWidget_CommandLibrary->currentItem()->text();
+}
 
-    QString strPath;
-    if (m_iCurSelRow_Main >= 0 && m_iCurSelRow_Main < m_strlistPath_Command.count() && m_iCurSelCol_Main == 2)
-    {
-        strPath = m_strlistPath_Command.at(m_iCurSelRow_Main);
-        SaveCommandText(strPath, strList);
-        SetCommandViewerText_Main(strList); //Check, is this needed??
-        cout << strPath.toLocal8Bit().constData() << ": Text file was saved." << endl;
+void
+register_gui::set_selected_command_template_name (
+    const QString& template_name)
+{
+    QList<QListWidgetItem*> existing
+        = ui.listWidget_CommandLibrary->findItems (template_name,
+            Qt::MatchExactly);
+    if (!existing.empty()) {
+        existing.first()->setSelected(true);
     }
 }
 
-void register_gui::SLT_CommandFileSaveAs() //should not be called when click template list
+void
+register_gui::save_command_template (
+    const QString& template_name,
+    QStringList& template_contents  // Modified prior to saving
+)
 {
-    QStringList strList = GetCommandViewerText();//from main editor
-
-    if (strList.count() < 1)
-    {
+    if (template_contents.count() < 1) {
         cout << "Error! No text exists." << endl;
         return;
     }
-    //1) Popup input box to ask the template name. no need of "Default" prefix
-    //Cancel if no name is input
-    QInputDialog inputDlg;
-    bool ok;
-    QString templateName = QInputDialog::getText(this, "Save a new Template", "Input Command Template Name", QLineEdit::Normal, "template name", &ok);
 
-    if (!ok || templateName.isEmpty())
-        return;   
-
-    //2) Set all the paths to "TBD" to avoid confusion       
-
+    // Set all the paths to "TBD" to avoid confusion       
     QStringList::iterator it;
-
-    for (it = strList.begin(); it != strList.end(); ++it)
+    for (it = template_contents.begin(); it != template_contents.end(); ++it)
     {
         QString strTempLine = (*it);
 
@@ -1063,7 +1062,7 @@ void register_gui::SLT_CommandFileSaveAs() //should not be called when click tem
         (*it) = strTempLine;        
     }
 
-    //3) Get App Dir Path, m_str...
+    // Get App Dir Path, m_str...
     QDir curTemplateDir(m_strPathCommandTemplateDir);
 
     if (!curTemplateDir.exists())
@@ -1072,21 +1071,80 @@ void register_gui::SLT_CommandFileSaveAs() //should not be called when click tem
         return;
     }    
 
-    QString strPathOut = m_strPathCommandTemplateDir + "/" + templateName + ".txt";
+    QString strPathOut = m_strPathCommandTemplateDir
+        + "/" + template_name + ".txt";
+    SaveCommandText (strPathOut, template_contents);
 
-    QFileInfo fInfo(strPathOut);
-    if (fInfo.exists())
-    {
-        cout << "Error! The same template already exists. Try with other name" << endl;
-        return;
-    }
-    SaveCommandText(strPathOut, strList);    
-
-    //4) Update template list
-    UpdateCommandFileTemplateList(m_strPathCommandTemplateDir);    
+    // Update template list
+    UpdateCommandFileTemplateList (m_strPathCommandTemplateDir);
+    set_selected_command_template_name (template_name);
 }
 
-void register_gui::SaveCommandText(QString& strPathCommand, QStringList& strListLines)
+void register_gui::SLT_SaveCommandText()
+{    
+    QStringList strList = GetCommandViewerText();//from main
+
+    QString strPath;
+    if (m_iCurSelRow_Main >= 0 && m_iCurSelRow_Main < m_strlistPath_Command.count() && m_iCurSelCol_Main == 2)
+    {
+        strPath = m_strlistPath_Command.at(m_iCurSelRow_Main);
+        SaveCommandText(strPath, strList);
+        SetCommandViewerText_Main(strList); //Check, is this needed??
+        cout << strPath.toLocal8Bit().constData() << ": Text file was saved." << endl;
+    }
+}
+
+void
+register_gui::SLT_CommandFileSaveAs()
+{
+    QString template_name;
+    bool got_name = false;
+    while (true) {
+        // Popup input box to ask the template name.
+        // Abort if cancel.
+        QInputDialog inputDlg;
+        bool ok;
+        template_name = QInputDialog::getText (
+            this, "Save a new Template",
+            "Input Command Template Name", QLineEdit::Normal,
+            "template name", &ok);
+
+        if (!ok || template_name.isEmpty()) {
+            return;
+        }
+
+        // Check to see if item already exists, if so, pop up again
+        QList<QListWidgetItem*> existing
+            = ui.listWidget_CommandLibrary->findItems (template_name,
+                Qt::MatchExactly);
+        if (existing.count() > 0) {
+            QMessageBox::warning (this, tr("Warning"),
+                tr ("Template with that name already exists. Try another name."),
+                QMessageBox::Ok);
+            continue;
+        }
+        break;
+    }
+
+    QStringList strList = GetCommandViewerText();
+    save_command_template (template_name, strList);
+}
+
+void
+register_gui::SLT_CommandFileSave()
+{
+    QString template_name = get_selected_command_template_name ();
+    if (template_name.isEmpty()) {
+        return;
+    }
+    QStringList template_contents = GetCommandViewerText();
+    save_command_template (template_name, template_contents);
+}
+
+void
+register_gui::SaveCommandText (
+    QString& strPathCommand,
+    QStringList& strListLines)
 {    
     ofstream fout;
     fout.open(strPathCommand.toLocal8Bit().constData());
@@ -2151,7 +2209,8 @@ bool register_gui::read_application_settings()
     return true;
 }
 
-void register_gui::CreateDefaultCommandFile(enRegisterOption option) //if there is same file, overwrite it
+void
+register_gui::CreateDefaultCommandFile(enRegisterOption option)
 {
     QString strPathDefaultCommand;
 
@@ -2172,25 +2231,9 @@ void register_gui::CreateDefaultCommandFile(enRegisterOption option) //if there 
     }
 
     QUTIL::GenDefaultCommandFile(strPathDefaultCommand, option);
-
-    //// GCS logic for template
-    //if (option == PLAST_RIGID) {
-    //    SetTemplateNameFromSample ("Rigid");
-    //}
-    //else if (option == PLAST_BSPLINE) {
-    //    SetTemplateNameFromSample ("B-spline");
-    //}
-    //else {
-    //    return;
-    //}
 }
 
-//void register_gui::SetTemplateNameFromSample (QString& strName)
-//{
-//    ui.comboBox_Template->addItem(strName);
-//}
-
-void register_gui::UpdateCommandFileTemplateList(QString& strPathTemplateDir)
+void register_gui::UpdateCommandFileTemplateList (QString& strPathTemplateDir)
 {
     //Search in default template directory    
     if (strPathTemplateDir.length() < 1)
@@ -2239,9 +2282,8 @@ void register_gui::SLT_CommandTemplateSelected()
     ReadCommandFile(curTemplateFilePath, listCurCommand);
     SetCommandViewerText_Main(listCurCommand);
     
-    QString strDisp = "Template: " + strBase;
+    QString strDisp = strBase;
     ui.label_CommandFileCurrent->setText(strDisp);
-//    EnableUIForCommandfile(false);
 }
 
 void register_gui::EnableUIForCommandfile(bool bEnable)

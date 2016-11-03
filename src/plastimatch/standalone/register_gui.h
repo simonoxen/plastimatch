@@ -105,6 +105,7 @@ public slots:
     
     void SLT_SaveCommandText();       
     void SLT_CommandFileSaveAs();
+    void SLT_CommandFileSave();
 
     void SLT_AddSingleToQue();
     void SLT_AddMultipleToQueByLine();
@@ -153,6 +154,7 @@ public:
     void UpdateTable_Que(); //only Data2Gui direction
 
 protected:
+    // Handle registration pattern, images
     Job_group_type get_action_pattern ();
     QString get_fixed_pattern ();
     QString get_moving_pattern ();
@@ -162,6 +164,15 @@ protected:
         const QString& pattern,
         bool repeat_for_peers);
 
+    // Handle command library
+    QString get_selected_command_template_name ();
+    void set_selected_command_template_name (
+        const QString& template_name);
+    void save_command_template (
+        const QString& template_name,
+        QStringList& template_contents  // Modified prior to saving
+    );
+    
     void SetWorkDir(const QString& strPath);
     void SetReadImageApp(const QString& strPath);
     void SetCommandTemplateDir(const QString& strDirPath);
