@@ -34,31 +34,31 @@
       <item row="1" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_11">
         <item>
-         <widget class="QPushButton" name="pushButton_SetViewerPath">
+         <widget class="QPushButton" name="pushButton_ImageViewerPathSet">
           <property name="text">
-           <string>set</string>
+           <string>Set</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEditDefaultViewerPath"/>
+         <widget class="QLineEdit" name="lineEdit_ImageViewerPath"/>
         </item>
        </layout>
       </item>
       <item row="0" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_13">
         <item>
-         <widget class="QPushButton" name="pushButton_SetDefaultDir">
+         <widget class="QPushButton" name="pushButton_WorkingDirSet">
           <property name="text">
-           <string>set</string>
+           <string>Set</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEditDefaultDirPath"/>
+         <widget class="QLineEdit" name="lineEdit_WorkingDir"/>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButtonBrowseWorkingDir">
+         <widget class="QPushButton" name="pushButton_WorkingDirBrowse">
           <property name="text">
            <string>Browse</string>
           </property>
@@ -77,7 +77,7 @@
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
-          <string>Data pool</string>
+          <string>Staging</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -93,7 +93,7 @@
                  <item>
                   <widget class="QRadioButton" name="radioButton_m2f">
                    <property name="text">
-                    <string>Moving to fixed</string>
+                    <string>One moving to one fixed</string>
                    </property>
                    <property name="checked">
                     <bool>true</bool>
@@ -106,7 +106,7 @@
                  <item>
                   <widget class="QRadioButton" name="radioButton_a2f">
                    <property name="text">
-                    <string>All to fixed</string>
+                    <string>Many moving to one fixed</string>
                    </property>
                    <attribute name="buttonGroup">
                     <string notr="true">buttonGroup_actionPattern</string>
@@ -116,7 +116,7 @@
                  <item>
                   <widget class="QRadioButton" name="radioButton_a2a">
                    <property name="text">
-                    <string>All to all</string>
+                    <string>Many moving to many fixed</string>
                    </property>
                    <attribute name="buttonGroup">
                     <string notr="true">buttonGroup_actionPattern</string>
@@ -195,7 +195,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_addImages">
+                  <widget class="QPushButton" name="pushButton_ImagesStage">
                    <property name="text">
                     <string>Stage</string>
                    </property>
@@ -213,7 +213,7 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <item>
-                <widget class="QTableView" name="tableView_main">
+                <widget class="QTableView" name="tableView_Stage">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -238,7 +238,7 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_QueueJobs">
+                  <widget class="QPushButton" name="pushButton_StageQueueJobs">
                    <property name="text">
                     <string>Queue jobs</string>
                    </property>
@@ -254,13 +254,13 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
-             <widget class="QGroupBox" name="groupBox_CommandTemplate">
+             <widget class="QGroupBox" name="groupBox_CommandLibrary">
               <property name="title">
-               <string>Command files templates</string>
+               <string>Command library</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_4">
                <item>
-                <widget class="QListWidget" name="listWidgetCommandTemplate">
+                <widget class="QListWidget" name="listWidget_CommandLibrary">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
@@ -291,21 +291,21 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButtonTransferTemplate_2">
+                  <widget class="QPushButton" name="pushButton_CommandLibraryDelete">
                    <property name="text">
                     <string>Delete</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButtonBrowseTemplateDir">
+                  <widget class="QPushButton" name="pushButton_CommandLibraryBrowse">
                    <property name="text">
-                    <string>Browse Template Dir</string>
+                    <string>Browse</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButtonTransferTemplate">
+                  <widget class="QPushButton" name="pushButton_CommandLibraryStage">
                    <property name="text">
                     <string>Stage</string>
                    </property>
@@ -326,7 +326,7 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_12">
                <item>
-                <widget class="QLabel" name="label_CurCommandFile">
+                <widget class="QLabel" name="label_CommandFileCurrent">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
                    <horstretch>0</horstretch>
@@ -339,7 +339,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPlainTextEdit" name="plainTextEdit">
+                <widget class="QPlainTextEdit" name="plainTextEdit_CommandFile">
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
@@ -364,14 +364,21 @@
                   </spacer>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_SaveCommandAsTemplate">
+                  <widget class="QPushButton" name="pushButton_CommandFileSave">
                    <property name="text">
-                    <string>Save As Template</string>
+                    <string>Save</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_SaveCommandText">
+                  <widget class="QPushButton" name="pushButton_CommandFileSaveAs">
+                   <property name="text">
+                    <string>Save as ...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="pushButton_CommandFileStage">
                    <property name="text">
                     <string>Stage</string>
                    </property>
@@ -388,7 +395,7 @@
         </widget>
         <widget class="QWidget" name="tab_2">
          <attribute name="title">
-          <string>Que</string>
+          <string>Queue</string>
          </attribute>
          <layout class="QHBoxLayout" name="horizontalLayout_8">
           <item>
@@ -588,8 +595,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad_fixed_images"/>
-    <addaction name="actionLoad_moving_images"/>
     <addaction name="actionLoad_command_files"/>
     <addaction name="actionImport_data_pool"/>
     <addaction name="actionExport_data_pool"/>
@@ -621,16 +626,6 @@
     <string>Volume Viewer</string>
    </property>
   </action>
-  <action name="actionLoad_fixed_images">
-   <property name="text">
-    <string>Load fixed images</string>
-   </property>
-  </action>
-  <action name="actionLoad_moving_images">
-   <property name="text">
-    <string>Load moving images</string>
-   </property>
-  </action>
   <action name="actionLoad_command_files">
    <property name="text">
     <string>Load command files</string>
@@ -638,7 +633,7 @@
   </action>
   <action name="actionSave_Que_Table_To_Text">
    <property name="text">
-    <string>Save que table to text file</string>
+    <string>Save queue</string>
    </property>
   </action>
   <action name="actionImport_data_pool">
@@ -651,20 +646,12 @@
     <string>Export data pool</string>
    </property>
   </action>
-  <action name="actionLoad_images">
-   <property name="text">
-    <string>Load images</string>
-   </property>
-   <property name="toolTip">
-    <string>Load images</string>
-   </property>
-  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections>
   <connection>
-   <sender>pushButton_SetDefaultDir</sender>
+   <sender>pushButton_WorkingDirSet</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_SetDefaultDir()</slot>
@@ -680,7 +667,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_SaveCommandText</sender>
+   <sender>pushButton_CommandFileStage</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_SaveCommandText()</slot>
@@ -692,38 +679,6 @@
     <hint type="destinationlabel">
      <x>682</x>
      <y>700</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionLoad_fixed_images</sender>
-   <signal>triggered()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_LoadFixedFiles()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>434</x>
-     <y>352</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionLoad_moving_images</sender>
-   <signal>triggered()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_LoadMovingFiles()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>434</x>
-     <y>352</y>
     </hint>
    </hints>
   </connection>
@@ -872,7 +827,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_SetViewerPath</sender>
+   <sender>pushButton_ImageViewerPathSet</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_SetDefaultViewer()</slot>
@@ -904,7 +859,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>listWidgetCommandTemplate</sender>
+   <sender>listWidget_CommandLibrary</sender>
    <signal>itemClicked(QListWidgetItem*)</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_CommandTemplateSelected()</slot>
@@ -920,7 +875,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButtonTransferTemplate</sender>
+   <sender>pushButton_CommandLibraryStage</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_CopyCommandTemplateToDataPool()</slot>
@@ -936,10 +891,10 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_SaveCommandAsTemplate</sender>
+   <sender>pushButton_CommandFileSaveAs</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
-   <slot>SLT_SaveCommandFileAsTemplate()</slot>
+   <slot>SLT_CommandFileSaveAs()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>770</x>
@@ -952,7 +907,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButtonBrowseWorkingDir</sender>
+   <sender>pushButton_WorkingDirBrowse</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_BrowseWorkingDir()</slot>
@@ -968,7 +923,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButtonBrowseTemplateDir</sender>
+   <sender>pushButton_CommandLibraryBrowse</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_BrowseTemplateDir()</slot>
@@ -984,7 +939,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButtonTransferTemplate_2</sender>
+   <sender>pushButton_CommandLibraryDelete</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_DeleteSingleTemplate()</slot>
@@ -1032,7 +987,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>tableView_main</sender>
+   <sender>tableView_Stage</sender>
    <signal>clicked(QModelIndex)</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_ItemClickedMain()</slot>
@@ -1064,23 +1019,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>actionLoad_images</sender>
-   <signal>triggered()</signal>
-   <receiver>register_guiClass</receiver>
-   <slot>SLT_LoadImages()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>428</x>
-     <y>456</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>pushButton_QueueJobs</sender>
+   <sender>pushButton_StageQueueJobs</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_QueueJobs()</slot>
@@ -1128,7 +1067,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_addImages</sender>
+   <sender>pushButton_ImagesStage</sender>
    <signal>released()</signal>
    <receiver>register_guiClass</receiver>
    <slot>SLT_AddImages()</slot>
@@ -1172,7 +1111,7 @@
   <slot>SLT_CreateSampleDeform()</slot>
   <slot>SLT_CommandTemplateSelected()</slot>
   <slot>SLT_CopyCommandTemplateToDataPool()</slot>
-  <slot>SLT_SaveCommandFileAsTemplate()</slot>
+  <slot>SLT_CommandFileSaveAs()</slot>
   <slot>SLT_BrowseWorkingDir()</slot>
   <slot>SLT_BrowseTemplateDir()</slot>
   <slot>SLT_DeleteSingleTemplate()</slot>

@@ -69,8 +69,8 @@ register_gui::register_gui(QWidget *parent, Qt::WFlags flags)
     WriteDefaultTemplateFiles(m_strPathCommandTemplateDir);
 
     // Read config file.  Save it, to create if the first invokation.
-    ReadDefaultConfig ();
-    WriteDefaultConfig ();
+    read_application_settings ();
+    write_application_settings ();
 
     UpdateCommandFileTemplateList(m_strPathCommandTemplateDir); //from the folder
 }
@@ -161,7 +161,7 @@ void register_gui::SLT_SetDefaultDir()
     
     dirPath.replace(QString("\\"), QString("/"));
     SetWorkDir(dirPath);
-    WriteDefaultConfig();
+    write_application_settings ();
 }
 
 void register_gui::SLT_SetDefaultViewer()
@@ -178,7 +178,7 @@ void register_gui::SLT_SetDefaultViewer()
         return;
 
     SetReadImageApp(strPathExecutable);
-    WriteDefaultConfig();
+    write_application_settings ();
 }
 
 void register_gui::SetWorkDir(const QString& strPath)
@@ -188,7 +188,7 @@ void register_gui::SetWorkDir(const QString& strPath)
         return;
     
     m_strPathDirDefault = strPath;
-    ui.lineEditDefaultDirPath->setText(m_strPathDirDefault);
+    ui.lineEdit_WorkingDir->setText(m_strPathDirDefault);
 }
 
 void register_gui::SetReadImageApp(const QString& strPath)
@@ -198,7 +198,7 @@ void register_gui::SetReadImageApp(const QString& strPath)
         return;
 
     m_strPathReadImageApp = strPath;
-    ui.lineEditDefaultViewerPath->setText(m_strPathReadImageApp);
+    ui.lineEdit_ImageViewerPath->setText(m_strPathReadImageApp);
 }
 
 
@@ -260,10 +260,10 @@ void register_gui::InitTableMain(int rowCnt, int columnCnt)
     m_pTableModelMain->setHorizontalHeaderItem(2, new QStandardItem(QString("Command file name")));
     //m_pTableModelMain->setHorizontalHeaderItem(3, new QStandardItem(QString("       Status      ")));
 
-    ui.tableView_main->setModel(m_pTableModelMain);
-    ui.tableView_main->resizeColumnsToContents();
+    ui.tableView_Stage->setModel(m_pTableModelMain);
+    ui.tableView_Stage->resizeColumnsToContents();
 
-    QItemSelectionModel *select = ui.tableView_main->selectionModel();
+    QItemSelectionModel *select = ui.tableView_Stage->selectionModel();
     //connect(select, SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(SLT_SelectionChangedMain(QItemSelection, QItemSelection)));  
 }
 
@@ -679,16 +679,6 @@ void register_gui::UpdateStrListFromBase(QStringList& strListBase, QStringList& 
     }
 }
 
-//void register_gui::SLT_InitializeTableWithRowCount()
-//{
-//    int rowCnt = ui.lineEdit_RowCountManual->text().toInt();
-//
-//    if (rowCnt > 0 && rowCnt < 500)
-//    {
-//        InitTableMain(rowCnt, DEFAULT_NUM_COLUMN_MAIN);
-//    }
-//}
-
 void register_gui::AdaptCommandFileToNewPath(QString& strPathCommand,
     QString& strPathFixed,
     QString& strPathMoving)
@@ -844,10 +834,10 @@ void register_gui::SLT_ReadCommandFile_Main(QModelIndex index)
     //Update command file viewer
     SetCommandViewerText_Main(listCurCommand);
     QString strDisp = curStr + ".txt";
-    ui.label_CurCommandFile->setText(strDisp);
+    ui.label_CommandFileCurrent->setText(strDisp);
 
     //ui.plainTextEdit->setEnabled(true);
-    EnableUIForCommandfile(true);
+    //EnableUIForCommandfile(true);
 }
 
 void register_gui::ReadCommandFile(QString& strPathCommandFile, QStringList& strListOutput)
@@ -939,7 +929,7 @@ void register_gui::SLT_SelectionChangedMain(QItemSelection curItem, QItemSelecti
 
 void register_gui::SLT_ItemClickedMain() //single clicked
 {
-    QModelIndex mIdx = ui.tableView_main->currentIndex();
+    QModelIndex mIdx = ui.tableView_Stage->currentIndex();
 
     m_iCurSelRow_Main = mIdx.row();
     m_iCurSelCol_Main = mIdx.column();
@@ -980,10 +970,10 @@ void register_gui::SLT_ItemClickedQue() //single clicked
 void register_gui::SetCommandViewerText_Main(QStringList& strList)
 {
     int iCntLines = strList.count();
-    ui.plainTextEdit->clear();
+    ui.plainTextEdit_CommandFile->clear();
     for (int i = 0; i < iCntLines; i++)
     {
-        ui.plainTextEdit->appendPlainText(strList.at(i));
+        ui.plainTextEdit_CommandFile->appendPlainText(strList.at(i));
     }
 }
 
@@ -1003,7 +993,7 @@ QStringList register_gui::GetCommandViewerText()
 {
     QStringList resultList;
 
-    QString strTmp = ui.plainTextEdit->toPlainText();
+    QString strTmp = ui.plainTextEdit_CommandFile->toPlainText();
     //cout << strTmp.toLocal8Bit().constData() << endl;
 
     resultList = strTmp.split("\n");
@@ -1024,7 +1014,7 @@ void register_gui::SLT_SaveCommandText()
     }
 }
 
-void register_gui::SLT_SaveCommandFileAsTemplate() //should not be called when click template list
+void register_gui::SLT_CommandFileSaveAs() //should not be called when click template list
 {
     QStringList strList = GetCommandViewerText();//from main editor
 
@@ -1541,7 +1531,7 @@ void register_gui::SLT_CopyCommandFile()
     int curFilledCnt = m_strlistPath_Command.count();
     QFileInfo tmpInfo = QFileInfo(strPathCommand);    
 
-x1    int iNumOfFiles = ui.lineEdit_NumOfCopy->text().toInt();
+    int iNumOfFiles = ui.lineEdit_NumOfCopy->text().toInt();
 
     int iEndIndex = curFilledCnt + iNumOfFiles;
 
@@ -2128,7 +2118,7 @@ void register_gui::SLT_ViewSelectedImg()
 
 }
 
-void register_gui::WriteDefaultConfig()
+void register_gui::write_application_settings()
 {
     QSettings settings;
 
@@ -2139,10 +2129,9 @@ void register_gui::WriteDefaultConfig()
     //settings.setValue("DEFAULT_TEMPLATE_DIR_PATH", m_strPathCommandTemplateDir);
 }
 
-bool register_gui::ReadDefaultConfig()
+bool register_gui::read_application_settings()
 {
-    QSettings settings;//when this is called, it accesses to some hidden directory
-    //1) default work dir
+    QSettings settings;
     QVariant val = settings.value ("DEFAULT_WORK_DIR");
     if (!val.isNull()) {
         SetWorkDir(val.toString()); 
@@ -2154,17 +2143,10 @@ bool register_gui::ReadDefaultConfig()
         SetWorkDir(strPathCurrent);
     }
 
-    //2) default viewer path
     val = settings.value ("DEFAULT_VIEWER_PATH");
     if (!val.isNull()) {
         SetReadImageApp(val.toString());
     }
-
-    //3) default template directory
-    /*val = settings.value("DEFAULT_TEMPLATE_DIR_PATH");
-    if (!val.isNull()) {
-        SetCommandTemplateDir(val.toString());
-    }*/
 
     return true;
 }
@@ -2220,7 +2202,7 @@ void register_gui::UpdateCommandFileTemplateList(QString& strPathTemplateDir)
     if (!dirCmdTemplate.exists())
         return;
 
-    ui.listWidgetCommandTemplate->clear();
+    ui.listWidget_CommandLibrary->clear();
 
     QFileInfoList listFile = dirCmdTemplate.entryInfoList(QDir::Files, QDir::Name); //search for DICOM RS file
     if (listFile.size() <= 0)
@@ -2235,30 +2217,31 @@ void register_gui::UpdateCommandFileTemplateList(QString& strPathTemplateDir)
             if (listFile.at(i).suffix().contains("txt", Qt::CaseInsensitive))
             {
                 QString strBaseName = listFile.at(i).baseName();
-                ui.listWidgetCommandTemplate->addItem(strBaseName);
+                ui.listWidget_CommandLibrary->addItem(strBaseName);
             }
         }
     }
 }
 
-void register_gui::SLT_CommandTemplateSelected() //when one of the list item selected
+// This gets called when an item in the command file library listbox
+// gets selected
+void register_gui::SLT_CommandTemplateSelected()
 {
-    int curIdx = ui.listWidgetCommandTemplate->currentRow();
-
-    if (curIdx < 0)
+    int curIdx = ui.listWidget_CommandLibrary->currentRow();
+    if (curIdx < 0) {
         return;
+    }
     
-    QString strBase = ui.listWidgetCommandTemplate->currentItem()->text();
+    QString strBase = ui.listWidget_CommandLibrary->currentItem()->text();
     QString curTemplateFilePath = m_strPathCommandTemplateDir + "/" + strBase + ".txt";
 
-    //QString strPathCommand = m_vRegiQue.at(row).m_quePathCommand;
     QStringList listCurCommand;
     ReadCommandFile(curTemplateFilePath, listCurCommand);
     SetCommandViewerText_Main(listCurCommand);
     
     QString strDisp = "Template: " + strBase;
-    ui.label_CurCommandFile->setText(strDisp);
-    EnableUIForCommandfile(false);
+    ui.label_CommandFileCurrent->setText(strDisp);
+//    EnableUIForCommandfile(false);
 }
 
 void register_gui::EnableUIForCommandfile(bool bEnable)
@@ -2270,12 +2253,12 @@ void register_gui::EnableUIForCommandfile(bool bEnable)
 
 void register_gui::SLT_CopyCommandTemplateToDataPool()
 {
-    int curIdx = ui.listWidgetCommandTemplate->currentRow();
+    int curIdx = ui.listWidget_CommandLibrary->currentRow();
 
     if (curIdx < 0)
         return;
 
-    QString curFileBase = ui.listWidgetCommandTemplate->currentItem()->text();
+    QString curFileBase = ui.listWidget_CommandLibrary->currentItem()->text();
     QString strPathSrc = m_strPathCommandTemplateDir + "/" + curFileBase + ".txt";
     QFileInfo fInfo(strPathSrc);
 
@@ -2373,12 +2356,12 @@ void register_gui::SLT_BrowseTemplateDir()
 
 void register_gui::SLT_DeleteSingleTemplate()
 {
-    int curIdx = ui.listWidgetCommandTemplate->currentRow();
+    int curIdx = ui.listWidget_CommandLibrary->currentRow();
 
     if (curIdx < 0)
         return;
 
-    QString curFileBase = ui.listWidgetCommandTemplate->currentItem()->text();
+    QString curFileBase = ui.listWidget_CommandLibrary->currentItem()->text();
     QString strPathSrc = m_strPathCommandTemplateDir + "/" + curFileBase + ".txt";
     QFileInfo fInfo(strPathSrc);
 

@@ -104,8 +104,8 @@ public slots:
     void SLT_ItemClickedQue(); //single clicked
     
     void SLT_SaveCommandText();       
-    void SLT_SaveCommandFileAsTemplate();
-    
+    void SLT_CommandFileSaveAs();
+
     void SLT_AddSingleToQue();
     void SLT_AddMultipleToQueByLine();
     void SLT_AddMultipleToQueByPermu();
@@ -148,6 +148,10 @@ public slots:
     void SLT_AddImages ();
     void SLT_QueueJobs ();
 
+public:
+    void UpdateTable_Main(enUpdateDirection updateDirection);
+    void UpdateTable_Que(); //only Data2Gui direction
+
 protected:
     Job_group_type get_action_pattern ();
     QString get_fixed_pattern ();
@@ -157,6 +161,23 @@ protected:
         QStringList& image_list,
         const QString& pattern,
         bool repeat_for_peers);
+
+    void SetWorkDir(const QString& strPath);
+    void SetReadImageApp(const QString& strPath);
+    void SetCommandTemplateDir(const QString& strDirPath);
+
+    void InitTableMain(int rowCnt, int columnCnt);
+    void InitTableQue(int rowCnt, int columnCnt);
+
+    void SetTableText(int row, int col, QString& inputStr);
+
+    //m_strFileDefaultConfig, m_strPathDirDefault, m_strPathReadImageApp
+    void write_application_settings();
+    bool read_application_settings();
+
+    void CreateDefaultCommandFile(enRegisterOption option);
+
+    void UpdateCommandFileTemplateList(QString& strPathTemplateDir);
 
 public:
     QList<Job_group_type> m_actions;
@@ -171,32 +192,7 @@ public:
     QStringList m_strlistPathOutputImg;
     QStringList m_strlistPathOutputXf;
 
-    QString m_strPathDirDefault;
-    QString m_strPathReadImageApp;
-    QString m_strPathCommandTemplateDir;
-
     std::list<Datapool_item> m_datapoolItems;
-
-    void SetWorkDir(const QString& strPath);
-    void SetReadImageApp(const QString& strPath);
-    void SetCommandTemplateDir(const QString& strDirPath);
-
-
-    void InitTableMain(int rowCnt, int columnCnt);
-    void InitTableQue(int rowCnt, int columnCnt);
-    void UpdateTable_Main(enUpdateDirection updateDirection);
-    void UpdateTable_Que(); //only Data2Gui direction
-
-    void SetTableText(int row, int col, QString& inputStr);
-
-    void WriteDefaultConfig(); //m_strFileDefaultConfig, m_strPathDirDefault, m_strPathReadImageApp
-    bool ReadDefaultConfig();
-
-    void CreateDefaultCommandFile(enRegisterOption option);
-
-    void UpdateCommandFileTemplateList(QString& strPathTemplateDir);
-
-        //SetTemplateNameFromSample (QString& strName);
 
     int m_iCurSelRow_Main;
     int m_iCurSelCol_Main;
@@ -224,6 +220,10 @@ public:
     QTime m_tTimeSeq;
     QTime m_tTimeMT;
     
+    // Application settings
+    QString m_strPathDirDefault;
+    QString m_strPathReadImageApp;
+    QString m_strPathCommandTemplateDir;
 
 private:
     Ui::register_guiClass ui;
