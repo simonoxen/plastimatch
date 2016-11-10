@@ -35,7 +35,7 @@ main (int argc, char *argv[])
     rsm->set_patient_name ("Test^Rtplan");
 
     /* Fill in plan data */
-    rtplan->number_of_fractions_planned = 5;
+    rtplan->number_of_fractions_planned = 5; 
     rtplan->snout_id = "Standard snout";
     rtplan->general_accessory_id = "General accessory A";
     rtplan->general_accessory_code = "1";
@@ -51,7 +51,7 @@ main (int argc, char *argv[])
     rtplan->tolerance_table_top_longitudinal = "1.0";
     rtplan->tolerance_table_top_lateral = "1.0";
     rtplan->tolerance_snout_position = "0.3";
-    
+
     /* Fill in beam data */
     for (size_t i = 0; i < 1; i++) {
         std::string beam_name = string_format ("Beam %d", (int) i);
@@ -60,9 +60,11 @@ main (int argc, char *argv[])
         beam->beam_dose_specification_point = "0\\-10.5\\0";
         beam->beam_dose = 2.f;
 
+	float snout_pos = 250.f;
+	beam->snout_position = snout_pos;
+    
         float cum_gp = 0.f;
         for (size_t seg = 0; seg < 3; seg++) {
-            float snout_pos = 250.f;
             float energy = 100.f + seg * 25.f;
             float gp = 25.f;
             for (size_t cpi = 0; cpi < 2; cpi++) {
@@ -70,7 +72,6 @@ main (int argc, char *argv[])
                 cp->cumulative_meterset_weight = cum_gp + cpi * gp;
                 cp->nominal_beam_energy = energy;
                 cp->meterset_rate = 400;
-                cp->snout_position = snout_pos;
 
                 cp->scan_spot_position_map.push_back (-10.f - seg);
                 cp->scan_spot_position_map.push_back (-10.f);

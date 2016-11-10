@@ -326,7 +326,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
 
     /* General equipment module */
-    Dcmtk_module::set_general_equipment (dataset);
+    Dcmtk_module::set_general_equipment (dataset,dose_metadata);
 
     /* SOP common module */
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);

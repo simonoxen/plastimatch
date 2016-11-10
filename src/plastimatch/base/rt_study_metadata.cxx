@@ -16,6 +16,7 @@ class Rt_study_metadata_private {
 public:
     std::string date_string;
     std::string time_string;
+    std::string study_id_string;
 
     std::string study_uid;
     std::string for_uid;
@@ -201,6 +202,25 @@ Rt_study_metadata::set_study_uid (const char* uid)
     d_ptr->study_uid = uid;
 }
 
+const char*
+Rt_study_metadata::get_study_id () const
+{
+    return d_ptr->study_id_string.c_str();
+}
+
+void
+Rt_study_metadata::set_study_id (const char* study_id)
+{
+    if (!study_id) return;
+    d_ptr->study_id_string = study_id;
+}
+
+void
+Rt_study_metadata::set_study_id (const std::string& study_id)
+{
+    d_ptr->study_id_string = study_id;
+}
+
 const std::string& 
 Rt_study_metadata::get_patient_name ()
 {
@@ -236,6 +256,46 @@ Rt_study_metadata::set_patient_id (const std::string& id)
 {
     d_ptr->study_metadata->set_metadata (0x0010, 0x0020, id.c_str());
 }
+
+
+const std::string& 
+Rt_study_metadata::get_patient_birth_date ()
+{
+    return d_ptr->study_metadata->get_metadata (0x0010, 0x0030);
+}
+
+void
+Rt_study_metadata::set_patient_birth_date (const char* birth_date)
+{
+    d_ptr->study_metadata->set_metadata (0x0010, 0x0030, birth_date);
+}
+
+void
+Rt_study_metadata::set_patient_birth_date (const std::string& birth_date)
+{
+    set_patient_birth_date (birth_date.c_str());
+}
+
+const std::string& 
+Rt_study_metadata::get_patient_sex ()
+{
+    return d_ptr->study_metadata->get_metadata (0x0010, 0x0040);
+}
+
+void
+Rt_study_metadata::set_patient_sex (const char* sex)
+{
+    d_ptr->study_metadata->set_metadata (0x0010, 0x0040, sex);
+}
+
+void
+Rt_study_metadata::set_patient_sex (const std::string& sex)
+{
+    set_patient_sex (sex.c_str());
+}
+
+
+
 
 const Plm_image_header*
 Rt_study_metadata::get_image_header () const

@@ -57,12 +57,26 @@ public:
     const char* get_study_uid () const;
     void set_study_uid (const char* uid);
 
+    const char* get_study_id () const;
+    void set_study_id (const char* id);
+    void set_study_id (const std::string& id);
+
     const std::string& get_patient_name ();
     void set_patient_name (const char* name);
     void set_patient_name (const std::string& name);
 
     const std::string& get_patient_id ();
     void set_patient_id (const std::string& id);
+
+    const std::string& get_patient_birth_date ();
+    void set_patient_birth_date (const char* birth_date);
+    void set_patient_birth_date (const std::string& birth_date);
+
+    const std::string& get_patient_sex ();
+    void set_patient_sex (const char* sex);
+    void set_patient_sex (const std::string& sex);
+
+
 
     const Plm_image_header* get_image_header () const;
     void set_image_header (const Plm_image::Pointer& pli);

@@ -21,12 +21,16 @@ public:
     static void set_general_series_sro (
         DcmDataset *dataset, 
         const Rt_study_metadata::Pointer& rsm);
+    static void set_general_series (
+        DcmDataset *dataset, 
+        const Metadata::Pointer& meta);
     static void set_rt_series (
         DcmDataset *dataset, 
         const Metadata::Pointer& rsm,
         const char* modality);
     static void set_general_equipment (
-        DcmDataset *dataset);
+	DcmDataset *dataset,
+	const Metadata::Pointer& meta);
 };
 
 #endif

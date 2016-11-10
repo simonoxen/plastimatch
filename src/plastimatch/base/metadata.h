@@ -42,6 +42,7 @@ public:
         const std::string& val);
 #if PLM_DCM_USE_DCMTK
     const std::string& get_metadata (const DcmTagKey& key) const;
+    void set_metadata (const DcmTagKey& key, const std::string& val);
 #endif
 
     /*! \brief Copy a list of strings of the form "XXXX,YYYY=string"

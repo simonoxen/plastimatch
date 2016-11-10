@@ -14,6 +14,7 @@
 
 Rtplan_beam::Rtplan_beam()
 {
+  this->clear();
 }
 
 Rtplan_beam::~Rtplan_beam()
@@ -27,6 +28,7 @@ Rtplan_beam::clear()
     this->name = "";
     this->description = "";
     this->final_cumulative_meterset_weight = 0.f;
+    this->snout_position = 0.f;
 
     for (size_t i = 0; i < this->cplist.size(); i++) {
         delete this->cplist[i];

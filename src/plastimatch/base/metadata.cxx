@@ -83,6 +83,12 @@ Metadata::get_metadata (const DcmTagKey& key) const
     return get_metadata (key.getGroup(), key.getElement());
 }
 
+void
+Metadata::set_metadata (const DcmTagKey& key, const std::string& val)
+{
+    return set_metadata (key.getGroup(), key.getElement(), val);
+}
+
 #endif
 
 void

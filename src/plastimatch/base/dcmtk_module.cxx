@@ -19,7 +19,7 @@ Dcmtk_module::set_patient (
 {
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientID, "");
-    dataset->putAndInsertString (DCM_PatientBirthDate, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_PatientBirthDate, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_PatientSex, "O");
 }
 
@@ -40,7 +40,9 @@ Dcmtk_module::set_general_study (
     dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
     dcmtk_copy_from_metadata (dataset, rsm->get_study_metadata (),
         DCM_StudyDescription, "");
-}
+    dataset->putAndInsertOFStringArray (DCM_StudyID, 
+        rsm->get_study_id());
+ }
 
 void
 Dcmtk_module::set_general_series_sro (
@@ -51,6 +53,14 @@ Dcmtk_module::set_general_series_sro (
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         dicom_uid(PLM_UID_PREFIX).c_str());
     dataset->putAndInsertString (DCM_SeriesNumber, "");
+}
+
+void
+Dcmtk_module::set_general_series (
+    DcmDataset *dataset, 
+    const Metadata::Pointer& meta)
+{
+    dcmtk_copy_from_metadata (dataset, meta, DCM_OperatorsName, "");
 }
 
 void
@@ -69,16 +79,15 @@ Dcmtk_module::set_rt_series (
     dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesNumber, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDescription, "");
     /* Series Date, Series Time go here */
-    dataset->putAndInsertString (DCM_OperatorsName, "");
 }
 
 void
-Dcmtk_module::set_general_equipment (DcmDataset *dataset)
+Dcmtk_module::set_general_equipment (DcmDataset *dataset,  
+				     const Metadata::Pointer& meta)
 {
-    dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
-    dataset->putAndInsertString (DCM_InstitutionName, "");
-    dataset->putAndInsertString (DCM_StationName, "");
-    dataset->putAndInsertString (DCM_ManufacturerModelName, "Plastimatch");
-    dataset->putAndInsertString (DCM_SoftwareVersions,
-        PLASTIMATCH_VERSION_STRING);
+  dcmtk_copy_from_metadata (dataset, meta, DCM_Manufacturer, "Plastimatch");
+  dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
+  dcmtk_copy_from_metadata (dataset, meta, DCM_StationName, "");
+  dcmtk_copy_from_metadata (dataset, meta, DCM_ManufacturerModelName, "Plastimatch");
+  dcmtk_copy_from_metadata (dataset, meta, DCM_SoftwareVersions, PLASTIMATCH_VERSION_STRING);
 }

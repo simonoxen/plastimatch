@@ -22,11 +22,13 @@ public:
     std::string beam_limiting_device_rotation_direction;
 
     std::string scan_spot_tune_id;
+    unsigned long number_of_scan_spot_positions;
     std::string scan_spot_reordering_allowed;
     std::vector<float> scan_spot_position_map;
     std::vector<float> scan_spot_meterset_weights;
 
     unsigned long number_of_paintings;
+    float scanning_spot_size[2];
     
     float patient_support_angle;
     std::string patient_support_rotation_direction;
@@ -39,7 +41,6 @@ public:
     float table_top_longitudinal_position;
     float table_top_lateral_position;
     
-    float snout_position;
     float isocenter_position[3];
 
 public:

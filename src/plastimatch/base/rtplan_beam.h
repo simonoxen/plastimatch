@@ -24,6 +24,7 @@ public:
     std::string beam_dose_specification_point;
     /*! \brief Dose in Gy at beam specification point */
     float beam_dose;
+    float snout_position;
 
     /*! \brief Control point list */
     std::vector<Rtplan_control_pt*> cplist;

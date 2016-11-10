@@ -185,7 +185,8 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     /* Patient module, general study module */
     Dcmtk_module::set_patient (dataset, rsm->get_study_metadata ());
     Dcmtk_module::set_general_study (dataset, rsm);
-
+    Dcmtk_module::set_general_series (dataset, rsm->get_rtplan_metadata ());
+    
     /* RT series module */
     Dcmtk_module::set_rt_series (dataset, rtplan_metadata, "RTPLAN");
 
@@ -195,7 +196,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
 
     /* General equipment module */
-    Dcmtk_module::set_general_equipment (dataset);
+    Dcmtk_module::set_general_equipment (dataset,rtplan_metadata);
 
     /* RT general plan module */
     dataset->putAndInsertString (DCM_RTPlanLabel, "TESTONLY");
@@ -355,16 +356,31 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             s = PLM_to_string (cp->cumulative_meterset_weight);
             cp_item->putAndInsertString (DCM_CumulativeMetersetWeight,
                 s.c_str());
+	    if (c == 0) {
+	      dcmtk_put (cp_item, DCM_SnoutPosition, 
+			 beam->snout_position);
+	    }
             s = PLM_to_string (cp->nominal_beam_energy);
             cp_item->putAndInsertString (DCM_NominalBeamEnergy, s.c_str());
             s = PLM_to_string (cp->gantry_angle);
             cp_item->putAndInsertString (DCM_GantryAngle, s.c_str());
             cp_item->putAndInsertString (DCM_GantryRotationDirection,
                 cp->gantry_rotation_direction.c_str());
+            s = PLM_to_string (cp->number_of_paintings);
+            cp_item->putAndInsertString (DCM_NumberOfPaintings,
+					 s.c_str());
+	    cp_item->putAndInsertString (DCM_ScanSpotTuneID, cp->scan_spot_tune_id.c_str());
+            s = string_format ("%f\\%f", cp->scanning_spot_size[0],
+			       cp->scanning_spot_size[1]);
+            cp_item->putAndInsertString (DCM_ScanningSpotSize,
+					 s.c_str());
 
             /* Dcmtk has no putAndInsertFloat32Array, so we must 
                use more primitive methods */
             size_t num_spots = cp->scan_spot_position_map.size() / 2;
+	    s = PLM_to_string (num_spots);
+            cp_item->putAndInsertString (DCM_NumberOfScanSpotPositions,
+                s.c_str());
             if (num_spots != cp->scan_spot_meterset_weights.size()) {
                 lprintf ("Warning, scan spot positions (%d) and weights (%d)"
                     " are mismatched.\n", 
