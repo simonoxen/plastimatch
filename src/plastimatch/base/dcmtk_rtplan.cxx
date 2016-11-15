@@ -182,12 +182,9 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
 
-    /* Patient module, general study module */
+    /* Patient module, general study module, RT series module */
     Dcmtk_module::set_patient (dataset, rsm->get_study_metadata ());
     Dcmtk_module::set_general_study (dataset, rsm);
-    Dcmtk_module::set_general_series (dataset, rsm->get_rtplan_metadata ());
-    
-    /* RT series module */
     Dcmtk_module::set_rt_series (dataset, rtplan_metadata, "RTPLAN");
 
     /* Frame of reference module */
@@ -357,8 +354,8 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             cp_item->putAndInsertString (DCM_CumulativeMetersetWeight,
                 s.c_str());
 	    if (c == 0) {
-	      dcmtk_put (cp_item, DCM_SnoutPosition, 
-			 beam->snout_position);
+                dcmtk_put (cp_item, DCM_SnoutPosition, 
+                    beam->snout_position);
 	    }
             s = PLM_to_string (cp->nominal_beam_energy);
             cp_item->putAndInsertString (DCM_NominalBeamEnergy, s.c_str());
@@ -368,12 +365,12 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
                 cp->gantry_rotation_direction.c_str());
             s = PLM_to_string (cp->number_of_paintings);
             cp_item->putAndInsertString (DCM_NumberOfPaintings,
-					 s.c_str());
+                s.c_str());
 	    cp_item->putAndInsertString (DCM_ScanSpotTuneID, cp->scan_spot_tune_id.c_str());
             s = string_format ("%f\\%f", cp->scanning_spot_size[0],
-			       cp->scanning_spot_size[1]);
+                cp->scanning_spot_size[1]);
             cp_item->putAndInsertString (DCM_ScanningSpotSize,
-					 s.c_str());
+                s.c_str());
 
             /* Dcmtk has no putAndInsertFloat32Array, so we must 
                use more primitive methods */
@@ -409,23 +406,23 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             ofc = fele->putFloat32Array (f, num_spots);
             ofc = cp_item->insert (fele);
         }
-        }
+    }
     
-            /* ----------------------------------------------------------------- */
-            /*     Write the output file                                         */
-            /* ----------------------------------------------------------------- */
-            std::string filename;
-            if (d_ptr->filenames_with_uid) {
-            filename = string_format ("%s/rtplan_%s.dcm", dicom_dir,
-                d_ptr->rt_study_metadata->get_dose_series_uid());
-        } else {
-            filename = string_format ("%s/rtplan.dcm", dicom_dir);
-        }
-            make_parent_directories (filename);
+    /* ----------------------------------------------------------------- */
+    /*     Write the output file                                         */
+    /* ----------------------------------------------------------------- */
+    std::string filename;
+    if (d_ptr->filenames_with_uid) {
+        filename = string_format ("%s/rtplan_%s.dcm", dicom_dir,
+            d_ptr->rt_study_metadata->get_dose_series_uid());
+    } else {
+        filename = string_format ("%s/rtplan.dcm", dicom_dir);
+    }
+    make_parent_directories (filename);
 
-            ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
-            if (ofc.bad()) {
-            print_and_exit ("Error: cannot write DICOM RTPLAN (%s)\n", 
-                ofc.text());
-        }
-        }
+    ofc = fileformat.saveFile (filename.c_str(), EXS_LittleEndianExplicit);
+    if (ofc.bad()) {
+        print_and_exit ("Error: cannot write DICOM RTPLAN (%s)\n", 
+            ofc.text());
+    }
+}

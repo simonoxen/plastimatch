@@ -45,22 +45,42 @@ Dcmtk_module::set_general_study (
  }
 
 void
-Dcmtk_module::set_general_series_sro (
+Dcmtk_module::set_general_series (
     DcmDataset *dataset, 
-    const Rt_study_metadata::Pointer& rsm)
+    const Metadata::Pointer& meta,
+    const char* modality)
 {
-    dataset->putAndInsertOFStringArray (DCM_Modality, "REG");
+    dataset->putAndInsertOFStringArray (DCM_Modality, modality);
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         dicom_uid(PLM_UID_PREFIX).c_str());
-    dataset->putAndInsertString (DCM_SeriesNumber, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesNumber, 0);
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDate, 0);
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesTime, 0);
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDescription, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_OperatorsName, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_PatientPosition, "HFS");
 }
 
 void
-Dcmtk_module::set_general_series (
+Dcmtk_module::set_frame_of_reference (
     DcmDataset *dataset, 
+    const Rt_study_metadata::Pointer& rsm)
+{
+    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
+        rsm->get_frame_of_reference_uid());
+}
+
+void
+Dcmtk_module::set_general_equipment (DcmDataset *dataset,  
     const Metadata::Pointer& meta)
 {
-    dcmtk_copy_from_metadata (dataset, meta, DCM_OperatorsName, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_Manufacturer, "Plastimatch");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_StationName, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_ManufacturerModelName,
+        "Plastimatch");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SoftwareVersions,
+        PLASTIMATCH_VERSION_STRING);
 }
 
 void
@@ -76,18 +96,10 @@ Dcmtk_module::set_rt_series (
         It is safe to set here, and allow caller to override. */
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         dicom_uid(PLM_UID_PREFIX).c_str());
-    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesNumber, "");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesNumber, 0);
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDate, 0);
+    dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesTime, 0);
     dcmtk_copy_from_metadata (dataset, meta, DCM_SeriesDescription, "");
-    /* Series Date, Series Time go here */
+    dcmtk_copy_from_metadata (dataset, meta, DCM_OperatorsName, "");
 }
 
-void
-Dcmtk_module::set_general_equipment (DcmDataset *dataset,  
-				     const Metadata::Pointer& meta)
-{
-  dcmtk_copy_from_metadata (dataset, meta, DCM_Manufacturer, "Plastimatch");
-  dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
-  dcmtk_copy_from_metadata (dataset, meta, DCM_StationName, "");
-  dcmtk_copy_from_metadata (dataset, meta, DCM_ManufacturerModelName, "Plastimatch");
-  dcmtk_copy_from_metadata (dataset, meta, DCM_SoftwareVersions, PLASTIMATCH_VERSION_STRING);
-}

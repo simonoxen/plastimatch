@@ -28,7 +28,9 @@ dcmtk_copy_from_metadata (
             return;
         }
     }
-    dataset->putAndInsertString (tagkey, default_value);
+    if (default_value) {
+        dataset->putAndInsertString (tagkey, default_value);
+    }
 }
 
 void

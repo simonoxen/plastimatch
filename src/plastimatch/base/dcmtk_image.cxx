@@ -11,6 +11,7 @@
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
+#include "dcmtk_module.h"
 #include "dcmtk_rt_study.h"
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
@@ -448,16 +449,20 @@ Dcmtk_rt_study::image_load ()
 }
 
 static void
-dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
+dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
 {
     std::string tmp;
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
     Metadata::Pointer image_metadata;
-    if (drs) {
-        image_metadata = drs->get_image_metadata ();
+    if (rsm) {
+        image_metadata = rsm->get_image_metadata ();
     }
 
+    /* Patient, and General Study modules */
+    Dcmtk_module::set_patient (dataset, image_metadata);
+    Dcmtk_module::set_general_study (dataset, rsm);
+    
     /* Get modality */
     std::string modality = "CT";
     if (image_metadata) {
@@ -468,25 +473,72 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
         }
     }
 
-    dataset->putAndInsertString (DCM_ImageType, 
-        "DERIVED\\SECONDARY\\REFORMATTED");
+    /* General Series module */
+    Dcmtk_module::set_general_series (dataset, image_metadata,
+        modality.c_str());
+    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
+        rsm->get_ct_series_uid());
 
-    if (image_metadata->get_metadata (DCM_InstanceCreationDate) != "") {
-        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-            image_metadata->get_metadata(DCM_InstanceCreationDate).c_str());
+    /* Frame of Reference module */
+    Dcmtk_module::set_frame_of_reference (dataset, rsm);
+    /* XVI 4.5 requires a DCM_PositionReferenceIndicator */
+    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "SP");
+
+    /* General Image module */
+    tmp = string_format ("%d", dsd->instance_no);
+    dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
+    if (modality == "CT") {
+        dataset->putAndInsertString (DCM_ImageType, 
+            "DERIVED\\SECONDARY\\AXIAL");
     } else {
-        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
-            drs->get_study_date());
-    }
-    if (image_metadata->get_metadata (DCM_InstanceCreationTime) != "") {
-        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-            image_metadata->get_metadata(DCM_InstanceCreationTime).c_str());
-    } else {
-        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
-            drs->get_study_time());
+        dataset->putAndInsertString (DCM_ImageType, 
+            "DERIVED\\SECONDARY\\REFORMATTED");
     }
 
-    /* The SOPClassUID depends on the modality */
+    /* Image Plane module */
+    tmp = string_format ("%f\\%f", dsd->vol->spacing[0], dsd->vol->spacing[1]);
+    dataset->putAndInsertString (DCM_PixelSpacing, tmp.c_str());
+    dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop.c_str());
+    dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp.c_str());
+    dataset->putAndInsertString (DCM_SliceThickness, dsd->sthk.c_str());
+    dataset->putAndInsertString (DCM_SliceLocation, dsd->sloc.c_str());
+
+    /* Image Pixel module */
+    dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
+    dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
+    dataset->putAndInsertUint16 (DCM_Rows, (Uint16) dsd->vol->dim[1]);
+    dataset->putAndInsertUint16 (DCM_Columns, (Uint16) dsd->vol->dim[0]);
+    dataset->putAndInsertString (DCM_BitsAllocated, "16");
+    dataset->putAndInsertString (DCM_BitsStored, "16");
+    dataset->putAndInsertString (DCM_HighBit, "15");
+    dataset->putAndInsertString (DCM_PixelRepresentation, "1");
+    /* Convert to 16-bit signed int */
+    for (size_t i = 0; i < dsd->slice_size; i++) {
+        float f = dsd->slice_float[i];
+        dsd->slice_int16[i] = (int16_t) 
+            ((f - dsd->intercept) / dsd->slope);
+    }
+    dataset->putAndInsertUint16Array (DCM_PixelData, 
+        (Uint16*) dsd->slice_int16, dsd->slice_size);
+
+    /* CT Image module */
+    tmp = string_format ("%f", dsd->intercept);
+    dataset->putAndInsertString (DCM_RescaleIntercept, tmp.c_str());
+    tmp = string_format ("%f", dsd->slope);
+    dataset->putAndInsertString (DCM_RescaleSlope, tmp.c_str());
+    dataset->putAndInsertString (DCM_RescaleType, "HU");
+    dataset->putAndInsertString (DCM_KVP, "");
+    dataset->putAndInsertString (DCM_AcquisitionNumber, "");
+
+    /* VOI LUT module */
+    if (modality == "CT") {
+        dcmtk_copy_from_metadata (dataset, image_metadata,
+            DCM_WindowCenter, "40");
+        dcmtk_copy_from_metadata (dataset, image_metadata,
+            DCM_WindowWidth, "400");
+    }
+
+    /* SOP Common Module */
     if (modality == "MR") {
         dataset->putAndInsertString (
             DCM_SOPClassUID, UID_MRImageStorage);
@@ -500,84 +552,22 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer drs, Dcmtk_slice_data *dsd)
             DCM_SOPClassUID, UID_CTImageStorage);
     }
     dataset->putAndInsertString (DCM_SOPInstanceUID, dsd->slice_uid);
-
-    /* General Study Module */
-    dataset->putAndInsertString (DCM_StudyInstanceUID, drs->get_study_uid());
-    dataset->putAndInsertOFStringArray (DCM_StudyDate, drs->get_study_date());
-    dataset->putAndInsertOFStringArray (DCM_StudyTime, drs->get_study_time());
-    dcmtk_copy_from_metadata (dataset, image_metadata, 
-        DCM_StudyID, "10001");
-    dcmtk_copy_from_metadata (dataset, image_metadata, 
-        DCM_StudyDescription, "");
-
-    dataset->putAndInsertString (DCM_AccessionNumber, "");
-    dataset->putAndInsertString (DCM_Modality, modality.c_str());
-    dataset->putAndInsertString (DCM_Manufacturer, "Plastimatch");
-    dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, 
-        DCM_SeriesDescription, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientName, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientID, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, 
-        DCM_PatientBirthDate, "");
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_PatientSex, "");
-    dataset->putAndInsertString (DCM_SliceThickness, dsd->sthk.c_str());
-    dataset->putAndInsertString (DCM_SoftwareVersions, 
-        PLASTIMATCH_VERSION_STRING);
-    dcmtk_copy_from_metadata (dataset, image_metadata, 
-        DCM_PatientPosition, "HFS");
-
-    dataset->putAndInsertString (DCM_SeriesInstanceUID, 
-        drs->get_ct_series_uid());
-    dcmtk_copy_from_metadata (dataset, image_metadata, DCM_SeriesNumber, "1");
-    tmp = string_format ("%d", dsd->instance_no);
-    dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
-    //dataset->putAndInsertString (DCM_InstanceNumber, "0");
-    /* DCM_PatientOrientation seems to be not required.  */
-    // dataset->putAndInsertString (DCM_PatientOrientation, "L\\P");
-    dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp.c_str());
-    dataset->putAndInsertString (DCM_ImageOrientationPatient, 
-        dsd->iop.c_str());
-    dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        drs->get_frame_of_reference_uid());
-    /* XVI 4.5 requires a DCM_PositionReferenceIndicator */
-    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "SP");
-    dataset->putAndInsertString (DCM_SliceLocation, dsd->sloc.c_str());
-    dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
-    dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
-    dataset->putAndInsertUint16 (DCM_Rows, (Uint16) dsd->vol->dim[1]);
-    dataset->putAndInsertUint16 (DCM_Columns, (Uint16) dsd->vol->dim[0]);
-    tmp = string_format ("%f\\%f", dsd->vol->spacing[0], dsd->vol->spacing[1]);
-    dataset->putAndInsertString (DCM_PixelSpacing, tmp.c_str());
-    dataset->putAndInsertString (DCM_BitsAllocated, "16");
-    dataset->putAndInsertString (DCM_BitsStored, "16");
-    dataset->putAndInsertString (DCM_HighBit, "15");
-    dataset->putAndInsertString (DCM_PixelRepresentation, "1");
-
-    tmp = string_format ("%f", dsd->intercept);
-    dataset->putAndInsertString (DCM_RescaleIntercept, tmp.c_str());
-    tmp = string_format ("%f", dsd->slope);
-    dataset->putAndInsertString (DCM_RescaleSlope, tmp.c_str());
-
-    //dataset->putAndInsertString (DCM_RescaleIntercept, "-1024");
-    //dataset->putAndInsertString (DCM_RescaleSlope, "1");
-    dataset->putAndInsertString (DCM_RescaleType, "HU");
-
-    dcmtk_copy_from_metadata (dataset, image_metadata,
-        DCM_WindowCenter, "40");
-    dcmtk_copy_from_metadata (dataset, image_metadata,
-        DCM_WindowWidth, "400");
-
-    /* Convert to 16-bit signed int */
-    for (size_t i = 0; i < dsd->slice_size; i++) {
-        float f = dsd->slice_float[i];
-        //dsd->slice_int16[i] = (int16_t) (f + 1024);
-        dsd->slice_int16[i] = (int16_t) 
-            ((f - dsd->intercept) / dsd->slope);
+    if (image_metadata->get_metadata (DCM_InstanceCreationDate) != "") {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+            image_metadata->get_metadata(DCM_InstanceCreationDate).c_str());
+    } else {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+            rsm->get_study_date());
+    }
+    if (image_metadata->get_metadata (DCM_InstanceCreationTime) != "") {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+            image_metadata->get_metadata(DCM_InstanceCreationTime).c_str());
+    } else {
+        dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+            rsm->get_study_time());
     }
 
-    dataset->putAndInsertUint16Array (DCM_PixelData, 
-        (Uint16*) dsd->slice_int16, dsd->slice_size);
+    /* Write the output file */
     OFCondition status = fileformat.saveFile (dsd->fn.c_str(), 
         EXS_LittleEndianExplicit);
     if (status.bad()) {
