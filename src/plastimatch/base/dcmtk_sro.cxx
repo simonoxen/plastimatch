@@ -37,12 +37,12 @@ Dcmtk_sro::save (
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
 
-    Rt_study_metadata::Pointer rsm;
-    Metadata::Pointer study_meta = rsm_fixed->get_study_metadata ();
     if (!rsm_fixed || !rsm_moving) {
         print_and_exit ("Sorry, anonymous spatial registration objects "
             "are not yet supported.\n");
     }
+    Metadata::Pointer study_meta = rsm_fixed->get_study_metadata ();
+    Metadata::Pointer sro_meta = rsm_fixed->get_sro_metadata ();
 
     /* Patient module */
     Dcmtk_module::set_patient (dataset, study_meta);
@@ -55,7 +55,7 @@ Dcmtk_sro::save (
         rsm_moving->get_study_time());
 
     /* General Series module */
-    Dcmtk_module::set_general_series (dataset, study_meta, "REG");
+    Dcmtk_module::set_general_series (dataset, sro_meta, "REG");
 
     /* Spatial Registration Series module */
     /* (nothing to do) */
@@ -64,7 +64,7 @@ Dcmtk_sro::save (
     Dcmtk_module::set_frame_of_reference (dataset, rsm_fixed);
 
     /* General Equipment module */
-    Dcmtk_module::set_frame_of_reference (dataset, rsm_fixed);
+    Dcmtk_module::set_general_equipment (dataset, study_meta);
 
     /* Spatial Registration module */
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 

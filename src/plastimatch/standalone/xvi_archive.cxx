@@ -19,11 +19,15 @@
    ** Needs fix for multiple reference studies **
 
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <string.h>
 #include "INIReader.h"
+#if PLM_DCM_USE_DCMTK
+#include "dcmtk_config.h"
+#include "dcmtk/dcmdata/dctk.h"
+#endif
 
-#include "plm_config.h"
 #include "dcmtk_sro.h"
 #include "dir_list.h"
 #include "file_util.h"
@@ -207,17 +211,28 @@ do_xvi_archive (Xvi_archive_parms *parms)
         if (date_string != "" && time_string != "") {
             cbct_meta->set_study_date (date_string);
             cbct_meta->set_study_time (time_string);
-            cbct_meta->set_image_metadata(0x0008, 0x0012, date_string);
-            cbct_meta->set_image_metadata(0x0008, 0x0013, time_string);
+            cbct_meta->set_image_metadata(DCM_InstanceCreationDate, date_string);
+            cbct_meta->set_image_metadata(DCM_InstanceCreationTime, time_string);
         }
         std::string study_description = "CBCT: " + linac_string;
-        cbct_meta->set_study_metadata (0x0008, 0x1030, study_description);
-        cbct_meta->set_image_metadata (0x0028, 0x1050, "500");  // Window
-        cbct_meta->set_image_metadata (0x0028, 0x1051, "2000"); // Level
+        cbct_meta->set_study_metadata (DCM_StudyDescription, study_description);
+        cbct_meta->set_study_uid (reference_meta->get_study_uid());
+        cbct_meta->set_image_metadata (DCM_WindowCenter, "500");
+        cbct_meta->set_image_metadata (DCM_WindowWidth, "2000");
         std::string patient_position
-            = reference_meta->get_image_metadata(0x0018, 0x5100);
+            = reference_meta->get_image_metadata (DCM_PatientPosition);
+        cbct_meta->set_image_metadata (DCM_PatientPosition, patient_position);
+        std::string cbct_series_description
+            = "CBCT " + date_string + " " + time_string;
+        cbct_meta->set_image_metadata (DCM_SeriesDescription,
+            cbct_series_description);
+
+        /* Set DICOM SRO header fields */
+        std::string sro_series_description
+            = "REG " + date_string + " " + time_string;
+        reference_meta->set_sro_metadata (DCM_SeriesDescription,
+            sro_series_description);
         
-        cbct_meta->set_image_metadata (0x0018, 0x5100, patient_position);
         printf ("REF CT patient position is %s\n", patient_position.c_str());
 
         // XiO incorrectly sets patient position metadata in their header

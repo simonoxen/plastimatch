@@ -113,6 +113,18 @@ public:
     const Metadata::Pointer& get_rtplan_metadata () const;
     void set_rtplan_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
+    Metadata::Pointer& get_sro_metadata ();
+    const Metadata::Pointer& get_sro_metadata () const;
+    void set_sro_metadata (unsigned short key1, unsigned short key2,
+        const std::string& val);
+#if PLM_DCM_USE_DCMTK
+    const std::string& get_study_metadata (const DcmTagKey& key) const;
+    void set_study_metadata (const DcmTagKey& key, const std::string& val);
+    const std::string& get_image_metadata (const DcmTagKey& key) const;
+    void set_image_metadata (const DcmTagKey& key, const std::string& val);
+    const std::string& get_sro_metadata (const DcmTagKey& key) const;
+    void set_sro_metadata (const DcmTagKey& key, const std::string& val);
+#endif
     void generate_new_study_uids ();
     void generate_new_series_uids ();
 };
