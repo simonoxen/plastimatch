@@ -4284,7 +4284,7 @@ plmtest_check_interval ("vf-invert-trans-1-check"
   "-10.0"
   "-9.9"
   )
-set_tests_properties (vf-invert-trans-1 PROPERTIES DEPENDS vf-trans)
+set_tests_properties (vf-invert-trans-1 PROPERTIES DEPENDS vf-trans-1)
 set_tests_properties (vf-invert-trans-1-stats 
   PROPERTIES DEPENDS vf-invert-trans-1)
 set_tests_properties (vf-invert-trans-1-check 
@@ -4483,8 +4483,8 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/wed
   "${PLM_BUILD_TESTING_DIR}/wed-c.txt"
   )
-set_tests_properties (wed-b PROPERTIES DEPENDS lung-1)
-set_tests_properties (wed-b PROPERTIES DEPENDS wed-a)
+set_tests_properties (wed-c PROPERTIES DEPENDS lung-1)
+set_tests_properties (wed-c PROPERTIES DEPENDS wed-a)
 
 ## -------------------------------------------------------------------------
 ## i hate myself
