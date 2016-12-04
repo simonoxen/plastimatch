@@ -21,7 +21,7 @@ Step 2: Marking the version
 #. Bump version number in CMakeLists
 #. Bump version number in doc/sphinx/conf.py
 #. Regenerate man pages
-#. Update in remote
+#. Push to remote
 #. Tag version
 
 Step 3: Making the final version

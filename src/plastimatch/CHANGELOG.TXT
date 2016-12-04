@@ -1,5 +1,5 @@
 Version 1.6.5 (tag v1.6.5)
-@DATE@
+Sun Dec  4 18:07:24 EST 2016
 * Improved support for DICOM RT ion plan
 * Better handling study-wide DICOM metadata
 * Allow use of system dlib library
