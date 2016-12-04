@@ -35,9 +35,16 @@ Build dependencies
 
 Debian installs
 ^^^^^^^^^^^^^^^
-The following will get you started on a debian system::
+On debian, all the needed dependencies are already included.
+The following command will install all the needed prerequisites.::
 
-  sudo apt-get install cmake-curses-gui g++ make libdcmtk2-dev libinsighttoolkit4-dev libpng12-dev subversion zlib1g-dev
+   sudo apt-get install g++ make git cmake-curses-gui \
+     libdcmtk-dev libdlib-dev libfftw3-dev \
+     libgdcm2-dev libinsighttoolkit4-dev \
+     libpng-dev libtiff-dev uuid-dev zlib1g-dev 
+
+..  sudo apt-get install cmake-curses-gui g++ make \
+    libdcmtk2-dev libinsighttoolkit4-dev libpng12-dev subversion zlib1g-dev
 
 
 Cmake (required)
