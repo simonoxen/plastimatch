@@ -87,14 +87,19 @@ tarball has everything it needs.
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch
-     dch -v 1.6.3+dfsg-1
+     dch -v 1.6.5+dfsg-1
      git commit -a -m "Update changelog"
+
+#. Make a tarball::
+
+   V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
 
 #. Run gbp import-orig.  This will update your source code from the tarball
    into the directory and local git repository, without pushing these changes
    onto the remote server::
 
-     gbp import-orig --pristine-tar -u 1.6.3+dfsg \
+     cd ~/debian-med/plastimatch
+     gbp import-orig --pristine-tar -u 1.6.5+dfsg \
      --filter=doc/*.doc \
      --filter=doc/*.odt \
      --filter=doc/*.pdf \
@@ -116,7 +121,7 @@ tarball has everything it needs.
      --filter=libs/msinttypes \
      --filter=libs/sqlite-3.6.21 \
      --filter-pristine-tar \
-     ~/build/plastimatch-pristine/plastimatch-1.6.3-Source.tar.bz2
+     ~/work/plastimatch-1.6.5.tar.bz2
    
 #. If you make changes and you want to reset your repository, try this::
 
@@ -126,7 +131,7 @@ tarball has everything it needs.
      git reset --hard origin/upstream --
      git checkout master
      git reset --hard origin/master --
-     git tag -d upstream/1.6.3+dfsg
+     git tag -d upstream/1.6.5+dfsg
 
 #. Run gbp buildpackage to create the dsc::
 
@@ -156,7 +161,7 @@ Step 3: Build the debian package
 --------------------------------
 #. Patch git with upstream::
 
-     gbp import-orig --pristine-tar --uscan -u 1.6.3+dfsg
+     gbp import-orig --pristine-tar --uscan -u 1.6.5+dfsg
 
 #. Test::
 

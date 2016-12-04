@@ -7,11 +7,7 @@ of plastimatch.
 
 Step 1: Preliminary testing
 ---------------------------
-#. Make sure the changelog is up-to-date
-#. Make tarball::
-
-     V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
-
+#. Use tarball described in "Debian packaging" page (need link here)
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
 
@@ -22,11 +18,15 @@ Step 2: Marking the version
 #. Bump version number in doc/sphinx/conf.py
 #. Regenerate man pages
 #. Push to remote
-#. Tag version
+#. Tag version::
+
+     git tag -a "v1.6.5" -m "Version 1.6.5"
+     git push origin --tags
 
 Step 3: Making the final version
 --------------------------------
-#. Make tarball (or, download tarball from gitlab ??)
+#. Download tarball from gitlab.
+#. Edit gitlab changelog.
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
 #. Upload to sourceforge::
