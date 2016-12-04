@@ -10,7 +10,7 @@ Step 1: Preliminary testing
 #. Make sure the changelog is up-to-date
 #. Make tarball::
 
-     git archive --prefix=plastimatch-1.6.4/ master | bzip2 > ../plastimatch-1.6.4.tar.bz2
+     V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
 
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
