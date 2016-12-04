@@ -65,7 +65,7 @@ Setting up a build system for the first time
 
      git-pbuilder login --save-after-login
      apt-get update
-     apt-get install libdcmtk-dev libgdcm2-dev libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
+     apt-get install libdcmtk-dev libdlib-dev libgdcm2-dev libfftw3-dev libinsighttoolkit4-dev libpng-dev libtiff-dev uuid-dev zlib1g-dev
   
    See this link for more information https://wiki.debian.org/git-pbuilder
 

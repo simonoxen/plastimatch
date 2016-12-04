@@ -20,12 +20,13 @@ Step 2: Marking the version
 #. Bump version number in CHANGELOG
 #. Bump version number in CMakeLists
 #. Bump version number in doc/sphinx/conf.py
+#. Regenerate man pages
 #. Update in remote
 #. Tag version
 
 Step 3: Making the final version
 --------------------------------
-#. Make tarball
+#. Make tarball (or, download tarball from gitlab ??)
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
 #. Upload to sourceforge::
