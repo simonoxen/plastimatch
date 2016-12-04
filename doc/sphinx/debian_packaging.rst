@@ -122,7 +122,10 @@ tarball has everything it needs.
      --filter=libs/sqlite-3.6.21 \
      --filter-pristine-tar \
      ~/work/plastimatch-1.6.5.tar.bz2
-   
+
+   This didn't work for me the last time I tried it.  Instead, I went ahead
+   and created the version, and then downloaded with uscan.
+     
 #. If you make changes and you want to reset your repository, try this::
 
      git checkout pristine-tar
