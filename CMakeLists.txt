@@ -365,10 +365,17 @@ add_subdirectory (libs/devillard)
 ##-----------------------------------------------------------------------------
 ##  If using local dlib
 ##-----------------------------------------------------------------------------
-if (NOT DLIB_FOUND)
-    set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
-    set (DLIB_LIBRARIES "")
-    set (DLIB_HAVE_LIBRARY FALSE)
+if (dlib_FOUND)
+  set (DLIB_INCLUDE_DIR ${dlib_INCLUDE_DIR})
+  set (DLIB_LIBRARIES ${dlib_LIBRARIES})
+  set (DLIB_FOUND 
+endif ()
+if (DLIB_FOUND)
+  set (DLIB_HAVE_LIBRARY TRUE)
+else ()
+  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
+  set (DLIB_LIBRARIES "")
+  set (DLIB_HAVE_LIBRARY FALSE)
 endif ()
 
 ##-----------------------------------------------------------------------------
