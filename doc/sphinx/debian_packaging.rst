@@ -189,6 +189,10 @@ Step 3: Build the debian package
 
      gbp buildpackage --git-pbuilder --git-ignore-new -j16
    
+#. If you need select a patch from git, do somthing like this::
+
+     git format-patch HEAD~
+
 #. Push changes to server::
 
      git push --all --tags origin
@@ -198,7 +202,7 @@ Various hints
 
 Switching between git branches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Like this::dev
+Like this::
 
   git checkout pristine-tar
   git checkout upstream
