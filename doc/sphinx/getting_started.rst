@@ -18,7 +18,7 @@ The recommended method for downloading plastimatch is to use subversion
 to download the source code, and then compile the source.
 To download using subversion, use the following command::
 
-  $ git clone https://gitlab.com/plastimatch/plastimatch.git
+  git clone https://gitlab.com/plastimatch/plastimatch.git
 
 If you are using Windows, you will need a git client.
 We recommend cygwin (http://cygwin.com) for command-line users, 
@@ -28,7 +28,7 @@ If you have already downloaded a previous version,
 you can update to the latest version by executing the following command 
 from within the plastimatch source directory::
 
-  $ git pull
+  git pull
 
 Build dependencies
 ------------------

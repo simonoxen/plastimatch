@@ -20,7 +20,8 @@ Setting up a build system for the first time
 
 #. Install the requisite packages::
 
-     sudo apt-get install devscripts pbuilder debhelper git-buildpackage cowbuilder
+   sudo apt-get install devscripts pbuilder debhelper \
+     git-buildpackage cowbuilder
 
    Note: if your host is not sid, you might need to install a newer gcc version 
    than exists on the native release.  You can do something like this:
@@ -75,9 +76,13 @@ Step 1: Preliminary testing
 The preliminary testing is performed to make sure that the upstream 
 tarball has everything it needs.
 
+#. Clean pbuilder environment (if needed)::
+
+     pbuilder clean
+
 #. Refresh your git-pbuilder environment (if needed)::
 
-     sudo git-pbuilder --update
+     git-pbuilder update
 
 #. Test parallel regression tests::
 
@@ -92,7 +97,7 @@ tarball has everything it needs.
 
 #. Make a tarball::
 
-   V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
+     V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
 
 #. Run gbp import-orig.  This will update your source code from the tarball
    into the directory and local git repository, without pushing these changes
@@ -164,14 +169,24 @@ Step 3: Build the debian package
 --------------------------------
 #. Patch git with upstream::
 
-     gbp import-orig --pristine-tar --uscan -u 1.6.5+dfsg
+     gbp import-orig --pristine-tar --uscan 
 
+#. The above won't work if you already edited and committed the
+   debian changelog.  Instead, download and then patch.::
+
+     uscan --verbose --force-download
+     gbp import-orig --pristine-tar ../plastimatch_1.6.5+dfsg.1.orig.tar.gz
+     
 #. Test::
 
      gbp buildpackage
 
    Do I need --pristine-tar here?
-     
+
+   Another way this might be done is::
+
+     gbp buildpackage --git-pbuilder --git-ignore-new -j16
+   
 #. Push changes to server::
 
      git push --all --tags origin
@@ -181,7 +196,7 @@ Various hints
 
 Switching between git branches
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Like this::
+Like this::dev
 
   git checkout pristine-tar
   git checkout upstream
