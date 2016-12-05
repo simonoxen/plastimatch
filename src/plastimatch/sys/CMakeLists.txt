@@ -53,8 +53,9 @@ endforeach ()
 ##-----------------------------------------------------------------------------
 ##  LIBRARY DEPENDENCIES
 ##-----------------------------------------------------------------------------
-set (PLMSYS_LIBRARY_DEPENDENCIES 
-    )
+set (PLMSYS_LIBRARY_DEPENDENCIES
+  ${DLIB_LIBRARIES}
+  )
 if (LIBDL_FOUND)
     set (PLMSYS_LIBRARY_DEPENDENCIES
 	${PLMSYS_LIBRARY_DEPENDENCIES}
