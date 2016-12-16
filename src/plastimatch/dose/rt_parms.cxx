@@ -181,7 +181,7 @@ Rt_parms::set_key_value (
         }
         else if (key == "target") {
             d_ptr->rt_plan->set_target (val);
-         }
+        }
         else if (key == "threading") {
             Threading threading = THREADING_CPU_OPENMP;
             if (val == "single") {
@@ -219,13 +219,13 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%f", &norm_dose) != 1) {
                 goto error_exit;
             }
-			if (norm_dose <= 0) {
-				goto error_exit;
-			}
+            if (norm_dose <= 0) {
+                goto error_exit;
+            }
             d_ptr->rt_plan->set_normalization_dose (norm_dose);
-			d_ptr->rt_plan->set_have_dose_norm(true);
+            d_ptr->rt_plan->set_have_dose_norm(true);
         }
-		else if (key == "ref_dose_point") {
+        else if (key == "ref_dose_point") {
             float rdp[3];
             int rc = sscanf (val.c_str(), "%f %f %f", 
                 &rdp[0], &rdp[1], &rdp[2]);
@@ -233,9 +233,9 @@ Rt_parms::set_key_value (
                 goto error_exit;
             }
             d_ptr->rt_plan->set_ref_dose_point (rdp);
-			d_ptr->rt_plan->set_have_ref_dose_point(true);
+            d_ptr->rt_plan->set_have_ref_dose_point(true);
         }
-		else if (key == "non_normalized_dose") {
+        else if (key == "non_normalized_dose") {
             if (val.length() >= 1) {
                 d_ptr->rt_plan->set_non_norm_dose (val[0]);
             } else {
@@ -259,7 +259,7 @@ Rt_parms::set_key_value (
                 goto error_exit;
             } 
         }
-		else if (key == "beam_line") {
+        else if (key == "beam_line") {
             rt_beam->set_beam_line_type (val);
         }
         else if (key == "homo_approx") {
@@ -288,7 +288,7 @@ Rt_parms::set_key_value (
         else if (key == "rc_out") {
             rt_beam->set_range_compensator_out (val);
         }
-		else if (key == "particle_number_out") {
+        else if (key == "particle_number_out") {
             rt_beam->get_mebs()->set_particle_number_out (val);
         }
         else if (key == "sigma_out") {
@@ -315,13 +315,13 @@ Rt_parms::set_key_value (
             if (sscanf (val.c_str(), "%lf", &(d_ptr->max_depth)) != 1) {
                 goto error_exit;
             }
-			rt_beam->get_mebs()->set_depth_end(d_ptr->max_depth);
+            rt_beam->get_mebs()->set_depth_end(d_ptr->max_depth);
         }
         else if (key == "depth_dose_z_res") {
             if (sscanf (val.c_str(), "%lf", &(d_ptr->depth_res)) != 1) {
                 goto error_exit;
             }
-			rt_beam->get_mebs()->set_depth_resolution(d_ptr->max_depth);
+            rt_beam->get_mebs()->set_depth_resolution(d_ptr->max_depth);
         }
         else if (key == "source") {
             float src[3];
@@ -343,7 +343,7 @@ Rt_parms::set_key_value (
         }
         else if (key == "prescription_min_max") {
             float prescription_min;
-			float prescription_max;
+            float prescription_max;
             int rc = sscanf (val.c_str(), "%f %f", &prescription_min, &prescription_max);
             if (rc != 2) {
                 goto error_exit;
@@ -392,7 +392,7 @@ Rt_parms::set_key_value (
             }
             rt_beam->set_aperture_spacing (ap_spacing);
         }
-		else if (key == "range_comp_mc_model") {
+        else if (key == "range_comp_mc_model") {
             if (val.length() >= 1) {
                 rt_beam->set_rc_MC_model (val[0]);
             } else {
@@ -412,9 +412,9 @@ Rt_parms::set_key_value (
         else if (key == "range_compensator_file_in") {
             rt_beam->set_range_compensator_in (val);
         }
-		else if (key == "particle_number_in") {
+        else if (key == "particle_number_in") {
             rt_beam->get_mebs()->set_particle_number_in (val);
-			rt_beam->get_mebs()->set_have_particle_number_map(true);
+            rt_beam->get_mebs()->set_have_particle_number_map(true);
         }
         else if (key == "aperture_smearing") {
             float smearing;
@@ -437,7 +437,7 @@ Rt_parms::set_key_value (
             }
             rt_beam->get_mebs()->set_distal_margin (distal_margin);
         }
-		else if (key == "energy_resolution") {
+        else if (key == "energy_resolution") {
             float eres;
             if (sscanf (val.c_str(), "%f", &eres) != 1) {
                 goto error_exit;
@@ -487,7 +487,7 @@ Rt_parms::set_key_value (
     print_and_exit ("Unknown section value: %s\n", section.c_str());
     return PLM_ERROR;
 
-	error_exit:
+error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", 
         key.c_str(), val.c_str());
     return PLM_ERROR;
