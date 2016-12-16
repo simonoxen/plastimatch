@@ -31,10 +31,6 @@ public:
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
 
-    /* GCS FIX: These were disabled, and are needing some re-engineering */
-    std::list< std::string > moving_jobs;
-    std::list< std::string > fixed_jobs;
-
 public:
     Registration_parms_private () {
         shared = new Shared_parms;
@@ -117,31 +113,6 @@ Registration_parms::~Registration_parms()
     delete d_ptr;
 }
 
-#if defined (GCS_FIXME)  // Delete this, replace with compose_filename
-// JAS 2012.02.13 -- TODO: Move somewhere more appropriate
-static void
-check_trailing_slash (char* s)
-{
-    int i=0;
-    while (s[i++] != '\0');
-
-    if (s[i-2] != '/') {
-        strcat (s, "/");
-    }
-}
-#endif
-
-
-#if defined (GCS_FIXME)  // Delete this, replace with Dir_list
-int
-populate_jobs ()
-{
-    /* This function should read through the directory, 
-       and identify the input files for each registration role 
-       (fixed, moving, etc.) */
-}
-#endif
-
 Plm_return_code
 Registration_parms::set_key_value (
     const std::string& section,
@@ -182,6 +153,7 @@ Registration_parms::set_key_value (
         if (shared->fixed_fn.size() == 0) {
             goto error_exit;
         }
+        printf ("FF: %s\n", shared->fixed_fn[0].c_str());
     }
     else if (key == "moving") {
         if (section_process) goto key_not_allowed_in_section_process;
@@ -190,30 +162,6 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
-#if defined (GCS_FIXME) // stubbed out until above is fixed
-    else if (key == "fixed_dir") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        this->fixed_dir = val;
-        check_trailing_slash (this->fixed_dir);
-        this->num_jobs = populate_jobs (this->fixed_jobs, this->fixed_dir);
-    }
-    else if (key == "moving_dir") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        this->moving_dir = val;
-        check_trailing_slash (this->moving_dir);
-        this->num_jobs = populate_jobs (this->moving_jobs, this->moving_dir);
-    }
-    else if (key == "img_out_dir") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        this->img_out_dir = val;
-        check_trailing_slash (this->img_out_dir);
-    }
-    else if (key == "vf_out_dir") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        this->vf_out_dir = val;
-        check_trailing_slash (this->vf_out_dir);
-    }
-#endif
     else if (key == "xf_in"
         || key == "xform_in"
         || key == "vf_in")
@@ -540,7 +488,7 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
         stage->metric_type.clear();
-        for (int i = 0; i < metric_vec.size(); i++) {
+        for (size_t i = 0; i < metric_vec.size(); i++) {
             if (metric_vec[i] == "gm") {
                 stage->metric_type.push_back (REGISTRATION_METRIC_GM);
             }
@@ -1108,85 +1056,6 @@ Registration_parms::parse_command_file (const char* options_fn)
     /* Parse the string */
     return this->set_command_string (buffer.str());
 }
-
-#if defined (GCS_FIX)  // Needs re-engineering
-/* JAS 2012.03.13
- *  This is a temp solution */
-/* GCS 2012-12-28: Nb. regp->job_idx must be set prior to calling 
-   this function */
-void
-Registration_parms::set_job_paths (void)
-{
-    /* Setup input paths */
-    if (*(this->fixed_dir)) {
-        d_ptr->fixed_fn = string_format (
-            "%s%s", this->fixed_dir, this->fixed_jobs[this->job_idx]);
-    }
-    if (*(this->moving_dir)) {
-        d_ptr->moving_fn = string_format (
-            "%s%s", this->moving_dir, this->moving_jobs[this->job_idx]);
-    }
-
-    /* Setup output paths */
-    /*   NOTE: For now, output files inherit moving image names */
-    if (*(this->img_out_dir)) {
-        if (!strcmp (this->img_out_dir, this->moving_dir)) {
-            strcpy (this->img_out_fn, this->img_out_dir);
-            strcat (this->img_out_fn, "warp/");
-            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
-        } else {
-            strcpy (this->img_out_fn, this->img_out_dir);
-            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
-        }
-        /* If not dicom, we give a default name */
-        if (this->img_out_fmt != IMG_OUT_FMT_DICOM) {
-            std::string fn = string_format ("%s.mha", this->img_out_fn);
-            strcpy (this->img_out_fn, fn.c_str());
-        }
-    } else {
-        /* Output directory not specifed but img_out was... smart fallback*/
-        if (*(this->img_out_fn)) {
-            strcpy (this->img_out_fn, this->moving_dir);
-            strcat (this->img_out_fn, "warp/");
-            strcat (this->img_out_fn, this->moving_jobs[this->job_idx]);
-        }
-    }
-    if (*(this->vf_out_dir)) {
-        if (!strcmp (this->vf_out_dir, this->moving_dir)) {
-            strcpy (this->vf_out_fn, this->img_out_dir);
-            strcat (this->vf_out_fn, "vf/");
-            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
-        } else {
-            strcpy (this->vf_out_fn, this->vf_out_dir);
-            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
-        }
-        /* Give a default name */
-        std::string fn = string_format ("%s_vf.mha", this->vf_out_fn);
-        strcpy (this->vf_out_fn, fn.c_str());
-    } else {
-        /* Output directory not specifed but vf_out was... smart fallback*/
-        if (*(this->vf_out_fn)) {
-            strcpy (this->vf_out_fn, this->moving_dir);
-            strcat (this->vf_out_fn, "vf/");
-            strcat (this->vf_out_fn, this->moving_jobs[this->job_idx]);
-        }
-    }
-}
-#endif
-
-#if defined (commentout)
-const std::string& 
-Registration_parms::get_fixed_fn ()
-{
-    return d_ptr->fixed_fn;
-}
-
-const std::string& 
-Registration_parms::get_moving_fn ()
-{
-    return d_ptr->moving_fn;
-}
-#endif
 
 Shared_parms*
 Registration_parms::get_shared_parms ()

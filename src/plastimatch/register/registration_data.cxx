@@ -53,17 +53,20 @@ void
 Registration_data::load_shared_input_files (const Shared_parms* shared)
 {
     /* Load images */
-    Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
-    logfile_printf ("Loading fixed image: %s\n", 
-        shared->fixed_fn[0].c_str());
-    this->fixed_image = Plm_image::New (new Plm_image (
-            shared->fixed_fn[0], image_type));
+    if (shared->fixed_fn.size() != 0) {
+        logfile_printf ("Loading fixed image: %s\n", 
+            shared->fixed_fn[0].c_str());
+        this->fixed_image = Plm_image::New (shared->fixed_fn[0], 
+            PLM_IMG_TYPE_ITK_FLOAT);
+    }
 
-    logfile_printf ("Loading moving image: %s\n", 
-        shared->moving_fn[0].c_str());
-    this->moving_image = Plm_image::New (new Plm_image (
-            shared->moving_fn[0], image_type));
-
+    if (shared->moving_fn.size() != 0) {
+        logfile_printf ("Loading moving image: %s\n", 
+            shared->moving_fn[0].c_str());
+        this->moving_image = Plm_image::New (shared->moving_fn[0], 
+            PLM_IMG_TYPE_ITK_FLOAT);
+    }
+    
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
