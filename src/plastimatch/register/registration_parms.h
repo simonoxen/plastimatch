@@ -58,8 +58,8 @@ public:
     int parse_command_file (const char* options_fn);
     void set_job_paths (void);
 public:
-    const std::string& get_fixed_fn ();
-    const std::string& get_moving_fn ();
+    //const std::string& get_fixed_fn ();
+    //const std::string& get_moving_fn ();
     Shared_parms* get_shared_parms ();
     void delete_all_stages ();
     std::list<Stage_parms*>& get_stages ();

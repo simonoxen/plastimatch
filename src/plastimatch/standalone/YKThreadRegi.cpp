@@ -53,10 +53,6 @@ void YKThreadRegi::run()//called by thread.start()
             strPath.c_str());
     }
 
-    std::string strFixed = reg.get_registration_parms()->get_fixed_fn(); //  return d_ptr->rparms;
-    std::string strMoving = reg.get_registration_parms()->get_moving_fn();   
-
-
     QTime time;
     time.start();
     try {

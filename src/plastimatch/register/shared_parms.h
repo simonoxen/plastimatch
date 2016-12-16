@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 #include <string>
+#include <vector>
 
 class PLMREGISTER_API Shared_parms {
 public:
@@ -14,6 +15,10 @@ public:
     ~Shared_parms ();
 
 public:
+    /* Image files */
+    std::vector<std::string> fixed_fn;
+    std::vector<std::string> moving_fn;
+    
     /* ROI */
     bool fixed_roi_enable;
     bool moving_roi_enable;

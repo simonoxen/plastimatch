@@ -40,19 +40,6 @@ Registration_data::~Registration_data ()
 void
 Registration_data::load_global_input_files (Registration_parms::Pointer& regp)
 {
-    Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
-
-    /* Load images */
-    logfile_printf ("Loading fixed image: %s\n", 
-        regp->get_fixed_fn().c_str());
-    this->fixed_image = Plm_image::New (new Plm_image (
-            regp->get_fixed_fn(), image_type));
-
-    logfile_printf ("Loading moving image: %s\n", 
-        regp->get_moving_fn().c_str());
-    this->moving_image = Plm_image::New (new Plm_image (
-            regp->get_moving_fn(), image_type));
-
     this->load_shared_input_files (regp->get_shared_parms());
 }
 
@@ -65,6 +52,18 @@ Registration_data::load_stage_input_files (const Stage_parms* stage)
 void
 Registration_data::load_shared_input_files (const Shared_parms* shared)
 {
+    /* Load images */
+    Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
+    logfile_printf ("Loading fixed image: %s\n", 
+        shared->fixed_fn[0].c_str());
+    this->fixed_image = Plm_image::New (new Plm_image (
+            shared->fixed_fn[0], image_type));
+
+    logfile_printf ("Loading moving image: %s\n", 
+        shared->moving_fn[0].c_str());
+    this->moving_image = Plm_image::New (new Plm_image (
+            shared->moving_fn[0], image_type));
+
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 

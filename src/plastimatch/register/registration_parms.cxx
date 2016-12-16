@@ -28,8 +28,6 @@
 class Registration_parms_private
 {
 public:
-    std::string moving_fn;
-    std::string fixed_fn;
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
 
@@ -179,12 +177,18 @@ Registration_parms::set_key_value (
 
     /* The following keywords are only allowed globally */
     if (key == "fixed") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        d_ptr->fixed_fn = val;
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->fixed_fn = string_split (val, ',');
+        if (shared->fixed_fn.size() == 0) {
+            goto error_exit;
+        }
     }
     else if (key == "moving") {
-        if (!section_global) goto key_only_allowed_in_section_global;
-        d_ptr->moving_fn = val;
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->moving_fn = string_split (val, ',');
+        if (shared->moving_fn.size() == 0) {
+            goto error_exit;
+        }
     }
 #if defined (GCS_FIXME) // stubbed out until above is fixed
     else if (key == "fixed_dir") {
@@ -741,28 +745,28 @@ Registration_parms::set_key_value (
         }
     }
     else if (key == "mattes_fixed_minVal"
-        ||key == "mi_fixed_minVal") {
+        || key == "mi_fixed_minVal") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_fixed_maxVal"
-        ||key == "mi_fixed_maxVal") {
+        || key == "mi_fixed_maxVal") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_fixed_image_maxVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_moving_minVal"
-        ||key == "mi_moving_minVal") {
+        || key == "mi_moving_minVal") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_minVal) != 1) {
             goto error_exit;
         }
     }
     else if (key == "mattes_moving_maxVal"
-        ||key == "mi_moving_maxVal") {
+        || key == "mi_moving_maxVal") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%g", &stage->mi_moving_image_maxVal) != 1) {
             goto error_exit;
@@ -1170,6 +1174,7 @@ Registration_parms::set_job_paths (void)
 }
 #endif
 
+#if defined (commentout)
 const std::string& 
 Registration_parms::get_fixed_fn ()
 {
@@ -1181,6 +1186,7 @@ Registration_parms::get_moving_fn ()
 {
     return d_ptr->moving_fn;
 }
+#endif
 
 Shared_parms*
 Registration_parms::get_shared_parms ()
