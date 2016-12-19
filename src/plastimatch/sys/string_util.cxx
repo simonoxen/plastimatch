@@ -447,18 +447,20 @@ split_array_index (
     if (start_loc == std::string::npos
         && end_loc == std::string::npos)
     {
-        array = s;
+        array = string_trim (s);
         index = "";
         return true;
     }
     if (start_loc != std::string::npos
         && end_loc != std::string::npos
-        && end_loc > start_loc)
+        && end_loc > start_loc + 1)
     {
         array = string_trim (s.substr (0, start_loc));
-        index = string_trim (s.substr (start_loc + 1, end_loc));
+        index = string_trim (s.substr (start_loc + 1, end_loc - start_loc - 1));
         return true;
     }
+    array = string_trim (s);
+    index = "";
     return false;
 }
 

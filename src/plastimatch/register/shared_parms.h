@@ -5,8 +5,8 @@
 #define _shared_parms_h_
 
 #include "plmregister_config.h"
+#include <map>
 #include <string>
-#include <vector>
 
 class PLMREGISTER_API Shared_parms {
 public:
@@ -16,9 +16,9 @@ public:
 
 public:
     /* Image files */
-    std::vector<std::string> fixed_fn;
-    std::vector<std::string> moving_fn;
-    
+    std::map<std::string,std::string> fixed_fn;
+    std::map<std::string,std::string> moving_fn;
+   
     /* ROI */
     bool fixed_roi_enable;
     bool moving_roi_enable;

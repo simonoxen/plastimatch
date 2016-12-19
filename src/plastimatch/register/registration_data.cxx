@@ -53,19 +53,43 @@ void
 Registration_data::load_shared_input_files (const Shared_parms* shared)
 {
     /* Load images */
+    std::map<std::string,std::string>::const_iterator fix_it;
+    for (fix_it = shared->fixed_fn.begin();
+         fix_it != shared->fixed_fn.end(); ++fix_it)
+    {
+        std::map<std::string,std::string>::const_iterator mov_it
+            = shared->moving_fn.find (fix_it->first);
+        if (mov_it == shared->moving_fn.end()) {
+            continue;
+        }
+
+        logfile_printf ("Loading fixed image [%s]: %s\n",
+            fix_it->first.c_str(), fix_it->second.c_str());
+        this->fixed_image = Plm_image::New (
+            fix_it->second, PLM_IMG_TYPE_ITK_FLOAT);
+        logfile_printf ("Loading moving image [%s]: %s\n",
+            mov_it->first.c_str(), mov_it->second.c_str());
+        this->moving_image = Plm_image::New (
+            mov_it->second, PLM_IMG_TYPE_ITK_FLOAT);
+        break;
+    }
+#if defined (commentout)
     if (shared->fixed_fn.size() != 0) {
         logfile_printf ("Loading fixed image: %s\n", 
-            shared->fixed_fn[0].c_str());
-        this->fixed_image = Plm_image::New (shared->fixed_fn[0], 
+            shared->fixed_fn.find("")->second.c_str());
+        this->fixed_image = Plm_image::New (
+            shared->fixed_fn.find("")->second.c_str(),
             PLM_IMG_TYPE_ITK_FLOAT);
     }
 
     if (shared->moving_fn.size() != 0) {
         logfile_printf ("Loading moving image: %s\n", 
-            shared->moving_fn[0].c_str());
-        this->moving_image = Plm_image::New (shared->moving_fn[0], 
+            shared->moving_fn.find("")->second.c_str());
+        this->moving_image = Plm_image::New (
+            shared->moving_fn.find("")->second.c_str(),
             PLM_IMG_TYPE_ITK_FLOAT);
     }
+#endif
     
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {

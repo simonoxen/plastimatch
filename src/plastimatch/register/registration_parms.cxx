@@ -151,18 +151,29 @@ Registration_parms::set_key_value (
     /* The following keywords are only allowed globally */
     if (key == "fixed") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->fixed_fn = string_split (val, ',');
-        if (shared->fixed_fn.size() == 0) {
-            goto error_exit;
+        shared->fixed_fn[index] = val;
+#if defined (commentout)
+        std::map<std::string,std::string>::const_iterator it;
+        for (it = shared->fixed_fn.begin(); it != shared->fixed_fn.end(); ++it)
+        {
+            printf ("FF[%s]: %s\n",
+                it->first.c_str(),
+                shared->fixed_fn[it->first].c_str());
         }
-        printf ("FF: %s\n", shared->fixed_fn[0].c_str());
+#endif
     }
     else if (key == "moving") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->moving_fn = string_split (val, ',');
-        if (shared->moving_fn.size() == 0) {
-            goto error_exit;
+        shared->moving_fn[index] = val;
+#if defined (commentout)
+        std::map<std::string,std::string>::const_iterator it;
+        for (it = shared->moving_fn.begin(); it != shared->moving_fn.end(); ++it)
+        {
+            printf ("MM[%s]: %s\n",
+                it->first.c_str(),
+                shared->moving_fn[it->first].c_str());
         }
+#endif
     }
     else if (key == "xf_in"
         || key == "xform_in"

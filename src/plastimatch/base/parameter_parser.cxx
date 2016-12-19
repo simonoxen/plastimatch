@@ -98,7 +98,7 @@ Parameter_parser::parse_config_string (
             return PLM_ERROR;
         }
         
-        Plm_return_code rc = this->set_key_value (section, key, index, val);
+        Plm_return_code rc = this->set_key_value (section, array, index, val);
         if (rc != PLM_SUCCESS) {
             lprintf ("Parse error: %s\n", buf_ori.c_str());
             return PLM_ERROR;
