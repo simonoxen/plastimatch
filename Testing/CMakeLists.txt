@@ -285,7 +285,7 @@ plm_add_test (
 plm_add_test (
   "donut-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom;--output-prefix;${PLM_BUILD_TESTING_DIR}/donut-1-prefix/"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--dicom-with-uids;false;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom;--output-prefix;${PLM_BUILD_TESTING_DIR}/donut-1-prefix/"
   )
 plm_add_test (
   "gabor-01"
