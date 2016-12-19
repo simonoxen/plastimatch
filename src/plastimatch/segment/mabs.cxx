@@ -576,7 +576,7 @@ Mabs::run_registration_loop ()
                 std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
                 command_string_plus_cog.append(command_string);
                 int rc_cog = reg.set_command_string (command_string_plus_cog);
-                if (rc != PLM_SUCCESS) {
+                if (rc_cog != PLM_SUCCESS) {
                     lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", command_file.c_str());
                     continue;
                 }
@@ -621,11 +621,11 @@ Mabs::run_registration_loop ()
 
             /* Warp the output image */
             lprintf ("Warp output image...\n");
-            Plm_image_header fixed_pih (regd->fixed_image);
+            Plm_image_header fixed_pih (fixed_image);
             Plm_image::Pointer warped_image = Plm_image::New();
             timer.start();
             plm_warp (warped_image, 0, xf_out, &fixed_pih, 
-                regd->moving_image, 
+                moving_image, 
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
@@ -933,7 +933,7 @@ Mabs::atlas_selection ()
                 std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
                 command_string_plus_cog.append(command_string);
                 int rc_cog = reg.set_command_string (command_string_plus_cog);
-                if (rc != PLM_SUCCESS) {
+                if (rc_cog != PLM_SUCCESS) {
                     lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", d_ptr->parms->prealign_registration_config.c_str());
                 }
             
@@ -961,11 +961,11 @@ Mabs::atlas_selection ()
         
             /* Warp the image */
             lprintf ("Prealign input image...\n");
-            Plm_image_header fixed_pih (regd->fixed_image);
+            Plm_image_header fixed_pih (fixed_image);
             Plm_image::Pointer warped_image = Plm_image::New();
             timer.start();
             plm_warp (warped_image, 0, xf_out, &fixed_pih,
-                regd->moving_image,
+                moving_image,
                 regp->default_value, 0, 1);
             d_ptr->time_warp_img += timer.report();
 

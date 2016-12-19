@@ -57,40 +57,22 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     for (fix_it = shared->fixed_fn.begin();
          fix_it != shared->fixed_fn.end(); ++fix_it)
     {
-        std::map<std::string,std::string>::const_iterator mov_it
-            = shared->moving_fn.find (fix_it->first);
-        if (mov_it == shared->moving_fn.end()) {
-            continue;
-        }
-
         logfile_printf ("Loading fixed image [%s]: %s\n",
             fix_it->first.c_str(), fix_it->second.c_str());
-        this->fixed_image = Plm_image::New (
-            fix_it->second, PLM_IMG_TYPE_ITK_FLOAT);
-        logfile_printf ("Loading moving image [%s]: %s\n",
-            mov_it->first.c_str(), mov_it->second.c_str());
-        this->moving_image = Plm_image::New (
-            mov_it->second, PLM_IMG_TYPE_ITK_FLOAT);
+        this->fixed_image[fix_it->first] = 
+            Plm_image::New (fix_it->second, PLM_IMG_TYPE_ITK_FLOAT);
         break;
     }
-#if defined (commentout)
-    if (shared->fixed_fn.size() != 0) {
-        logfile_printf ("Loading fixed image: %s\n", 
-            shared->fixed_fn.find("")->second.c_str());
-        this->fixed_image = Plm_image::New (
-            shared->fixed_fn.find("")->second.c_str(),
-            PLM_IMG_TYPE_ITK_FLOAT);
+    std::map<std::string,std::string>::const_iterator mov_it;
+    for (mov_it = shared->moving_fn.begin();
+         mov_it != shared->moving_fn.end(); ++mov_it)
+    {
+        logfile_printf ("Loading moving image [%s]: %s\n",
+            mov_it->first.c_str(), mov_it->second.c_str());
+        this->moving_image[mov_it->first] = 
+            Plm_image::New (mov_it->second, PLM_IMG_TYPE_ITK_FLOAT);
     }
 
-    if (shared->moving_fn.size() != 0) {
-        logfile_printf ("Loading moving image: %s\n", 
-            shared->moving_fn.find("")->second.c_str());
-        this->moving_image = Plm_image::New (
-            shared->moving_fn.find("")->second.c_str(),
-            PLM_IMG_TYPE_ITK_FLOAT);
-    }
-#endif
-    
     /* load "global" rois */
     if (shared->fixed_roi_fn != "") {
         logfile_printf ("Loading fixed roi: %s\n", 
@@ -143,6 +125,18 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
         fixed_landmarks->insert_ras (shared->fixed_landmarks_list.c_str());
         moving_landmarks->insert_ras (shared->moving_landmarks_list.c_str());
     }
+}
+
+Plm_image::Pointer&
+Registration_data::default_fixed_image ()
+{
+    return this->fixed_image[DEFAULT_IMAGE_KEY];
+}
+
+Plm_image::Pointer&
+Registration_data::default_moving_image ()
+{
+    return this->moving_image[DEFAULT_IMAGE_KEY];
 }
 
 Stage_parms*

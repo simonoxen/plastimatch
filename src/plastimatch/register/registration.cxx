@@ -88,13 +88,13 @@ Registration::set_command_string (const std::string& command_string)
 void
 Registration::set_fixed_image (Plm_image::Pointer& fixed)
 {
-    d_ptr->rdata->fixed_image = fixed;
+    d_ptr->rdata->fixed_image[DEFAULT_IMAGE_KEY] = fixed;
 }
 
 void
 Registration::set_moving_image (Plm_image::Pointer& moving)
 {
-    d_ptr->rdata->moving_image = moving;
+    d_ptr->rdata->moving_image[DEFAULT_IMAGE_KEY] = moving;
 }
 
 void
@@ -131,8 +131,9 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
 {
     int use_magic_value = 1;
 
-    regd->fixed_region_origin = regd->fixed_image->itk_float()->GetOrigin();
-    regd->fixed_region_spacing = regd->fixed_image->itk_float()->GetSpacing();
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    regd->fixed_region_origin = fixed_image->itk_float()->GetOrigin();
+    regd->fixed_region_spacing = fixed_image->itk_float()->GetSpacing();
 
     if (regd->fixed_roi) {
         FloatImageType::RegionType::IndexType valid_index;
@@ -189,14 +190,15 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
         valid_size[2] = 1;
 
         /* Make sure the image is ITK float */
-        FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();
+        Plm_image::Pointer fixed_image = regd->default_fixed_image();
+        FloatImageType::Pointer fixed = fixed_image->itk_float();
 
         /* Search for bounding box of patient */
         typedef itk::ImageRegionConstIteratorWithIndex <
             FloatImageType > IteratorType;
         FloatImageType::RegionType region 
-            = fixed_image->GetLargestPossibleRegion();
-        IteratorType it (fixed_image, region);
+            = fixed->GetLargestPossibleRegion();
+        IteratorType it (fixed, region);
 
         int first = 1;
         for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
@@ -230,7 +232,7 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
                 valid_size[i]++;
             }
             if (valid_size[i] + valid_index[i] 
-                < fixed_image->GetLargestPossibleRegion().GetSize()[i])
+                < fixed->GetLargestPossibleRegion().GetSize()[i])
             {
                 valid_size[i]++;
             }
@@ -239,7 +241,7 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
         regd->fixed_region.SetSize(valid_size);
     } else {
         regd->fixed_region 
-            = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
+            = fixed_image->itk_float()->GetLargestPossibleRegion();
     }
 }
 
@@ -258,6 +260,9 @@ save_output (
     const std::string& valid_roi_out_fn
 )
 {
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
+
     /* Handle null xf, make it zero translation */
     if (xf_out->m_type == XFORM_NONE) {
         xf_out->init_trn ();
@@ -269,7 +274,7 @@ save_output (
         logfile_printf ("Writing transformation ...\n");
         if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
             Plm_image_header pih;
-            pih.set_from_plm_image (regd->fixed_image);
+            pih.set_from_plm_image (fixed_image);
             Xform::Pointer xf_tmp = xform_to_itk_bsp (xf_out, &pih, 0);
             xf_tmp->save (*it);
         } else {
@@ -294,10 +299,11 @@ save_output (
             im_warped = Plm_image::New();
         }
         
-        pih.set_from_plm_image (regd->fixed_image);
+        pih.set_from_plm_image (fixed_image);
 
         logfile_printf ("Warping...\n");
-        plm_warp (im_warped, vfp, xf_out, &pih, regd->moving_image, 
+        Plm_image::Pointer moving_image = regd->default_moving_image();
+        plm_warp (im_warped, vfp, xf_out, &pih, moving_image,
             default_value, 0, 1);
 
         if (img_out_fn[0]) {
@@ -325,7 +331,7 @@ save_output (
         if (valid_roi_out_fn[0]) {
             logfile_printf ("Warping valid ROI...\n");
             Plm_image::Pointer valid_roi
-                = Plm_image::clone (regd->moving_image);
+                = Plm_image::clone (moving_image);
 #if defined (commentout)
             plm_warp (im_warped, vfp, xf_out, &pih, regd->moving_image, 
                 default_value, 0, 1);
@@ -336,7 +342,7 @@ save_output (
 
 Xform::Pointer
 Registration::do_registration_stage (
-    Stage_parms* stage            /* Input */
+    Stage_parms* stage
 )
 {
     Registration_data::Pointer regd = d_ptr->rdata;
@@ -418,23 +424,29 @@ set_automatic_parameters (
     Registration_data::Pointer& regd, 
     Registration_parms::Pointer& regp)
 {
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
         Stage_parms* sp = *it;
         if (sp->resample_type == RESAMPLE_AUTO) {
             set_auto_resample (
-                sp->resample_rate_fixed, regd->fixed_image.get());
+                sp->resample_rate_fixed, fixed_image.get());
             set_auto_resample (
-                sp->resample_rate_moving, regd->moving_image.get());
+                sp->resample_rate_moving, moving_image.get());
         }
     }
 }
 
 static void
-check_output_resolution (Xform::Pointer& xf_out, Registration_data::Pointer& regd)
+check_output_resolution (
+    Xform::Pointer& xf_out,
+    Registration_data::Pointer& regd)
 {
-    Volume *fixed = regd->fixed_image->get_vol ();
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Volume *fixed = fixed_image->get_vol ();
     int ss[3];
     Plm_image_header pih;
     float grid_spacing[3];

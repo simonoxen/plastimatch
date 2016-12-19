@@ -16,14 +16,16 @@ class Registration_data_private;
 class Shared_parms;
 class Stage_parms;
 
+#define DEFAULT_IMAGE_KEY ""
+
 class PLMREGISTER_API Registration_data {
 public:
     SMART_POINTER_SUPPORT (Registration_data);
     Registration_data_private *d_ptr;
 public:
     /* Input images */
-    Plm_image::Pointer fixed_image;
-    Plm_image::Pointer moving_image;
+    std::map<std::string,Plm_image::Pointer> fixed_image;
+    std::map<std::string,Plm_image::Pointer> moving_image;
     Plm_image::Pointer fixed_roi;
     Plm_image::Pointer moving_roi;
     Plm_image::Pointer fixed_stiffness;
@@ -43,6 +45,9 @@ public:
     void load_global_input_files (Registration_parms::Pointer& regp);
     void load_stage_input_files (const Stage_parms* regp);
     void load_shared_input_files (const Shared_parms* shared);
+
+    Plm_image::Pointer& default_fixed_image ();
+    Plm_image::Pointer& default_moving_image ();
 
     Stage_parms* get_auto_parms ();
 };

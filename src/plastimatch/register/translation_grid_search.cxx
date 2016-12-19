@@ -185,8 +185,10 @@ translation_grid_search_stage (
     Xform::Pointer xf_out = Xform::New ();
     Plm_image_header pih;
 
-    Volume::Pointer& fixed = regd->fixed_image->get_volume_float ();
-    Volume::Pointer& moving = regd->moving_image->get_volume_float ();
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Volume::Pointer& fixed = fixed_image->get_volume_float ();
+    Volume::Pointer& moving = moving_image->get_volume_float ();
     Volume::Pointer moving_ss;
     Volume::Pointer fixed_ss;
 

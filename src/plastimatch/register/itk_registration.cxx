@@ -680,14 +680,16 @@ itk_registration_stage (
     irp.registration = RegistrationType::New();
 
     /* Subsample fixed & moving images */
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
     FloatImageType::Pointer fixed_ss = subsample_image (
-        regd->fixed_image->itk_float(), 
+        fixed_image->itk_float(), 
         stage->resample_rate_fixed[0], 
         stage->resample_rate_fixed[1], 
         stage->resample_rate_fixed[2], 
         stage->default_value);
     FloatImageType::Pointer moving_ss = subsample_image (
-        regd->moving_image->itk_float(), 
+        moving_image->itk_float(), 
         stage->resample_rate_moving[0], 
         stage->resample_rate_moving[1], 
         stage->resample_rate_moving[2], 
@@ -742,10 +744,12 @@ itk_align_center (
     Registration_data* regd, Xform *xf_out, 
     const Xform *xf_in, const Stage_parms* stage)
 {
+    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer moving_image = regd->default_moving_image();
     float fixed_center[3];
     float moving_center[3];
-    itk_volume_center (fixed_center, regd->fixed_image->itk_float());
-    itk_volume_center (moving_center, regd->moving_image->itk_float());
+    itk_volume_center (fixed_center, fixed_image->itk_float());
+    itk_volume_center (moving_center, moving_image->itk_float());
 
     itk::Array<double> trn_parms (3);
     trn_parms[0] = moving_center[0] - fixed_center[0];
