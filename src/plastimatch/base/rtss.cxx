@@ -593,11 +593,13 @@ Rtss::keyholize (void)
 	    }
 
 	    /* We have now found a group */
+#if defined (commentout)
 	    lprintf ("Keyholizing group:");
 	    for (size_t k = 0; k < group_contours.size(); k++) {
 		lprintf (" %d", group_contours[k]);
 	    }
 	    lprintf ("\n");
+#endif
 
 	    /* Find xmin for each contour in group */
 	    std::vector<float> group_xmin;
@@ -635,7 +637,9 @@ Rtss::keyholize (void)
 #if defined (commentout)
             Rtss_contour *outer_polyline = curr_structure->pslist[
 #endif
+#if defined (commentout)
 	    lprintf ("Outermost contour %d, x=%f\n", cidx_xmin, xmin);
+#endif
 
 	    /* Loop through other contours, find contours contained 
 	       in this contour */
