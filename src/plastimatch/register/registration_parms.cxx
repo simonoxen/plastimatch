@@ -88,9 +88,10 @@ public:
     virtual Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
+        const std::string& index, 
         const std::string& val)
     {
-        return this->rp->set_key_value (section, key, val);
+        return this->rp->set_key_value (section, key, index, val);
     }
 };
 
@@ -117,6 +118,7 @@ Plm_return_code
 Registration_parms::set_key_value (
     const std::string& section,
     const std::string& key, 
+    const std::string& index, 
     const std::string& val)
 {
     int rc;

@@ -201,8 +201,7 @@ bspline_xform_load (const char* filename)
             return 0;
         }
 
-        std::string tag, val;
-        if (!split_tag_val (line, tag, val)) {
+        if (line.find('=') == std::string::npos) {
             /* No "=" found.  Better be the first coefficient. */
             break;
         }

@@ -69,16 +69,10 @@ Parameter_parser::parse_config_string (
         /* Process "key=value" */
         std::string key;
         std::string val;
-        size_t key_loc = buf.find ("=");
-        if (key_loc == std::string::npos) {
-            key = buf;
-            val = "";
-        } else {
-            key = buf.substr (0, key_loc);
-            val = buf.substr (key_loc+1);
+        if (!split_key_val (buf, key, val)) {
+            lprintf ("Parse error: %s\n", buf_ori.c_str());
+            return PLM_ERROR;
         }
-        key = string_trim (key);
-        val = string_trim (val);
 
         /* Key becomes lowercase, with "_" & "-" unified */
         if (this->key_regularization) {
@@ -96,10 +90,18 @@ Parameter_parser::parse_config_string (
             continue;
         }
 
-        Plm_return_code rc = this->set_key_value (section, key, val);
+        /* Handle key[index]=value */
+        std::string array;
+        std::string index;
+        if (!split_array_index (key, array, index)) {
+            lprintf ("Parse error: %s\n", buf_ori.c_str());
+            return PLM_ERROR;
+        }
+        
+        Plm_return_code rc = this->set_key_value (section, key, index, val);
         if (rc != PLM_SUCCESS) {
             lprintf ("Parse error: %s\n", buf_ori.c_str());
-            return rc;
+            return PLM_ERROR;
         }
     }
 

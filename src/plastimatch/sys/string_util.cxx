@@ -418,21 +418,48 @@ std::vector<std::string> string_split (
     return elems;
 }
 
-bool split_tag_val (
+bool
+split_key_val (
     const std::string& s, 
-    std::string& tag,
+    std::string& key,
     std::string& val,
     char delim)
 {
     size_t loc = s.find (delim);
     if (loc == std::string::npos) {
-        tag = "";
+        key = string_trim (s);
         val = "";
         return false;
     }
-    tag = string_trim (s.substr (0, loc));
+    key = string_trim (s.substr (0, loc));
     val = string_trim (s.substr (loc + 1));
     return true;
+}
+
+bool
+split_array_index (
+    const std::string& s, 
+    std::string& array, 
+    std::string& index)
+{
+    size_t start_loc = s.find ('[');
+    size_t end_loc = s.find (']');
+    if (start_loc == std::string::npos
+        && end_loc == std::string::npos)
+    {
+        array = s;
+        index = "";
+        return true;
+    }
+    if (start_loc != std::string::npos
+        && end_loc != std::string::npos
+        && end_loc > start_loc)
+    {
+        array = string_trim (s.substr (0, start_loc));
+        index = string_trim (s.substr (start_loc + 1, end_loc));
+        return true;
+    }
+    return false;
 }
 
 /* Explicit instantiations */
