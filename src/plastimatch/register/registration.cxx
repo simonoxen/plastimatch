@@ -88,13 +88,13 @@ Registration::set_command_string (const std::string& command_string)
 void
 Registration::set_fixed_image (Plm_image::Pointer& fixed)
 {
-    d_ptr->rdata->fixed_image[DEFAULT_IMAGE_KEY] = fixed;
+    d_ptr->rdata->set_fixed_image (fixed);
 }
 
 void
 Registration::set_moving_image (Plm_image::Pointer& moving)
 {
-    d_ptr->rdata->moving_image[DEFAULT_IMAGE_KEY] = moving;
+    d_ptr->rdata->set_moving_image (moving);
 }
 
 void

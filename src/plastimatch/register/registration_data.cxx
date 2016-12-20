@@ -12,6 +12,8 @@
 #include "shared_parms.h"
 #include "stage_parms.h"
 
+#define DEFAULT_IMAGE_KEY "0"
+
 class Registration_data_private
 {
 public:
@@ -59,8 +61,8 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     {
         logfile_printf ("Loading fixed image [%s]: %s\n",
             fix_it->first.c_str(), fix_it->second.c_str());
-        this->fixed_image[fix_it->first] = 
-            Plm_image::New (fix_it->second, PLM_IMG_TYPE_ITK_FLOAT);
+        this->set_fixed_image (fix_it->first,
+            Plm_image::New (fix_it->second, PLM_IMG_TYPE_ITK_FLOAT));
         break;
     }
     std::map<std::string,std::string>::const_iterator mov_it;
@@ -69,8 +71,8 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     {
         logfile_printf ("Loading moving image [%s]: %s\n",
             mov_it->first.c_str(), mov_it->second.c_str());
-        this->moving_image[mov_it->first] = 
-            Plm_image::New (mov_it->second, PLM_IMG_TYPE_ITK_FLOAT);
+        this->set_moving_image (mov_it->first, 
+            Plm_image::New (mov_it->second, PLM_IMG_TYPE_ITK_FLOAT));
     }
 
     /* load "global" rois */
@@ -124,6 +126,42 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
         moving_landmarks = new Labeled_pointset;
         fixed_landmarks->insert_ras (shared->fixed_landmarks_list.c_str());
         moving_landmarks->insert_ras (shared->moving_landmarks_list.c_str());
+    }
+}
+
+void
+Registration_data::set_fixed_image (const Plm_image::Pointer& image)
+{
+    this->fixed_image[DEFAULT_IMAGE_KEY] = image;
+}
+
+void
+Registration_data::set_fixed_image (
+    const std::string& index,
+    const Plm_image::Pointer& image)
+{
+    if (index == "") {
+        this->fixed_image[DEFAULT_IMAGE_KEY] = image;
+    } else {
+        this->fixed_image[index] = image;
+    }
+}
+
+void
+Registration_data::set_moving_image (const Plm_image::Pointer& image)
+{
+    this->set_moving_image (DEFAULT_IMAGE_KEY, image);
+}
+
+void
+Registration_data::set_moving_image (
+    const std::string& index,
+    const Plm_image::Pointer& image)
+{
+    if (index == "") {
+        this->moving_image[DEFAULT_IMAGE_KEY] = image;
+    } else {
+        this->moving_image[index] = image;
     }
 }
 

@@ -49,6 +49,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-e.txt"
   "plm-bsp-double.txt"
   "plm-bsp-regularize-numeric.txt"
+  "plm-reg-align-center.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
   "plm-reg-roi-b.txt"
@@ -2301,7 +2302,7 @@ set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
 plm_add_test (
   "plm-reg-align-center"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-align-center.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-align-center.txt"
   )
 plm_add_test (
   "plm-reg-align-center-stats"

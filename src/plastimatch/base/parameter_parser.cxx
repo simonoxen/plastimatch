@@ -18,6 +18,7 @@
 
 Parameter_parser::Parameter_parser () {
     key_regularization = true;
+    default_index = "";
 }
 
 Plm_return_code
@@ -97,6 +98,9 @@ Parameter_parser::parse_config_string (
             lprintf ("Parse error: %s\n", buf_ori.c_str());
             return PLM_ERROR;
         }
+        if (index == "") {
+            index = default_index;
+        }
         
         Plm_return_code rc = this->set_key_value (section, array, index, val);
         if (rc != PLM_SUCCESS) {
@@ -117,6 +121,13 @@ Parameter_parser::enable_key_regularization (
 )
 {
     this->key_regularization = enable;
+}
+
+void 
+Parameter_parser::set_default_index (
+    std::string& default_index)
+{
+    this->default_index = default_index;
 }
 
 Plm_return_code

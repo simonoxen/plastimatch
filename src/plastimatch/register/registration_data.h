@@ -16,8 +16,11 @@ class Registration_data_private;
 class Shared_parms;
 class Stage_parms;
 
-#define DEFAULT_IMAGE_KEY ""
-
+/*! \brief 
+ * The Registration_data class holds global data shared across multiple 
+ * registration stages.  These data include images, landmarks, 
+ * ROIs, and automatic parameters.
+ */
 class PLMREGISTER_API Registration_data {
 public:
     SMART_POINTER_SUPPORT (Registration_data);
@@ -46,6 +49,16 @@ public:
     void load_stage_input_files (const Stage_parms* regp);
     void load_shared_input_files (const Shared_parms* shared);
 
+    void set_fixed_image (
+        const Plm_image::Pointer& image);
+    void set_fixed_image (
+        const std::string& index,
+        const Plm_image::Pointer& image);
+    void set_moving_image (
+        const Plm_image::Pointer& image);
+    void set_moving_image (
+        const std::string& index,
+        const Plm_image::Pointer& image);
     Plm_image::Pointer& default_fixed_image ();
     Plm_image::Pointer& default_moving_image ();
 

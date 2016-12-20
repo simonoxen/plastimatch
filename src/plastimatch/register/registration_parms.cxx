@@ -56,6 +56,7 @@ public:
     Registration_parms_parser (Registration_parms *rp)
     {
         this->rp = rp;
+        this->enable_key_regularization (true);
     }
 public:
     virtual Plm_return_code begin_section (
@@ -117,8 +118,8 @@ Registration_parms::~Registration_parms()
 Plm_return_code
 Registration_parms::set_key_value (
     const std::string& section,
-    const std::string& key, 
-    const std::string& index, 
+    const std::string& key,
+    const std::string& index,
     const std::string& val)
 {
     int rc;
