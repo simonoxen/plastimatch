@@ -18,6 +18,7 @@ class Registration_data_private
 {
 public:
     Stage_parms auto_parms;
+    std::list<std::string> image_indices;
 public:
     Registration_data_private () {
     }
@@ -63,7 +64,6 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
             fix_it->first.c_str(), fix_it->second.c_str());
         this->set_fixed_image (fix_it->first,
             Plm_image::New (fix_it->second, PLM_IMG_TYPE_ITK_FLOAT));
-        break;
     }
     std::map<std::string,std::string>::const_iterator mov_it;
     for (mov_it = shared->moving_fn.begin();
@@ -165,16 +165,62 @@ Registration_data::set_moving_image (
     }
 }
 
+
 Plm_image::Pointer&
-Registration_data::default_fixed_image ()
+Registration_data::get_fixed_image ()
 {
     return this->fixed_image[DEFAULT_IMAGE_KEY];
 }
 
 Plm_image::Pointer&
-Registration_data::default_moving_image ()
+Registration_data::get_fixed_image (
+    const std::string& index)
+{
+    if (index == "") {
+        return this->fixed_image[DEFAULT_IMAGE_KEY];
+    } else {
+        return this->fixed_image[index];
+    }
+}
+
+Plm_image::Pointer&
+Registration_data::get_moving_image ()
 {
     return this->moving_image[DEFAULT_IMAGE_KEY];
+}
+
+Plm_image::Pointer&
+Registration_data::get_moving_image (
+    const std::string& index)
+{
+    if (index == "") {
+        return this->moving_image[DEFAULT_IMAGE_KEY];
+    } else {
+        return this->moving_image[index];
+    }
+}
+
+const std::list<std::string>&
+Registration_data::get_image_indices ()
+{
+    d_ptr->image_indices.clear ();
+    
+    std::map<std::string,Plm_image::Pointer>::const_iterator fix_it;
+    for (fix_it = this->fixed_image.begin();
+         fix_it != this->fixed_image.end(); ++fix_it)
+    {
+        printf (">> Testing: %s\n", fix_it->first.c_str());
+        std::map<std::string,Plm_image::Pointer>::const_iterator mov_it =
+            this->moving_image.find (fix_it->first);
+        if (mov_it != this->moving_image.end ()) {
+            if (fix_it->first == DEFAULT_IMAGE_KEY) {
+                d_ptr->image_indices.push_front (fix_it->first);
+            } else {
+                d_ptr->image_indices.push_back (fix_it->first);
+            }
+        }
+    }
+    return d_ptr->image_indices;
 }
 
 Stage_parms*

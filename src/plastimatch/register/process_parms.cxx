@@ -99,11 +99,11 @@ Process_parms::execute_process (Registration_data::Pointer& regd) const
         }
         
         if (adjust_fixed) {
-            Plm_image::Pointer& fixed = regd->default_fixed_image();
+            Plm_image::Pointer& fixed = regd->get_fixed_image();
             fixed->set_itk (itk_adjust (fixed->itk_float(), parms));
         }
         if (adjust_moving) {
-            Plm_image::Pointer& moving = regd->default_moving_image();
+            Plm_image::Pointer& moving = regd->get_moving_image();
             moving->set_itk (itk_adjust (moving->itk_float(), parms));
         }
     }

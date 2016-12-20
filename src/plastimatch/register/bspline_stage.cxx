@@ -122,9 +122,9 @@ Bspline_stage::initialize ()
     Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");
-    Volume::Pointer& fixed = regd->default_fixed_image()->get_volume_float ();
+    Volume::Pointer& fixed = regd->get_fixed_image()->get_volume_float ();
     logfile_printf ("Converting moving\n");
-    Volume::Pointer& moving = regd->default_moving_image()->get_volume_float ();
+    Volume::Pointer& moving = regd->get_moving_image()->get_volume_float ();
     logfile_printf ("Done.\n");
 
     Volume::Pointer m_roi;

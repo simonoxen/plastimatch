@@ -29,8 +29,8 @@ do_gpuit_demons_stage_internal (
     Demons_parms parms;
     Plm_image_header pih;
 
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
     Volume::Pointer& fixed = fixed_image->get_volume_float ();
     Volume::Pointer& moving = moving_image->get_volume_float ();
     Volume::Pointer moving_ss;

@@ -26,8 +26,8 @@ itk_align_center (
     Registration_data* regd, Xform *xf_out, 
     const Xform *xf_in, const Stage_parms* stage)
 {
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
     float fixed_center[3];
     float moving_center[3];
     itk_volume_center (fixed_center, fixed_image->itk_float());

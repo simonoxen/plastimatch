@@ -26,23 +26,57 @@
 #include "volume_resample.h"
 #include "xform.h"
 
-static void
-translation_grid_search (
-    Xform::Pointer& xf_out, 
-    const Stage_parms* stage,
-    Stage_parms* auto_parms,
+class Translation_grid_search
+{
+public:
+    std::list<Volume::Pointer> fixed_ss;
+    std::list<Volume::Pointer> moving_ss;
     float (*translation_score) (
         const Stage_parms *stage, const Volume::Pointer& fixed,
-        const Volume::Pointer& moving, const float dxyz[3]),
-    const Volume::Pointer& fixed,
-    const Volume::Pointer& moving)
+        const Volume::Pointer& moving, const float dxyz[3]);
+    float best_score;
+    float best_translation[3];
+public:
+    void do_search (
+        Xform::Pointer& xf_out,
+        const Stage_parms* stage,
+        Stage_parms* auto_parms);
+    void do_score (
+        const Stage_parms* stage,
+        const float dxyz[3]);
+};
+
+void
+Translation_grid_search::do_search (
+    Xform::Pointer& xf_out, 
+    const Stage_parms* stage,
+    Stage_parms* auto_parms)
 {
+    /* Choose the correct score function */
+    this->translation_score = &translation_mse;
+    switch (stage->metric_type[0]) {
+    case REGISTRATION_METRIC_MSE:
+    case REGISTRATION_METRIC_GM:
+        translation_score = &translation_mse;
+        break;
+    case REGISTRATION_METRIC_MI_MATTES:
+    case REGISTRATION_METRIC_MI_VW:
+        translation_score = &translation_mi;
+        break;
+    default:
+        print_and_exit ("Metric %d not implemented with grid search\n");
+        break;
+    }
+
     /* GCS FIX: region of interest is not used */
 
     /* GCS FIX: This algorithm will not work with tilted images.
        For these cases, we need to use bounding box to compute 
        search extent. */
 
+    Volume::Pointer& fixed = fixed_ss.front();
+    Volume::Pointer& moving = moving_ss.front();
+        
     /* Compute maximum search extent */
     lprintf ("Computing grid search extent.\n");
     float search_min[3];
@@ -78,15 +112,11 @@ translation_grid_search (
 
     /* Get default value */
     TranslationTransformType::Pointer old_trn = xf_out->get_trn ();
-    float best_translation[3] = { 0.f, 0.f, 0.f };
-    best_translation[0] = old_trn->GetParameters()[0];
-    best_translation[1] = old_trn->GetParameters()[1];
-    best_translation[2] = old_trn->GetParameters()[2];
-    float best_score = translation_score (
-        stage, fixed, moving, best_translation);
-    lprintf ("[%g %g %g] %g *\n", 
-        best_translation[0], best_translation[1], best_translation[2], 
-        best_score);
+    this->best_translation[0] = old_trn->GetParameters()[0];
+    this->best_translation[1] = old_trn->GetParameters()[1];
+    this->best_translation[2] = old_trn->GetParameters()[2];
+    this->best_score = FLT_MAX;
+    this->do_score (stage, this->best_translation);
 
     /* Compute search range */
     int num_steps[3] = { 0, 0, 0 };
@@ -130,7 +160,7 @@ translation_grid_search (
             } else {
                 search_step[d] = stage->gridsearch_step_size[d];
             }
-            search_min[d] = best_translation[d] - 1.5 * search_step[d];
+            search_min[d] = this->best_translation[d] - 1.5 * search_step[d];
         }
     }
 
@@ -148,32 +178,52 @@ translation_grid_search (
                     search_min[0] + i * search_step[0],
                     search_min[1] + j * search_step[1],
                     search_min[2] + k * search_step[2] };
-                float score = translation_score (stage,
-                    fixed, moving, translation);
-                lprintf ("[%g %g %g] %g", 
-                    translation[0], translation[1], translation[2], score);
-                if (score < best_score) {
-                    best_score = score;
-                    best_translation[0] = translation[0];
-                    best_translation[1] = translation[1];
-                    best_translation[2] = translation[2];
-                    lprintf (" *");
-                }
-                lprintf ("\n");
+                this->do_score (stage, translation);
             }
         }
     }
 
     /* Find the best translation */
     TranslationTransformType::ParametersType xfp(3);
-    xfp[0] = best_translation[0];
-    xfp[1] = best_translation[1];
-    xfp[2] = best_translation[2];
+    xfp[0] = this->best_translation[0];
+    xfp[1] = this->best_translation[1];
+    xfp[2] = this->best_translation[2];
 
     /* Fixate translation into xform */
     TranslationTransformType::Pointer new_trn = TranslationTransformType::New();
     new_trn->SetParameters(xfp);
     xf_out->set_trn (new_trn);
+}
+
+void
+Translation_grid_search::do_score (
+    const Stage_parms* stage,
+    const float dxyz[3])
+{
+    lprintf ("[%g %g %g]",
+        dxyz[0], dxyz[1], dxyz[2]);
+
+    std::list<Volume::Pointer>::iterator fix_it, mov_it;
+    float acc_score = 0.f;
+    for (fix_it = fixed_ss.begin(), mov_it = moving_ss.begin();
+         fix_it != fixed_ss.end() && mov_it != moving_ss.end();
+         ++fix_it, ++mov_it)
+    {
+        float score = translation_score (stage, *fix_it, *mov_it, dxyz);
+        lprintf (" %g", score);
+        acc_score += score;
+    }
+    if (fixed_ss.size() > 1) {
+        lprintf (" | %g", acc_score);
+    }
+    if (acc_score < this->best_score) {
+        this->best_score = acc_score;
+        this->best_translation[0] = dxyz[0];
+        this->best_translation[1] = dxyz[1];
+        this->best_translation[2] = dxyz[2];
+        lprintf (" *");
+    }
+    lprintf ("\n");
 }
 
 Xform::Pointer
@@ -185,74 +235,55 @@ translation_grid_search_stage (
     Xform::Pointer xf_out = Xform::New ();
     Plm_image_header pih;
 
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
-    Volume::Pointer& fixed = fixed_image->get_volume_float ();
-    Volume::Pointer& moving = moving_image->get_volume_float ();
-    Volume::Pointer moving_ss;
-    Volume::Pointer fixed_ss;
-
-    fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
-    moving->convert (PT_FLOAT);             /* Maybe not necessary? */
-
-#if defined (commentout)
-    lprintf ("SUBSAMPLE: (%g %g %g), (%g %g %g)\n", 
-	stage->resample_rate_fixed[0], stage->resample_rate_fixed[1], 
-	stage->resample_rate_fixed[2], stage->resample_rate_moving[0], 
-	stage->resample_rate_moving[1], stage->resample_rate_moving[2]
-    );
-    moving_ss = volume_subsample_vox_legacy (
-        moving, stage->resample_rate_moving);
-    fixed_ss = volume_subsample_vox_legacy (
-        fixed, stage->resample_rate_fixed);
-#endif
-    moving_ss = registration_resample_volume (
-        moving, stage, stage->resample_rate_moving);
-    fixed_ss = registration_resample_volume (
-        fixed, stage, stage->resample_rate_fixed);
-
-    if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
-        fixed_ss = volume_gradient_magnitude (fixed_ss);
-        moving_ss = volume_gradient_magnitude (moving_ss);
-    }
+    Translation_grid_search tgsd;
     
-    if (stage->debug_dir != "") {
-        std::string fn;
-        fn = string_format ("%s/%02d_fixed_ss.mha",
-            stage->debug_dir.c_str(), stage->stage_no);
-        write_mha (fn.c_str(), fixed_ss.get());
-        fn = string_format ("%s/%02d_moving_ss.mha",
-            stage->debug_dir.c_str(), stage->stage_no);
-        write_mha (fn.c_str(), moving_ss.get());
+    const std::list<std::string>& image_indices
+        = regd->get_image_indices ();
+    std::list<std::string>::const_iterator ind_it;
+    for (ind_it = image_indices.begin();
+         ind_it != image_indices.end(); ++ind_it)
+    {
+        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
+        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
+        Volume::Pointer& fixed = fixed_image->get_volume_float ();
+        Volume::Pointer& moving = moving_image->get_volume_float ();
+        Volume::Pointer moving_ss;
+        Volume::Pointer fixed_ss;
+
+        fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
+        moving->convert (PT_FLOAT);             /* Maybe not necessary? */
+
+        fixed_ss = registration_resample_volume (
+            fixed, stage, stage->resample_rate_fixed);
+        moving_ss = registration_resample_volume (
+            moving, stage, stage->resample_rate_moving);
+
+        if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
+            fixed_ss = volume_gradient_magnitude (fixed_ss);
+            moving_ss = volume_gradient_magnitude (moving_ss);
+        }
+
+        tgsd.fixed_ss.push_back (fixed_ss);
+        tgsd.moving_ss.push_back (moving_ss);
+
+        if (stage->debug_dir != "") {
+            std::string fn;
+            fn = string_format ("%s/%02d_fixed_%s_ss.mha",
+                stage->debug_dir.c_str(), stage->stage_no,
+                ind_it->c_str());
+            write_mha (fn.c_str(), fixed_ss.get());
+            fn = string_format ("%s/%02d_moving_%s_ss.mha",
+                stage->debug_dir.c_str(), stage->stage_no,
+                ind_it->c_str());
+            write_mha (fn.c_str(), moving_ss.get());
+        }
     }
-        
+
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);
 
-    /* Choose the correct score function */
-    float (*translation_score) (
-        const Stage_parms *stage, const Volume::Pointer& fixed,
-        const Volume::Pointer& moving, const float dxyz[3]) 
-        = &translation_mse;
-    switch (stage->metric_type[0]) {
-    case REGISTRATION_METRIC_MSE:
-    case REGISTRATION_METRIC_GM:
-        translation_score = &translation_mse;
-        break;
-    case REGISTRATION_METRIC_MI_MATTES:
-    case REGISTRATION_METRIC_MI_VW:
-        translation_score = &translation_mi;
-        break;
-    default:
-        print_and_exit ("Metric %d not implemented with grid search\n");
-        break;
-    }
-
     /* Run the translation optimizer */
-    translation_grid_search (xf_out, stage, 
-        regd->get_auto_parms (), 
-        translation_score, 
-        fixed_ss, moving_ss);
+    tgsd.do_search (xf_out, stage, regd->get_auto_parms ());
 
     return xf_out;
 }

@@ -133,8 +133,8 @@ do_demons_stage_internal (
     const Stage_parms* stage)
 {
     /* Subsample fixed & moving images */
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
     FloatImageType::Pointer fixed_ss
         = subsample_image (fixed_image->itk_float(),
             stage->resample_rate_fixed[0],

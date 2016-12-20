@@ -59,9 +59,17 @@ public:
     void set_moving_image (
         const std::string& index,
         const Plm_image::Pointer& image);
-    Plm_image::Pointer& default_fixed_image ();
-    Plm_image::Pointer& default_moving_image ();
+    Plm_image::Pointer& get_fixed_image ();
+    Plm_image::Pointer& get_fixed_image (const std::string& index);
+    Plm_image::Pointer& get_moving_image ();
+    Plm_image::Pointer& get_moving_image (const std::string& index);
 
+    /*! \brief Get list of indices which have both a fixed and moving image.
+      The default image (index "0") will be the first index in the list.  
+      The remaining indices will be sorted in order they appear 
+      in the command file. */
+    const std::list<std::string>& get_image_indices ();
+    
     Stage_parms* get_auto_parms ();
 };
 

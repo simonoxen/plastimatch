@@ -131,7 +131,7 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
 {
     int use_magic_value = 1;
 
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
     regd->fixed_region_origin = fixed_image->itk_float()->GetOrigin();
     regd->fixed_region_spacing = fixed_image->itk_float()->GetSpacing();
 
@@ -190,7 +190,7 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
         valid_size[2] = 1;
 
         /* Make sure the image is ITK float */
-        Plm_image::Pointer fixed_image = regd->default_fixed_image();
+        Plm_image::Pointer fixed_image = regd->get_fixed_image();
         FloatImageType::Pointer fixed = fixed_image->itk_float();
 
         /* Search for bounding box of patient */
@@ -260,8 +260,8 @@ save_output (
     const std::string& valid_roi_out_fn
 )
 {
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
 
     /* Handle null xf, make it zero translation */
     if (xf_out->m_type == XFORM_NONE) {
@@ -302,7 +302,7 @@ save_output (
         pih.set_from_plm_image (fixed_image);
 
         logfile_printf ("Warping...\n");
-        Plm_image::Pointer moving_image = regd->default_moving_image();
+        Plm_image::Pointer moving_image = regd->get_moving_image();
         plm_warp (im_warped, vfp, xf_out, &pih, moving_image,
             default_value, 0, 1);
 
@@ -424,8 +424,8 @@ set_automatic_parameters (
     Registration_data::Pointer& regd, 
     Registration_parms::Pointer& regp)
 {
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
     std::list<Stage_parms*>& stages = regp->get_stages();
     std::list<Stage_parms*>::iterator it;
     for (it = stages.begin(); it != stages.end(); it++) {
@@ -444,8 +444,8 @@ check_output_resolution (
     Xform::Pointer& xf_out,
     Registration_data::Pointer& regd)
 {
-    Plm_image::Pointer fixed_image = regd->default_fixed_image();
-    Plm_image::Pointer moving_image = regd->default_moving_image();
+    Plm_image::Pointer fixed_image = regd->get_fixed_image();
+    Plm_image::Pointer moving_image = regd->get_moving_image();
     Volume *fixed = fixed_image->get_vol ();
     int ss[3];
     Plm_image_header pih;
