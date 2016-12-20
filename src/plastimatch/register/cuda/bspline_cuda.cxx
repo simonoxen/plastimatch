@@ -727,8 +727,6 @@ CUDA_bspline_mi_a (
     }
 }
 
-
-
 void
 CUDA_bspline_mse_j (
     Bspline_parms *parms,

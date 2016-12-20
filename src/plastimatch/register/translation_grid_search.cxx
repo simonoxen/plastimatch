@@ -250,14 +250,13 @@ translation_grid_search_stage (
         Volume::Pointer moving_ss;
         Volume::Pointer fixed_ss;
 
-        fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
-        moving->convert (PT_FLOAT);             /* Maybe not necessary? */
-
+        /* Subsample images */
         fixed_ss = registration_resample_volume (
             fixed, stage, stage->resample_rate_fixed);
         moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
 
+        /* Gradient magnitude is MSE on gradient image */
         if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
             fixed_ss = volume_gradient_magnitude (fixed_ss);
             moving_ss = volume_gradient_magnitude (moving_ss);

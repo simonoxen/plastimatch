@@ -5,6 +5,7 @@
 #define _bspline_parms_h_
 
 #include "plmregister_config.h"
+#include <list>
 #include <string>
 #include <vector>
 #include "bspline_mi_hist.h"
@@ -67,6 +68,9 @@ public:
     int lbfgsb_mmax;             /* Number of rows in M matrix */
 
     /* Image Volumes - these are not owned by Bspline_parms */
+    //std::list<Volume::Pointer> fixed;
+    //std::list<Volume::Pointer> moving;
+    //std::list<Volume::Pointer> moving_grad;
     Volume* fixed;
     Volume* moving;
     Volume* fixed_grad;

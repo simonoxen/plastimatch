@@ -40,9 +40,9 @@ public:
     Xform::Pointer xf_out;
     Bspline_parms bsp_parms;
 
-    Volume::Pointer fixed_ss;
-    Volume::Pointer moving_ss;
-    Volume::Pointer moving_grad;
+    std::list<Volume::Pointer> fixed_ss;
+    std::list<Volume::Pointer> moving_ss;
+    std::list<Volume::Pointer> moving_grad;
     Volume::Pointer f_roi_ss;
     Volume::Pointer m_roi_ss;
     Volume::Pointer f_stiffness_ss;
@@ -121,16 +121,9 @@ Bspline_stage::initialize ()
 
     Plm_image_header pih;
 
-    logfile_printf ("Converting fixed\n");
-    Volume::Pointer& fixed = regd->get_fixed_image()->get_volume_float ();
-    logfile_printf ("Converting moving\n");
-    Volume::Pointer& moving = regd->get_moving_image()->get_volume_float ();
-    logfile_printf ("Done.\n");
-
+    /* Set roi's */
     Volume::Pointer m_roi;
     Volume::Pointer f_roi;
-
-    /* Set roi's */
     if (shared->fixed_roi_enable && regd->fixed_roi) {
         f_roi = regd->fixed_roi->get_volume_uchar();
     }
@@ -138,20 +131,37 @@ Bspline_stage::initialize ()
         m_roi = regd->moving_roi->get_volume_uchar();
     }
 
-    /* Convert images to gpuit format */
-    fixed->convert (PT_FLOAT);              /* Maybe not necessary? */
-    moving->convert (PT_FLOAT);             /* Maybe not necessary? */
+    const std::list<std::string>& image_indices
+        = regd->get_image_indices ();
+    std::list<std::string>::const_iterator ind_it;
+    for (ind_it = image_indices.begin();
+         ind_it != image_indices.end(); ++ind_it)
+    {
+        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
+        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
+        Volume::Pointer& fixed = fixed_image->get_volume_float ();
+        Volume::Pointer& moving = moving_image->get_volume_float ();
+        Volume::Pointer moving_ss;
+        Volume::Pointer fixed_ss;
 
-    /* Subsample images */
-    d_ptr->fixed_ss = registration_resample_volume (
-        fixed, stage, stage->resample_rate_fixed);
-    d_ptr->moving_ss = registration_resample_volume (
-        moving, stage, stage->resample_rate_moving);
+        /* Subsample images */
+        fixed_ss = registration_resample_volume (
+            fixed, stage, stage->resample_rate_fixed);
+        moving_ss = registration_resample_volume (
+            moving, stage, stage->resample_rate_moving);
 
-    /* Gradient magnitude uses different fixed and moving images */
-    if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
-        d_ptr->fixed_ss = volume_gradient_magnitude (d_ptr->fixed_ss);
-        d_ptr->moving_ss = volume_gradient_magnitude (d_ptr->moving_ss);
+        /* Gradient magnitude is MSE on gradient image */
+        if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
+            fixed_ss = volume_gradient_magnitude (fixed_ss);
+            moving_ss = volume_gradient_magnitude (moving_ss);
+        }
+
+        d_ptr->fixed_ss.push_back (fixed_ss);
+        d_ptr->moving_ss.push_back (moving_ss);
+
+        /* Make spatial gradient image */
+        Volume::Pointer moving_grad = volume_gradient (moving_ss);
+        d_ptr->moving_grad.push_back (moving_grad);
     }
 
     /* Copy parameters from stage_parms to bspline_parms */
@@ -160,7 +170,16 @@ Bspline_stage::initialize ()
     bsp_parms->mi_moving_image_minVal = stage->mi_moving_image_minVal;
     bsp_parms->mi_moving_image_maxVal = stage->mi_moving_image_maxVal;
 
-    //Check if min/max values for moving image are set (correctly)
+    /* GCS FIX */
+    /* BSpline code needs work to support multi-planar imaging 
+       until that is done, this should maintain the old behavior */
+    Volume::Pointer fixed = regd->get_fixed_image()->get_volume_float();
+    Volume::Pointer moving = regd->get_moving_image()->get_volume_float();
+    Volume::Pointer fixed_ss = d_ptr->fixed_ss.front();
+    Volume::Pointer moving_ss = d_ptr->moving_ss.front();
+    Volume::Pointer moving_grad = d_ptr->moving_grad.front();
+    
+    // Check if min/max values for moving image are set (correctly)
     if ((bsp_parms->mi_moving_image_minVal!=0 
             || bsp_parms->mi_moving_image_maxVal!=0) 
         && (bsp_parms->mi_moving_image_minVal < 
@@ -168,7 +187,7 @@ Bspline_stage::initialize ()
     {
         bool fill=!m_roi;
 
-        //create new moving roi if not available
+        // create new moving roi if not available
         if (!m_roi)
         {
             m_roi = Volume::New ();
@@ -176,12 +195,12 @@ Bspline_stage::initialize ()
                 moving->direction_cosines, PT_UCHAR);
         }
 
-        //Modify fixed roi according to min and max values for moving image
+        // Modify fixed roi according to min and max values for moving image
         update_roi (m_roi, moving, bsp_parms->mi_moving_image_minVal,
             bsp_parms->mi_moving_image_maxVal,fill);
     }
 
-    //Check if min/max values for fixed image are set (correctly)
+    // Check if min/max values for fixed image are set (correctly)
     if ((bsp_parms->mi_fixed_image_minVal!=0 
             || bsp_parms->mi_fixed_image_maxVal!=0) 
         && (bsp_parms->mi_fixed_image_minVal < 
@@ -189,15 +208,15 @@ Bspline_stage::initialize ()
     {
         bool fill=!f_roi;
 
-        //create new fixed roi if not available
-        if(!f_roi)
+        // create new fixed roi if not available
+        if (!f_roi)
         {
             f_roi = Volume::New ();
             f_roi->create (fixed->dim, fixed->origin, fixed->spacing,
                 fixed->direction_cosines, PT_UCHAR);
         }
 
-        //Modify fixed roi according to min and max values for fixed image
+        // Modify fixed roi according to min and max values for fixed image
         update_roi (f_roi, fixed, bsp_parms->mi_fixed_image_minVal,
             bsp_parms->mi_fixed_image_maxVal, fill);
     }
@@ -211,16 +230,7 @@ Bspline_stage::initialize ()
         d_ptr->f_roi_ss = volume_subsample_vox_legacy_nn (
             f_roi, stage->resample_rate_fixed);
     }
-
-    logfile_printf ("moving_ss size = %d %d %d\n", 
-        d_ptr->moving_ss->dim[0], 
-        d_ptr->moving_ss->dim[1], 
-        d_ptr->moving_ss->dim[2]);
-    logfile_printf ("fixed_ss size = %d %d %d\n", 
-        d_ptr->fixed_ss->dim[0], 
-        d_ptr->fixed_ss->dim[1], 
-        d_ptr->fixed_ss->dim[2]);
-
+    
     /* Subsample stiffness */
     if (shared->fixed_stiffness_enable && regd->fixed_stiffness) {
         Volume::Pointer& stiffness 
@@ -229,16 +239,12 @@ Bspline_stage::initialize ()
             stiffness, stage, stage->resample_rate_fixed);
     }
 
-    /* Make spatial gradient image */
-    Volume *moving_grad = volume_make_gradient (d_ptr->moving_ss.get());
-    d_ptr->moving_grad = Volume::New (moving_grad);
-
     /* --- Initialize parms --- */
 
     /* Images */
-    bsp_parms->fixed = d_ptr->fixed_ss.get();
-    bsp_parms->moving = d_ptr->moving_ss.get();
-    bsp_parms->moving_grad = d_ptr->moving_grad.get();
+    bsp_parms->fixed = fixed_ss.get();
+    bsp_parms->moving = moving_ss.get();
+    bsp_parms->moving_grad = moving_grad.get();
     if (f_roi) {
         bsp_parms->fixed_roi = d_ptr->f_roi_ss.get();
     }
@@ -359,9 +365,7 @@ Bspline_stage::initialize ()
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (d_ptr->fixed_ss->dim, 
-        d_ptr->fixed_ss->origin, d_ptr->fixed_ss->spacing, 
-        d_ptr->fixed_ss->direction_cosines);
+    pih.set (fixed_ss);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Set debugging directory */
@@ -376,13 +380,13 @@ Bspline_stage::initialize ()
         std::string fn;
         fn = string_format ("%s/%02d/moving.mha",
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), d_ptr->moving_ss.get());
+        write_mha (fn.c_str(), moving_ss.get());
         fn = string_format ("%s/%02d/fixed.mha",
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), d_ptr->fixed_ss.get());
+        write_mha (fn.c_str(), fixed_ss.get());
         fn = string_format ("%s/%02d/moving_grad.mha", 
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), d_ptr->moving_grad.get());
+        write_mha (fn.c_str(), moving_grad.get());
     }
 }
 
