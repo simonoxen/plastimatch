@@ -84,9 +84,9 @@ bspline_score_i_mse (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
@@ -102,8 +102,8 @@ bspline_score_i_mse (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
 
     static int it = 0;
 
@@ -311,9 +311,9 @@ bspline_score_h_mse (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
@@ -527,9 +527,9 @@ bspline_score_g_mse (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     double score_tile;
@@ -739,9 +739,9 @@ bspline_score_c_mse (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Bspline_score* ssd = &bst->ssd;
     plm_long fijk[3], fv;         /* Indices within fixed image (vox) */
@@ -949,13 +949,9 @@ bspline_score_mse (
 {
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
-    Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Regularization_parms* reg_parms = parms->reg_parms;
-    Bspline_landmarks* blm = parms->blm;
-
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
     bool have_roi = fixed_roi || moving_roi;
 
     /* CPU Implementations */

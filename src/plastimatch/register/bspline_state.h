@@ -12,6 +12,7 @@
 #include "bspline_score.h"
 #include "plm_int.h"
 #include "smart_pointer.h"
+#include "stage_similarity_data.h"
 
 class Bspline_state_private;
 class Bspline_parms;
@@ -30,6 +31,16 @@ public:
     int feval;                      /* Number of function evaluations */
     Bspline_score ssd;              /* Score and Gradient  */
     void* dev_ptrs;                 /* GPU Device Pointers */
+
+    /*! \brief Current similarity images */
+    /* GCS FIX.  These can be replaced with Stage_similarity_data 
+       if nvcc can be made to use a c++ compiler */
+    Volume *fixed;
+    Volume *moving;
+    Volume *moving_grad;
+    Volume *fixed_roi;
+    Volume *moving_roi;
+    
     Bspline_regularize rst;         /* Analytic regularization */
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
 public:

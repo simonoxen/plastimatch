@@ -1121,8 +1121,8 @@ bspline_score_i_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -1445,8 +1445,8 @@ bspline_score_h_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -1480,8 +1480,8 @@ bspline_score_h_mi (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
 
 #if 0
     Volume* dbg_vol = volume_clone_empty (moving);
@@ -1718,8 +1718,8 @@ bspline_score_g_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -1966,8 +1966,8 @@ bspline_score_f_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -2258,8 +2258,8 @@ bspline_score_e_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -2593,8 +2593,8 @@ bspline_score_d_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -2873,10 +2873,10 @@ bspline_score_c_mi (
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
 
     Bspline_score* ssd = &bst->ssd;
     Bspline_mi_hist_set* mi_hist = bst->mi_hist;
@@ -3228,9 +3228,10 @@ bspline_score_mi (
 )
 {
     Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
 
-    Volume* fixed_roi  = parms->fixed_roi;
-    Volume* moving_roi = parms->moving_roi;
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
     bool have_roi = fixed_roi || moving_roi;
     bool have_histogram_minmax_val = 
         (parms->mi_fixed_image_minVal!=0)

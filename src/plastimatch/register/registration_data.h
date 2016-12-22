@@ -9,7 +9,7 @@
 #include "plm_image.h"
 #include "pointset.h"
 #include "registration_parms.h"
-#include "similarity_data.h"
+#include "registration_similarity_data.h"
 #include "smart_pointer.h"
 
 class Plm_image;
@@ -27,6 +27,10 @@ public:
     SMART_POINTER_SUPPORT (Registration_data);
     Registration_data_private *d_ptr;
 public:
+    Registration_data ();
+    ~Registration_data ();
+
+public:
     /* Regularization stiffness image */
     Plm_image::Pointer fixed_stiffness;
 
@@ -40,13 +44,12 @@ public:
     FloatImageType::SpacingType fixed_region_spacing;
 
 public:
-    Registration_data ();
-    ~Registration_data ();
     void load_global_input_files (Registration_parms::Pointer& regp);
     void load_stage_input_files (const Stage_parms* regp);
     void load_shared_input_files (const Shared_parms* shared);
 
-    Similarity_data::Pointer& get_similarity_data (std::string index);
+    Registration_similarity_data::Pointer&
+        get_similarity_images (std::string index);
 
     void set_fixed_image (const Plm_image::Pointer& image);
     void set_fixed_image (const std::string& index,

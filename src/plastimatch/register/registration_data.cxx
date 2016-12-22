@@ -10,7 +10,6 @@
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "shared_parms.h"
-#include "similarity_data.h"
 #include "stage_parms.h"
 
 #define DEFAULT_IMAGE_KEY "0"
@@ -19,7 +18,8 @@ class Registration_data_private
 {
 public:
     Stage_parms auto_parms;
-    std::map<std::string,Similarity_data::Pointer> similarity_data;
+    std::map <std::string, Registration_similarity_data::Pointer>
+        similarity_images;
     std::list<std::string> image_indices;
 public:
     Registration_data_private () {
@@ -134,17 +134,17 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     }
 }
 
-Similarity_data::Pointer&
-Registration_data::get_similarity_data (
+Registration_similarity_data::Pointer&
+Registration_data::get_similarity_images (
     std::string index)
 {
     if (index == "") {
         index = DEFAULT_IMAGE_KEY;
     }
-    if (!d_ptr->similarity_data[index]) {
-        d_ptr->similarity_data[index] = Similarity_data::New();
+    if (!d_ptr->similarity_images[index]) {
+        d_ptr->similarity_images[index] = Registration_similarity_data::New();
     }
-    return d_ptr->similarity_data[index];
+    return d_ptr->similarity_images[index];
 }
 
 void
@@ -158,7 +158,7 @@ Registration_data::set_fixed_image (
     const std::string& index,
     const Plm_image::Pointer& image)
 {
-    this->get_similarity_data(index)->fixed = image;
+    this->get_similarity_images(index)->fixed = image;
 }
 
 void
@@ -172,7 +172,7 @@ Registration_data::set_moving_image (
     const std::string& index,
     const Plm_image::Pointer& image)
 {
-    this->get_similarity_data(index)->moving = image;
+    this->get_similarity_images(index)->moving = image;
 }
 
 void
@@ -186,7 +186,7 @@ Registration_data::set_fixed_roi (
     const std::string& index,
     const Plm_image::Pointer& image)
 {
-    this->get_similarity_data(index)->fixed_roi = image;
+    this->get_similarity_images(index)->fixed_roi = image;
 }
 
 void
@@ -200,7 +200,7 @@ Registration_data::set_moving_roi (
     const std::string& index,
     const Plm_image::Pointer& image)
 {
-    this->get_similarity_data(index)->moving_roi = image;
+    this->get_similarity_images(index)->moving_roi = image;
 }
 
 Plm_image::Pointer&
@@ -213,7 +213,7 @@ Plm_image::Pointer&
 Registration_data::get_fixed_image (
     const std::string& index)
 {
-    return this->get_similarity_data(index)->fixed;
+    return this->get_similarity_images(index)->fixed;
 }
 
 Plm_image::Pointer&
@@ -226,7 +226,7 @@ Plm_image::Pointer&
 Registration_data::get_moving_image (
     const std::string& index)
 {
-    return this->get_similarity_data(index)->moving;
+    return this->get_similarity_images(index)->moving;
 }
 
 Plm_image::Pointer&
@@ -239,7 +239,7 @@ Plm_image::Pointer&
 Registration_data::get_fixed_roi (
     const std::string& index)
 {
-    return this->get_similarity_data(index)->fixed_roi;
+    return this->get_similarity_images(index)->fixed_roi;
 }
 
 Plm_image::Pointer&
@@ -252,7 +252,7 @@ Plm_image::Pointer&
 Registration_data::get_moving_roi (
     const std::string& index)
 {
-    return this->get_similarity_data(index)->moving_roi;
+    return this->get_similarity_images(index)->moving_roi;
 }
 
 const std::list<std::string>&
@@ -260,9 +260,10 @@ Registration_data::get_image_indices ()
 {
     d_ptr->image_indices.clear ();
     
-    std::map<std::string,Similarity_data::Pointer>::const_iterator it;
-    for (it = d_ptr->similarity_data.begin();
-         it != d_ptr->similarity_data.end(); ++it)
+    std::map<std::string,
+        Registration_similarity_data::Pointer>::const_iterator it;
+    for (it = d_ptr->similarity_images.begin();
+         it != d_ptr->similarity_images.end(); ++it)
     {
         if (it->second->fixed && it->second->moving) {
             if (it->first == DEFAULT_IMAGE_KEY) {

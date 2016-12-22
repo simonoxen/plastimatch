@@ -1,4 +1,45 @@
 ******************************************************************************
+Registration similarity parms/data
+
+There are three main types of similarity data:
+- parms
+- original images
+- derived images
+
+In 2016-12-22 design (so far), 
+
+- parms
+  -  Read into Stage_parms during parameter file parsing.
+  -  For each stage, copied into Bspline_parms.
+- original images
+  -  Filenames are read into Shared_parms (but update each 
+     stage not implemented) during parameter file parsing.
+  -  Images loaded during load_stage_input(), placed in 
+     Registration_data (Type Similarity_data).
+  -  They are not reloaded each stage because file_names are
+     not copied when new stages are created.
+- derived images
+  -  Images subsampled and grad calculated into Bspline_stage,
+     then copied into Bspline_parms.
+
+Next iteration of design.
+
+- parms
+  -  Read into Stage_parms during parameter file parsing.
+  -  For each stage, copied into Bspline_parms.
+- original images
+  -  Filenames are read into Shared_parms (but update each 
+     stage not implemented) during parameter file parsing.
+  -  Images loaded during load_stage_input(), placed in 
+     Registration_data (type Registration_data::similarity_images).
+  -  They are not reloaded each stage because file_names are
+     not copied when new stages are created.
+- derived images
+  -  Images subsampled and grad calculated into Bspline_stage,
+     then copied into Bspline_parms, type Bspline_data::similarity_images.
+
+
+******************************************************************************
 register_gui
 2016-10-31
 

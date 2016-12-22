@@ -140,8 +140,6 @@ Nocedal_optimizer::Nocedal_optimizer (Bspline_optimize *bod)
     /* If iprint is 1, the file iterate.dat will be created */
     iprint = 0;
 
-    //factr = 1.0e+7;
-    //pgtol = 1.0e-5;
     factr = parms->lbfgsb_factr;
     pgtol = parms->lbfgsb_pgtol;
 

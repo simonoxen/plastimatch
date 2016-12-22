@@ -12,6 +12,7 @@
 #include "double_align8.h"
 #include "similarity_metric_type.h"
 #include "smart_pointer.h"
+#include "stage_similarity_data.h"
 
 enum BsplineOptimization {
     BOPT_LBFGSB,
@@ -68,15 +69,7 @@ public:
     int lbfgsb_mmax;             /* Number of rows in M matrix */
 
     /* Image Volumes - these are not owned by Bspline_parms */
-//    std::list<Volume::Pointer> fixed;
-//    std::list<Volume::Pointer> moving;
-//    std::list<Volume::Pointer> moving_grad;
-    Volume* fixed;
-    Volume* moving;
-    Volume* fixed_grad;
-    Volume* moving_grad;
-    Volume* fixed_roi;
-    Volume* moving_roi;
+    std::list<Stage_similarity_data::Pointer> similarity_data;
     Volume* fixed_stiffness;
 
     /* Regularization */

@@ -95,9 +95,11 @@ check_gradient (
     Bspline_parms *parms = new Bspline_parms;
 
     /* Fixate images into bspline parms */
-    parms->fixed = fixed;
-    parms->moving = moving;
-    parms->moving_grad = moving_grad;
+    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
+    parms->similarity_data.push_back (sim);
+    sim->fixed_ss.reset (fixed);
+    sim->moving_ss.reset (moving);
+    sim->moving_grad.reset (moving_grad);
     parms->implementation = options->bsp_implementation;
     parms->metric_type[0] = options->bsp_metric;
 
@@ -105,7 +107,7 @@ check_gradient (
     Plm_image::Pointer pli_fixed_roi;
     if (options->fixed_roi_fn != "") {
         pli_fixed_roi = Plm_image::New (options->fixed_roi_fn);
-        parms->fixed_roi = pli_fixed_roi->get_volume_uchar().get();
+        sim->fixed_roi = pli_fixed_roi->get_volume_uchar();
     }
 
     /* Set extra debug stuff, if desired */
@@ -154,7 +156,7 @@ check_gradient (
     }
 
     if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        bst->mi_hist->initialize (parms->fixed, parms->moving);
+        bst->mi_hist->initialize (fixed, moving);
     }
 
     /* Get score and gradient */

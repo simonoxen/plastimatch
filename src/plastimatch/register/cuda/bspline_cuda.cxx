@@ -611,9 +611,9 @@ CUDA_bspline_mi_a (
     Bspline_xform *bxf
 )
 {
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
     UNUSED_VARIABLE (moving_grad);
 
     Dev_Pointers_Bspline* dev_ptrs = (Dev_Pointers_Bspline*)bst->dev_ptrs;
@@ -734,9 +734,9 @@ CUDA_bspline_mse_j (
     Bspline_xform *bxf
 )
 {
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Dev_Pointers_Bspline* dev_ptrs = (Dev_Pointers_Bspline*)bst->dev_ptrs;
 

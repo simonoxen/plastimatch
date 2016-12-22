@@ -97,8 +97,8 @@ Bspline_state::initialize (
     this->ssd.set_num_coeff (bxf->num_coeff);
 
     if (reg_parms->lambda > 0.0f) {
-        rst->fixed = parms->fixed;
-        rst->moving = parms->moving;
+        rst->fixed = parms->similarity_data.front()->fixed_ss.get();
+        rst->moving = parms->similarity_data.front()->moving_ss.get();
         rst->fixed_stiffness = parms->fixed_stiffness;
         rst->initialize (reg_parms, bxf);
     }
@@ -160,9 +160,9 @@ bspline_cuda_state_create (
     CUDA_selectgpu (parms->gpuid);
     UNLOAD_LIBRARY (libplmcuda);
     
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
@@ -223,9 +223,9 @@ bspline_cuda_state_destroy (
         return;
     }
 
-    Volume *fixed = parms->fixed;
-    Volume *moving = parms->moving;
-    Volume *moving_grad = parms->moving_grad;
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
     if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
@@ -243,6 +243,7 @@ bspline_cuda_state_destroy (
     free (bst->dev_ptrs);
 }
 
+#if defined (commentout)
 Bspline_state *
 bspline_state_create (
     Bspline_xform *bxf, 
@@ -258,7 +259,7 @@ bspline_state_create (
     bst->ssd.set_num_coeff (bxf->num_coeff);
 
     if (reg_parms->lambda > 0.0f) {
-        rst->fixed = parms->fixed;
+        rst->fixed = parms->similarity_data.front()->fixed_ss;
         rst->moving = parms->moving;
         rst->initialize (reg_parms, bxf);
     }
@@ -302,3 +303,4 @@ bspline_state_create (
 
     return bst;
 }
+#endif

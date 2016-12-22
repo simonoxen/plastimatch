@@ -36,12 +36,6 @@ Bspline_parms::Bspline_parms ()
     this->lbfgsb_pgtol = 1.0e-5;
     this->lbfgsb_mmax = -1;
 
-    this->fixed = 0;
-    this->moving = 0;
-    this->fixed_grad = 0;
-    this->moving_grad = 0;
-    this->fixed_roi = 0;
-    this->moving_roi = 0;
     this->fixed_stiffness = 0;
 
     this->reg_parms = new Regularization_parms;

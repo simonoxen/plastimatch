@@ -24,6 +24,7 @@
 #include "registration_resample.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
+#include "stage_similarity_data.h"
 #include "string_util.h"
 #include "volume.h"
 #include "volume_grad.h"
@@ -40,11 +41,6 @@ public:
     Xform::Pointer xf_out;
     Bspline_parms bsp_parms;
 
-    std::list<Volume::Pointer> fixed_ss;
-    std::list<Volume::Pointer> moving_ss;
-    std::list<Volume::Pointer> moving_grad;
-    Volume::Pointer f_roi_ss;
-    Volume::Pointer m_roi_ss;
     Volume::Pointer f_stiffness_ss;
 public:
     Bspline_stage_private () {
@@ -141,27 +137,27 @@ Bspline_stage::initialize ()
         Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
         Volume::Pointer& fixed = fixed_image->get_volume_float ();
         Volume::Pointer& moving = moving_image->get_volume_float ();
-        Volume::Pointer moving_ss;
-        Volume::Pointer fixed_ss;
+
+
+        Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
 
         /* Subsample images */
-        fixed_ss = registration_resample_volume (
+        ssi->fixed_ss = registration_resample_volume (
             fixed, stage, stage->resample_rate_fixed);
-        moving_ss = registration_resample_volume (
+        ssi->moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
 
         /* Gradient magnitude is MSE on gradient image */
         if (stage->metric_type[0] == SIMILARITY_METRIC_GM) {
-            fixed_ss = volume_gradient_magnitude (fixed_ss);
-            moving_ss = volume_gradient_magnitude (moving_ss);
+            ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
+            ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
         }
 
-        d_ptr->fixed_ss.push_back (fixed_ss);
-        d_ptr->moving_ss.push_back (moving_ss);
-
         /* Make spatial gradient image */
-        Volume::Pointer moving_grad = volume_gradient (moving_ss);
-        d_ptr->moving_grad.push_back (moving_grad);
+        ssi->moving_grad = volume_gradient (ssi->moving_ss);
+
+        /* Add images to stage image list */
+        bsp_parms->similarity_data.push_back (ssi);
     }
 
     /* Copy parameters from stage_parms to bspline_parms */
@@ -170,14 +166,11 @@ Bspline_stage::initialize ()
     bsp_parms->mi_moving_image_minVal = stage->mi_moving_image_minVal;
     bsp_parms->mi_moving_image_maxVal = stage->mi_moving_image_maxVal;
 
-    /* GCS FIX */
+    /* GCS FIX BEGIN */
     /* BSpline code needs work to support multi-planar imaging 
        until that is done, this should maintain the old behavior */
     Volume::Pointer fixed = regd->get_fixed_image()->get_volume_float();
     Volume::Pointer moving = regd->get_moving_image()->get_volume_float();
-    Volume::Pointer fixed_ss = d_ptr->fixed_ss.front();
-    Volume::Pointer moving_ss = d_ptr->moving_ss.front();
-    Volume::Pointer moving_grad = d_ptr->moving_grad.front();
     
     // Check if min/max values for moving image are set (correctly)
     if ((bsp_parms->mi_moving_image_minVal!=0 
@@ -223,14 +216,20 @@ Bspline_stage::initialize ()
 
     /* Subsample rois (if we are using them) */
     if (m_roi) {
-        d_ptr->m_roi_ss = volume_subsample_vox_legacy_nn (
-            m_roi, stage->resample_rate_moving);
+        Volume::Pointer m_roi_ss = 
+            volume_subsample_vox_legacy_nn (
+                m_roi, stage->resample_rate_moving);
+        bsp_parms->similarity_data.front()->moving_roi = m_roi_ss;
     }
     if (f_roi) {
-        d_ptr->f_roi_ss = volume_subsample_vox_legacy_nn (
-            f_roi, stage->resample_rate_fixed);
+        Volume::Pointer f_roi_ss = 
+            volume_subsample_vox_legacy_nn (
+                f_roi, stage->resample_rate_fixed);
+        bsp_parms->similarity_data.front()->fixed_roi = f_roi_ss;
     }
-    
+
+    /* GCS FIX END */
+
     /* Subsample stiffness */
     if (shared->fixed_stiffness_enable && regd->fixed_stiffness) {
         Volume::Pointer& stiffness 
@@ -239,18 +238,7 @@ Bspline_stage::initialize ()
             stiffness, stage, stage->resample_rate_fixed);
     }
 
-    /* --- Initialize parms --- */
-
-    /* Images */
-    bsp_parms->fixed = fixed_ss.get();
-    bsp_parms->moving = moving_ss.get();
-    bsp_parms->moving_grad = moving_grad.get();
-    if (f_roi) {
-        bsp_parms->fixed_roi = d_ptr->f_roi_ss.get();
-    }
-    if (m_roi) {
-        bsp_parms->moving_roi = d_ptr->m_roi_ss.get();
-    }
+    /* Stiffness image */
     if (d_ptr->f_stiffness_ss) {
         bsp_parms->fixed_stiffness = d_ptr->f_stiffness_ss.get();
     }
@@ -365,7 +353,7 @@ Bspline_stage::initialize ()
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set (fixed_ss);
+    pih.set (bsp_parms->similarity_data.front()->fixed_ss);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Set debugging directory */
@@ -378,15 +366,18 @@ Bspline_stage::initialize ()
 
         /* Write fixed, moving, moving_grad */
         std::string fn;
-        fn = string_format ("%s/%02d/moving.mha",
-            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), moving_ss.get());
         fn = string_format ("%s/%02d/fixed.mha",
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), fixed_ss.get());
+        write_mha (fn.c_str(), 
+            bsp_parms->similarity_data.front()->fixed_ss.get());
+        fn = string_format ("%s/%02d/moving.mha",
+            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+        write_mha (fn.c_str(),
+            bsp_parms->similarity_data.front()->moving_ss.get());
         fn = string_format ("%s/%02d/moving_grad.mha", 
             bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
-        write_mha (fn.c_str(), moving_grad.get());
+        write_mha (fn.c_str(), 
+            bsp_parms->similarity_data.front()->moving_grad.get());
     }
 }
 

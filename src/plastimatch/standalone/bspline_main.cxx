@@ -54,16 +54,17 @@ main (int argc, char* argv[])
     moving = read_mha (options.moving_fn);
     if (!moving) exit (-1);
 
-    parms->fixed = fixed;
-    parms->moving = moving;
+    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
+    parms->similarity_data.push_back (sim);
+    sim->fixed_ss.reset (fixed);
+    sim->moving_ss.reset (moving);
 
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
 
     printf ("Making gradient\n");
-    moving_grad = volume_make_gradient (moving);
-
-    parms->moving_grad = moving_grad;
+    moving_grad = volume_make_gradient (sim->moving_ss.get());
+    sim->moving_grad.reset (moving_grad);
 
 #if defined (commentout)
     /* Load and adjust landmarks */
@@ -157,9 +158,6 @@ main (int argc, char* argv[])
     /* Free memory */
     printf ("Done warping images.\n");
     delete bxf;
-    delete fixed;
-    delete moving;
-    delete moving_grad;
     delete moving_warped;
     delete vector_field;
 

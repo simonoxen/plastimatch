@@ -1,20 +1,22 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _similarity_data_h_
-#define _similarity_data_h_
+#ifndef _registration_similarity_data_h_
+#define _registration_similarity_data_h_
 
 #include "plmregister_config.h"
 
-class PLMREGISTER_API Similarity_data
+/*! \brief 
+ * The Registration_similarity_data class holds original or processed 
+ * images used for similarity measure calculations over multiple stages.
+ */
+class PLMREGISTER_API Registration_similarity_data
 {
 public:
-    SMART_POINTER_SUPPORT (Similarity_data);
+    SMART_POINTER_SUPPORT (Registration_similarity_data);
 public:
     Plm_image::Pointer fixed;
     Plm_image::Pointer moving;
-    Plm_image::Pointer fixed_grad;
-    Plm_image::Pointer moving_grad;
     Plm_image::Pointer fixed_roi;
     Plm_image::Pointer moving_roi;
 };

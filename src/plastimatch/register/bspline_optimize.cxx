@@ -132,9 +132,14 @@ bspline_optimize (
 
     /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
+    /* GCS DOUBLE FIX -- normally this can be done once before the 
+       first iteration.  But if e.g. there are two MI metrics, 
+       we need two of these structures.  Perhaps it belongs in 
+       Stage_similarity_data. */
     if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bod.get_bspline_state()->mi_hist->initialize (
-            parms->fixed, parms->moving);
+            parms->similarity_data.front()->fixed_ss.get(),
+            parms->similarity_data.front()->moving_ss.get());
     }
 
     /* Do the optimization */

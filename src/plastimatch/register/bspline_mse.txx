@@ -15,8 +15,8 @@ public:
 public:
     Bspline_mse_k (Bspline_optimize *bod)
     {
-        Bspline_parms *parms = bod->get_bspline_parms ();
-        Volume *moving_grad = parms->moving_grad;
+        Bspline_state *bst = bod->get_bspline_state ();
+        Volume *moving_grad = bst->moving_grad;
         m_grad = (float*) moving_grad->img;
         score_acc = 0.;
     }
@@ -97,8 +97,8 @@ public:
 public:
     Bspline_mse_l (Bspline_optimize *bod)
     {
-        Bspline_parms *parms = bod->get_bspline_parms ();
-        Volume *moving_grad = parms->moving_grad;
+        Bspline_state *bst = bod->get_bspline_state ();
+        Volume *moving_grad = bst->moving_grad;
         m_grad = (float*) moving_grad->img;
         score_acc = 0.;
     }

@@ -416,37 +416,51 @@ bspline_score (Bspline_optimize *bod)
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
-    /* Compute similarity metrics */
-    std::vector<Similarity_metric_type>::const_iterator it_metric
-        = parms->metric_type.begin();
-    std::vector<float>::const_iterator it_lambda
-        = parms->metric_lambda.begin();
-    bst->sm = 0;
-    while (it_metric != parms->metric_type.end()
-        && it_lambda != parms->metric_lambda.end())
+    /* Compute similarity metric.  This is done for each image plane, 
+       and each similarity metric within each image plane. */
+    std::list<Stage_similarity_data::Pointer>::const_iterator it_sd;
+    for (it_sd = parms->similarity_data.begin();
+         it_sd != parms->similarity_data.end(); ++it_sd)
     {
-        Plm_timer timer;
-        timer.start ();
-        bst->ssd.smetric.push_back (0.f);
-        if (*it_metric == SIMILARITY_METRIC_MSE) {
-            bspline_score_mse (bod);
-        }
-        else if (*it_metric == SIMILARITY_METRIC_MI_MATTES) {
-            bspline_score_mi (bod);
-        }
-        else if (*it_metric == SIMILARITY_METRIC_GM) {
-            bspline_score_gm (bod);
-        }
-        else {
-            print_and_exit ("Unknown similarity metric in bspline_score()\n");
-        }
+        bst->fixed = (*it_sd)->fixed_ss.get();
+        bst->moving = (*it_sd)->moving_ss.get();
+        bst->moving_grad = (*it_sd)->moving_grad.get();
+        bst->fixed_roi = (*it_sd)->fixed_roi.get();
+        bst->moving_roi = (*it_sd)->moving_roi.get();
 
-        bst->ssd.accumulate_grad (*it_lambda);
+        std::vector<Similarity_metric_type>::const_iterator it_metric
+            = parms->metric_type.begin();
+        std::vector<float>::const_iterator it_lambda
+            = parms->metric_lambda.begin();
+        bst->sm = 0;
+        while (it_metric != parms->metric_type.end()
+            && it_lambda != parms->metric_lambda.end())
+        {
+            Plm_timer timer;
+            timer.start ();
 
-        bst->ssd.time_smetric.push_back (timer.report ());
-        bst->sm ++;
-        ++it_metric;
-        ++it_lambda;
+            bst->ssd.smetric.push_back (0.f);
+            if (*it_metric == SIMILARITY_METRIC_MSE) {
+                bspline_score_mse (bod);
+            }
+            else if (*it_metric == SIMILARITY_METRIC_MI_MATTES) {
+                bspline_score_mi (bod);
+            }
+            else if (*it_metric == SIMILARITY_METRIC_GM) {
+                bspline_score_gm (bod);
+            }
+            else {
+                print_and_exit (
+                    "Unknown similarity metric in bspline_score()\n");
+            }
+
+            bst->ssd.accumulate_grad (*it_lambda);
+
+            bst->ssd.time_smetric.push_back (timer.report ());
+            bst->sm ++;
+            ++it_metric;
+            ++it_lambda;
+        }
     }
 
     /* Compute regularization */
