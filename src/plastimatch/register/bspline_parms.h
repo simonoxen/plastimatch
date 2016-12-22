@@ -10,7 +10,7 @@
 #include <vector>
 #include "bspline_mi_hist.h"
 #include "double_align8.h"
-#include "registration_metric_type.h"
+#include "similarity_metric_type.h"
 #include "smart_pointer.h"
 
 enum BsplineOptimization {
@@ -40,7 +40,7 @@ public:
 public:
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
-    std::vector<Registration_metric_type> metric_type;
+    std::vector<Similarity_metric_type> metric_type;
     std::vector<float> metric_lambda;
     char implementation;         /* Implementation ('a', 'b', etc.) */
     int min_its;                 /* Miniumum iterations (line searches) */
@@ -68,9 +68,9 @@ public:
     int lbfgsb_mmax;             /* Number of rows in M matrix */
 
     /* Image Volumes - these are not owned by Bspline_parms */
-    //std::list<Volume::Pointer> fixed;
-    //std::list<Volume::Pointer> moving;
-    //std::list<Volume::Pointer> moving_grad;
+//    std::list<Volume::Pointer> fixed;
+//    std::list<Volume::Pointer> moving;
+//    std::list<Volume::Pointer> moving_grad;
     Volume* fixed;
     Volume* moving;
     Volume* fixed_grad;

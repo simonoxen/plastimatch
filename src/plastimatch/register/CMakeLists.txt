@@ -68,10 +68,10 @@ set (PLMREGISTER_LIBRARY_SRC
   rbf_wendland.cxx
   registration.cxx registration.h
   registration_data.cxx
-  registration_metric_type.cxx registration_metric_type.h
   registration_parms.cxx registration_parms.h
   registration_resample.cxx registration_resample.h 
   shared_parms.cxx
+  similarity_metric_type.cxx similarity_metric_type.h
   stage_parms.cxx
   translation_grid_search.cxx translation_grid_search.h 
   translation_mi.cxx translation_mi.h 

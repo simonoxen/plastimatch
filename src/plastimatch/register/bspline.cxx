@@ -198,7 +198,7 @@ bspline_save_debug_state (
         fn = parms->debug_dir + "/" + buf;
         bxf->save (fn.c_str());
 
-        if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+        if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
             bst->mi_hist->dump_hist (bst->feval, fn);
@@ -353,7 +353,7 @@ report_score (
     {
         logfile_printf ("SCORE ");
     } else {
-        logfile_printf ("%-6s", registration_metric_type_string (
+        logfile_printf ("%-6s", similarity_metric_type_string (
                 parms->metric_type[0]));
     }
     logfile_print_score (ssd->score);
@@ -368,11 +368,11 @@ report_score (
         logfile_printf ("         ");
         /* Part 1 - smetric(s) */   
         std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
-        std::vector<Registration_metric_type>::const_iterator it_st
+        std::vector<Similarity_metric_type>::const_iterator it_st
             = parms->metric_type.begin();
         while (it_sm != ssd->smetric.end()) {
             logfile_printf ("%-6s",
-                registration_metric_type_string (*it_st));
+                similarity_metric_type_string (*it_st));
             logfile_print_score (*it_sm);
             ++it_sm, ++it_st;
         }
@@ -417,7 +417,7 @@ bspline_score (Bspline_optimize *bod)
     bst->ssd.reset_score ();
 
     /* Compute similarity metrics */
-    std::vector<Registration_metric_type>::const_iterator it_metric
+    std::vector<Similarity_metric_type>::const_iterator it_metric
         = parms->metric_type.begin();
     std::vector<float>::const_iterator it_lambda
         = parms->metric_lambda.begin();
@@ -428,13 +428,13 @@ bspline_score (Bspline_optimize *bod)
         Plm_timer timer;
         timer.start ();
         bst->ssd.smetric.push_back (0.f);
-        if (*it_metric == REGISTRATION_METRIC_MSE) {
+        if (*it_metric == SIMILARITY_METRIC_MSE) {
             bspline_score_mse (bod);
         }
-        else if (*it_metric == REGISTRATION_METRIC_MI_MATTES) {
+        else if (*it_metric == SIMILARITY_METRIC_MI_MATTES) {
             bspline_score_mi (bod);
         }
-        else if (*it_metric == REGISTRATION_METRIC_GM) {
+        else if (*it_metric == SIMILARITY_METRIC_GM) {
             bspline_score_gm (bod);
         }
         else {

@@ -50,7 +50,7 @@ Stage_parms::Stage_parms ()
     threading_type = THREADING_CPU_OPENMP;
     gpuid = 0;
     /* Similarity metric */
-    metric_type.push_back (REGISTRATION_METRIC_MSE);
+    metric_type.push_back (SIMILARITY_METRIC_MSE);
     metric_lambda.push_back (1.0);
     regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
     demons_gradient_type = SYMMETRIC;

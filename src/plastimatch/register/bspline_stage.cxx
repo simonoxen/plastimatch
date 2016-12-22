@@ -151,7 +151,7 @@ Bspline_stage::initialize ()
             moving, stage, stage->resample_rate_moving);
 
         /* Gradient magnitude is MSE on gradient image */
-        if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
+        if (stage->metric_type[0] == SIMILARITY_METRIC_GM) {
             fixed_ss = volume_gradient_magnitude (fixed_ss);
             moving_ss = volume_gradient_magnitude (moving_ss);
         }
@@ -270,8 +270,8 @@ Bspline_stage::initialize ()
     bsp_parms->metric_type = stage->metric_type;
     bsp_parms->metric_lambda = stage->metric_lambda;
     for (size_t i = 0; i < stage->metric_type.size(); i++) {
-        if (bsp_parms->metric_type[i] == REGISTRATION_METRIC_MI_VW) {
-            bsp_parms->metric_type[i] = REGISTRATION_METRIC_MI_MATTES;
+        if (bsp_parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
+            bsp_parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
         }
     }
 

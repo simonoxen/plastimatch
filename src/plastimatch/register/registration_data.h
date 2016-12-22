@@ -9,6 +9,7 @@
 #include "plm_image.h"
 #include "pointset.h"
 #include "registration_parms.h"
+#include "similarity_data.h"
 #include "smart_pointer.h"
 
 class Plm_image;
@@ -27,8 +28,6 @@ public:
     Registration_data_private *d_ptr;
 public:
     /* Input images */
-    std::map<std::string,Plm_image::Pointer> fixed_image;
-    std::map<std::string,Plm_image::Pointer> moving_image;
     Plm_image::Pointer fixed_roi;
     Plm_image::Pointer moving_roi;
     Plm_image::Pointer fixed_stiffness;
@@ -48,6 +47,8 @@ public:
     void load_global_input_files (Registration_parms::Pointer& regp);
     void load_stage_input_files (const Stage_parms* regp);
     void load_shared_input_files (const Shared_parms* shared);
+
+    Similarity_data::Pointer& get_similarity_data (std::string index);
 
     void set_fixed_image (
         const Plm_image::Pointer& image);

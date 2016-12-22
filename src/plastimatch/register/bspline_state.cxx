@@ -31,7 +31,7 @@
 #include "logfile.h"
 #include "plm_math.h"
 #include "string_util.h"
-#include "registration_metric_type.h"
+#include "similarity_metric_type.h"
 #include "volume.h"
 #include "volume_macros.h"
 
@@ -105,7 +105,7 @@ Bspline_state::initialize (
 
     /* Initialize MI histograms */
     this->mi_hist = 0;
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         this->mi_hist = new Bspline_mi_hist_set (
             parms->mi_hist_type,
             parms->mi_hist_fixed_bins,
@@ -120,7 +120,7 @@ Bspline_state::initialize (
      *   However, it is possible we could be inheriting coefficients from a
      *   prior stage, so we must check for inherited coefficients before
      *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bool first_iteration = true;
 
         for (int i=0; i<bxf->num_coeff; i++) {
@@ -168,7 +168,7 @@ bspline_cuda_state_create (
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
     bst->dev_ptrs = dev_ptrs;
     
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MSE) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmregistercuda);
@@ -187,7 +187,7 @@ bspline_cuda_state_create (
 
         UNLOAD_LIBRARY (libplmregistercuda);
     } 
-    else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmregistercuda);
@@ -227,13 +227,13 @@ bspline_cuda_state_destroy (
     Volume *moving = parms->moving;
     Volume *moving_grad = parms->moving_grad;
 
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MSE) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmregistercuda);
         CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmregistercuda);
     }
-    else if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmregistercuda);
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
@@ -265,7 +265,7 @@ bspline_state_create (
 
     /* Initialize MI histograms */
     bst->mi_hist = 0;
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bst->mi_hist = new Bspline_mi_hist_set (
             parms->mi_hist_type,
             parms->mi_hist_fixed_bins,
@@ -279,7 +279,7 @@ bspline_state_create (
      *   However, it is possible we could be inheriting coefficients from a
      *   prior stage, so we must check for inherited coefficients before
      *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bool first_iteration = true;
 
         for (int i=0; i<bxf->num_coeff; i++) {

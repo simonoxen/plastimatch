@@ -55,12 +55,12 @@ Translation_grid_search::do_search (
     /* Choose the correct score function */
     this->translation_score = &translation_mse;
     switch (stage->metric_type[0]) {
-    case REGISTRATION_METRIC_MSE:
-    case REGISTRATION_METRIC_GM:
+    case SIMILARITY_METRIC_MSE:
+    case SIMILARITY_METRIC_GM:
         translation_score = &translation_mse;
         break;
-    case REGISTRATION_METRIC_MI_MATTES:
-    case REGISTRATION_METRIC_MI_VW:
+    case SIMILARITY_METRIC_MI_MATTES:
+    case SIMILARITY_METRIC_MI_VW:
         translation_score = &translation_mi;
         break;
     default:
@@ -257,7 +257,7 @@ translation_grid_search_stage (
             moving, stage, stage->resample_rate_moving);
 
         /* Gradient magnitude is MSE on gradient image */
-        if (stage->metric_type[0] == REGISTRATION_METRIC_GM) {
+        if (stage->metric_type[0] == SIMILARITY_METRIC_GM) {
             fixed_ss = volume_gradient_magnitude (fixed_ss);
             moving_ss = volume_gradient_magnitude (moving_ss);
         }

@@ -15,7 +15,7 @@
 #include "plm_image_type.h"
 #include "plm_return_code.h"
 #include "process_parms.h"
-#include "registration_metric_type.h"
+#include "similarity_metric_type.h"
 #include "threading.h"
 
 enum Stage_transform_type {
@@ -128,7 +128,7 @@ public:
     Threading threading_type;
     int gpuid;               /* Sets GPU to use for multi-gpu machines */
     /* Similarity metric */
-    std::vector<Registration_metric_type> metric_type;
+    std::vector<Similarity_metric_type> metric_type;
     std::vector<float> metric_lambda;
     /* Regularization */
     Regularization_type regularization_type;

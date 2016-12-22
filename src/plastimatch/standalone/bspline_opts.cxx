@@ -175,9 +175,9 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "mse")) {
-		parms->metric_type[0] = REGISTRATION_METRIC_MSE;
+		parms->metric_type[0] = SIMILARITY_METRIC_MSE;
 	    } else if (!strcmp(argv[i], "mi")) {
-		parms->metric_type[0] = REGISTRATION_METRIC_MI_MATTES;
+		parms->metric_type[0] = SIMILARITY_METRIC_MI_MATTES;
 	    } else {
 		print_usage ();
 	    }

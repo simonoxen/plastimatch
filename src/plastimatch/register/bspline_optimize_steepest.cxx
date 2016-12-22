@@ -55,7 +55,7 @@ bspline_optimize_steepest_trace (
 
     // JAS 04.19.2010
     // For Testing...
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }
@@ -236,7 +236,7 @@ bspline_optimize_steepest_trust (
 
     // JAS 04.19.2010
     // For testing...
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }

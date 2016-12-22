@@ -132,7 +132,7 @@ bspline_optimize (
 
     /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
-    if (parms->metric_type[0] == REGISTRATION_METRIC_MI_MATTES) {
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bod.get_bspline_state()->mi_hist->initialize (
             parms->fixed, parms->moving);
     }
