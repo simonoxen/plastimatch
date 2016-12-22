@@ -27,9 +27,7 @@ public:
     SMART_POINTER_SUPPORT (Registration_data);
     Registration_data_private *d_ptr;
 public:
-    /* Input images */
-    Plm_image::Pointer fixed_roi;
-    Plm_image::Pointer moving_roi;
+    /* Regularization stiffness image */
     Plm_image::Pointer fixed_stiffness;
 
     /* Input landmarks */
@@ -50,20 +48,26 @@ public:
 
     Similarity_data::Pointer& get_similarity_data (std::string index);
 
-    void set_fixed_image (
+    void set_fixed_image (const Plm_image::Pointer& image);
+    void set_fixed_image (const std::string& index,
         const Plm_image::Pointer& image);
-    void set_fixed_image (
-        const std::string& index,
+    void set_moving_image (const Plm_image::Pointer& image);
+    void set_moving_image (const std::string& index,
         const Plm_image::Pointer& image);
-    void set_moving_image (
+    void set_fixed_roi (const Plm_image::Pointer& image);
+    void set_fixed_roi (const std::string& index,
         const Plm_image::Pointer& image);
-    void set_moving_image (
-        const std::string& index,
+    void set_moving_roi (const Plm_image::Pointer& image);
+    void set_moving_roi (const std::string& index,
         const Plm_image::Pointer& image);
     Plm_image::Pointer& get_fixed_image ();
     Plm_image::Pointer& get_fixed_image (const std::string& index);
     Plm_image::Pointer& get_moving_image ();
     Plm_image::Pointer& get_moving_image (const std::string& index);
+    Plm_image::Pointer& get_fixed_roi ();
+    Plm_image::Pointer& get_fixed_roi (const std::string& index);
+    Plm_image::Pointer& get_moving_roi ();
+    Plm_image::Pointer& get_moving_roi (const std::string& index);
 
     /*! \brief Get list of indices which have both a fixed and moving image.
       The default image (index "0") will be the first index in the list.  

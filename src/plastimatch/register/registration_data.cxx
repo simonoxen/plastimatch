@@ -58,37 +58,40 @@ void
 Registration_data::load_shared_input_files (const Shared_parms* shared)
 {
     /* Load images */
-    std::map<std::string,std::string>::const_iterator fix_it;
-    for (fix_it = shared->fixed_fn.begin();
-         fix_it != shared->fixed_fn.end(); ++fix_it)
+    std::map<std::string,std::string>::const_iterator it;
+    for (it = shared->fixed_fn.begin();
+         it != shared->fixed_fn.end(); ++it)
     {
         logfile_printf ("Loading fixed image [%s]: %s\n",
-            fix_it->first.c_str(), fix_it->second.c_str());
-        this->set_fixed_image (fix_it->first,
-            Plm_image::New (fix_it->second, PLM_IMG_TYPE_ITK_FLOAT));
+            it->first.c_str(), it->second.c_str());
+        this->set_fixed_image (it->first,
+            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_FLOAT));
     }
-    std::map<std::string,std::string>::const_iterator mov_it;
-    for (mov_it = shared->moving_fn.begin();
-         mov_it != shared->moving_fn.end(); ++mov_it)
+    for (it = shared->moving_fn.begin();
+         it != shared->moving_fn.end(); ++it)
     {
         logfile_printf ("Loading moving image [%s]: %s\n",
-            mov_it->first.c_str(), mov_it->second.c_str());
-        this->set_moving_image (mov_it->first, 
-            Plm_image::New (mov_it->second, PLM_IMG_TYPE_ITK_FLOAT));
+            it->first.c_str(), it->second.c_str());
+        this->set_moving_image (it->first, 
+            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_FLOAT));
     }
 
-    /* load "global" rois */
-    if (shared->fixed_roi_fn != "") {
-        logfile_printf ("Loading fixed roi: %s\n", 
-            shared->fixed_roi_fn.c_str());
-        this->fixed_roi = Plm_image::New (
-            shared->fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    /* load rois */
+    for (it = shared->fixed_roi_fn.begin();
+         it != shared->fixed_roi_fn.end(); ++it)
+    {
+        logfile_printf ("Loading fixed roi [%s]: %s\n", 
+            it->first.c_str(), it->second.c_str());
+        this->set_fixed_roi (it->first,
+            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_UCHAR));
     }
-    if (shared->moving_roi_fn != "") {
-        logfile_printf ("Loading moving roi: %s\n", 
-            shared->moving_roi_fn.c_str());
-        this->moving_roi = Plm_image::New (
-            shared->moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    for (it = shared->moving_roi_fn.begin();
+         it != shared->moving_roi_fn.end(); ++it)
+    {
+        logfile_printf ("Loading fixed roi [%s]: %s\n", 
+            it->first.c_str(), it->second.c_str());
+        this->set_moving_roi (it->first,
+            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_UCHAR));
     }
 
     /* load stiffness */
@@ -172,6 +175,33 @@ Registration_data::set_moving_image (
     this->get_similarity_data(index)->moving = image;
 }
 
+void
+Registration_data::set_fixed_roi (const Plm_image::Pointer& image)
+{
+    this->set_fixed_roi (DEFAULT_IMAGE_KEY, image);
+}
+
+void
+Registration_data::set_fixed_roi (
+    const std::string& index,
+    const Plm_image::Pointer& image)
+{
+    this->get_similarity_data(index)->fixed_roi = image;
+}
+
+void
+Registration_data::set_moving_roi (const Plm_image::Pointer& image)
+{
+    this->set_moving_roi (DEFAULT_IMAGE_KEY, image);
+}
+
+void
+Registration_data::set_moving_roi (
+    const std::string& index,
+    const Plm_image::Pointer& image)
+{
+    this->get_similarity_data(index)->moving_roi = image;
+}
 
 Plm_image::Pointer&
 Registration_data::get_fixed_image ()
@@ -197,6 +227,32 @@ Registration_data::get_moving_image (
     const std::string& index)
 {
     return this->get_similarity_data(index)->moving;
+}
+
+Plm_image::Pointer&
+Registration_data::get_fixed_roi ()
+{
+    return this->get_fixed_roi(DEFAULT_IMAGE_KEY);
+}
+
+Plm_image::Pointer&
+Registration_data::get_fixed_roi (
+    const std::string& index)
+{
+    return this->get_similarity_data(index)->fixed_roi;
+}
+
+Plm_image::Pointer&
+Registration_data::get_moving_roi ()
+{
+    return this->get_moving_roi(DEFAULT_IMAGE_KEY);
+}
+
+Plm_image::Pointer&
+Registration_data::get_moving_roi (
+    const std::string& index)
+{
+    return this->get_similarity_data(index)->moving_roi;
 }
 
 const std::list<std::string>&

@@ -88,31 +88,31 @@ set_and_subsample_masks (
     const Stage_parms* stage)
 {
     /* Subsample fixed & moving images */
-    if(regd->fixed_roi)
+    if (regd->get_fixed_roi())
     {
-      MaskType::Pointer fixedSpatialObjectMask = MaskType::New();
-      UCharImageType::Pointer fixed_mask
-        = subsample_image (regd->fixed_roi->itk_uchar(),
-        stage->resample_rate_fixed[0],
-        stage->resample_rate_fixed[1],
-        stage->resample_rate_fixed[2],
-        0);
-      fixedSpatialObjectMask->SetImage(fixed_mask);
-      fixedSpatialObjectMask->Update();
-      m_filter->SetFixedImageMask (fixedSpatialObjectMask);
+        MaskType::Pointer fixedSpatialObjectMask = MaskType::New();
+        UCharImageType::Pointer fixed_mask
+            = subsample_image (regd->get_fixed_roi()->itk_uchar(),
+                stage->resample_rate_fixed[0],
+                stage->resample_rate_fixed[1],
+                stage->resample_rate_fixed[2],
+                0);
+        fixedSpatialObjectMask->SetImage(fixed_mask);
+        fixedSpatialObjectMask->Update();
+        m_filter->SetFixedImageMask (fixedSpatialObjectMask);
     }
-    if(regd->moving_roi)
+    if(regd->get_moving_roi())
     {
-      MaskType::Pointer movingSpatialObjectMask = MaskType::New();
-      UCharImageType::Pointer moving_mask
-        = subsample_image (regd->moving_roi->itk_uchar(),
-        stage->resample_rate_fixed[0],
-        stage->resample_rate_fixed[1],
-        stage->resample_rate_fixed[2],
-        0);
-      movingSpatialObjectMask->SetImage(moving_mask);
-      movingSpatialObjectMask->Update();
-      m_filter->SetMovingImageMask(movingSpatialObjectMask);
+        MaskType::Pointer movingSpatialObjectMask = MaskType::New();
+        UCharImageType::Pointer moving_mask
+            = subsample_image (regd->get_moving_roi()->itk_uchar(),
+                stage->resample_rate_fixed[0],
+                stage->resample_rate_fixed[1],
+                stage->resample_rate_fixed[2],
+                0);
+        movingSpatialObjectMask->SetImage(moving_mask);
+        movingSpatialObjectMask->Update();
+        m_filter->SetMovingImageMask(movingSpatialObjectMask);
     }
 }
 

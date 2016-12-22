@@ -308,15 +308,15 @@ void
 Itk_registration_private::set_roi_images ()
 {
     const Shared_parms *shared = stage->get_shared_parms();
-    if (shared->fixed_roi_enable && regd->fixed_roi) {
+    if (shared->fixed_roi_enable && regd->get_fixed_roi()) {
         Mask_SOType::Pointer roi_so = Mask_SOType::New();
-        roi_so->SetImage(regd->fixed_roi->itk_uchar());
+        roi_so->SetImage(regd->get_fixed_roi()->itk_uchar());
         roi_so->Update();
         registration->GetMetric()->SetFixedImageMask (roi_so);
     }
-    if (shared->moving_roi_enable && regd->moving_roi) {
+    if (shared->moving_roi_enable && regd->get_moving_roi()) {
         Mask_SOType::Pointer roi_so = Mask_SOType::New();
-        roi_so->SetImage(regd->moving_roi->itk_uchar());
+        roi_so->SetImage(regd->get_moving_roi()->itk_uchar());
         roi_so->Update();
         registration->GetMetric()->SetMovingImageMask (roi_so);
     }
@@ -764,15 +764,15 @@ itk_align_center_of_gravity (
     const Xform *xf_in, const Stage_parms* stage)
 {
 
-    if (regd->fixed_roi != NULL && regd->moving_roi != NULL) {
+    if (regd->get_fixed_roi() && regd->get_moving_roi()) {
         typedef itk::ImageMomentsCalculator<UCharImageType> ImageMomentsCalculatorType;
         
         ImageMomentsCalculatorType::Pointer fixedCalculator = ImageMomentsCalculatorType::New();
-        fixedCalculator->SetImage(regd->fixed_roi->itk_uchar());
+        fixedCalculator->SetImage(regd->get_fixed_roi()->itk_uchar());
         fixedCalculator->Compute();
 
         ImageMomentsCalculatorType::Pointer movingCalculator = ImageMomentsCalculatorType::New();
-        movingCalculator->SetImage(regd->moving_roi->itk_uchar());
+        movingCalculator->SetImage(regd->get_moving_roi()->itk_uchar());
         movingCalculator->Compute();
 
         ImageMomentsCalculatorType::VectorType fixedCenter; 

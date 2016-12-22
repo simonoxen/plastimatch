@@ -100,13 +100,13 @@ Registration::set_moving_image (Plm_image::Pointer& moving)
 void
 Registration::set_fixed_roi (Plm_image::Pointer& fixed_roi)
 {
-    d_ptr->rdata->fixed_roi = fixed_roi;
+    d_ptr->rdata->set_fixed_roi (fixed_roi);
 }
 
 void
 Registration::set_moving_roi (Plm_image::Pointer& moving_roi)
 {
-    d_ptr->rdata->moving_roi = moving_roi;
+    d_ptr->rdata->set_moving_roi (moving_roi);
 }
 
 Registration_data::Pointer
@@ -135,7 +135,7 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
     regd->fixed_region_origin = fixed_image->itk_float()->GetOrigin();
     regd->fixed_region_spacing = fixed_image->itk_float()->GetSpacing();
 
-    if (regd->fixed_roi) {
+    if (regd->get_fixed_roi()) {
         FloatImageType::RegionType::IndexType valid_index;
         FloatImageType::RegionType::SizeType valid_size;
 
@@ -143,8 +143,8 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
         typedef itk::ImageRegionConstIteratorWithIndex< 
             UCharImageType > IteratorType;
         UCharImageType::RegionType region 
-            = regd->fixed_roi->itk_uchar()->GetLargestPossibleRegion();
-        IteratorType it (regd->fixed_roi->itk_uchar(), region);
+            = regd->get_fixed_roi()->itk_uchar()->GetLargestPossibleRegion();
+        IteratorType it (regd->get_fixed_roi()->itk_uchar(), region);
 
         int first = 1;
         valid_index[0] = 0;

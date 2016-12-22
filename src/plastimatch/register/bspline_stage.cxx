@@ -124,11 +124,11 @@ Bspline_stage::initialize ()
     /* Set roi's */
     Volume::Pointer m_roi;
     Volume::Pointer f_roi;
-    if (shared->fixed_roi_enable && regd->fixed_roi) {
-        f_roi = regd->fixed_roi->get_volume_uchar();
+    if (shared->fixed_roi_enable && regd->get_fixed_roi()) {
+        f_roi = regd->get_fixed_roi()->get_volume_uchar();
     }
-    if (shared->moving_roi_enable && regd->moving_roi) {
-        m_roi = regd->moving_roi->get_volume_uchar();
+    if (shared->moving_roi_enable && regd->get_moving_roi()) {
+        m_roi = regd->get_moving_roi()->get_volume_uchar();
     }
 
     const std::list<std::string>& image_indices

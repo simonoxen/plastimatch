@@ -45,15 +45,18 @@ itk_align_center_of_gravity (
     Registration_data* regd, Xform *xf_out, 
     const Xform *xf_in, const Stage_parms* stage)
 {
-    if (regd->fixed_roi != NULL && regd->moving_roi != NULL) {
-        typedef itk::ImageMomentsCalculator<UCharImageType> ImageMomentsCalculatorType;
-        
-        ImageMomentsCalculatorType::Pointer fixedCalculator = ImageMomentsCalculatorType::New();
-        fixedCalculator->SetImage(regd->fixed_roi->itk_uchar());
+    if (regd->get_fixed_roi() && regd->get_moving_roi()) {
+        typedef itk::ImageMomentsCalculator<UCharImageType>
+            ImageMomentsCalculatorType;
+
+        ImageMomentsCalculatorType::Pointer fixedCalculator
+            = ImageMomentsCalculatorType::New();
+        fixedCalculator->SetImage(regd->get_fixed_roi()->itk_uchar());
         fixedCalculator->Compute();
 
-        ImageMomentsCalculatorType::Pointer movingCalculator = ImageMomentsCalculatorType::New();
-        movingCalculator->SetImage(regd->moving_roi->itk_uchar());
+        ImageMomentsCalculatorType::Pointer movingCalculator
+            = ImageMomentsCalculatorType::New();
+        movingCalculator->SetImage(regd->get_moving_roi()->itk_uchar());
         movingCalculator->Compute();
 
         ImageMomentsCalculatorType::VectorType fixedCenter; 

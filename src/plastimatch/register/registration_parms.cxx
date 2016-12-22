@@ -153,28 +153,10 @@ Registration_parms::set_key_value (
     if (key == "fixed") {
         if (section_process) goto key_not_allowed_in_section_process;
         shared->fixed_fn[index] = val;
-#if defined (commentout)
-        std::map<std::string,std::string>::const_iterator it;
-        for (it = shared->fixed_fn.begin(); it != shared->fixed_fn.end(); ++it)
-        {
-            printf ("FF[%s]: %s\n",
-                it->first.c_str(),
-                shared->fixed_fn[it->first].c_str());
-        }
-#endif
     }
     else if (key == "moving") {
         if (section_process) goto key_not_allowed_in_section_process;
         shared->moving_fn[index] = val;
-#if defined (commentout)
-        std::map<std::string,std::string>::const_iterator it;
-        for (it = shared->moving_fn.begin(); it != shared->moving_fn.end(); ++it)
-        {
-            printf ("MM[%s]: %s\n",
-                it->first.c_str(),
-                shared->moving_fn[it->first].c_str());
-        }
-#endif
     }
     else if (key == "xf_in"
         || key == "xform_in"
@@ -206,11 +188,11 @@ Registration_parms::set_key_value (
     }
     else if (key == "fixed_mask" || key == "fixed_roi") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->fixed_roi_fn = val;
+        shared->fixed_roi_fn[index] = val;
     }
     else if (key == "moving_mask" || key == "moving_roi") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->moving_roi_fn = val;
+        shared->moving_roi_fn[index] = val;
     }
     else if (key == "fixed_roi_enable") {
         if (section_process) goto key_not_allowed_in_section_process;
