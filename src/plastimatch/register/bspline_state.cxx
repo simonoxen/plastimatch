@@ -123,31 +123,6 @@ Bspline_state::initialize_similarity_images ()
      */
     /* Copy images into CUDA memory */
     bspline_cuda_state_create (d_ptr->parms, this, d_ptr->bxf);
-
-    /* GCS FIX: The below should be done once per similarity image */
-    /* JAS Fix 2011.09.14
-     *   The MI algorithm will get stuck for a set of coefficients all equaling
-     *   zero due to the method we use to compute the cost function gradient.
-     *   However, it is possible we could be inheriting coefficients from a
-     *   prior stage, so we must check for inherited coefficients before
-     *   applying an initial offset to the coefficient array. */
-    if (d_ptr->parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        bool first_iteration = true;
-
-        for (int i = 0; i < d_ptr->bxf->num_coeff; i++) {
-            if (d_ptr->bxf->coeff[i] != 0.0f) {
-                first_iteration = false;
-                break;
-            }
-        }
-
-        if (first_iteration) {
-            printf ("Initializing 1st MI Stage\n");
-            for (int i = 0; i < d_ptr->bxf->num_coeff; i++) {
-                d_ptr->bxf->coeff[i] = 0.01f;
-            }
-        }
-    }
 }
 
 static void

@@ -127,6 +127,18 @@ bspline_optimize (
     Bspline_optimize bod;
     bod.initialize (bxf, parms);
 
+    /* GCS FIX: The below does not belong in bspline_state.  And it should 
+       be done if any similarity metric is MI. */
+    /* JAS Fix 2011.09.14
+     *   The MI algorithm will get stuck for a set of coefficients all equaling
+     *   zero due to the method we use to compute the cost function gradient.
+     *   However, it is possible we could be inheriting coefficients from a
+     *   prior stage, so we must check for inherited coefficients before
+     *   applying an initial offset to the coefficient array. */
+    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+        bxf->jitter_if_zero ();
+    }
+    
     log_parms (parms);
     log_bxf_header (bxf);
 

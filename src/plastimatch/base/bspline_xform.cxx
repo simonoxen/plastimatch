@@ -641,6 +641,22 @@ Bspline_xform::fill_coefficients (float val)
     }
 }
 
+void
+Bspline_xform::jitter_if_zero ()
+{
+    /*   The MI algorithm will get stuck for a set of coefficients all equaling
+     *   zero due to the method we use to compute the cost function gradient.
+     *   However, it is possible we could be inheriting coefficients from a
+     *   prior stage, so we must check for inherited coefficients before
+     *   applying an initial offset to the coefficient array. */
+    for (int i = 0; i < this->num_coeff; i++) {
+        if (this->coeff[i] != 0.0f) {
+            return;
+        }
+    }
+    fill_coefficients (0.01f);
+}
+
 /* Set volume header from B-spline Xform */
 void 
 Bspline_xform::get_volume_header (Volume_header *vh)

@@ -15,6 +15,10 @@
 class Volume;
 class Volume_header;
 
+/*! \brief 
+ * The Bspline_xform class encapsulates the B-spline coefficients 
+ * used by native registration and warping algorithms.
+ */
 class PLMBASE_API Bspline_xform {
 public:
     SMART_POINTER_SUPPORT (Bspline_xform);
@@ -71,6 +75,11 @@ public:
     );
     void save (const char* filename);
     void fill_coefficients (float val);
+    /*! \brief This function jitters the coefficients if they are all zero. 
+     *  It is used to prevent local minima artifact when optimizing an MI cost 
+     *  function for images with the same geometry.
+     */
+    void jitter_if_zero ();
     void get_volume_header (Volume_header *vh);
 };
 
