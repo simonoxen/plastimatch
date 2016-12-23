@@ -9,13 +9,13 @@
 
 #include "bspline_regularize.h"
 #include "bspline_score.h"
-#include "histogram.h"
 #include "plm_int.h"
 #include "smart_pointer.h"
 #include "stage_similarity_data.h"
 
 class Bspline_state_private;
 class Bspline_parms;
+class Joint_histogram;
 
 class PLMREGISTER_API Bspline_state {
 public:
