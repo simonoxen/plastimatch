@@ -9,7 +9,7 @@
 static inline void
 bspline_mi_pvi_8_dc_dv_dcos (
     float dc_dv[3],                /* Output */
-    Bspline_mi_hist_set* mi_hist,  /* Input */
+    Joint_histogram* mi_hist,  /* Input */
     Bspline_state *bst,            /* Input */
     const Volume *fixed,           /* Input */
     const Volume *moving,          /* Input */
@@ -123,12 +123,12 @@ class Bspline_mi_k_pass_1
 {
 public:
     double score_acc;
-    Bspline_mi_hist_set *mi_hist;
+    Joint_histogram *mi_hist;
 public:
     Bspline_mi_k_pass_1 (Bspline_optimize *bod) {
         score_acc = 0.f;
     }
-    void set_mi_hist (Bspline_mi_hist_set *mi_hist) {
+    void set_mi_hist (Joint_histogram *mi_hist) {
         this->mi_hist = mi_hist;
     }
 public:
@@ -176,13 +176,13 @@ class Bspline_mi_k_pass_2
 {
 public:
     float num_vox_f;
-    Bspline_mi_hist_set *mi_hist;
+    Joint_histogram *mi_hist;
 public:
     Bspline_mi_k_pass_2 (Bspline_optimize *bod) {
         Bspline_score* ssd = bod->get_bspline_state()->get_bspline_score();
         num_vox_f = (float) ssd->num_vox;
     }
-    void set_mi_hist (Bspline_mi_hist_set *mi_hist) {
+    void set_mi_hist (Joint_histogram *mi_hist) {
         this->mi_hist = mi_hist;
     }
 public:

@@ -26,20 +26,13 @@ translation_mi (
     const Volume::Pointer& moving,
     const float dxyz[3])
 {
-    Bspline_mi_hist_set *mi_hist = new Bspline_mi_hist_set (
+    Joint_histogram *mi_hist = new Joint_histogram (
         stage->mi_hist_type,
         stage->mi_hist_fixed_bins,
         stage->mi_hist_moving_bins);
     mi_hist->initialize (fixed.get(), moving.get());
     mi_hist->reset_histograms ();
         
-    float mse_score = 0.0f;
-    double* f_hist = mi_hist->f_hist;
-    double* m_hist = mi_hist->m_hist;
-    double* j_hist = mi_hist->j_hist;
-    double mhis = 0.0f;      /* Moving histogram incomplete sum */
-    double jhis = 0.0f;      /* Joint  histogram incomplete sum */
-
     plm_long fijk[3], fidx;       /* Indices within fixed image (vox) */
     float fxyz[3];                /* Position within fixed image (mm) */
     float mijk[3];                /* Indices within moving image (vox) */

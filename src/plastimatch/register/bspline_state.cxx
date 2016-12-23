@@ -19,7 +19,6 @@
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
 #include "bspline_mi.h"
-#include "bspline_mi_hist.h"
 #include "bspline_mse.h"
 #include "bspline_parms.h"
 #include "bspline_regularize.h"
@@ -28,6 +27,7 @@
 #include "delayload.h"
 #include "file_util.h"
 #include "interpolate_macros.h"
+#include "joint_histogram.h"
 #include "logfile.h"
 #include "plm_math.h"
 #include "string_util.h"
@@ -104,7 +104,7 @@ Bspline_state::initialize (
 
     /* Initialize MI histograms */
     if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        this->mi_hist = new Bspline_mi_hist_set (
+        this->mi_hist = new Joint_histogram (
             parms->mi_hist_type,
             parms->mi_hist_fixed_bins,
             parms->mi_hist_moving_bins);

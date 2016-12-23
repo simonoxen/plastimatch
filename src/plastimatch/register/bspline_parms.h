@@ -8,8 +8,8 @@
 #include <list>
 #include <string>
 #include <vector>
-#include "bspline_mi_hist.h"
 #include "double_align8.h"
+#include "joint_histogram.h"
 #include "similarity_metric_type.h"
 #include "smart_pointer.h"
 #include "stage_similarity_data.h"

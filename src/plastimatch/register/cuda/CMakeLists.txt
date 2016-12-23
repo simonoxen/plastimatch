@@ -30,9 +30,6 @@ set (PLMREGISTERCUDA_SRC
 
 set (PLMREGISTERCUDA_IFACE_SRC
   bspline_cuda.cxx
-#  GCS: I hope this can be linked from base instead of duplicated, 
-#  but we'll just have to see.
-#  gaussian.cxx
   )
 
 if (PLM_BUILD_VISCOUS)

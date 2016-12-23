@@ -7,9 +7,9 @@
 #include "plmregister_config.h"
 #include <string>
 
-#include "bspline_mi_hist.h"
 #include "bspline_regularize.h"
 #include "bspline_score.h"
+#include "histogram.h"
 #include "plm_int.h"
 #include "smart_pointer.h"
 #include "stage_similarity_data.h"
@@ -40,8 +40,8 @@ public:
     Volume *fixed_roi;
     Volume *moving_roi;
     
-    Bspline_regularize rst;         /* Analytic regularization */
-    Bspline_mi_hist_set *mi_hist;   /* MI histograms */
+    Bspline_regularize rst;
+    Joint_histogram *mi_hist;
 public:
     void initialize (Bspline_xform *bxf, Bspline_parms *parms);
     void initialize_similarity_images ();

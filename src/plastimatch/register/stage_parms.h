@@ -10,8 +10,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#include "bspline.h"            /* for enums */
-#include "bspline_mi_hist.h"    /* for enums */
+#include "bspline.h"
+#include "joint_histogram.h"
 #include "plm_image_type.h"
 #include "plm_return_code.h"
 #include "process_parms.h"

@@ -29,7 +29,6 @@ set (PLMREGISTER_LIBRARY_SRC
   bspline_gm.txx
   bspline_mi.cxx bspline_mi.h
   bspline_mi.txx
-  bspline_mi_hist.cxx bspline_mi_hist.h
   bspline_mse.cxx bspline_mse.h
   bspline_mse.txx
   bspline_optimize.cxx bspline_optimize.h
@@ -50,6 +49,7 @@ set (PLMREGISTER_LIBRARY_SRC
   demons_opencl_p.h
   demons_state.cxx demons_state.h
   gpuit_demons.cxx gpuit_demons.h
+  histogram.cxx histogram.h
   itk_align_center.cxx itk_align_center.h 
   itk_demons.cxx itk_demons.h
   itk_demons_registration_filter.h
@@ -63,6 +63,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_registration_observer.cxx itk_registration_private.h
   itk_sym_log_demons.h
   itk_tps.cxx itk_tps.h
+  joint_histogram.cxx joint_histogram.h
   landmark_warp.cxx landmark_warp.h
   process_parms.cxx process_parms.h
   rbf_cluster.cxx rbf_cluster.h
