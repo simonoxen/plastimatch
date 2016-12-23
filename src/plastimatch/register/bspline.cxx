@@ -427,6 +427,7 @@ bspline_score (Bspline_optimize *bod)
         bst->moving_grad = (*it_sd)->moving_grad.get();
         bst->fixed_roi = (*it_sd)->fixed_roi.get();
         bst->moving_roi = (*it_sd)->moving_roi.get();
+        bst->initialize_similarity_images ();
 
         std::vector<Similarity_metric_type>::const_iterator it_metric
             = parms->metric_type.begin();

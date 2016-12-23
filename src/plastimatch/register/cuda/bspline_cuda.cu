@@ -400,7 +400,8 @@ CUDA_bspline_mse_init_j (
     long unsigned GPU_Memory_Bytes = 0;
 
     printf ("Allocating GPU Memory");
-
+    fflush (stdout);
+    
     // Fixed Image (zero copy if possible)
     // ----------------------------------------------------------
     dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;

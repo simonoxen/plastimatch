@@ -12,7 +12,6 @@
 #endif
 
 #include "bspline.h"
-#include "bspline_cuda.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_steepest.h"
 #include "bspline_parms.h"

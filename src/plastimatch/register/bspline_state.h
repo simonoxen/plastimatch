@@ -24,7 +24,6 @@ public:
 public:
     Bspline_state ();
     ~Bspline_state ();
-    void initialize (Bspline_xform *bxf, Bspline_parms *parms);
 public:
     int sm;                         /* Current smetric */
     int it;                         /* Current iterations */
@@ -44,6 +43,8 @@ public:
     Bspline_regularize rst;         /* Analytic regularization */
     Bspline_mi_hist_set *mi_hist;   /* MI histograms */
 public:
+    void initialize (Bspline_xform *bxf, Bspline_parms *parms);
+    void initialize_similarity_images ();
     Bspline_score* get_bspline_score () {
         return &ssd;
     }

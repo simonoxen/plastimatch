@@ -37,17 +37,16 @@
 
 static void
 bspline_cuda_state_create (
-    Bspline_xform* bxf,
+    Bspline_parms *parms,
     Bspline_state *bst,
-    Bspline_parms *parms
+    Bspline_xform* bxf
 );
 static void
 bspline_cuda_state_destroy (
+    Bspline_parms *parms,
     Bspline_state *bst,
-    Bspline_parms *parms, 
-    Bspline_xform *bxf
+    Bspline_xform* bxf
 );
-
 
 class Bspline_state_private 
 {
@@ -68,12 +67,14 @@ public:
 Bspline_state::Bspline_state ()
 {
     d_ptr = new Bspline_state_private;
+    mi_hist = 0;
 }
 
 Bspline_state::~Bspline_state ()
 {
-    bspline_cuda_state_destroy (this, d_ptr->parms, d_ptr->bxf);
+    bspline_cuda_state_destroy (d_ptr->parms, this, d_ptr->bxf);
     delete d_ptr;
+    delete mi_hist;
 }
 
 void
@@ -97,34 +98,44 @@ Bspline_state::initialize (
     this->ssd.set_num_coeff (bxf->num_coeff);
 
     if (reg_parms->lambda > 0.0f) {
-        rst->fixed = parms->similarity_data.front()->fixed_ss.get();
-        rst->moving = parms->similarity_data.front()->moving_ss.get();
         rst->fixed_stiffness = parms->fixed_stiffness;
         rst->initialize (reg_parms, bxf);
     }
 
     /* Initialize MI histograms */
-    this->mi_hist = 0;
     if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         this->mi_hist = new Bspline_mi_hist_set (
             parms->mi_hist_type,
             parms->mi_hist_fixed_bins,
             parms->mi_hist_moving_bins);
     }
-    bspline_cuda_state_create (bxf, this, parms);
 
+    /* Landmarks */
+    blm->initialize (bxf);
+}
 
+void
+Bspline_state::initialize_similarity_images ()
+{
+    /* GCS FIX: The below function also does other initializations 
+       which do not require the similarity images, and therefore could 
+       be done once per stage rather than once per image
+     */
+    /* Copy images into CUDA memory */
+    bspline_cuda_state_create (d_ptr->parms, this, d_ptr->bxf);
+
+    /* GCS FIX: The below should be done once per similarity image */
     /* JAS Fix 2011.09.14
      *   The MI algorithm will get stuck for a set of coefficients all equaling
      *   zero due to the method we use to compute the cost function gradient.
      *   However, it is possible we could be inheriting coefficients from a
      *   prior stage, so we must check for inherited coefficients before
      *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (d_ptr->parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bool first_iteration = true;
 
-        for (int i=0; i<bxf->num_coeff; i++) {
-            if (bxf->coeff[i] != 0.0f) {
+        for (int i = 0; i < d_ptr->bxf->num_coeff; i++) {
+            if (d_ptr->bxf->coeff[i] != 0.0f) {
                 first_iteration = false;
                 break;
             }
@@ -132,26 +143,26 @@ Bspline_state::initialize (
 
         if (first_iteration) {
             printf ("Initializing 1st MI Stage\n");
-            for (int i = 0; i < bxf->num_coeff; i++) {
-                bxf->coeff[i] = 0.01f;
+            for (int i = 0; i < d_ptr->bxf->num_coeff; i++) {
+                d_ptr->bxf->coeff[i] = 0.01f;
             }
         }
     }
-
-    /* Landmarks */
-    blm->initialize (bxf);
 }
 
 static void
 bspline_cuda_state_create (
-    Bspline_xform* bxf,
-    Bspline_state *bst,           /* Modified in routine */
-    Bspline_parms *parms
+    Bspline_parms *parms,
+    Bspline_state *bst,
+    Bspline_xform *bxf
 )
 {
 #if (CUDA_FOUND)
     if (parms->threading != BTHR_CUDA) {
         return;
+    }
+    if (bst->dev_ptrs) {
+        bspline_cuda_state_destroy (parms, bst, bxf);
     }
 
     /* Set the gpuid */
@@ -213,8 +224,8 @@ bspline_cuda_state_create (
 
 static void
 bspline_cuda_state_destroy (
-    Bspline_state *bst,
     Bspline_parms *parms, 
+    Bspline_state *bst,
     Bspline_xform *bxf
 )
 {
@@ -239,68 +250,8 @@ bspline_cuda_state_destroy (
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmregistercuda);
     }
-#endif
+
     free (bst->dev_ptrs);
-}
-
-#if defined (commentout)
-Bspline_state *
-bspline_state_create (
-    Bspline_xform *bxf, 
-    Bspline_parms *parms
-)
-{
-    Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
-    Regularization_parms* reg_parms = parms->reg_parms;
-    Bspline_regularize* rst = &bst->rst;
-    Bspline_landmarks* blm = parms->blm;
-
-    memset (bst, 0, sizeof (Bspline_state));
-    bst->ssd.set_num_coeff (bxf->num_coeff);
-
-    if (reg_parms->lambda > 0.0f) {
-        rst->fixed = parms->similarity_data.front()->fixed_ss;
-        rst->moving = parms->moving;
-        rst->initialize (reg_parms, bxf);
-    }
-
-    /* Initialize MI histograms */
-    bst->mi_hist = 0;
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        bst->mi_hist = new Bspline_mi_hist_set (
-            parms->mi_hist_type,
-            parms->mi_hist_fixed_bins,
-            parms->mi_hist_moving_bins);
-    }
-    bspline_cuda_state_create (bxf, bst, parms);
-
-    /* JAS Fix 2011.09.14
-     *   The MI algorithm will get stuck for a set of coefficients all equaling
-     *   zero due to the method we use to compute the cost function gradient.
-     *   However, it is possible we could be inheriting coefficients from a
-     *   prior stage, so we must check for inherited coefficients before
-     *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        bool first_iteration = true;
-
-        for (int i=0; i<bxf->num_coeff; i++) {
-            if (bxf->coeff[i] != 0.0f) {
-                first_iteration = false;
-                break;
-            }
-        }
-
-        if (first_iteration) {
-            printf ("Initializing 1st MI Stage\n");
-            for (int i = 0; i < bxf->num_coeff; i++) {
-                bxf->coeff[i] = 0.01f;
-            }
-        }
-    }
-
-    /* Landmarks */
-    blm->initialize (bxf);
-
-    return bst;
-}
+    bst->dev_ptrs = 0;
 #endif
+}
