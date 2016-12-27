@@ -1,4 +1,15 @@
 ******************************************************************************
+Registration similarity parms/data (cont.)
+
+Bspline_stage
+  Bspline_optimize    <- check_grad, bspline_score only depends on this
+    Bspline_parms
+    Bspline_state
+      Stage_similarity_data
+      Bspline_score
+    Bspline_xform
+
+******************************************************************************
 Registration similarity parms/data
 
 There are three main types of similarity data:

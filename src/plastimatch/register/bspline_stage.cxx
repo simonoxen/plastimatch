@@ -34,7 +34,6 @@
 
 class Bspline_stage_private {
 public:
-    Registration_parms *regp;
     Registration_data *regd;
     const Stage_parms *stage;
     Xform *xf_in;
@@ -50,13 +49,11 @@ public:
 };
 
 Bspline_stage::Bspline_stage (
-    Registration_parms *regp,
     Registration_data *regd,
     const Stage_parms *stage,
     Xform *xf_in)
 {
     d_ptr = new Bspline_stage_private;
-    d_ptr->regp = regp;
     d_ptr->regd = regd;
     d_ptr->stage = stage;
     d_ptr->xf_in = xf_in;
@@ -138,7 +135,6 @@ Bspline_stage::initialize ()
         Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
         Volume::Pointer& fixed = fixed_image->get_volume_float ();
         Volume::Pointer& moving = moving_image->get_volume_float ();
-
 
         Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
 
@@ -389,13 +385,12 @@ Bspline_stage::cleanup ()
 
 Xform::Pointer
 do_gpuit_bspline_stage (
-    Registration_parms* regp, 
     Registration_data* regd, 
     const Xform::Pointer& xf_in,
     const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
-    Bspline_stage pb (regp, regd, stage, xf_in.get());
+    Bspline_stage pb (regd, stage, xf_in.get());
     pb.run_stage ();
     xf_out = pb.d_ptr->xf_out;
     return xf_out;

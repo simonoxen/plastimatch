@@ -390,8 +390,7 @@ Registration::do_registration_stage (
         if (stage->impl_type == IMPLEMENTATION_ITK) {
             xf_out = do_itk_registration_stage (regd.get(), xf_in, stage);
         } else {
-            xf_out = do_gpuit_bspline_stage (regp.get(), regd.get(), 
-                xf_in, stage);
+            xf_out = do_gpuit_bspline_stage (regd.get(), xf_in, stage);
         }
         break;
     case STAGE_TRANSFORM_VECTOR_FIELD:
