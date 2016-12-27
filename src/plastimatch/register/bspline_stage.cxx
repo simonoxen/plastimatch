@@ -39,7 +39,8 @@ public:
     const Stage_parms *stage;
     Xform *xf_in;
     Xform::Pointer xf_out;
-    Bspline_parms bsp_parms;
+
+    Bspline_parms parms;
 
     Volume::Pointer f_stiffness_ss;
 public:
@@ -99,10 +100,10 @@ void
 Bspline_stage::run_stage ()
 {
     Xform *xf_out = d_ptr->xf_out.get();
-    Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
+    Bspline_parms *parms = &d_ptr->parms;
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), bsp_parms);
+    bspline_optimize (xf_out->get_gpuit_bsp(), parms);
 }
 
 void
@@ -113,7 +114,7 @@ Bspline_stage::initialize ()
     const Shared_parms *shared = d_ptr->stage->get_shared_parms();
     Xform *xf_in = d_ptr->xf_in;
     Xform *xf_out = d_ptr->xf_out.get();
-    Bspline_parms *bsp_parms = &d_ptr->bsp_parms;
+    Bspline_parms *parms = &d_ptr->parms;
 
     Plm_image_header pih;
 
@@ -157,14 +158,14 @@ Bspline_stage::initialize ()
         ssi->moving_grad = volume_gradient (ssi->moving_ss);
 
         /* Add images to stage image list */
-        bsp_parms->similarity_data.push_back (ssi);
+        parms->similarity_data.push_back (ssi);
     }
 
     /* Copy parameters from stage_parms to bspline_parms */
-    bsp_parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
-    bsp_parms->mi_fixed_image_maxVal = stage->mi_fixed_image_maxVal;
-    bsp_parms->mi_moving_image_minVal = stage->mi_moving_image_minVal;
-    bsp_parms->mi_moving_image_maxVal = stage->mi_moving_image_maxVal;
+    parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
+    parms->mi_fixed_image_maxVal = stage->mi_fixed_image_maxVal;
+    parms->mi_moving_image_minVal = stage->mi_moving_image_minVal;
+    parms->mi_moving_image_maxVal = stage->mi_moving_image_maxVal;
 
     /* GCS FIX BEGIN */
     /* BSpline code needs work to support multi-planar imaging 
@@ -173,10 +174,10 @@ Bspline_stage::initialize ()
     Volume::Pointer moving = regd->get_moving_image()->get_volume_float();
     
     // Check if min/max values for moving image are set (correctly)
-    if ((bsp_parms->mi_moving_image_minVal!=0 
-            || bsp_parms->mi_moving_image_maxVal!=0) 
-        && (bsp_parms->mi_moving_image_minVal < 
-            bsp_parms->mi_moving_image_maxVal))
+    if ((parms->mi_moving_image_minVal!=0 
+            || parms->mi_moving_image_maxVal!=0) 
+        && (parms->mi_moving_image_minVal < 
+            parms->mi_moving_image_maxVal))
     {
         bool fill=!m_roi;
 
@@ -189,15 +190,15 @@ Bspline_stage::initialize ()
         }
 
         // Modify fixed roi according to min and max values for moving image
-        update_roi (m_roi, moving, bsp_parms->mi_moving_image_minVal,
-            bsp_parms->mi_moving_image_maxVal,fill);
+        update_roi (m_roi, moving, parms->mi_moving_image_minVal,
+            parms->mi_moving_image_maxVal,fill);
     }
 
     // Check if min/max values for fixed image are set (correctly)
-    if ((bsp_parms->mi_fixed_image_minVal!=0 
-            || bsp_parms->mi_fixed_image_maxVal!=0) 
-        && (bsp_parms->mi_fixed_image_minVal < 
-            bsp_parms->mi_fixed_image_maxVal))
+    if ((parms->mi_fixed_image_minVal!=0 
+            || parms->mi_fixed_image_maxVal!=0) 
+        && (parms->mi_fixed_image_minVal < 
+            parms->mi_fixed_image_maxVal))
     {
         bool fill=!f_roi;
 
@@ -210,8 +211,8 @@ Bspline_stage::initialize ()
         }
 
         // Modify fixed roi according to min and max values for fixed image
-        update_roi (f_roi, fixed, bsp_parms->mi_fixed_image_minVal,
-            bsp_parms->mi_fixed_image_maxVal, fill);
+        update_roi (f_roi, fixed, parms->mi_fixed_image_minVal,
+            parms->mi_fixed_image_maxVal, fill);
     }
 
     /* Subsample rois (if we are using them) */
@@ -219,13 +220,13 @@ Bspline_stage::initialize ()
         Volume::Pointer m_roi_ss = 
             volume_subsample_vox_legacy_nn (
                 m_roi, stage->resample_rate_moving);
-        bsp_parms->similarity_data.front()->moving_roi = m_roi_ss;
+        parms->similarity_data.front()->moving_roi = m_roi_ss;
     }
     if (f_roi) {
         Volume::Pointer f_roi_ss = 
             volume_subsample_vox_legacy_nn (
                 f_roi, stage->resample_rate_fixed);
-        bsp_parms->similarity_data.front()->fixed_roi = f_roi_ss;
+        parms->similarity_data.front()->fixed_roi = f_roi_ss;
     }
 
     /* GCS FIX END */
@@ -240,26 +241,26 @@ Bspline_stage::initialize ()
 
     /* Stiffness image */
     if (d_ptr->f_stiffness_ss) {
-        bsp_parms->fixed_stiffness = d_ptr->f_stiffness_ss.get();
+        parms->fixed_stiffness = d_ptr->f_stiffness_ss.get();
     }
 
     /* Optimization */
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
-        bsp_parms->optimization = BOPT_STEEPEST;
+        parms->optimization = BOPT_STEEPEST;
     } else if (stage->optim_type == OPTIMIZATION_LIBLBFGS) {
-        bsp_parms->optimization = BOPT_LIBLBFGS;
+        parms->optimization = BOPT_LIBLBFGS;
     } else {
-        bsp_parms->optimization = BOPT_LBFGSB;
+        parms->optimization = BOPT_LBFGSB;
     }
-    bsp_parms->lbfgsb_pgtol = stage->pgtol;
-    bsp_parms->lbfgsb_mmax = stage->lbfgsb_mmax;
+    parms->lbfgsb_pgtol = stage->pgtol;
+    parms->lbfgsb_mmax = stage->lbfgsb_mmax;
 
     /* Metric */
-    bsp_parms->metric_type = stage->metric_type;
-    bsp_parms->metric_lambda = stage->metric_lambda;
+    parms->metric_type = stage->metric_type;
+    parms->metric_lambda = stage->metric_lambda;
     for (size_t i = 0; i < stage->metric_type.size(); i++) {
-        if (bsp_parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
-            bsp_parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
+        if (parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
+            parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
         }
     }
 
@@ -267,78 +268,78 @@ Bspline_stage::initialize ()
     switch (stage->threading_type) {
     case THREADING_CPU_SINGLE:
         if (stage->alg_flavor == 0) {
-            bsp_parms->implementation = 'h';
+            parms->implementation = 'h';
         } else {
-            bsp_parms->implementation = stage->alg_flavor;
+            parms->implementation = stage->alg_flavor;
         }
-        bsp_parms->threading = BTHR_CPU;
+        parms->threading = BTHR_CPU;
         break;
     case THREADING_CPU_OPENMP:
         if (stage->alg_flavor == 0) {
-            bsp_parms->implementation = 'g';
+            parms->implementation = 'g';
         } else {
-            bsp_parms->implementation = stage->alg_flavor;
+            parms->implementation = stage->alg_flavor;
         }
-        bsp_parms->threading = BTHR_CPU;
+        parms->threading = BTHR_CPU;
         break;
     case THREADING_CUDA:
         if (stage->alg_flavor == 0) {
-            bsp_parms->implementation = 'j';
+            parms->implementation = 'j';
         } else {
-            bsp_parms->implementation = stage->alg_flavor;
+            parms->implementation = stage->alg_flavor;
         }
-        bsp_parms->threading = BTHR_CUDA;
+        parms->threading = BTHR_CUDA;
         break;
     default:
         print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
-    logfile_printf ("Algorithm flavor = %c\n", bsp_parms->implementation);
-    logfile_printf ("Threading = %d\n", bsp_parms->threading);
+    logfile_printf ("Algorithm flavor = %c\n", parms->implementation);
+    logfile_printf ("Threading = %d\n", parms->threading);
 
     if (stage->threading_type == THREADING_CUDA) {
-        bsp_parms->gpuid = stage->gpuid;
-        logfile_printf ("GPU ID = %d\n", bsp_parms->gpuid);
+        parms->gpuid = stage->gpuid;
+        logfile_printf ("GPU ID = %d\n", parms->gpuid);
     }
     
     /* Regularization */
-    bsp_parms->reg_parms->lambda = stage->regularization_lambda;
+    parms->reg_parms->lambda = stage->regularization_lambda;
     switch (stage->regularization_type) {
     case REGULARIZATION_NONE:
-        bsp_parms->reg_parms->lambda = 0.0f;
+        parms->reg_parms->lambda = 0.0f;
         break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
         if (stage->threading_type == THREADING_CPU_OPENMP) {
-            bsp_parms->reg_parms->implementation = 'c';
+            parms->reg_parms->implementation = 'c';
         } else {
-            bsp_parms->reg_parms->implementation = 'b';
+            parms->reg_parms->implementation = 'b';
         }
         break;
     case REGULARIZATION_BSPLINE_SEMI_ANALYTIC:
-        bsp_parms->reg_parms->implementation = 'd';
+        parms->reg_parms->implementation = 'd';
         break;
     case REGULARIZATION_BSPLINE_NUMERIC:
-        bsp_parms->reg_parms->implementation = 'a';
+        parms->reg_parms->implementation = 'a';
         break;
     default:
         print_and_exit ("Undefined regularization type in gpuit_bspline\n");
     }
     if (stage->regularization_lambda != 0) {
-        bsp_parms->reg_parms->lambda = stage->regularization_lambda;
+        parms->reg_parms->lambda = stage->regularization_lambda;
     }
     logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
-        bsp_parms->reg_parms->implementation,
-        bsp_parms->reg_parms->lambda);
+        parms->reg_parms->implementation,
+        parms->reg_parms->lambda);
 
     /* Mutual information histograms */
-    bsp_parms->mi_hist_type = stage->mi_hist_type;
-    bsp_parms->mi_hist_fixed_bins = stage->mi_hist_fixed_bins;
-    bsp_parms->mi_hist_moving_bins = stage->mi_hist_moving_bins;
+    parms->mi_hist_type = stage->mi_hist_type;
+    parms->mi_hist_fixed_bins = stage->mi_hist_fixed_bins;
+    parms->mi_hist_moving_bins = stage->mi_hist_moving_bins;
 
     /* Other stuff */
-    bsp_parms->min_its = stage->min_its;
-    bsp_parms->max_its = stage->max_its;
-    bsp_parms->max_feval = stage->max_its;
-    bsp_parms->convergence_tol = stage->convergence_tol;
+    parms->min_its = stage->min_its;
+    parms->max_its = stage->max_its;
+    parms->max_feval = stage->max_its;
+    parms->convergence_tol = stage->convergence_tol;
 
     /* Landmarks */
     if (regd->fixed_landmarks && regd->moving_landmarks) {
@@ -346,38 +347,38 @@ Bspline_stage::initialize ()
             regd->fixed_landmarks->get_count(),
             regd->moving_landmarks->get_count(),
             stage->landmark_stiffness);
-        bsp_parms->blm->set_landmarks (regd->fixed_landmarks, 
+        parms->blm->set_landmarks (regd->fixed_landmarks, 
             regd->moving_landmarks);
-        bsp_parms->blm->landmark_implementation = stage->landmark_flavor;
-        bsp_parms->blm->landmark_stiffness = stage->landmark_stiffness;
+        parms->blm->landmark_implementation = stage->landmark_flavor;
+        parms->blm->landmark_stiffness = stage->landmark_stiffness;
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set (bsp_parms->similarity_data.front()->fixed_ss);
+    pih.set (parms->similarity_data.front()->fixed_ss);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Set debugging directory */
     if (stage->debug_dir != "") {
-        bsp_parms->debug = 1;
-        bsp_parms->debug_dir = stage->debug_dir;
-        bsp_parms->debug_stage = stage->stage_no;
+        parms->debug = 1;
+        parms->debug_dir = stage->debug_dir;
+        parms->debug_stage = stage->stage_no;
         logfile_printf ("Set debug directory to %s (%d)\n", 
-            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+            parms->debug_dir.c_str(), parms->debug_stage);
 
         /* Write fixed, moving, moving_grad */
         std::string fn;
         fn = string_format ("%s/%02d/fixed.mha",
-            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+            parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(), 
-            bsp_parms->similarity_data.front()->fixed_ss.get());
+            parms->similarity_data.front()->fixed_ss.get());
         fn = string_format ("%s/%02d/moving.mha",
-            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+            parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(),
-            bsp_parms->similarity_data.front()->moving_ss.get());
+            parms->similarity_data.front()->moving_ss.get());
         fn = string_format ("%s/%02d/moving_grad.mha", 
-            bsp_parms->debug_dir.c_str(), bsp_parms->debug_stage);
+            parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(), 
-            bsp_parms->similarity_data.front()->moving_grad.get());
+            parms->similarity_data.front()->moving_grad.get());
     }
 }
 
