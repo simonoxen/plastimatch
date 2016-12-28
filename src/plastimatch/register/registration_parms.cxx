@@ -106,8 +106,6 @@ Registration_parms::Registration_parms()
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
-    job_idx = 0;
-    num_jobs = 1;
 }
 
 Registration_parms::~Registration_parms()

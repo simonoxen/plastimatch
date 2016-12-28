@@ -1,17 +1,59 @@
 ******************************************************************************
 Registration similarity parms/data (cont.)
 
+Proposed change option 1
+
+Registration_parms
+  list<Stage_parms*>
+  Shared_parms
+    map<str,Similarity_parms>  <- new
+
+Similarity_parms
+  fixed_fn
+  moving_fn
+
+What should happen with un-specified parameters?  Example:
+
+fixed[0] = a.mha
+moving[0] = b.mha
+metric[0] = mi       // A) should this propagate to [1]?
+impl = plastimatch   // B) should this propagate to [1]?
+fixed[1] = c.mha     // C) if moving[1] not specified should anything happen?
+histeq[1] = true     // D) should this propagate to [0]?
+
+Answers:
+
+A)  No.
+B)  No.
+C)  No.
+D)  No.
+
+******************************************************************************
+Registration similarity parms/data (cont.)
+
+Current status 2016-12-28
+
+Registration_parms
+  list<Stage_parms*>
+  Shared_parms
+    map<str,str> fixed_fn, moving_fn, etc
+
+Registration_data
+  map<str,Reg_sim_data>
+  list<str>
+  Stage_parms auto_parms
+
 Bspline_stage
   Bspline_optimize    <- check_grad, bspline_score only depends on this
     Bspline_parms
     Bspline_state     <- needs parms & bxf to initialize
-      Stage_similarity_data
+      Stage_similarity_data  <- newly created bxf depends on master image
       Bspline_score
     Bspline_xform     <- might be loaded from disc, might rely on
     		      	 fixed image size to set # of control points
 
 1a) Load image
-1b) Fixate iamge
+1b) Fixate image
 2a) Load xform
 2b) Fixate xform
 

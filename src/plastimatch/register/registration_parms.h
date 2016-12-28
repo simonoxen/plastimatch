@@ -43,8 +43,6 @@ public:
     std::string fixed_dir;
     std::string img_out_dir;
     std::string vf_out_dir;
-    int job_idx;
-    int num_jobs;
 
 public:
     Registration_parms();
