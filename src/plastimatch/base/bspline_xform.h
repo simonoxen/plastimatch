@@ -81,6 +81,7 @@ public:
      */
     void jitter_if_zero ();
     void get_volume_header (Volume_header *vh);
+    void log_header ();
 };
 
 PLMBASE_C_API Bspline_xform* bspline_xform_load (const char* filename);

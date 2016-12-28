@@ -80,6 +80,9 @@ public:
     float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF are used */
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative of RBF vector field */
     char* xpm_hist_dump;         /* Pointer to base string of hist dumps */
+
+public:
+    void log ();
 };
 
 #endif

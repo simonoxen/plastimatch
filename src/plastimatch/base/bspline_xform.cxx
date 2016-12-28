@@ -664,3 +664,17 @@ Bspline_xform::get_volume_header (Volume_header *vh)
     vh->set (this->img_dim, this->img_origin, this->img_spacing, 
         this->dc.get_matrix());
 }
+
+void
+Bspline_xform::log_header ()
+{
+    logfile_printf ("BSPLINE XFORM HEADER\n");
+    logfile_printf ("vox_per_rgn = %d %d %d\n", 
+        this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
+    logfile_printf ("roi_offset = %d %d %d\n", 
+        this->roi_offset[0], this->roi_offset[1], this->roi_offset[2]);
+    logfile_printf ("roi_dim = %d %d %d\n", 
+        this->roi_dim[0], this->roi_dim[1], this->roi_dim[2]);
+    logfile_printf ("img_dc = %s\n", this->dc.get_string().c_str());
+}
+

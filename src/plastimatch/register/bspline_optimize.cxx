@@ -139,27 +139,6 @@ bspline_optimize (
 }
 #endif
 
-static void
-log_parms (Bspline_parms* parms)
-{
-    logfile_printf ("BSPLINE PARMS\n");
-    logfile_printf ("max_its = %d\n", parms->max_its);
-    logfile_printf ("max_feval = %d\n", parms->max_feval);
-}
-
-static void
-log_bxf_header (Bspline_xform* bxf)
-{
-    logfile_printf ("BSPLINE XFORM HEADER\n");
-    logfile_printf ("vox_per_rgn = %d %d %d\n", 
-        bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
-    logfile_printf ("roi_offset = %d %d %d\n", 
-        bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
-    logfile_printf ("roi_dim = %d %d %d\n", 
-        bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
-    logfile_printf ("img_dc = %s\n", bxf->dc.get_string().c_str());
-}
-
 void
 Bspline_optimize::optimize (
 )
@@ -179,9 +158,9 @@ Bspline_optimize::optimize (
     if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
         bxf->jitter_if_zero ();
     }
-    
-    log_parms (parms);
-    log_bxf_header (bxf);
+
+    parms->log ();
+    bxf->log_header ();
 
     /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
