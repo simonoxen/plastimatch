@@ -30,6 +30,10 @@ public:
     Bspline_parms* get_bspline_parms ();
     Bspline_state* get_bspline_state ();
     Bspline_xform* get_bspline_xform ();
+//    void set_bspline_parms (const Bspline_xform::Pointer&);
+//    void set_bspline_xform (const Bspline_xform::Pointer&);
+
+    void optimize ();
 };
 
 PLMREGISTER_C_API void bspline_optimize (

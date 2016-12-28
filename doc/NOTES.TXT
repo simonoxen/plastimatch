@@ -4,10 +4,22 @@ Registration similarity parms/data (cont.)
 Bspline_stage
   Bspline_optimize    <- check_grad, bspline_score only depends on this
     Bspline_parms
-    Bspline_state
+    Bspline_state     <- needs parms & bxf to initialize
       Stage_similarity_data
       Bspline_score
-    Bspline_xform
+    Bspline_xform     <- might be loaded from disc, might rely on
+    		      	 fixed image size to set # of control points
+
+1a) Load image
+1b) Fixate iamge
+2a) Load xform
+2b) Fixate xform
+
+N.b. also
+
+  Bspline_options
+    Bspline_parms
+
 
 ******************************************************************************
 Registration similarity parms/data

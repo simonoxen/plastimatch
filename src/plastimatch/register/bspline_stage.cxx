@@ -13,6 +13,7 @@
 #include "bspline_regularize.h"
 #include "bspline_parms.h"
 #include "bspline_stage.h"
+#include "bspline_xform.h"
 #include "logfile.h"
 #include "mha_io.h"
 #include "plm_image_header.h"
@@ -40,6 +41,7 @@ public:
     Xform::Pointer xf_out;
 
     Bspline_parms parms;
+    Bspline_optimize bod;
 
     Volume::Pointer f_stiffness_ss;
 public:
@@ -96,11 +98,8 @@ update_roi (Volume::Pointer& roi, Volume::Pointer& image, float min_val,
 void
 Bspline_stage::run_stage ()
 {
-    Xform *xf_out = d_ptr->xf_out.get();
-    Bspline_parms *parms = &d_ptr->parms;
-
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), parms);
+    d_ptr->bod.optimize ();
 }
 
 void
@@ -112,8 +111,6 @@ Bspline_stage::initialize ()
     Xform *xf_in = d_ptr->xf_in;
     Xform *xf_out = d_ptr->xf_out.get();
     Bspline_parms *parms = &d_ptr->parms;
-
-    Plm_image_header pih;
 
     /* Set roi's */
     Volume::Pointer m_roi;
@@ -350,8 +347,14 @@ Bspline_stage::initialize ()
     }
 
     /* Transform input xform to gpuit vector field */
+    Plm_image_header pih;
     pih.set (parms->similarity_data.front()->fixed_ss);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+
+    Bspline_optimize *bod = &d_ptr->bod;
+    Bspline_xform *bxf = xf_out->get_gpuit_bsp();
+    bod->initialize (bxf, parms);
+    Bspline_state *bst = bod->get_bspline_state ();
 
     /* Set debugging directory */
     if (stage->debug_dir != "") {

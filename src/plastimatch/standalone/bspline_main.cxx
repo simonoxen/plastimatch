@@ -49,23 +49,6 @@ main (int argc, char* argv[])
     }
 #endif
 
-    fixed = read_mha (options.fixed_fn);
-    if (!fixed) exit (-1);
-    moving = read_mha (options.moving_fn);
-    if (!moving) exit (-1);
-
-    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
-    parms->similarity_data.push_back (sim);
-    sim->fixed_ss.reset (fixed);
-    sim->moving_ss.reset (moving);
-
-    volume_convert_to_float (moving);
-    volume_convert_to_float (fixed);
-
-    printf ("Making gradient\n");
-    moving_grad = volume_make_gradient (sim->moving_ss.get());
-    sim->moving_grad.reset (moving_grad);
-
 #if defined (commentout)
     /* Load and adjust landmarks */
     if (options.fixed_landmarks && options.moving_landmarks) {
@@ -77,6 +60,12 @@ main (int argc, char* argv[])
 
     /* Debug */
     //write_mha ("moving_grad.mha", moving_grad);
+
+    /* Load images */
+    fixed = read_mha (options.fixed_fn);
+    if (!fixed) exit (-1);
+    moving = read_mha (options.moving_fn);
+    if (!moving) exit (-1);
 
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
@@ -100,9 +89,26 @@ main (int argc, char* argv[])
         );
     }
 
+    /* Initialize Bspline_optimize data structure */
+    Bspline_optimize bod;
+    bod.initialize (bxf, parms);
+    
+    /* Load images */
+    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
+    parms->similarity_data.push_back (sim);
+    sim->fixed_ss.reset (fixed);
+    sim->moving_ss.reset (moving);
+
+    volume_convert_to_float (moving);
+    volume_convert_to_float (fixed);
+
+    printf ("Making gradient\n");
+    moving_grad = volume_make_gradient (sim->moving_ss.get());
+    sim->moving_grad.reset (moving_grad);
+
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_optimize (bxf, parms);
+    bod.optimize ();
     printf ("Done running optimization.\n");
 
     /* Save output transform */
