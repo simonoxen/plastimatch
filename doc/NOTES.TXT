@@ -1,6 +1,85 @@
 ******************************************************************************
 Registration similarity parms/data (cont.)
 
+On the use of std::map.
+
+There are three places where it gets used.
+- Shared_parms
+-- Individual maps for filenames fixed, moving, etc
+- Stage_parms
+-- To be added, individual maps for parameters smetric, smetric_lambda
+- Registration_data
+-- Map of Registration_similarity_data's (containing Plm_image's)
+
+After this, the map gets dissolved into a vector of Stage_similarity_data
+
+- Filenames go raw into map for Shared_parms, images get loaded
+  into Registration_data.
+- Smetric gets cooked and split going into vector for Stage_parms.
+- The Registration_similarity_data (and then Stage_similarity_data)
+  seem to need the parameters.
+
+The main question seems to be that parms and images are considered separate.
+What kind of remedies are there for this?
+
+- Keep separate, parallel maps
+-- Registration_similarity_data stays as-is
+-- Individual maps (or Similarity_parms map) remain in Stage_parms
+-- Copy into unified vector of Stage_similarity_data
+- Single unified parameter map, duplicated parms
+-- Upgrade smetric, smetric_lambda to shared parms
+-- Copy parms into unified Registration_similarity_data at same time
+   as image load for each stage
+- Unify Registration_parms and Registration_data
+-- Upgrade smetric, smetric_lambda to shared parms
+-- Create <filename,Plm_image> pairs
+--- Or scoreboard that maps filename -> Plm_image
+-- At filename load, the <filename,Plm_image> pairs are interpreted
+
+The first option seems easiest, and we could eventually upgrade
+to third option later.
+
+The second option is largely similar to the first, and does not appear
+to have significant advantages, with the exception of a unified map.
+
+The third option seems elegant, but may have some fragile points.
+
+- What to do about process section?  Possible solutions:
+-- Update scoreboard entries with process results
+-- Augment scoreboard to include variable
+-- In any case, this is not super-well supported anyway
+- What to do about avoiding repeat loads
+-- Images in scoreboard, filenames get passed to stages
+-- Pointers copied from stage to stage
+
+Similarity_data
+  <fixed_fn,fixed>, <moving_fn,moving>, 
+  smetric, smetric_lambda
+
+Registration_parms
+  list<Stage_parms*>
+
+Stage_parms
+  map<str,Similarity_data>
+
+Final decision: "first option"
+
+******************************************************************************
+Registration similarity parms/data (cont.)
+
+ROIs are different from similarity?  Here are ways they are different.
+
+- Probably ROIs should affect multiple similarity metrics
+- Probably ROIs should affect regularization
+-- This one is not currently implemented
+-- Ideally should be allowed independent of similarity roi
+-- Ideally should be allowed on a per-regularization basis
+
+Current decision.  Make ROI affect multiple similiary metrics.
+
+******************************************************************************
+Registration similarity parms/data (cont.)
+
 Proposed change option 1
 
 Registration_parms
