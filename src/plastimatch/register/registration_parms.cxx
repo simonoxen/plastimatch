@@ -148,15 +148,7 @@ Registration_parms::set_key_value (
     }
 
     /* The following keywords are only allowed globally */
-    if (key == "fixed") {
-        if (section_process) goto key_not_allowed_in_section_process;
-        shared->fixed_fn[index] = val;
-    }
-    else if (key == "moving") {
-        if (section_process) goto key_not_allowed_in_section_process;
-        shared->moving_fn[index] = val;
-    }
-    else if (key == "xf_in"
+    if (key == "xf_in"
         || key == "xform_in"
         || key == "vf_in")
     {
@@ -169,6 +161,14 @@ Registration_parms::set_key_value (
     }
 
     /* The following keywords are allowed either globally or in stages */
+    else if (key == "fixed") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->metric[index].fixed_fn = val;
+    }
+    else if (key == "moving") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->metric[index].moving_fn = val;
+    }
     else if (key == "background_val"
         || key == "default_value")
     {

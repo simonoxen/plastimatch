@@ -57,32 +57,36 @@ Registration_data::load_stage_input_files (const Stage_parms* stage)
 void
 Registration_data::load_shared_input_files (const Shared_parms* shared)
 {
-    /* Load images */
-    std::map<std::string,std::string>::const_iterator it;
-    for (it = shared->fixed_fn.begin();
-         it != shared->fixed_fn.end(); ++it)
-    {
-        logfile_printf ("Loading fixed image [%s]: %s\n",
-            it->first.c_str(), it->second.c_str());
-        this->set_fixed_image (it->first,
-            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_FLOAT));
-    }
-    for (it = shared->moving_fn.begin();
-         it != shared->moving_fn.end(); ++it)
-    {
-        logfile_printf ("Loading moving image [%s]: %s\n",
-            it->first.c_str(), it->second.c_str());
-        this->set_moving_image (it->first, 
-            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_FLOAT));
-    }
-
-    /* load rois */
     std::map<std::string,Metric_parms>::const_iterator metric_it;
     for (metric_it = shared->metric.begin();
          metric_it != shared->metric.end(); ++metric_it)
     {
         const std::string& index = metric_it->first;
         const Metric_parms& mp = metric_it->second;
+
+        /* Sanity check -- there should be at least a fixed and moving */
+        if (mp.fixed_fn == "") {
+            logfile_printf ("Skipping metric without fixed_fn (%s)\n", 
+                index.c_str());
+            continue;
+        }
+        if (mp.moving_fn == "") {
+            logfile_printf ("Skipping metric without moving_fn (%s)\n", 
+                index.c_str());
+            continue;
+        }
+        
+        /* Load images */
+        logfile_printf ("Loading fixed image [%s]: %s\n", 
+            index.c_str(), mp.fixed_fn.c_str());
+        this->set_fixed_image (index.c_str(), 
+            Plm_image::New (mp.fixed_fn, PLM_IMG_TYPE_ITK_FLOAT));
+        logfile_printf ("Loading moving image [%s]: %s\n", 
+            index.c_str(), mp.moving_fn.c_str());
+        this->set_moving_image (index.c_str(), 
+            Plm_image::New (mp.moving_fn, PLM_IMG_TYPE_ITK_FLOAT));
+        
+        /* Load rois */
         if (mp.fixed_roi_fn != "") {
             logfile_printf ("Loading fixed roi [%s]: %s\n", 
                 index.c_str(), mp.fixed_roi_fn.c_str());
