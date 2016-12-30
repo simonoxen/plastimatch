@@ -33,6 +33,7 @@
 #include "itk_registration_private.h"
 #include "itk_resample.h"
 #include "logfile.h"
+#include "metric_parms.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
@@ -202,7 +203,18 @@ Itk_registration_private::set_best_xform ()
 void
 Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
 {
-    switch (stage->metric_type[0]) {
+    /* GCS FIX, split metric vector into separate items in 
+       Stage_similarity_data list */
+    Metric_parms metric_parms;
+    const Shared_parms *shared = stage->get_shared_parms();
+    std::map<std::string,Metric_parms>::const_iterator metric_it;
+    for (metric_it = shared->metric.begin();
+         metric_it != shared->metric.end(); ++metric_it) {
+        metric_parms = metric_it->second;
+        break;
+    }
+    
+    switch (metric_parms.metric_type[0]) {
     case SIMILARITY_METRIC_MSE:
     {
         MSEMetricType::Pointer metric = MSEMetricType::New();

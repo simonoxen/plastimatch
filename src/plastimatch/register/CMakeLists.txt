@@ -65,6 +65,7 @@ set (PLMREGISTER_LIBRARY_SRC
   itk_tps.cxx itk_tps.h
   joint_histogram.cxx joint_histogram.h
   landmark_warp.cxx landmark_warp.h
+  metric_parms.cxx metric_parms.h 
   process_parms.cxx process_parms.h
   rbf_cluster.cxx rbf_cluster.h
   rbf_gauss.cxx rbf_gauss.h

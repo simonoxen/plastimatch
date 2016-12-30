@@ -18,6 +18,7 @@ Shared_parms::Shared_parms ()
 
 Shared_parms::Shared_parms (const Shared_parms& s)
 {
+    this->metric = s.metric;
     this->fixed_roi_enable = s.fixed_roi_enable;
     this->moving_roi_enable = s.moving_roi_enable;
     this->fixed_stiffness_enable = s.fixed_stiffness_enable;
@@ -33,8 +34,10 @@ Shared_parms::~Shared_parms ()
 void
 Shared_parms::copy (const Shared_parms *s)
 {
+    this->metric = s->metric;
     this->fixed_roi_enable = s->fixed_roi_enable;
     this->moving_roi_enable = s->moving_roi_enable;
+    this->fixed_stiffness_enable = s->fixed_stiffness_enable;
     this->legacy_subsampling = s->legacy_subsampling;
 
     /* filenames do not propagate when copied */

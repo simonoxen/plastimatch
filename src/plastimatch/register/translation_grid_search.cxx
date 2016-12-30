@@ -9,12 +9,14 @@
 #include "interpolate.h"
 #include "interpolate_macros.h"
 #include "logfile.h"
+#include "metric_parms.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_resample.h"
+#include "shared_parms.h"
 #include "stage_parms.h"
 #include "string_util.h"
 #include "translation_grid_search.h"
@@ -31,6 +33,8 @@ class Translation_grid_search
 public:
     std::list<Volume::Pointer> fixed_ss;
     std::list<Volume::Pointer> moving_ss;
+    Metric_parms metric_parms;
+    
     float (*translation_score) (
         const Stage_parms *stage, const Volume::Pointer& fixed,
         const Volume::Pointer& moving, const float dxyz[3]);
@@ -54,7 +58,7 @@ Translation_grid_search::do_search (
 {
     /* Choose the correct score function */
     this->translation_score = &translation_mse;
-    switch (stage->metric_type[0]) {
+    switch (this->metric_parms.metric_type[0]) {
     case SIMILARITY_METRIC_MSE:
     case SIMILARITY_METRIC_GM:
         translation_score = &translation_mse;
@@ -236,7 +240,8 @@ translation_grid_search_stage (
     Plm_image_header pih;
 
     Translation_grid_search tgsd;
-    
+
+    const Shared_parms *shared = stage->get_shared_parms ();
     const std::list<std::string>& image_indices
         = regd->get_image_indices ();
     std::list<std::string>::const_iterator ind_it;
@@ -256,8 +261,17 @@ translation_grid_search_stage (
         moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
 
+        /* GCS FIX, split metric vector into separate items in 
+           Stage_similarity_data list */
+        std::map<std::string,Metric_parms>::const_iterator metric_it;
+        for (metric_it = shared->metric.begin();
+             metric_it != shared->metric.end(); ++metric_it) {
+            tgsd.metric_parms = metric_it->second;
+            break;
+        }
+
         /* Gradient magnitude is MSE on gradient image */
-        if (stage->metric_type[0] == SIMILARITY_METRIC_GM) {
+        if (tgsd.metric_parms.metric_type[0] == SIMILARITY_METRIC_GM) {
             fixed_ss = volume_gradient_magnitude (fixed_ss);
             moving_ss = volume_gradient_magnitude (moving_ss);
         }

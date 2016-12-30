@@ -127,9 +127,6 @@ public:
     char alg_flavor;
     Threading threading_type;
     int gpuid;               /* Sets GPU to use for multi-gpu machines */
-    /* Similarity metric */
-    std::vector<Similarity_metric_type> metric_type;
-    std::vector<float> metric_lambda;
     /* Regularization */
     Regularization_type regularization_type;
     float regularization_lambda;

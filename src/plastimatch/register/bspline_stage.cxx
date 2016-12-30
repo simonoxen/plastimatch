@@ -122,6 +122,16 @@ Bspline_stage::initialize ()
         m_roi = regd->get_moving_roi()->get_volume_uchar();
     }
 
+    /* GCS FIX, split metric vector into separate items in 
+       Stage_similarity_data list */
+    Metric_parms metric_parms;
+    std::map<std::string,Metric_parms>::const_iterator metric_it;
+    for (metric_it = shared->metric.begin();
+         metric_it != shared->metric.end(); ++metric_it) {
+        metric_parms = metric_it->second;
+        break;
+    }
+    
     const std::list<std::string>& image_indices
         = regd->get_image_indices ();
     std::list<std::string>::const_iterator ind_it;
@@ -142,7 +152,7 @@ Bspline_stage::initialize ()
             moving, stage, stage->resample_rate_moving);
 
         /* Gradient magnitude is MSE on gradient image */
-        if (stage->metric_type[0] == SIMILARITY_METRIC_GM) {
+        if (metric_parms.metric_type[0] == SIMILARITY_METRIC_GM) {
             ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
             ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
         }
@@ -249,13 +259,13 @@ Bspline_stage::initialize ()
     parms->lbfgsb_mmax = stage->lbfgsb_mmax;
 
     /* Metric */
-    parms->metric_type = stage->metric_type;
-    parms->metric_lambda = stage->metric_lambda;
-    for (size_t i = 0; i < stage->metric_type.size(); i++) {
+    parms->metric_type = metric_parms.metric_type;
+    for (size_t i = 0; i < parms->metric_type.size(); i++) {
         if (parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
             parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
         }
     }
+    parms->metric_lambda = metric_parms.metric_lambda;
 
     /* Threading */
     switch (stage->threading_type) {

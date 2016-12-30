@@ -7,6 +7,7 @@
 #include "plmregister_config.h"
 #include <map>
 #include <string>
+#include "metric_parms.h"
 
 class PLMREGISTER_API Shared_parms {
 public:
@@ -15,6 +16,9 @@ public:
     ~Shared_parms ();
 
 public:
+    /* Similarity parms */
+    std::map<std::string, Metric_parms> metric;
+    
     /* Image files */
     std::map<std::string,std::string> fixed_fn;
     std::map<std::string,std::string> moving_fn;

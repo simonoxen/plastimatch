@@ -477,45 +477,15 @@ Registration_parms::set_key_value (
     }
     else if (key == "metric" || key == "smetric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        std::vector<std::string> metric_vec = string_split (val, ',');
-        if (metric_vec.size() == 0) {
+        shared->metric[index].set_metric_type (val);
+        if (shared->metric[index].metric_type.size() == 0) {
             goto error_exit;
-        }
-        stage->metric_type.clear();
-        for (size_t i = 0; i < metric_vec.size(); i++) {
-            if (metric_vec[i] == "gm") {
-                stage->metric_type.push_back (SIMILARITY_METRIC_GM);
-            }
-            else if (metric_vec[i] == "mattes") {
-                stage->metric_type.push_back (SIMILARITY_METRIC_MI_MATTES);
-            }
-            else if (metric_vec[i] == "mse" || metric_vec[i] == "MSE") {
-                stage->metric_type.push_back (SIMILARITY_METRIC_MSE);
-            }
-            else if (metric_vec[i] == "mi" || metric_vec[i] == "MI") {
-#if PLM_CONFIG_LEGACY_MI_METRIC
-                stage->metric_type.push_back (SIMILARITY_METRIC_MI_VW);
-#else
-                stage->metric_type.push_back (SIMILARITY_METRIC_MI_MATTES);
-#endif
-            }
-            else if (metric_vec[i] == "mi_vw"
-                    || metric_vec[i] == "viola-wells")
-            {
-                stage->metric_type.push_back (SIMILARITY_METRIC_MI_VW);
-            }
-            else if (metric_vec[i] == "nmi" || metric_vec[i] == "NMI") {
-                stage->metric_type.push_back (SIMILARITY_METRIC_NMI);
-            }
-            else {
-                goto error_exit;
-            }
         }
     }
     else if (key == "metric_lambda" || key == "smetric_lambda") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        stage->metric_lambda = parse_float_string (val);
-        if (stage->metric_lambda.size() == 0) {
+        shared->metric[index].metric_lambda = parse_float_string (val);
+        if (shared->metric[index].metric_lambda.size() == 0) {
             goto error_exit;
         }
     }
