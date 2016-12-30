@@ -26,8 +26,8 @@ public:
     /* ROI */
     bool fixed_roi_enable;
     bool moving_roi_enable;
-    std::map<std::string,std::string> fixed_roi_fn;
-    std::map<std::string,std::string> moving_roi_fn;
+//    std::map<std::string,std::string> fixed_roi_fn;
+//    std::map<std::string,std::string> moving_roi_fn;
     std::string valid_roi_out_fn;
 
     /* Stiffness map */

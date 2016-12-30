@@ -186,11 +186,11 @@ Registration_parms::set_key_value (
     }
     else if (key == "fixed_mask" || key == "fixed_roi") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->fixed_roi_fn[index] = val;
+        shared->metric[index].fixed_roi_fn = val;
     }
     else if (key == "moving_mask" || key == "moving_roi") {
         if (section_process) goto key_not_allowed_in_section_process;
-        shared->moving_roi_fn[index] = val;
+        shared->metric[index].moving_roi_fn = val;
     }
     else if (key == "fixed_roi_enable") {
         if (section_process) goto key_not_allowed_in_section_process;

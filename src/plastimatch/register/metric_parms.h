@@ -15,6 +15,9 @@ public:
 public:
     std::vector<Similarity_metric_type> metric_type;
     std::vector<float> metric_lambda;
+
+    std::string fixed_roi_fn;
+    std::string moving_roi_fn;
 public:
     void set_metric_type (const std::string& val);
 };

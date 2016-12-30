@@ -77,21 +77,24 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
     }
 
     /* load rois */
-    for (it = shared->fixed_roi_fn.begin();
-         it != shared->fixed_roi_fn.end(); ++it)
+    std::map<std::string,Metric_parms>::const_iterator metric_it;
+    for (metric_it = shared->metric.begin();
+         metric_it != shared->metric.end(); ++metric_it)
     {
-        logfile_printf ("Loading fixed roi [%s]: %s\n", 
-            it->first.c_str(), it->second.c_str());
-        this->set_fixed_roi (it->first,
-            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_UCHAR));
-    }
-    for (it = shared->moving_roi_fn.begin();
-         it != shared->moving_roi_fn.end(); ++it)
-    {
-        logfile_printf ("Loading fixed roi [%s]: %s\n", 
-            it->first.c_str(), it->second.c_str());
-        this->set_moving_roi (it->first,
-            Plm_image::New (it->second, PLM_IMG_TYPE_ITK_UCHAR));
+        const std::string& index = metric_it->first;
+        const Metric_parms& mp = metric_it->second;
+        if (mp.fixed_roi_fn != "") {
+            logfile_printf ("Loading fixed roi [%s]: %s\n", 
+                index.c_str(), mp.fixed_roi_fn.c_str());
+            this->set_fixed_roi (index.c_str(), 
+                Plm_image::New (mp.fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
+        }
+        if (mp.moving_roi_fn != "") {
+            logfile_printf ("Loading moving roi [%s]: %s\n", 
+                index.c_str(), mp.moving_roi_fn.c_str());
+            this->set_moving_roi (index.c_str(), 
+                Plm_image::New (mp.moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
+        }
     }
 
     /* load stiffness */
