@@ -477,17 +477,17 @@ Registration_parms::set_key_value (
     }
     else if (key == "metric" || key == "smetric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        shared->metric[index].set_metric_type (val);
-        if (shared->metric[index].metric_type.size() == 0) {
+        if (shared->metric[index].set_metric_type (val) != PLM_SUCCESS) {
             goto error_exit;
         }
     }
     else if (key == "metric_lambda" || key == "smetric_lambda") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        shared->metric[index].metric_lambda = parse_float_string (val);
-        if (shared->metric[index].metric_lambda.size() == 0) {
+        float f;
+        if (sscanf (val.c_str(), "%f", &f) != 1) {
             goto error_exit;
         }
+        shared->metric[index].metric_lambda = f;
     }
     else if (key == "histogram_type") {
         if (!section_stage) goto key_only_allowed_in_section_stage;

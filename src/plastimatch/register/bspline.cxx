@@ -198,7 +198,7 @@ bspline_save_debug_state (
         fn = parms->debug_dir + "/" + buf;
         bxf->save (fn.c_str());
 
-        if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+        if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
             bst->mi_hist->dump_hist (bst->feval, fn);
@@ -348,13 +348,14 @@ report_score (
     
     /* First line, iterations, score, misc stats */
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
-    if (reg_parms->lambda > 0 || blm->num_landmarks > 0
-        || parms->metric_type.size() > 1)
+    if (reg_parms->lambda > 0
+        || blm->num_landmarks > 0
+        || parms->similarity_data.size() > 1)
     {
         logfile_printf ("SCORE ");
     } else {
-        logfile_printf ("%-6s", similarity_metric_type_string (
-                parms->metric_type[0]));
+        logfile_printf ("%-6s", 
+            parms->similarity_data.front()->metric_string());
     }
     logfile_print_score (ssd->score);
     logfile_printf (
@@ -362,17 +363,19 @@ report_score (
         ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line */
-    if (reg_parms->lambda > 0 || blm->num_landmarks > 0
-        || parms->metric_type.size() > 1)
+    if (reg_parms->lambda > 0
+        || blm->num_landmarks > 0
+        || parms->similarity_data.size() > 1)
     {
         logfile_printf ("         ");
-        /* Part 1 - smetric(s) */   
+        /* Part 1 - smetric(s) */
+        /* GCS FIX: It should not be that one of these is a list 
+           and the other is a vector. */
         std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
-        std::vector<Similarity_metric_type>::const_iterator it_st
-            = parms->metric_type.begin();
+        std::list<Stage_similarity_data::Pointer>::const_iterator it_st
+            = parms->similarity_data.begin();
         while (it_sm != ssd->smetric.end()) {
-            logfile_printf ("%-6s",
-                similarity_metric_type_string (*it_st));
+            logfile_printf ("%-6s", (*it_st)->metric_string());
             logfile_print_score (*it_sm);
             ++it_sm, ++it_st;
         }
@@ -428,40 +431,31 @@ bspline_score (Bspline_optimize *bod)
         bst->fixed_roi = (*it_sd)->fixed_roi.get();
         bst->moving_roi = (*it_sd)->moving_roi.get();
         bst->initialize_similarity_images ();
-
-        std::vector<Similarity_metric_type>::const_iterator it_metric
-            = parms->metric_type.begin();
-        std::vector<float>::const_iterator it_lambda
-            = parms->metric_lambda.begin();
         bst->sm = 0;
-        while (it_metric != parms->metric_type.end()
-            && it_lambda != parms->metric_lambda.end())
-        {
-            Plm_timer timer;
-            timer.start ();
+        Plm_timer timer;
+        timer.start ();
 
-            bst->ssd.smetric.push_back (0.f);
-            if (*it_metric == SIMILARITY_METRIC_MSE) {
-                bspline_score_mse (bod);
-            }
-            else if (*it_metric == SIMILARITY_METRIC_MI_MATTES) {
-                bspline_score_mi (bod);
-            }
-            else if (*it_metric == SIMILARITY_METRIC_GM) {
-                bspline_score_gm (bod);
-            }
-            else {
-                print_and_exit (
-                    "Unknown similarity metric in bspline_score()\n");
-            }
-
-            bst->ssd.accumulate_grad (*it_lambda);
-
-            bst->ssd.time_smetric.push_back (timer.report ());
-            bst->sm ++;
-            ++it_metric;
-            ++it_lambda;
+        bst->ssd.smetric.push_back (0.f);
+        switch ((*it_sd)->metric_type) {
+        case SIMILARITY_METRIC_MSE:
+            bspline_score_mse (bod);
+            break;
+        case SIMILARITY_METRIC_MI_MATTES:
+            bspline_score_mi (bod);
+            break;
+        case SIMILARITY_METRIC_GM:
+            bspline_score_gm (bod);
+            break;
+        default:
+            print_and_exit (
+                "Unknown similarity metric in bspline_score()\n");
+            break;
         }
+
+        bst->ssd.accumulate_grad ((*it_sd)->metric_lambda);
+
+        bst->ssd.time_smetric.push_back (timer.report ());
+        bst->sm ++;
     }
 
     /* Compute regularization */

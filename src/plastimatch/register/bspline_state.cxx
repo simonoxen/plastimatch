@@ -103,7 +103,7 @@ Bspline_state::initialize (
     }
 
     /* Initialize MI histograms */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         this->mi_hist = new Joint_histogram (
             parms->mi_hist_type,
             parms->mi_hist_fixed_bins,
@@ -153,8 +153,10 @@ bspline_cuda_state_create (
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
     bst->dev_ptrs = dev_ptrs;
-    
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
+
+    /* GCS FIX: You cannot have more than one CUDA metric because 
+       dev_ptrs is not defined per metric */
+    if (parms->has_metric_type (SIMILARITY_METRIC_MSE)) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmregistercuda);
@@ -173,7 +175,7 @@ bspline_cuda_state_create (
 
         UNLOAD_LIBRARY (libplmregistercuda);
     } 
-    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    else if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmregistercuda);
@@ -213,13 +215,13 @@ bspline_cuda_state_destroy (
     Volume *moving = bst->moving;
     Volume *moving_grad = bst->moving_grad;
 
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MSE)) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmregistercuda);
         CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmregistercuda);
     }
-    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    else if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmregistercuda);
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);

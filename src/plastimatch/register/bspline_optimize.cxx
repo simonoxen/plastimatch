@@ -115,7 +115,7 @@ bspline_optimize (
      *   However, it is possible we could be inheriting coefficients from a
      *   prior stage, so we must check for inherited coefficients before
      *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         bxf->jitter_if_zero ();
     }
     
@@ -128,7 +128,7 @@ bspline_optimize (
        first iteration.  But if e.g. there are two MI metrics, 
        we need two of these structures.  Perhaps it belongs in 
        Stage_similarity_data. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         bod.get_bspline_state()->mi_hist->initialize (
             parms->similarity_data.front()->fixed_ss.get(),
             parms->similarity_data.front()->moving_ss.get());
@@ -155,7 +155,7 @@ Bspline_optimize::optimize (
      *   However, it is possible we could be inheriting coefficients from a
      *   prior stage, so we must check for inherited coefficients before
      *   applying an initial offset to the coefficient array. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         bxf->jitter_if_zero ();
     }
 
@@ -168,7 +168,7 @@ Bspline_optimize::optimize (
        first iteration.  But if e.g. there are two MI metrics, 
        we need two of these structures.  Perhaps it belongs in 
        Stage_similarity_data. */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         bst->mi_hist->initialize (
             parms->similarity_data.front()->fixed_ss.get(),
             parms->similarity_data.front()->moving_ss.get());

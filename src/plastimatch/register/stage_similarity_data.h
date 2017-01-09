@@ -25,8 +25,10 @@ public:
 
     Similarity_metric_type metric_type;
     float metric_lambda;
-    /*! \brief Implementation ('a', 'b', etc.) */
-    char implementation;
+public:
+    const char *metric_string () {
+        return similarity_metric_type_string (metric_type);
+    }
 };
 
 #endif

@@ -78,6 +78,11 @@ public:
       in the command file. */
     const std::list<std::string>& get_image_indices ();
     
+    /*! \brief Fill in 
+      */
+    const std::list<std::string>& populate_similarity_list (
+    );
+    
     Stage_parms* get_auto_parms ();
 };
 

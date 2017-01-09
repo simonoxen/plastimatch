@@ -122,16 +122,6 @@ Bspline_stage::initialize ()
         m_roi = regd->get_moving_roi()->get_volume_uchar();
     }
 
-    /* GCS FIX, split metric vector into separate items in 
-       Stage_similarity_data list */
-    Metric_parms metric_parms;
-    std::map<std::string,Metric_parms>::const_iterator metric_it;
-    for (metric_it = shared->metric.begin();
-         metric_it != shared->metric.end(); ++metric_it) {
-        metric_parms = metric_it->second;
-        break;
-    }
-    
     const std::list<std::string>& image_indices
         = regd->get_image_indices ();
     std::list<std::string>::const_iterator ind_it;
@@ -152,7 +142,7 @@ Bspline_stage::initialize ()
             moving, stage, stage->resample_rate_moving);
 
         /* Gradient magnitude is MSE on gradient image */
-        if (metric_parms.metric_type[0] == SIMILARITY_METRIC_GM) {
+        if (metric_parms.metric_type == SIMILARITY_METRIC_GM) {
             ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
             ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
         }

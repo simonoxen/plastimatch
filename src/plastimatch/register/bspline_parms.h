@@ -63,9 +63,10 @@ public:
 
     /* Similarity metric */
     std::list<Stage_similarity_data::Pointer> similarity_data;
-    std::vector<Similarity_metric_type> metric_type;
-    std::vector<float> metric_lambda;
-    char implementation;         /* Implementation ('a', 'b', etc.) */
+
+    /*! \brief Implementation ('a', 'b', etc.) -- to be moved into 
+      Stage_similarity_data */
+    char implementation;
 
     /* MI similarity metric */
     enum Mi_hist_type mi_hist_type;
@@ -90,6 +91,7 @@ public:
     float rbf_young_modulus;
 
 public:
+    bool has_metric_type (Similarity_metric_type metric_type);
     void log ();
 };
 
