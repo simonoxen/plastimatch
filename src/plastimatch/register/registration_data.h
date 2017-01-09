@@ -11,6 +11,7 @@
 #include "registration_parms.h"
 #include "registration_similarity_data.h"
 #include "smart_pointer.h"
+#include "stage_similarity_data.h"
 
 class Plm_image;
 class Registration_data_private;
@@ -76,14 +77,15 @@ public:
       The default image (index "0") will be the first index in the list.  
       The remaining indices will be sorted in order they appear 
       in the command file. */
-    const std::list<std::string>& get_image_indices ();
-    
-    /*! \brief Fill in 
-      */
-    const std::list<std::string>& populate_similarity_list (
-    );
+    const std::list<std::string>& get_similarity_indices ();
     
     Stage_parms* get_auto_parms ();
 };
+
+void populate_similarity_list (
+    std::list<Stage_similarity_data::Pointer>& similarity_data,
+    Registration_data *regd,
+    const Stage_parms *stage
+);
 
 #endif

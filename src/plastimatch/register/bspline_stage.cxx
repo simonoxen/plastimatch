@@ -122,11 +122,14 @@ Bspline_stage::initialize ()
         m_roi = regd->get_moving_roi()->get_volume_uchar();
     }
 
-    const std::list<std::string>& image_indices
-        = regd->get_image_indices ();
+    populate_similarity_list (parms->similarity_data, regd, stage);
+
+#if defined (commentout)
+    const std::list<std::string>& similarity_indices
+        = regd->get_similarity_indices ();
     std::list<std::string>::const_iterator ind_it;
-    for (ind_it = image_indices.begin();
-         ind_it != image_indices.end(); ++ind_it)
+    for (ind_it = similarity_indices.begin();
+         ind_it != similarity_indices.end(); ++ind_it)
     {
         Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
         Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
@@ -141,8 +144,17 @@ Bspline_stage::initialize ()
         ssi->moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
 
+        /* Metric */
+        const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
+
+        ssi->metric_type = metric_parms.metric_type;
+        if (ssi->metric_type == SIMILARITY_METRIC_MI_VW) {
+            ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;
+        }
+        ssi->metric_lambda = metric_parms.metric_lambda;
+
         /* Gradient magnitude is MSE on gradient image */
-        if (metric_parms.metric_type == SIMILARITY_METRIC_GM) {
+        if (ssi->metric_type == SIMILARITY_METRIC_GM) {
             ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
             ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
         }
@@ -153,6 +165,7 @@ Bspline_stage::initialize ()
         /* Add images to stage image list */
         parms->similarity_data.push_back (ssi);
     }
+#endif
 
     /* Copy parameters from stage_parms to bspline_parms */
     parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;
@@ -247,15 +260,6 @@ Bspline_stage::initialize ()
     }
     parms->lbfgsb_pgtol = stage->pgtol;
     parms->lbfgsb_mmax = stage->lbfgsb_mmax;
-
-    /* Metric */
-    parms->metric_type = metric_parms.metric_type;
-    for (size_t i = 0; i < parms->metric_type.size(); i++) {
-        if (parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
-            parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
-        }
-    }
-    parms->metric_lambda = metric_parms.metric_lambda;
 
     /* Threading */
     switch (stage->threading_type) {

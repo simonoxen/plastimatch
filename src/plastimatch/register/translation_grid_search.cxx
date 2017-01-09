@@ -1,4 +1,4 @@
- /* -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
@@ -31,9 +31,7 @@
 class Translation_grid_search
 {
 public:
-    std::list<Volume::Pointer> fixed_ss;
-    std::list<Volume::Pointer> moving_ss;
-    Metric_parms metric_parms;
+    std::list<Stage_similarity_data::Pointer> similarity_data;
     
     float (*translation_score) (
         const Stage_parms *stage, const Volume::Pointer& fixed,
@@ -56,30 +54,14 @@ Translation_grid_search::do_search (
     const Stage_parms* stage,
     Stage_parms* auto_parms)
 {
-    /* Choose the correct score function */
-    this->translation_score = &translation_mse;
-    switch (this->metric_parms.metric_type[0]) {
-    case SIMILARITY_METRIC_MSE:
-    case SIMILARITY_METRIC_GM:
-        translation_score = &translation_mse;
-        break;
-    case SIMILARITY_METRIC_MI_MATTES:
-    case SIMILARITY_METRIC_MI_VW:
-        translation_score = &translation_mi;
-        break;
-    default:
-        print_and_exit ("Metric %d not implemented with grid search\n");
-        break;
-    }
-
     /* GCS FIX: region of interest is not used */
 
     /* GCS FIX: This algorithm will not work with tilted images.
        For these cases, we need to use bounding box to compute 
        search extent. */
 
-    Volume::Pointer& fixed = fixed_ss.front();
-    Volume::Pointer& moving = moving_ss.front();
+    Volume::Pointer& fixed = this->similarity_data.front()->fixed_ss;
+    Volume::Pointer& moving = this->similarity_data.front()->moving_ss;
         
     /* Compute maximum search extent */
     lprintf ("Computing grid search extent.\n");
@@ -207,17 +189,60 @@ Translation_grid_search::do_score (
     lprintf ("[%g %g %g]",
         dxyz[0], dxyz[1], dxyz[2]);
 
+#if defined (commentout)
     std::list<Volume::Pointer>::iterator fix_it, mov_it;
     float acc_score = 0.f;
     for (fix_it = fixed_ss.begin(), mov_it = moving_ss.begin();
          fix_it != fixed_ss.end() && mov_it != moving_ss.end();
          ++fix_it, ++mov_it)
     {
+
+        /* Choose the correct score function */
+        this->translation_score = &translation_mse;
+        switch (this->metric_parms.metric_type) {
+        case SIMILARITY_METRIC_MSE:
+        case SIMILARITY_METRIC_GM:
+            translation_score = &translation_mse;
+            break;
+        case SIMILARITY_METRIC_MI_MATTES:
+        case SIMILARITY_METRIC_MI_VW:
+            translation_score = &translation_mi;
+            break;
+        default:
+            print_and_exit ("Metric %d not implemented with grid search\n");
+            break;
+        }
+
         float score = translation_score (stage, *fix_it, *mov_it, dxyz);
         lprintf (" %g", score);
         acc_score += score;
     }
-    if (fixed_ss.size() > 1) {
+#endif
+    std::list<Stage_similarity_data::Pointer>::iterator it;
+    float acc_score = 0.f;
+    for (it = this->similarity_data.begin(); 
+         it != this->similarity_data.end(); ++it)
+    {
+        const Stage_similarity_data::Pointer& ssi = *it;
+        float score = 0.f;
+        switch (ssi->metric_type) {
+        case SIMILARITY_METRIC_MSE:
+        case SIMILARITY_METRIC_GM:
+            score = translation_mse (stage, ssi, dxyz);
+            break;
+        case SIMILARITY_METRIC_MI_MATTES:
+        case SIMILARITY_METRIC_MI_VW:
+            score = translation_mi (stage, ssi, dxyz);
+            break;
+        default:
+            print_and_exit ("Metric %d not implemented with grid search\n");
+            break;
+        }
+        lprintf (" %g", score);
+        acc_score += score;
+    }
+
+    if (this->similarity_data.size() > 1) {
         lprintf (" | %g", acc_score);
     }
     if (acc_score < this->best_score) {
@@ -241,12 +266,15 @@ translation_grid_search_stage (
 
     Translation_grid_search tgsd;
 
+    populate_similarity_list (tgsd.similarity_data, regd, stage);
+
+#if defined (commentout)
     const Shared_parms *shared = stage->get_shared_parms ();
-    const std::list<std::string>& image_indices
-        = regd->get_image_indices ();
+    const std::list<std::string>& similarity_indices
+        = regd->get_similarity_indices ();
     std::list<std::string>::const_iterator ind_it;
-    for (ind_it = image_indices.begin();
-         ind_it != image_indices.end(); ++ind_it)
+    for (ind_it = similarity_indices.begin();
+         ind_it != similarity_indices.end(); ++ind_it)
     {
         Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
         Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
@@ -261,6 +289,9 @@ translation_grid_search_stage (
         moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
 
+        /* Metric */
+        const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
+
         /* GCS FIX, split metric vector into separate items in 
            Stage_similarity_data list */
         std::map<std::string,Metric_parms>::const_iterator metric_it;
@@ -271,7 +302,7 @@ translation_grid_search_stage (
         }
 
         /* Gradient magnitude is MSE on gradient image */
-        if (tgsd.metric_parms.metric_type[0] == SIMILARITY_METRIC_GM) {
+        if (tgsd.metric_parms.metric_type == SIMILARITY_METRIC_GM) {
             fixed_ss = volume_gradient_magnitude (fixed_ss);
             moving_ss = volume_gradient_magnitude (moving_ss);
         }
@@ -291,6 +322,7 @@ translation_grid_search_stage (
             write_mha (fn.c_str(), moving_ss.get());
         }
     }
+#endif
 
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);
