@@ -49,6 +49,7 @@ Shared_parms::copy (const Shared_parms *s)
 void
 Shared_parms::log ()
 {
+    lprintf ("LOG Shared parms\n");
     std::map<std::string, Metric_parms>::iterator it;
     for (it = this->metric.begin(); it != this->metric.end(); ++it) {
         lprintf ("Shared metric | %s | %d\n", it->first.c_str(), 

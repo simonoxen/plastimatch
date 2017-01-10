@@ -32,10 +32,6 @@ public:
 Bspline_optimize::Bspline_optimize ()
 {
     d_ptr = new Bspline_optimize_private;
-
-    fixed = 0;
-    moving = 0;
-    moving_grad = 0;
 }
 
 Bspline_optimize::~Bspline_optimize ()

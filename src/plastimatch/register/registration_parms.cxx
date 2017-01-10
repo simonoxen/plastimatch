@@ -475,7 +475,6 @@ Registration_parms::set_key_value (
         if (shared->metric[index].set_metric_type (val) != PLM_SUCCESS) {
             goto error_exit;
         }
-        shared->log();
     }
     else if (key == "metric_lambda" || key == "smetric_lambda") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
