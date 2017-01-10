@@ -14,9 +14,9 @@ Bspline_score::Bspline_score ()
     this->lmetric = 0;
     this->rmetric = 0;
 
-    this->num_vox = 0;
     this->num_coeff = 0;
 
+    this->curr_num_vox = 0;
     this->curr_smetric = 0;
     this->curr_smetric_grad = 0;
 
@@ -52,11 +52,10 @@ Bspline_score::reset_score ()
     memset (this->total_grad, 0, this->num_coeff * sizeof(float));
     this->lmetric = 0;
     this->rmetric = 0;
-    this->smetric.clear();
-    this->num_vox = 0;
+    this->metric_record.clear();
+    this->curr_num_vox = 0;
     this->curr_smetric = 0;
     memset (this->curr_smetric_grad, 0, this->num_coeff * sizeof(float));
-    this->time_smetric.clear();
     this->time_rmetric = 0;
 }
 
@@ -69,6 +68,7 @@ Bspline_score::accumulate (float lambda)
     }
 
     this->curr_smetric = 0;
+    this->curr_num_vox = 0;
     this->reset_smetric_grad ();
 }
 

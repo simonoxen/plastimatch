@@ -55,17 +55,16 @@ bspline_score_normalize (
        to exit prematurely.  
        However, the best score is not currently stored in the state.  
     */
-    printf ("RAW SCORE = %f\n", raw_score);
-    if (ssd->num_vox < MIN_VOX) {
+    if (ssd->curr_num_vox < MIN_VOX) {
         ssd->curr_smetric = FLT_MAX;
         for (int i = 0; i < bxf->num_coeff; i++) {
             ssd->curr_smetric_grad[i] = 0;
         }
     } else {
-        ssd->curr_smetric = raw_score / ssd->num_vox;
+        ssd->curr_smetric = raw_score / ssd->curr_num_vox;
         for (int i = 0; i < bxf->num_coeff; i++) {
             ssd->curr_smetric_grad[i] 
-                = 2 * ssd->curr_smetric_grad[i] / ssd->num_vox;
+                = 2 * ssd->curr_smetric_grad[i] / ssd->curr_num_vox;
         }
     }
 }
@@ -272,7 +271,7 @@ bspline_score_i_mse (
 
     } /* LOOP_THRU_VOL_TILES */
 
-    ssd->num_vox = num_vox;
+    ssd->curr_num_vox = num_vox;
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
@@ -458,7 +457,7 @@ bspline_score_h_mse (
 
                     // Store the score!
                     score_tile += diff * diff;
-                    ssd->num_vox++;
+                    ssd->curr_num_vox++;
 
                     // Compute dc_dv
                     dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
@@ -708,7 +707,7 @@ bspline_score_g_mse (
 
     } /* LOOP_THRU_VOL_TILES */
 
-    ssd->num_vox = num_vox;
+    ssd->curr_num_vox = num_vox;
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
@@ -876,7 +875,7 @@ bspline_score_c_mse (
                 }
 
                 score_acc += diff * diff;
-                ssd->num_vox++;
+                ssd->curr_num_vox++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */

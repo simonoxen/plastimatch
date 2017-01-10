@@ -674,9 +674,9 @@ CUDA_bspline_mi_a (
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
         (mi_hist->moving.bins > GPU_MAX_BINS)) {
 
-        ssd->num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
+        ssd->curr_num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
     } else {
-        ssd->num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+        ssd->curr_num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
     }
     // ----------------------------------------------------------
 
@@ -698,7 +698,7 @@ CUDA_bspline_mi_a (
 
     // --- COMPUTE SCORE ----------------------------------------
 #if defined (MI_SCORE_CPU)
-    ssd->smetric[0] = CPU_MI_Score(mi_hist, ssd->num_vox);
+    ssd->curr_smetric = CPU_MI_Score(mi_hist, ssd->curr_num_vox);
 #else
     // Doing this on the GPU may be silly.
     // The CPU generally completes this computation extremely quickly
@@ -709,13 +709,13 @@ CUDA_bspline_mi_a (
 #if defined (MI_GRAD_CPU)
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)ssd->num_vox);
 #else
-    float score = ssd->smetric[0];
+    float score = ssd->curr_smetric;
     CUDA_bspline_mi_grad (
         bst,
         bxf,
         fixed,
         moving,
-        (float)ssd->num_vox,
+        (float) ssd->curr_num_vox,
         score,
         dev_ptrs
     );
@@ -787,12 +787,12 @@ CUDA_bspline_mse_j (
         fixed,
         bxf->vox_per_rgn,
         fixed->dim,
-        &(ssd->smetric[0]),
+        &(ssd->curr_smetric),
         bst->ssd.curr_smetric_grad,
         &ssd_grad_mean,
         &ssd_grad_norm,
         dev_ptrs,
-        &(ssd->num_vox)
+        &(ssd->curr_num_vox)
     );
 
     if (parms->debug) {

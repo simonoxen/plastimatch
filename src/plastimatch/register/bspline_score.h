@@ -10,6 +10,26 @@
 
 class Bspline_xform;
 
+class PLMREGISTER_API Metric_score
+{
+public:
+    Metric_score () {
+        score = 0.f;
+        time = 0.f;
+        num_vox = 0;
+    }
+    Metric_score (float score, float time, plm_long num_vox) 
+        : score(score), time(time), num_vox(num_vox) {
+        score = 0.f;
+        time = 0.f;
+        num_vox = 0;
+    }
+public:
+    float score;
+    double time;
+    plm_long num_vox;
+};
+
 class PLMREGISTER_API Bspline_score
 {
 public:
@@ -21,16 +41,17 @@ public:
 
     float lmetric;         /* Landmark metric */
     float rmetric;         /* Regularization metric */
-    std::vector<float> smetric;  /* Similarity metric */
 
-    plm_long num_vox;      /* Number of voxel with correspondence */
+    /*! \brief The metric_record keeps track of score statistics 
+      for reporting purposes */
+    std::vector<Metric_score> metric_record;
+
     plm_long num_coeff;    /* Size of gradient vector = num coefficents */
 
     float curr_smetric;         /* Current smetric value */
     float* curr_smetric_grad;   /* Gradient of score for current smetric */
+    plm_long curr_num_vox;      /* Number of voxel with correspondence */
 
-    /* Time to compute similarity metric */
-    std::vector<double> time_smetric;
     /* Time to compute regularization metric */
     double time_rmetric;
 public:

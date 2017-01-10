@@ -1046,14 +1046,14 @@ bspline_score_i_mi (
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
-        ssd->num_vox += f_hist[i];
+        ssd->curr_num_vox += f_hist[i];
     }
 
     /* Fill in the missing histogram bin */
     for (plm_long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
-    m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
+    m_hist[mi_hist->moving.big_bin] = (double) ssd->curr_num_vox - mhis;
 
 
     /* Look for the biggest moving histogram bin */
@@ -1072,7 +1072,7 @@ bspline_score_i_mi (
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
-    j_hist[mi_hist->joint.big_bin] = (double)ssd->num_vox - jhis;
+    j_hist[mi_hist->joint.big_bin] = (double) ssd->curr_num_vox - jhis;
 
     
     /* Look for the biggest joint histogram bin */
@@ -1114,8 +1114,8 @@ bspline_score_i_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -1214,7 +1214,7 @@ bspline_score_i_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
 }
 #endif
 
@@ -1353,7 +1353,7 @@ bspline_score_h_mi (
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
                 mse_score += diff * diff;
-                ssd->num_vox ++;
+                ssd->curr_num_vox ++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -1370,8 +1370,8 @@ bspline_score_h_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -1486,7 +1486,7 @@ bspline_score_h_mi (
         fclose (fp);
     }
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
@@ -1605,7 +1605,7 @@ bspline_score_g_mi (
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
                 mse_score += diff * diff;
-                ssd->num_vox ++;
+                ssd->curr_num_vox ++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -1617,8 +1617,8 @@ bspline_score_g_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -1727,7 +1727,7 @@ bspline_score_g_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
@@ -1862,14 +1862,14 @@ bspline_score_f_mi (
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
-        ssd->num_vox += f_hist[i];
+        ssd->curr_num_vox += f_hist[i];
     }
 
     /* Fill in the missing histogram bin */
     for(plm_long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
-    m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
+    m_hist[mi_hist->moving.big_bin] = (double) ssd->curr_num_vox - mhis;
 
 
     /* Look for the biggest moving histogram bin */
@@ -1886,7 +1886,7 @@ bspline_score_f_mi (
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
-    j_hist[mi_hist->joint.big_bin] = (double)ssd->num_vox - jhis;
+    j_hist[mi_hist->joint.big_bin] = (double) ssd->curr_num_vox - jhis;
 
     
     /* Look for the biggest joint histogram bin */
@@ -1924,8 +1924,8 @@ bspline_score_f_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -2024,7 +2024,7 @@ bspline_score_f_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
 }
 #endif
 
@@ -2179,14 +2179,14 @@ bspline_score_e_mi (
         if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
             mi_hist->fixed.big_bin = i;
         }
-        ssd->num_vox += f_hist[i];
+        ssd->curr_num_vox += f_hist[i];
     }
 
     /* Fill in the missing histogram bin */
     for (plm_long i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
-    m_hist[mi_hist->moving.big_bin] = (double)ssd->num_vox - mhis;
+    m_hist[mi_hist->moving.big_bin] = (double) ssd->curr_num_vox - mhis;
 
 
     /* Look for the biggest moving histogram bin */
@@ -2205,7 +2205,7 @@ bspline_score_e_mi (
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
-    j_hist[mi_hist->joint.big_bin] = (double)ssd->num_vox - jhis;
+    j_hist[mi_hist->joint.big_bin] = (double) ssd->curr_num_vox - jhis;
 
     
     /* Look for the biggest joint histogram bin */
@@ -2247,8 +2247,8 @@ bspline_score_e_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -2363,7 +2363,7 @@ bspline_score_e_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
 }
 #endif
 
@@ -2504,7 +2504,7 @@ bspline_score_d_mi (
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
                 mse_score += diff * diff;
-                ssd->num_vox ++;
+                ssd->curr_num_vox ++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -2537,8 +2537,8 @@ bspline_score_d_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
 #pragma omp parallel for
@@ -2647,7 +2647,7 @@ bspline_score_d_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
     if (parms->debug) {
         printf ("<< MSE %3.3f >>\n", mse_score);
     }
@@ -2665,8 +2665,8 @@ bspline_score_c_mi (
 
     Volume *fixed = bst->fixed;
     Volume *moving = bst->moving;
-    Volume* fixed_roi  = bst->fixed_roi;
-    Volume* moving_roi = bst->moving_roi;
+    Volume *fixed_roi  = bst->fixed_roi;
+    Volume *moving_roi = bst->moving_roi;
 
     Bspline_score* ssd = &bst->ssd;
     Joint_histogram* mi_hist = bst->mi_hist;
@@ -2775,7 +2775,7 @@ bspline_score_c_mi (
                 /* Compute intensity difference */
                 diff = m_val - f_img[fidx];
                 mse_score += diff * diff;
-                ssd->num_vox++;
+                ssd->curr_num_vox++;
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
@@ -2809,8 +2809,8 @@ bspline_score_c_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
-    num_vox_f = (float) ssd->num_vox;
+    ssd->curr_smetric = mi_hist->compute_score (ssd->curr_num_vox);
+    num_vox_f = (float) ssd->curr_num_vox;
 
     /* PASS 2 - Compute gradient */
     LOOP_Z (fijk, fxyz, fixed) {
@@ -2885,7 +2885,7 @@ bspline_score_c_mi (
     }
 #endif
 
-    mse_score = mse_score / ssd->num_vox;
+    mse_score = mse_score / ssd->curr_num_vox;
 }
 
 /* Mutual information version of implementation "k" */
@@ -2940,7 +2940,7 @@ bspline_score_k_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
+    ssd->curr_smetric = mi_hist->compute_score (ssd->curr_num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
@@ -3002,7 +3002,7 @@ bspline_score_l_mi (
     }
 
     /* Compute score */
-    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
+    ssd->curr_smetric = mi_hist->compute_score (ssd->curr_num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);

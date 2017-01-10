@@ -338,12 +338,19 @@ report_score (
     }
 
     /* Compute total time */
+    double total_smetric_time = 0;
     double total_time = 0;
-    std::vector<double>::const_iterator it_time = ssd->time_smetric.begin();
-    while (it_time != ssd->time_smetric.end()) {
-        total_time += *it_time;
-        ++it_time;
+    plm_long hack_num_vox = 0;
+    std::vector<Metric_score>::const_iterator it_mr 
+        = ssd->metric_record.begin();
+    while (it_mr != ssd->metric_record.end()) {
+        total_time += it_mr->time;
+        if (hack_num_vox == 0) {
+            hack_num_vox = it_mr->num_vox;
+        }
+        ++it_mr;
     }
+    total_smetric_time = total_time;
     total_time += ssd->time_rmetric;
     
     /* First line, iterations, score, misc stats */
@@ -360,7 +367,7 @@ report_score (
     logfile_print_score (ssd->total_score);
     logfile_printf (
         "NV %6d GM %9.3f GN %9.3g [ %9.3f s ]\n",
-        ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
+        hack_num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line */
     if (reg_parms->lambda > 0
@@ -371,15 +378,16 @@ report_score (
         /* Part 1 - smetric(s) */
         /* GCS FIX: It should not be that one of these is a list 
            and the other is a vector. */
-        std::vector<float>::const_iterator it_sm = ssd->smetric.begin();
+        std::vector<Metric_score>::const_iterator it_mr 
+            = ssd->metric_record.begin();
         std::list<Stage_similarity_data::Pointer>::const_iterator it_st
             = parms->similarity_data.begin();
-        while (it_sm != ssd->smetric.end()) {
+        while (it_mr != ssd->metric_record.end()) {
             logfile_printf ("%-6s", (*it_st)->metric_string());
-            logfile_print_score (*it_sm);
-            ++it_sm, ++it_st;
+            logfile_print_score (it_mr->score);
+            ++it_mr, ++it_st;
         }
-        if (ssd->smetric.size() > 1
+        if (ssd->metric_record.size() > 1
             && (reg_parms->lambda > 0 || blm->num_landmarks > 0))
         {
             logfile_printf ("\n");
@@ -399,7 +407,7 @@ report_score (
             /* Part 4 - timing */
             if (reg_parms->lambda > 0) {
                 logfile_printf ("[ %9.3f | %9.3f ]", 
-                    ssd->time_smetric[0], ssd->time_rmetric);
+                    total_smetric_time, ssd->time_rmetric);
             }
         }
         logfile_printf ("\n");
@@ -451,14 +459,15 @@ bspline_score (Bspline_optimize *bod)
             break;
         }
 
-        bst->ssd.smetric.push_back (bst->ssd.curr_smetric);
-        bst->ssd.time_smetric.push_back (timer.report ());
+        bst->ssd.metric_record.push_back (
+            Metric_score (bst->ssd.curr_smetric, timer.report (),
+                bst->ssd.curr_num_vox));
 
         printf (">> %f + %f * %f ->",
             bst->ssd.total_score, (*it_sd)->metric_lambda, 
             bst->ssd.curr_smetric);
         bst->ssd.accumulate ((*it_sd)->metric_lambda);
-        printf ("%f\n", bst->ssd.total_score);
+        printf (" %f\n", bst->ssd.total_score);
 
         bst->sm ++;
     }

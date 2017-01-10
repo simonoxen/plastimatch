@@ -168,7 +168,7 @@ public:
         );
 
         /* Keep track of voxels used */
-        ssd->num_vox++;
+        ssd->curr_num_vox++;
     }
 };
 
@@ -180,7 +180,7 @@ public:
 public:
     Bspline_mi_k_pass_2 (Bspline_optimize *bod) {
         Bspline_score* ssd = bod->get_bspline_state()->get_bspline_score();
-        num_vox_f = (float) ssd->num_vox;
+        num_vox_f = (float) ssd->curr_num_vox;
     }
     void set_mi_hist (Joint_histogram *mi_hist) {
         this->mi_hist = mi_hist;
