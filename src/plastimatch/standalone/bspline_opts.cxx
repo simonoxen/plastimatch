@@ -60,6 +60,8 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
     Bspline_parms* parms = &options->parms;
     Regularization_parms* reg_parms = parms->reg_parms;
     Bspline_landmarks* blm = parms->blm;
+    Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
+    parms->similarity_data.push_back (ssi);
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
@@ -175,13 +177,13 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "mse")) {
-		parms->metric_type[0] = SIMILARITY_METRIC_MSE;
+		ssi->metric_type = SIMILARITY_METRIC_MSE;
 	    } else if (!strcmp(argv[i], "mi")) {
-		parms->metric_type[0] = SIMILARITY_METRIC_MI_MATTES;
+		ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;
 	    } else {
 		print_usage ();
 	    }
-            parms->metric_lambda[0] = 1.;
+            ssi->metric_lambda = 1.;
 	}
 	else if (!strcmp (argv[i], "-s")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

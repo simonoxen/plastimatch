@@ -14,8 +14,6 @@
 #include "stage_parms.h"
 #include "volume_grad.h"
 
-#define DEFAULT_IMAGE_KEY "0"
-
 class Registration_data_private
 {
 public:
@@ -315,6 +313,8 @@ void populate_similarity_list (
 
         Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
 
+        printf ("II = %s\n", (*ind_it).c_str());
+
         /* Subsample images */
         ssi->fixed_ss = registration_resample_volume (
             fixed, stage, stage->resample_rate_fixed);
@@ -323,7 +323,10 @@ void populate_similarity_list (
 
         /* Metric */
         const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
-
+        if (shared->metric.find(*ind_it) == shared->metric.end()) {
+            printf ("Oops.\n");
+        }
+        printf ("II.mt = %d\n", metric_parms.metric_type);
         ssi->metric_type = metric_parms.metric_type;
         if (ssi->metric_type == SIMILARITY_METRIC_MI_VW) {
             ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;

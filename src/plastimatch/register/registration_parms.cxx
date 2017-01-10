@@ -10,12 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#if defined (_WIN32)
-// win32 directory stuff
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
 
 #include "logfile.h"
 #include "parameter_parser.h"
@@ -57,6 +51,7 @@ public:
     {
         this->rp = rp;
         this->enable_key_regularization (true);
+        this->set_default_index (DEFAULT_IMAGE_KEY);
     }
 public:
     virtual Plm_return_code begin_section (
@@ -480,6 +475,7 @@ Registration_parms::set_key_value (
         if (shared->metric[index].set_metric_type (val) != PLM_SUCCESS) {
             goto error_exit;
         }
+        shared->log();
     }
     else if (key == "metric_lambda" || key == "smetric_lambda") {
         if (!section_stage) goto key_only_allowed_in_section_stage;

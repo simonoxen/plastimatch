@@ -14,6 +14,8 @@ public:
     SMART_POINTER_SUPPORT (Stage_similarity_data);
 public:
     Stage_similarity_data () {
+        metric_type = SIMILARITY_METRIC_MSE;
+        metric_lambda = 1.f;
     }
 public:
     Volume::Pointer fixed_ss;

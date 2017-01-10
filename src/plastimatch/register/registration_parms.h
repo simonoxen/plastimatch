@@ -20,6 +20,8 @@ class Registration_parms_private;
 class Shared_parms;
 class Stage_parms;
 
+#define DEFAULT_IMAGE_KEY "0"
+
 class PLMREGISTER_API Registration_parms {
 public:
     SMART_POINTER_SUPPORT (Registration_parms);

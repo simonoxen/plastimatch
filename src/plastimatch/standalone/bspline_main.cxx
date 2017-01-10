@@ -94,8 +94,7 @@ main (int argc, char* argv[])
     bod.initialize (bxf, parms);
     
     /* Load images */
-    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
-    parms->similarity_data.push_back (sim);
+    Stage_similarity_data::Pointer sim = parms->similarity_data.front ();
     sim->fixed_ss.reset (fixed);
     sim->moving_ss.reset (moving);
 

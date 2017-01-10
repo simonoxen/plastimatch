@@ -130,6 +130,13 @@ Parameter_parser::set_default_index (
     this->default_index = default_index;
 }
 
+void 
+Parameter_parser::set_default_index (
+    const char *default_index)
+{
+    this->default_index = std::string(default_index);
+}
+
 Plm_return_code
 Parameter_parser::parse_config_string (
     const std::string& config_string

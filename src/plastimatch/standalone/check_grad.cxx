@@ -97,11 +97,11 @@ check_gradient (
     /* Fixate images into bspline parms */
     Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
     parms->similarity_data.push_back (sim);
+    parms->implementation = options->bsp_implementation;
     sim->fixed_ss.reset (fixed);
     sim->moving_ss.reset (moving);
     sim->moving_grad.reset (moving_grad);
-    parms->implementation = options->bsp_implementation;
-    parms->metric_type[0] = options->bsp_metric;
+    sim->metric_type = options->bsp_metric;
 
     /* Maybe we got a roi too */
     Plm_image::Pointer pli_fixed_roi;
@@ -155,7 +155,7 @@ check_gradient (
         x[i] = bxf->coeff[i];
     }
 
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    if (sim->metric_type == SIMILARITY_METRIC_MI_MATTES) {
         bst->mi_hist->initialize (fixed, moving);
     }
 

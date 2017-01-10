@@ -124,6 +124,14 @@ Bspline_stage::initialize ()
 
     populate_similarity_list (parms->similarity_data, regd, stage);
 
+    std::list<Stage_similarity_data::Pointer>::iterator it;
+    for (it = parms->similarity_data.begin();
+         it != parms->similarity_data.end(); ++it)
+    {
+        printf (" !! \n");
+        printf ("Metric type = %d\n", (*it)->metric_type);
+    }
+
 #if defined (commentout)
     const std::list<std::string>& similarity_indices
         = regd->get_similarity_indices ();
