@@ -66,37 +66,33 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
 
         /* Sanity check -- there should be at least a fixed and moving */
         if (mp.fixed_fn == "") {
-            logfile_printf ("Skipping metric without fixed_fn (%s)\n", 
-                index.c_str());
             continue;
         }
         if (mp.moving_fn == "") {
-            logfile_printf ("Skipping metric without moving_fn (%s)\n", 
-                index.c_str());
             continue;
         }
         
         /* Load images */
         logfile_printf ("Loading fixed image [%s]: %s\n", 
             index.c_str(), mp.fixed_fn.c_str());
-        this->set_fixed_image (index.c_str(), 
+        this->set_fixed_image (index,
             Plm_image::New (mp.fixed_fn, PLM_IMG_TYPE_ITK_FLOAT));
         logfile_printf ("Loading moving image [%s]: %s\n", 
             index.c_str(), mp.moving_fn.c_str());
-        this->set_moving_image (index.c_str(), 
+        this->set_moving_image (index,
             Plm_image::New (mp.moving_fn, PLM_IMG_TYPE_ITK_FLOAT));
         
         /* Load rois */
         if (mp.fixed_roi_fn != "") {
             logfile_printf ("Loading fixed roi [%s]: %s\n", 
                 index.c_str(), mp.fixed_roi_fn.c_str());
-            this->set_fixed_roi (index.c_str(), 
+            this->set_fixed_roi (index,
                 Plm_image::New (mp.fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
         }
         if (mp.moving_roi_fn != "") {
             logfile_printf ("Loading moving roi [%s]: %s\n", 
                 index.c_str(), mp.moving_roi_fn.c_str());
-            this->set_moving_roi (index.c_str(), 
+            this->set_moving_roi (index,
                 Plm_image::New (mp.moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
         }
     }
@@ -313,8 +309,6 @@ void populate_similarity_list (
 
         Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
 
-        printf ("II = %s\n", (*ind_it).c_str());
-
         /* Subsample images */
         ssi->fixed_ss = registration_resample_volume (
             fixed, stage, stage->resample_rate_fixed);
@@ -323,10 +317,6 @@ void populate_similarity_list (
 
         /* Metric */
         const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
-        if (shared->metric.find(*ind_it) == shared->metric.end()) {
-            printf ("Oops.\n");
-        }
-        printf ("II.mt = %d\n", metric_parms.metric_type);
         ssi->metric_type = metric_parms.metric_type;
         if (ssi->metric_type == SIMILARITY_METRIC_MI_VW) {
             ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;

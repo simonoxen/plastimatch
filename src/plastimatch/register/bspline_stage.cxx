@@ -122,58 +122,8 @@ Bspline_stage::initialize ()
         m_roi = regd->get_moving_roi()->get_volume_uchar();
     }
 
+    /* Copy similarity images and parms */
     populate_similarity_list (parms->similarity_data, regd, stage);
-
-    std::list<Stage_similarity_data::Pointer>::iterator it;
-    for (it = parms->similarity_data.begin();
-         it != parms->similarity_data.end(); ++it)
-    {
-        printf (" !! \n");
-        printf ("Metric type = %d\n", (*it)->metric_type);
-    }
-
-#if defined (commentout)
-    const std::list<std::string>& similarity_indices
-        = regd->get_similarity_indices ();
-    std::list<std::string>::const_iterator ind_it;
-    for (ind_it = similarity_indices.begin();
-         ind_it != similarity_indices.end(); ++ind_it)
-    {
-        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
-        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
-        Volume::Pointer& fixed = fixed_image->get_volume_float ();
-        Volume::Pointer& moving = moving_image->get_volume_float ();
-
-        Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
-
-        /* Subsample images */
-        ssi->fixed_ss = registration_resample_volume (
-            fixed, stage, stage->resample_rate_fixed);
-        ssi->moving_ss = registration_resample_volume (
-            moving, stage, stage->resample_rate_moving);
-
-        /* Metric */
-        const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
-
-        ssi->metric_type = metric_parms.metric_type;
-        if (ssi->metric_type == SIMILARITY_METRIC_MI_VW) {
-            ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;
-        }
-        ssi->metric_lambda = metric_parms.metric_lambda;
-
-        /* Gradient magnitude is MSE on gradient image */
-        if (ssi->metric_type == SIMILARITY_METRIC_GM) {
-            ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
-            ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
-        }
-
-        /* Make spatial gradient image */
-        ssi->moving_grad = volume_gradient (ssi->moving_ss);
-
-        /* Add images to stage image list */
-        parms->similarity_data.push_back (ssi);
-    }
-#endif
 
     /* Copy parameters from stage_parms to bspline_parms */
     parms->mi_fixed_image_minVal = stage->mi_fixed_image_minVal;

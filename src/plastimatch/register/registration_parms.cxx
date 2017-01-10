@@ -995,7 +995,7 @@ error_exit:
     return PLM_ERROR;
 }
 
-int
+Plm_return_code
 Registration_parms::set_command_string (
     const std::string& command_string
 )
@@ -1005,7 +1005,7 @@ Registration_parms::set_command_string (
     return rpp.parse_config_string (command_string);
 }
 
-int
+Plm_return_code
 Registration_parms::parse_command_file (const char* options_fn)
 {
     /* Read file into string */

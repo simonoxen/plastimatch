@@ -36,8 +36,7 @@ Metric_parms::set_metric_type (const std::string& val)
 #endif
         return PLM_SUCCESS;
     }
-    else if (val == "mi_vw" || val == "viola-wells")
-    {
+    else if (val == "mi_vw" || val == "viola-wells") {
         this->metric_type = SIMILARITY_METRIC_MI_VW;
         return PLM_SUCCESS;
     }

@@ -189,35 +189,6 @@ Translation_grid_search::do_score (
     lprintf ("[%g %g %g]",
         dxyz[0], dxyz[1], dxyz[2]);
 
-#if defined (commentout)
-    std::list<Volume::Pointer>::iterator fix_it, mov_it;
-    float acc_score = 0.f;
-    for (fix_it = fixed_ss.begin(), mov_it = moving_ss.begin();
-         fix_it != fixed_ss.end() && mov_it != moving_ss.end();
-         ++fix_it, ++mov_it)
-    {
-
-        /* Choose the correct score function */
-        this->translation_score = &translation_mse;
-        switch (this->metric_parms.metric_type) {
-        case SIMILARITY_METRIC_MSE:
-        case SIMILARITY_METRIC_GM:
-            translation_score = &translation_mse;
-            break;
-        case SIMILARITY_METRIC_MI_MATTES:
-        case SIMILARITY_METRIC_MI_VW:
-            translation_score = &translation_mi;
-            break;
-        default:
-            print_and_exit ("Metric %d not implemented with grid search\n");
-            break;
-        }
-
-        float score = translation_score (stage, *fix_it, *mov_it, dxyz);
-        lprintf (" %g", score);
-        acc_score += score;
-    }
-#endif
     std::list<Stage_similarity_data::Pointer>::iterator it;
     float acc_score = 0.f;
     for (it = this->similarity_data.begin(); 
@@ -266,63 +237,8 @@ translation_grid_search_stage (
 
     Translation_grid_search tgsd;
 
+    /* Copy similarity images and parms */
     populate_similarity_list (tgsd.similarity_data, regd, stage);
-
-#if defined (commentout)
-    const Shared_parms *shared = stage->get_shared_parms ();
-    const std::list<std::string>& similarity_indices
-        = regd->get_similarity_indices ();
-    std::list<std::string>::const_iterator ind_it;
-    for (ind_it = similarity_indices.begin();
-         ind_it != similarity_indices.end(); ++ind_it)
-    {
-        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
-        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
-        Volume::Pointer& fixed = fixed_image->get_volume_float ();
-        Volume::Pointer& moving = moving_image->get_volume_float ();
-        Volume::Pointer moving_ss;
-        Volume::Pointer fixed_ss;
-
-        /* Subsample images */
-        fixed_ss = registration_resample_volume (
-            fixed, stage, stage->resample_rate_fixed);
-        moving_ss = registration_resample_volume (
-            moving, stage, stage->resample_rate_moving);
-
-        /* Metric */
-        const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
-
-        /* GCS FIX, split metric vector into separate items in 
-           Stage_similarity_data list */
-        std::map<std::string,Metric_parms>::const_iterator metric_it;
-        for (metric_it = shared->metric.begin();
-             metric_it != shared->metric.end(); ++metric_it) {
-            tgsd.metric_parms = metric_it->second;
-            break;
-        }
-
-        /* Gradient magnitude is MSE on gradient image */
-        if (tgsd.metric_parms.metric_type == SIMILARITY_METRIC_GM) {
-            fixed_ss = volume_gradient_magnitude (fixed_ss);
-            moving_ss = volume_gradient_magnitude (moving_ss);
-        }
-
-        tgsd.fixed_ss.push_back (fixed_ss);
-        tgsd.moving_ss.push_back (moving_ss);
-
-        if (stage->debug_dir != "") {
-            std::string fn;
-            fn = string_format ("%s/%02d_fixed_%s_ss.mha",
-                stage->debug_dir.c_str(), stage->stage_no,
-                ind_it->c_str());
-            write_mha (fn.c_str(), fixed_ss.get());
-            fn = string_format ("%s/%02d_moving_%s_ss.mha",
-                stage->debug_dir.c_str(), stage->stage_no,
-                ind_it->c_str());
-            write_mha (fn.c_str(), moving_ss.get());
-        }
-    }
-#endif
 
     /* Transform input xform to itk translation */
     xform_to_trn (xf_out.get(), xf_in.get(), &pih);

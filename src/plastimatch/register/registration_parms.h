@@ -50,13 +50,13 @@ public:
     Registration_parms();
     ~Registration_parms();
 public:
-    int set_command_string (const std::string& command_string);
+    Plm_return_code set_command_string (const std::string& command_string);
     Plm_return_code set_key_value (
         const std::string& section,
         const std::string& key, 
         const std::string& index, 
         const std::string& val);
-    int parse_command_file (const char* options_fn);
+    Plm_return_code parse_command_file (const char* options_fn);
     void set_job_paths (void);
 public:
     Shared_parms* get_shared_parms ();

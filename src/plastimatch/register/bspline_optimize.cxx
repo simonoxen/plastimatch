@@ -97,48 +97,6 @@ bspline_optimize_select (
     }
 }
 
-#if defined (commentout)
-void
-bspline_optimize (
-    Bspline_xform *bxf, 
-    Bspline_parms *parms
-)
-{
-    Bspline_optimize bod;
-    bod.initialize (bxf, parms);
-
-    /* GCS FIX: The below does not belong in bspline_state.  And it should 
-       be done if any similarity metric is MI. */
-    /* JAS Fix 2011.09.14
-     *   The MI algorithm will get stuck for a set of coefficients all equaling
-     *   zero due to the method we use to compute the cost function gradient.
-     *   However, it is possible we could be inheriting coefficients from a
-     *   prior stage, so we must check for inherited coefficients before
-     *   applying an initial offset to the coefficient array. */
-    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
-        bxf->jitter_if_zero ();
-    }
-    
-    log_parms (parms);
-    log_bxf_header (bxf);
-
-    /* GCS FIX -- this should move into Bspline_state() constructor */
-    /* Initialize histograms */
-    /* GCS DOUBLE FIX -- normally this can be done once before the 
-       first iteration.  But if e.g. there are two MI metrics, 
-       we need two of these structures.  Perhaps it belongs in 
-       Stage_similarity_data. */
-    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
-        bod.get_bspline_state()->mi_hist->initialize (
-            parms->similarity_data.front()->fixed_ss.get(),
-            parms->similarity_data.front()->moving_ss.get());
-    }
-
-    /* Do the optimization */
-    bspline_optimize_select (&bod);
-}
-#endif
-
 void
 Bspline_optimize::optimize (
 )
