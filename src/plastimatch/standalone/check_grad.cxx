@@ -169,7 +169,7 @@ check_gradient (
     for (i = 0; i < bxf->num_coeff; i++) {
         grad[i] = bst->ssd.total_grad[i];
     }
-    score = bst->ssd.score;
+    score = bst->ssd.total_score;
 
     /* If a search dir was specified, use that instead of the gradient */
     if (options->input_search_dir_fn != "") {
@@ -215,7 +215,7 @@ check_gradient (
             }
         
             /* Compute difference between grad and grad_fd */
-            fprintf (fp, "%4d,%12.12f\n", i, bst->ssd.score);
+            fprintf (fp, "%4d,%12.12f\n", i, bst->ssd.total_score);
 
             // JAS 04.19.2010
             // This loop could take a while to exit.  This will
@@ -248,7 +248,7 @@ check_gradient (
             }
         
             /* Stash score difference in grad_fd */
-            grad_fd[i] = (bst->ssd.score - score) / options->step_size;
+            grad_fd[i] = (bst->ssd.total_score - score) / options->step_size;
 
             /* Compute difference between grad and grad_fd */
             fprintf (fp, "%12.12f,%12.12f\n", grad[i], grad_fd[i]);

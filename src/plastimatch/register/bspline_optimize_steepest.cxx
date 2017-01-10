@@ -73,7 +73,7 @@ bspline_optimize_steepest_trace (
 
     /* Get score and gradient */
     bspline_score (bod);
-    old_score = bst->ssd.score;
+    old_score = bst->ssd.total_score;
 
     /* Get search direction */
     ssd_grad_norm = 0;
@@ -92,7 +92,7 @@ bspline_optimize_steepest_trace (
     /* Save some debugging information */
     bspline_save_debug_state (parms, bst, bxf);
     if (parms->debug) {
-        fprintf (fp, "%f\n", ssd->score);
+        fprintf (fp, "%f\n", ssd->total_score);
     }
 
     while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
@@ -111,7 +111,7 @@ bspline_optimize_steepest_trace (
         bspline_score (bod);
 
         /* Compute gain ratio with linear model */
-        gr = (old_score - bst->ssd.score) / htg;
+        gr = (old_score - bst->ssd.total_score) / htg;
         if (gr < 0) {
             /* Cost increased.  Keep search direction and reduce trust rgn. */
             alpha = 0.5 * alpha;
@@ -133,7 +133,7 @@ bspline_optimize_steepest_trace (
         /* Save some debugging information */
         bspline_save_debug_state (parms, bst, bxf);
         if (parms->debug) {
-            fprintf (fp, "%f\n", ssd->score);
+            fprintf (fp, "%f\n", ssd->total_score);
         }
 
         /* If score was reduced, we accept the line search (fall through). 
@@ -151,7 +151,7 @@ bspline_optimize_steepest_trace (
         success ++;
         memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
         memcpy (grad_backup, ssd->total_grad, bxf->num_coeff * sizeof(float));
-        score_backup = ssd->score;
+        score_backup = ssd->total_score;
         sprintf (filename, "grad_%04i.csv", success);
         trace = fopen(filename, "w");
         printf ("Capturing Gradient (grad_%04i.csv)\n", success);
@@ -167,14 +167,14 @@ bspline_optimize_steepest_trace (
             printf ("\t");
             bspline_score (bod);
         
-            fprintf (trace, "%d, %10.10f\n", i, bst->ssd.score);
+            fprintf (trace, "%d, %10.10f\n", i, bst->ssd.total_score);
             fflush(trace);
         }
         fclose (trace);
 
         printf ("Finished Capturing Gradient.\n\n");
         memcpy (ssd->total_grad, grad_backup, bxf->num_coeff * sizeof(float));
-        ssd->score = score_backup;
+        ssd->total_score = score_backup;
 
         /* Start new line search */
         ssd_grad_norm = 0;
@@ -187,12 +187,12 @@ bspline_optimize_steepest_trace (
             h[i] = - ssd->total_grad[i] / ssd_grad_norm;
             htg -= h[i] * ssd->total_grad[i];
         }
-        old_score = bst->ssd.score;
+        old_score = bst->ssd.total_score;
     }
 
     /* Save best result */
     memcpy (bxf->coeff, x, bxf->num_coeff * sizeof(float));
-    bst->ssd.score = old_score;
+    bst->ssd.total_score = old_score;
 
     if (parms->debug) {
         fclose (fp);
@@ -253,7 +253,7 @@ bspline_optimize_steepest_trust (
 
     /* Get score and gradient */
     bspline_score (bod);
-    old_score = bst->ssd.score;
+    old_score = bst->ssd.total_score;
 
     /* Get search direction */
     ssd_grad_norm = 0;
@@ -273,7 +273,7 @@ bspline_optimize_steepest_trust (
     /* Save some debugging information */
     bspline_save_debug_state (parms, bst, bxf);
     if (parms->debug) {
-        fprintf (fp, "%f\n", ssd->score);
+        fprintf (fp, "%f\n", ssd->total_score);
     }
 
     while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
@@ -292,7 +292,7 @@ bspline_optimize_steepest_trust (
         bspline_score (bod);
 
         /* Compute gain ratio with linear model */
-        gr = (old_score - bst->ssd.score) / htg;
+        gr = (old_score - bst->ssd.total_score) / htg;
         if (gr < 0) {
             /* Cost increased.  Keep search direction and reduce trust rgn. */
             alpha = 0.5 * alpha;
@@ -314,7 +314,7 @@ bspline_optimize_steepest_trust (
         /* Save some debugging information */
         bspline_save_debug_state (parms, bst, bxf);
         if (parms->debug) {
-            fprintf (fp, "%f\n", ssd->score);
+            fprintf (fp, "%f\n", ssd->total_score);
         }
 
         /* If score was reduced, we accept the line search */
@@ -335,12 +335,12 @@ bspline_optimize_steepest_trust (
             h[i] = - ssd->total_grad[i] / ssd_grad_norm;
             htg -= h[i] * ssd->total_grad[i];
         }
-        old_score = bst->ssd.score;
+        old_score = bst->ssd.total_score;
     }
 
     /* Save best result */
     memcpy (bxf->coeff, x, bxf->num_coeff * sizeof(float));
-    bst->ssd.score = old_score;
+    bst->ssd.total_score = old_score;
 
     if (parms->debug) {
         fclose (fp);
@@ -380,7 +380,7 @@ bspline_optimize_steepest_naive (
 
     /* Get score and gradient */
     bspline_score (bod);
-    old_score = bst->ssd.score;
+    old_score = bst->ssd.total_score;
 
     /* Set alpha based on norm gradient */
     ssd_grad_norm = 0;
@@ -396,7 +396,7 @@ bspline_optimize_steepest_naive (
     /* Save some debugging information */
     bspline_save_debug_state (parms, bst, bxf);
     if (parms->debug) {
-        fprintf (fp, "%f\n", ssd->score);
+        fprintf (fp, "%f\n", ssd->total_score);
     }
 
     while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
@@ -417,19 +417,19 @@ bspline_optimize_steepest_naive (
         bspline_score (bod);
 
         /* Update gamma */
-        if (bst->ssd.score < old_score) {
+        if (bst->ssd.total_score < old_score) {
             gamma *= gain;
         } else {
             gamma /= gain;
         }
-        old_score = bst->ssd.score;
+        old_score = bst->ssd.total_score;
 
         /* Give a little feedback to the user */
         bspline_display_coeff_stats (bxf);
         /* Save some debugging information */
         bspline_save_debug_state (parms, bst, bxf);
         if (parms->debug) {
-            fprintf (fp, "%f\n", ssd->score);
+            fprintf (fp, "%f\n", ssd->total_score);
         }
     }
 

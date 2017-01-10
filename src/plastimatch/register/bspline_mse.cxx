@@ -55,15 +55,17 @@ bspline_score_normalize (
        to exit prematurely.  
        However, the best score is not currently stored in the state.  
     */
+    printf ("RAW SCORE = %f\n", raw_score);
     if (ssd->num_vox < MIN_VOX) {
-        ssd->smetric[bst->sm] = FLT_MAX;
+        ssd->curr_smetric = FLT_MAX;
         for (int i = 0; i < bxf->num_coeff; i++) {
-            ssd->smetric_grad[i] = 0;
+            ssd->curr_smetric_grad[i] = 0;
         }
     } else {
-        ssd->smetric[bst->sm] = raw_score / ssd->num_vox;
+        ssd->curr_smetric = raw_score / ssd->num_vox;
         for (int i = 0; i < bxf->num_coeff; i++) {
-            ssd->smetric_grad[i] = 2 * ssd->smetric_grad[i] / ssd->num_vox;
+            ssd->curr_smetric_grad[i] 
+                = 2 * ssd->curr_smetric_grad[i] / ssd->num_vox;
         }
     }
 }

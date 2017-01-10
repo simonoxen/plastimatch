@@ -297,9 +297,9 @@ bspline_condense_smetric_grad (float* cond_x, float* cond_y, float* cond_z,
 
     for (kidx=0; kidx < bxf->num_knots; kidx++) {
         for (sidx=0; sidx<64; sidx++) {
-            ssd->smetric_grad[3*kidx + 0] += cond_x[64*kidx + sidx];
-            ssd->smetric_grad[3*kidx + 1] += cond_y[64*kidx + sidx];
-            ssd->smetric_grad[3*kidx + 2] += cond_z[64*kidx + sidx];
+            ssd->curr_smetric_grad[3*kidx + 0] += cond_x[64*kidx + sidx];
+            ssd->curr_smetric_grad[3*kidx + 1] += cond_y[64*kidx + sidx];
+            ssd->curr_smetric_grad[3*kidx + 2] += cond_z[64*kidx + sidx];
         }
     }
 }
@@ -308,7 +308,7 @@ static void
 logfile_print_score (float score)
 {
     if (score < 10. && score > -10.) {
-        logfile_printf (" %1.8f ", score);
+        logfile_printf (" %1.7f ", score);
     } else {
         logfile_printf (" %9.3f ", score);
     }
@@ -357,7 +357,7 @@ report_score (
         logfile_printf ("%-6s", 
             parms->similarity_data.front()->metric_string());
     }
-    logfile_print_score (ssd->score);
+    logfile_print_score (ssd->total_score);
     logfile_printf (
         "NV %6d GM %9.3f GN %9.3g [ %9.3f s ]\n",
         ssd->num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
@@ -422,6 +422,7 @@ bspline_score (Bspline_optimize *bod)
     /* Compute similarity metric.  This is done for each image plane, 
        and each similarity metric within each image plane. */
     std::list<Stage_similarity_data::Pointer>::const_iterator it_sd;
+    bst->sm = 0;
     for (it_sd = parms->similarity_data.begin();
          it_sd != parms->similarity_data.end(); ++it_sd)
     {
@@ -431,11 +432,9 @@ bspline_score (Bspline_optimize *bod)
         bst->fixed_roi = (*it_sd)->fixed_roi.get();
         bst->moving_roi = (*it_sd)->moving_roi.get();
         bst->initialize_similarity_images ();
-        bst->sm = 0;
         Plm_timer timer;
         timer.start ();
 
-        bst->ssd.smetric.push_back (0.f);
         switch ((*it_sd)->metric_type) {
         case SIMILARITY_METRIC_MSE:
             bspline_score_mse (bod);
@@ -452,9 +451,15 @@ bspline_score (Bspline_optimize *bod)
             break;
         }
 
-        bst->ssd.accumulate_grad ((*it_sd)->metric_lambda);
-
+        bst->ssd.smetric.push_back (bst->ssd.curr_smetric);
         bst->ssd.time_smetric.push_back (timer.report ());
+
+        printf (">> %f + %f * %f ->",
+            bst->ssd.total_score, (*it_sd)->metric_lambda, 
+            bst->ssd.curr_smetric);
+        bst->ssd.accumulate ((*it_sd)->metric_lambda);
+        printf ("%f\n", bst->ssd.total_score);
+
         bst->sm ++;
     }
 
@@ -468,10 +473,10 @@ bspline_score (Bspline_optimize *bod)
         bspline_landmarks_score (parms, bst, bxf);
     }
 
-    /* Compute total score */
-    bst->ssd.score = bst->ssd.smetric[0] + reg_parms->lambda * bst->ssd.rmetric;
+    /* Update total score with regularization and landmarks */
+    bst->ssd.total_score += reg_parms->lambda * bst->ssd.rmetric;
     if (blm->num_landmarks > 0) {
-        bst->ssd.score += blm->landmark_stiffness * bst->ssd.lmetric;
+        bst->ssd.total_score += blm->landmark_stiffness * bst->ssd.lmetric;
     }
 
     /* Report results of this iteration */

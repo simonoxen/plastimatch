@@ -770,7 +770,7 @@ bspline_mi_pvi_8_dc_dv (
         idx_jbin = offset_fbin + idx_mbin;
         if (j_hist[idx_jbin] > 0.0001) {
             dS_dP = logf((num_vox_f * j_hist[idx_jbin]) 
-                / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->smetric[0];
+                / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
             dc_dv[0] -= dw[3*idx_pv+0] * dS_dP;
             dc_dv[1] -= dw[3*idx_pv+1] * dS_dP;
             dc_dv[2] -= dw[3*idx_pv+2] * dS_dP;
@@ -832,7 +832,7 @@ bspline_mi_pvi_6_dc_dv (
         mkqs, fzqs);
 
     /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
-    float smetric = ssd->smetric[0];
+    float smetric = ssd->curr_smetric;
     midx_f = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
     bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
         mi_hist, f_img[fidx], m_img[midx_f]);
@@ -1114,7 +1114,7 @@ bspline_score_i_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1370,7 +1370,7 @@ bspline_score_h_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1617,7 +1617,7 @@ bspline_score_g_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -1924,7 +1924,7 @@ bspline_score_f_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2247,7 +2247,7 @@ bspline_score_e_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2537,7 +2537,7 @@ bspline_score_d_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist_score_omp (mi_hist, ssd->num_vox);
+    ssd->curr_smetric = mi_hist_score_omp (mi_hist, ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute Gradient (Parallel across tiles) */
@@ -2809,7 +2809,7 @@ bspline_score_c_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist->compute_score (ssd->num_vox);
+    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
     num_vox_f = (float) ssd->num_vox;
 
     /* PASS 2 - Compute gradient */
@@ -2940,7 +2940,7 @@ bspline_score_k_mi (
     }
 
     /* Compute score */
-    ssd->smetric[0] = mi_hist->compute_score (ssd->num_vox);
+    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);
@@ -3002,7 +3002,7 @@ bspline_score_l_mi (
     }
 
     /* Compute score */
-    ssd->smetric[bst->sm] = mi_hist->compute_score (ssd->num_vox);
+    ssd->curr_smetric = mi_hist->compute_score (ssd->num_vox);
 
     /* Create/initialize bspline_loop_user (PASS 2) */
     Bspline_mi_k_pass_2 blu2 (bod);

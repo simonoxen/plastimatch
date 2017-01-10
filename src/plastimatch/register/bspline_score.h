@@ -16,15 +16,18 @@ public:
     Bspline_score ();
     ~Bspline_score ();
 public:
-    float score;           /* Total Score (sent to optimizer) */
+    float total_score;     /* Total Score (sent to optimizer) */
+    float* total_grad;     /* Total cost function gradient */
+
     float lmetric;         /* Landmark metric */
     float rmetric;         /* Regularization metric */
     std::vector<float> smetric;  /* Similarity metric */
 
     plm_long num_vox;      /* Number of voxel with correspondence */
     plm_long num_coeff;    /* Size of gradient vector = num coefficents */
-    float* smetric_grad;   /* Gradient of score for current smetric */
-    float* total_grad;     /* Total cost function gradient wrt coefficients */
+
+    float curr_smetric;         /* Current smetric value */
+    float* curr_smetric_grad;   /* Gradient of score for current smetric */
 
     /* Time to compute similarity metric */
     std::vector<double> time_smetric;
@@ -34,7 +37,7 @@ public:
     void set_num_coeff (plm_long num_coeff);
     void reset_smetric_grad ();
     void reset_score ();
-    void accumulate_grad (float lambda);
+    void accumulate (float lambda);
     void update_smetric_grad (
         const Bspline_xform* bxf, 
         const plm_long p[3],
