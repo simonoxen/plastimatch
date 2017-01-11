@@ -55,7 +55,7 @@ bspline_optimize_steepest_trace (
     // GCS FIX: I'm pretty sure the below makes no sense.
     // JAS 04.19.2010
     // For Testing...
-    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
+    if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }
@@ -237,7 +237,7 @@ bspline_optimize_steepest_trust (
     // GCS FIX: I'm pretty sure the below makes no sense.
     // JAS 04.19.2010
     // For testing...
-    if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
+    if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         alpha = 1.0f;
         printf ("Using alpha_0 (%f)\n", alpha);
     }

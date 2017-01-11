@@ -6,12 +6,12 @@
 
 #include "plmregister_config.h"
 #include "itk_image_type.h"
+#include "metric_state.h"
 #include "plm_image.h"
 #include "pointset.h"
 #include "registration_parms.h"
 #include "registration_similarity_data.h"
 #include "smart_pointer.h"
-#include "stage_similarity_data.h"
 
 class Plm_image;
 class Registration_data_private;
@@ -83,7 +83,7 @@ public:
 };
 
 void populate_similarity_list (
-    std::list<Stage_similarity_data::Pointer>& similarity_data,
+    std::list<Metric_state::Pointer>& similarity_data,
     Registration_data *regd,
     const Stage_parms *stage
 );

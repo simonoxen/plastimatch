@@ -10,7 +10,7 @@
 float
 translation_mse (
     const Stage_parms *stage,
-    const Stage_similarity_data::Pointer& ssi,
+    const Metric_state::Pointer& ssi,
     const float dxyz[3]);
 
 #endif

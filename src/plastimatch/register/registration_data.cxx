@@ -286,12 +286,14 @@ Registration_data::get_auto_parms ()
 }
 
 void populate_similarity_list (
-    std::list<Stage_similarity_data::Pointer>& similarity_data,
+    std::list<Metric_state::Pointer>& similarity_data,
     Registration_data *regd,
     const Stage_parms *stage
 )
 {
     const Shared_parms *shared = stage->get_shared_parms();
+
+    printf ("HELLO\n");
 
     /* Clear out the list */
     similarity_data.clear ();
@@ -307,7 +309,7 @@ void populate_similarity_list (
         Volume::Pointer& fixed = fixed_image->get_volume_float ();
         Volume::Pointer& moving = moving_image->get_volume_float ();
 
-        Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
+        Metric_state::Pointer ssi = Metric_state::New();
 
         /* Subsample images */
         ssi->fixed_ss = registration_resample_volume (

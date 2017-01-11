@@ -31,7 +31,7 @@
 class Translation_grid_search
 {
 public:
-    std::list<Stage_similarity_data::Pointer> similarity_data;
+    std::list<Metric_state::Pointer> similarity_data;
     
     float (*translation_score) (
         const Stage_parms *stage, const Volume::Pointer& fixed,
@@ -189,12 +189,12 @@ Translation_grid_search::do_score (
     lprintf ("[%g %g %g]",
         dxyz[0], dxyz[1], dxyz[2]);
 
-    std::list<Stage_similarity_data::Pointer>::iterator it;
+    std::list<Metric_state::Pointer>::iterator it;
     float acc_score = 0.f;
     for (it = this->similarity_data.begin(); 
          it != this->similarity_data.end(); ++it)
     {
-        const Stage_similarity_data::Pointer& ssi = *it;
+        const Metric_state::Pointer& ssi = *it;
         float score = 0.f;
         switch (ssi->metric_type) {
         case SIMILARITY_METRIC_MSE:

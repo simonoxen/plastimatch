@@ -91,22 +91,28 @@ main (int argc, char* argv[])
 
     /* Initialize Bspline_optimize data structure */
     Bspline_optimize bod;
-    bod.initialize (bxf, parms);
-    
-    /* Load images */
-    Stage_similarity_data::Pointer sim = parms->similarity_data.front ();
-    sim->fixed_ss.reset (fixed);
-    sim->moving_ss.reset (moving);
+    Bspline_state *bst = bod.get_bspline_state();
+
+    /* Set up Metric_state */
+    Metric_state::Pointer ms = Metric_state::New ();
+    ms->metric_type = options.metric_type;
+    printf ("Metric type %d\n", ms->metric_type);
+    ms->metric_lambda = 1.f;
+    ms->fixed_ss.reset (fixed);
+    ms->moving_ss.reset (moving);
+    bst->similarity_data.push_back (ms);
 
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
 
     printf ("Making gradient\n");
-    moving_grad = volume_make_gradient (sim->moving_ss.get());
-    sim->moving_grad.reset (moving_grad);
+    moving_grad = volume_make_gradient (ms->moving_ss.get());
+    ms->moving_grad.reset (moving_grad);
 
     /* Run the optimization */
     printf ("Running optimization.\n");
+    bod.set_bspline_parms (parms);
+    bod.set_bspline_xform (bxf);
     bod.optimize ();
     printf ("Done running optimization.\n");
 

@@ -22,7 +22,7 @@
 float
 translation_mi (
     const Stage_parms *stage,
-    const Stage_similarity_data::Pointer& ssi,
+    const Metric_state::Pointer& ssi,
     const float dxyz[3])
 {
     Volume *fixed = ssi->fixed_ss.get();

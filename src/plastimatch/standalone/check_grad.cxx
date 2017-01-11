@@ -93,10 +93,11 @@ check_gradient (
     Bspline_optimize bod;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
+    Bspline_state *bst = bod.get_bspline_state ();
 
     /* Fixate images into bspline parms */
-    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
-    parms->similarity_data.push_back (sim);
+    Metric_state::Pointer sim = Metric_state::New();
+    bst->similarity_data.push_back (sim);
     parms->implementation = options->bsp_implementation;
     sim->fixed_ss.reset (fixed);
     sim->moving_ss.reset (moving);
@@ -142,8 +143,8 @@ check_gradient (
             }
         }
     }
-    bod.initialize (bxf, parms);
-    Bspline_state *bst = bod.get_bspline_state ();
+    bod.set_bspline_xform (bxf);
+    bod.set_bspline_parms (parms);
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);

@@ -1,19 +1,19 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _stage_similarity_data_h_
-#define _stage_similarity_data_h_
+#ifndef _metric_state_h_
+#define _metric_state_h_
 
 #include "plmregister_config.h"
 #include "similarity_metric_type.h"
 #include "volume.h"
 
-class PLMREGISTER_API Stage_similarity_data
+class PLMREGISTER_API Metric_state
 {
 public:
-    SMART_POINTER_SUPPORT (Stage_similarity_data);
+    SMART_POINTER_SUPPORT (Metric_state);
 public:
-    Stage_similarity_data () {
+    Metric_state () {
         metric_type = SIMILARITY_METRIC_MSE;
         metric_lambda = 1.f;
     }

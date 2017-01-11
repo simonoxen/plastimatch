@@ -198,7 +198,7 @@ bspline_save_debug_state (
         fn = parms->debug_dir + "/" + buf;
         bxf->save (fn.c_str());
 
-        if (parms->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
+        if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
             bst->mi_hist->dump_hist (bst->feval, fn);
@@ -357,12 +357,12 @@ report_score (
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
     if (reg_parms->lambda > 0
         || blm->num_landmarks > 0
-        || parms->similarity_data.size() > 1)
+        || bst->similarity_data.size() > 1)
     {
         logfile_printf ("SCORE ");
     } else {
         logfile_printf ("%-6s", 
-            parms->similarity_data.front()->metric_string());
+            bst->similarity_data.front()->metric_string());
     }
     logfile_print_score (ssd->total_score);
     logfile_printf (
@@ -372,7 +372,7 @@ report_score (
     /* Second line */
     if (reg_parms->lambda > 0
         || blm->num_landmarks > 0
-        || parms->similarity_data.size() > 1)
+        || bst->similarity_data.size() > 1)
     {
         logfile_printf ("         ");
         /* Part 1 - smetric(s) */
@@ -380,8 +380,8 @@ report_score (
            and the other is a vector. */
         std::vector<Metric_score>::const_iterator it_mr 
             = ssd->metric_record.begin();
-        std::list<Stage_similarity_data::Pointer>::const_iterator it_st
-            = parms->similarity_data.begin();
+        std::list<Metric_state::Pointer>::const_iterator it_st
+            = bst->similarity_data.begin();
         while (it_mr != ssd->metric_record.end()) {
             logfile_printf ("%-6s", (*it_st)->metric_string());
             logfile_print_score (it_mr->score);
@@ -429,10 +429,10 @@ bspline_score (Bspline_optimize *bod)
 
     /* Compute similarity metric.  This is done for each image plane, 
        and each similarity metric within each image plane. */
-    std::list<Stage_similarity_data::Pointer>::const_iterator it_sd;
+    std::list<Metric_state::Pointer>::const_iterator it_sd;
     bst->sm = 0;
-    for (it_sd = parms->similarity_data.begin();
-         it_sd != parms->similarity_data.end(); ++it_sd)
+    for (it_sd = bst->similarity_data.begin();
+         it_sd != bst->similarity_data.end(); ++it_sd)
     {
         bst->fixed = (*it_sd)->fixed_ss.get();
         bst->moving = (*it_sd)->moving_ss.get();

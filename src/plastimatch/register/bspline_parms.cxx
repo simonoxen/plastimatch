@@ -50,20 +50,6 @@ Bspline_parms::~Bspline_parms ()
     delete this->reg_parms;
 }
 
-bool
-Bspline_parms::has_metric_type (Similarity_metric_type metric_type)
-{
-    std::list<Stage_similarity_data::Pointer>::iterator it;
-    for (it = this->similarity_data.begin();
-         it != this->similarity_data.end(); ++it)
-    {
-        if ((*it)->metric_type == metric_type) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void
 Bspline_parms::log ()
 {

@@ -66,6 +66,7 @@ set (PLMREGISTER_LIBRARY_SRC
   joint_histogram.cxx joint_histogram.h
   landmark_warp.cxx landmark_warp.h
   metric_parms.cxx metric_parms.h 
+  metric_state.h
   process_parms.cxx process_parms.h
   rbf_cluster.cxx rbf_cluster.h
   rbf_gauss.cxx rbf_gauss.h
@@ -78,7 +79,6 @@ set (PLMREGISTER_LIBRARY_SRC
   shared_parms.cxx shared_parms.h
   similarity_metric_type.cxx similarity_metric_type.h
   stage_parms.cxx stage_parms.h
-  stage_similarity_data.h
   translation_grid_search.cxx translation_grid_search.h 
   translation_mi.cxx translation_mi.h 
   translation_mse.cxx translation_mse.h 

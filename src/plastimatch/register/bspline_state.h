@@ -5,13 +5,14 @@
 #define _bspline_state_h_
 
 #include "plmregister_config.h"
+#include <list>
 #include <string>
 
 #include "bspline_regularize.h"
 #include "bspline_score.h"
+#include "metric_state.h"
 #include "plm_int.h"
 #include "smart_pointer.h"
-#include "stage_similarity_data.h"
 
 class Bspline_state_private;
 class Bspline_parms;
@@ -31,9 +32,10 @@ public:
     Bspline_score ssd;              /* Score and Gradient  */
     void* dev_ptrs;                 /* GPU Device Pointers */
 
+    /* Similarity metric */
+    std::list<Metric_state::Pointer> similarity_data;
+
     /*! \brief Current similarity images */
-    /* GCS FIX.  These can be replaced with Stage_similarity_data 
-       if nvcc can be made to use a c++ compiler */
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;
@@ -48,6 +50,8 @@ public:
     Bspline_score* get_bspline_score () {
         return &ssd;
     }
+    bool has_metric_type (Similarity_metric_type metric_type);
+    void log_metric ();
 };
 
 #endif
