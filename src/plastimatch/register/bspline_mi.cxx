@@ -915,7 +915,7 @@ bspline_score_i_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     long pidx;
     float num_vox_f;
 
@@ -1239,7 +1239,7 @@ bspline_score_h_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1512,7 +1512,7 @@ bspline_score_g_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     float diff;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1760,7 +1760,7 @@ bspline_score_f_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     int pidx;
     float num_vox_f;
 
@@ -2052,7 +2052,7 @@ bspline_score_e_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     long pidx;
     float num_vox_f;
 
@@ -2387,7 +2387,7 @@ bspline_score_d_mi (
     Volume *moving = bst->moving;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     plm_long rijk[3];
     float diff;
     float* f_img = (float*) fixed->img;
@@ -2669,7 +2669,7 @@ bspline_score_c_mi (
     Volume *moving_roi = bst->moving_roi;
 
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     //plm_long rijk[3];
     plm_long fijk[3], fidx;
     float mijk[3];
@@ -2897,7 +2897,7 @@ bspline_score_k_mi (
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
 
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
@@ -2959,7 +2959,7 @@ bspline_score_l_mi (
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_score* ssd = &bst->ssd;
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
 
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;

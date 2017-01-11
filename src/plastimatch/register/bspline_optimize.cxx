@@ -110,18 +110,8 @@ Bspline_optimize::optimize (
     bxf->log_header ();
     bst->log_metric ();
 
-    /* GCS FIX -- this should move into Bspline_state() constructor */
     /* Initialize histograms */
-    /* GCS DOUBLE FIX -- normally this can be done once before the 
-       first iteration.  But if e.g. there are two MI metrics, 
-       we need two of these structures.  Perhaps it belongs in 
-       Stage_similarity_data. */
-    if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
-        printf (">> Performing JH initialization\n");
-        bst->mi_hist->initialize (
-            bst->similarity_data.front()->fixed_ss.get(),
-            bst->similarity_data.front()->moving_ss.get());
-    }
+    bst->initialize_mi_histograms ();
 
     /* Do the optimization */
     bspline_optimize_select (this);

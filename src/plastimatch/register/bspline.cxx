@@ -201,7 +201,7 @@ bspline_save_debug_state (
         if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
             sprintf (buf, "%02d_", parms->debug_stage);
             fn = parms->debug_dir + "/" + buf;
-            bst->mi_hist->dump_hist (bst->feval, fn);
+            bst->get_mi_hist()->dump_hist (bst->feval, fn);
         }
     }
 }
@@ -434,11 +434,7 @@ bspline_score (Bspline_optimize *bod)
     for (it_sd = bst->similarity_data.begin();
          it_sd != bst->similarity_data.end(); ++it_sd)
     {
-        bst->fixed = (*it_sd)->fixed_ss.get();
-        bst->moving = (*it_sd)->moving_ss.get();
-        bst->moving_grad = (*it_sd)->moving_grad.get();
-        bst->fixed_roi = (*it_sd)->fixed_roi.get();
-        bst->moving_roi = (*it_sd)->moving_roi.get();
+        bst->set_metric_state (*it_sd);
         bst->initialize_similarity_images ();
         Plm_timer timer;
         timer.start ();
@@ -462,13 +458,15 @@ bspline_score (Bspline_optimize *bod)
         bst->ssd.metric_record.push_back (
             Metric_score (bst->ssd.curr_smetric, timer.report (),
                 bst->ssd.curr_num_vox));
-
+#if defined (commentout)
         printf (">> %f + %f * %f ->",
             bst->ssd.total_score, (*it_sd)->metric_lambda, 
             bst->ssd.curr_smetric);
+#endif
         bst->ssd.accumulate ((*it_sd)->metric_lambda);
+#if defined (commentout)
         printf (" %f\n", bst->ssd.total_score);
-
+#endif
         bst->sm ++;
     }
 

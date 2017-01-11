@@ -156,9 +156,7 @@ check_gradient (
         x[i] = bxf->coeff[i];
     }
 
-    if (sim->metric_type == SIMILARITY_METRIC_MI_MATTES) {
-        bst->mi_hist->initialize (fixed, moving);
-    }
+    bst->initialize_mi_histograms ();
 
     /* Get score and gradient */
     bspline_score (&bod);

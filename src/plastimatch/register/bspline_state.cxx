@@ -74,7 +74,6 @@ Bspline_state::~Bspline_state ()
 {
     bspline_cuda_state_destroy (d_ptr->parms, this, d_ptr->bxf);
     delete d_ptr;
-    delete mi_hist;
 }
 
 void
@@ -104,12 +103,18 @@ Bspline_state::initialize (
 
     /* Initialize MI histograms */
     printf (">> Checking JH allocation\n");
-    if (this->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
-        printf (">> Performing JH allocation\n");
-        this->mi_hist = new Joint_histogram (
-            parms->mi_hist_type,
-            parms->mi_hist_fixed_bins,
-            parms->mi_hist_moving_bins);
+    std::list<Metric_state::Pointer>::const_iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        const Metric_state::Pointer& ms = *it;
+        if (ms->metric_type == SIMILARITY_METRIC_MI_MATTES) {
+            printf (">> Performing JH allocation\n");
+            ms->mi_hist = new Joint_histogram (
+                parms->mi_hist_type,
+                parms->mi_hist_fixed_bins,
+                parms->mi_hist_moving_bins);
+        }
     }
 
     /* Landmarks */
@@ -125,6 +130,34 @@ Bspline_state::initialize_similarity_images ()
      */
     /* Copy images into CUDA memory */
     bspline_cuda_state_create (d_ptr->parms, this, d_ptr->bxf);
+}
+
+void
+Bspline_state::initialize_mi_histograms ()
+{
+    std::list<Metric_state::Pointer>::const_iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        const Metric_state::Pointer& ms = *it;
+        if (ms->metric_type == SIMILARITY_METRIC_MI_MATTES) {
+            printf (">> Performing JH initialization\n");
+            ms->mi_hist->initialize (
+                ms->fixed_ss.get(),
+                ms->moving_ss.get());
+        }
+    }
+}
+
+void 
+Bspline_state::set_metric_state (const Metric_state::Pointer& ms)
+{
+    this->fixed = ms->fixed_ss.get();
+    this->moving = ms->moving_ss.get();
+    this->moving_grad = ms->moving_grad.get();
+    this->fixed_roi = ms->fixed_roi.get();
+    this->moving_roi = ms->moving_roi.get();
+    this->mi_hist = ms->mi_hist;
 }
 
 static void

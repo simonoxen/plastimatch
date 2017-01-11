@@ -8,15 +8,15 @@
 #include "similarity_metric_type.h"
 #include "volume.h"
 
+class Joint_histogram;
+
 class PLMREGISTER_API Metric_state
 {
 public:
     SMART_POINTER_SUPPORT (Metric_state);
 public:
-    Metric_state () {
-        metric_type = SIMILARITY_METRIC_MSE;
-        metric_lambda = 1.f;
-    }
+    Metric_state ();
+    ~Metric_state ();
 public:
     Volume::Pointer fixed_ss;
     Volume::Pointer moving_ss;
@@ -27,6 +27,9 @@ public:
 
     Similarity_metric_type metric_type;
     float metric_lambda;
+
+    Joint_histogram *mi_hist;
+
 public:
     const char *metric_string () {
         return similarity_metric_type_string (metric_type);

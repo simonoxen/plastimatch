@@ -620,7 +620,7 @@ CUDA_bspline_mi_a (
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
