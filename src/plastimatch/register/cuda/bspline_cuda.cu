@@ -78,7 +78,7 @@ CUDA_bspline_mi_init_a (
     Volume* moving_grad
 )
 {
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
 
     // Keep track of how much memory we allocated in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
@@ -1158,7 +1158,7 @@ CUDA_bspline_mi_grad (
     Dev_Pointers_Bspline *dev_ptrs
 )
 {
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
 
