@@ -34,12 +34,14 @@ Dcmtk_module::set_general_study (
         rsm->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
         rsm->get_study_time());
-    dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
+    dataset->putAndInsertString (DCM_ReferringPhysicianName, 
+        rsm->get_referring_physician_name());
     dcmtk_copy_from_metadata (dataset, rsm->get_study_metadata(), 
         DCM_StudyID, "");
-    dataset->putAndInsertOFStringArray (DCM_AccessionNumber, "");
-    dcmtk_copy_from_metadata (dataset, rsm->get_study_metadata (),
-        DCM_StudyDescription, "");
+    dataset->putAndInsertString (DCM_AccessionNumber,rsm->get_accession_number() );
+    dataset->putAndInsertString (DCM_StudyDescription,rsm->get_study_description() );
+    // dcmtk_copy_from_metadata (dataset, rsm->get_study_metadata (),
+    //     DCM_StudyDescription, "");
     dataset->putAndInsertOFStringArray (DCM_StudyID, 
         rsm->get_study_id());
  }
@@ -75,10 +77,11 @@ Dcmtk_module::set_general_equipment (DcmDataset *dataset,
     const Metadata::Pointer& meta)
 {
     dcmtk_copy_from_metadata (dataset, meta, DCM_Manufacturer, "Plastimatch");
-    dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
+    //dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_StationName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_ManufacturerModelName,
         "Plastimatch");
+    dcmtk_copy_from_metadata (dataset, meta, DCM_DeviceSerialNumber, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_SoftwareVersions,
         PLASTIMATCH_VERSION_STRING);
 }

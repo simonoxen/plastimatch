@@ -25,16 +25,27 @@ public:
     std::string snout_id;
     std::string general_accessory_id;
     std::string general_accessory_code;
+    std::string number_of_range_shifters;
     std::string range_shifter_id;
+    std::string range_shifter_number;
     std::string range_shifter_code;
+    std::string range_shifter_type;
     std::string range_modulator_id;
     std::string range_modulator_code;
+    std::string patient_support_id;    
+    std::string patient_support_accessory_code;
+    std::string rt_plan_label;
+    std::string rt_plan_name;
+    std::string rt_plan_date;
+    std::string rt_plan_time;
     std::string tolerance_table_label;
     std::string tolerance_gantry_angle;
     std::string tolerance_patient_support_angle;
     std::string tolerance_table_top_vertical;
     std::string tolerance_table_top_longitudinal;
     std::string tolerance_table_top_lateral;
+    std::string tolerance_table_top_pitch;
+    std::string tolerance_table_top_roll;
     std::string tolerance_snout_position;
     std::vector<Rtplan_beam*> beamlist;
 public:

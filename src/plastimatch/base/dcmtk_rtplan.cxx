@@ -190,17 +190,18 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     /* Frame of reference module */
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
         rsm->get_frame_of_reference_uid());
-    dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
+    dataset->putAndInsertString (DCM_PositionReferenceIndicator, 
+	rsm->get_position_reference_indicator());
 
     /* General equipment module */
     Dcmtk_module::set_general_equipment (dataset,rtplan_metadata);
 
     /* RT general plan module */
-    dataset->putAndInsertString (DCM_RTPlanLabel, "TESTONLY");
-    dataset->putAndInsertString (DCM_RTPlanName, "TESTONLY");
-    dataset->putAndInsertString (DCM_RTPlanDescription, "This is only a test");
-    dataset->putAndInsertString (DCM_RTPlanDate, "");
-    dataset->putAndInsertString (DCM_RTPlanTime, "");
+    dataset->putAndInsertString (DCM_RTPlanLabel,  rtplan->rt_plan_label.c_str());
+    dataset->putAndInsertString (DCM_RTPlanName, rtplan->rt_plan_name.c_str());
+    //dataset->putAndInsertString (DCM_RTPlanDescription, "This is only a test");
+    dataset->putAndInsertString (DCM_RTPlanDate, rtplan->rt_plan_date.c_str());
+    dataset->putAndInsertString (DCM_RTPlanTime, rtplan->rt_plan_time.c_str());
 
     /* GCS TODO: Add support for PATIENT at some point */
     // dataset->putAndInsertString (DCM_RTPlanGeometry, "PATIENT");
@@ -212,11 +213,11 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTIonPlanStorage);
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
         d_ptr->rt_study_metadata->get_dose_instance_uid());
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
+    dataset->putAndInsertString(DCM_InstanceCreationDate, 
         d_ptr->rt_study_metadata->get_study_date());
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, 
+    dataset->putAndInsertString(DCM_InstanceCreationTime, 
         d_ptr->rt_study_metadata->get_study_time());
-
+ 
     /* RT prescription module * GCS TODO */
         
     /* RT tolerance tables */
@@ -237,6 +238,10 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             rtplan->tolerance_table_top_longitudinal);
         dcmtk_put (iots_item, DCM_TableTopLateralPositionTolerance,
             rtplan->tolerance_table_top_lateral);
+        dcmtk_put (iots_item, DCM_TableTopPitchAngleTolerance,
+            rtplan->tolerance_table_top_pitch);
+        dcmtk_put (iots_item, DCM_TableTopRollAngleTolerance,
+            rtplan->tolerance_table_top_roll);
         dcmtk_put (iots_item, DCM_SnoutPositionTolerance,
             rtplan->tolerance_snout_position);
     }
@@ -253,7 +258,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         DcmItem *rbs_item = 0;
         fgs_item->findOrCreateSequenceItem (
             DCM_ReferencedBeamSequence, rbs_item, -2);
-        dcmtk_put (rbs_item, DCM_ReferencedBeamNumber, b);
+        dcmtk_put (rbs_item, DCM_ReferencedBeamNumber, b+1);
         Rtplan_beam *beam = rtplan->beamlist[b];
         dcmtk_put (rbs_item, DCM_BeamMeterset, 
             beam->final_cumulative_meterset_weight);
@@ -269,7 +274,7 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         DcmItem *ib_item = 0;
         dataset->findOrCreateSequenceItem (
             DCM_IonBeamSequence, ib_item, -2);
-        s = PLM_to_string (b);
+        s = PLM_to_string (b+1);
         ib_item->putAndInsertString (DCM_BeamNumber, s.c_str());
 
         Rtplan_beam *beam = rtplan->beamlist[b];
@@ -285,13 +290,23 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             "STATIONARY");
 #endif
         ib_item->putAndInsertString (DCM_TreatmentMachineName,
-            "Reference machine");
+	    beam->treatment_machine_name.c_str());
+        ib_item->putAndInsertString (DCM_Manufacturer,
+	    beam->manufacturer.c_str());
+        ib_item->putAndInsertString (DCM_InstitutionName,
+	    beam->institution_name.c_str());
+        ib_item->putAndInsertString (DCM_InstitutionAddress,
+	    beam->institution_address.c_str());
+        ib_item->putAndInsertString (DCM_InstitutionalDepartmentName,
+	    beam->institutional_department_name.c_str());
+        ib_item->putAndInsertString (DCM_ManufacturerModelName,
+	    beam->manufacturer_model_name.c_str());
         ib_item->putAndInsertString (DCM_PrimaryDosimeterUnit, "NP");
         if (rtplan->tolerance_table_label != "") {
             dcmtk_put (ib_item, DCM_ReferencedToleranceTableNumber, 0);
         }
         ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances,
-            "2000\\2000");
+	    beam->virtual_source_axis_distances.c_str());
         ib_item->putAndInsertString (DCM_TreatmentDeliveryType, "TREATMENT");
         ib_item->putAndInsertString (DCM_NumberOfWedges, "0");
         ib_item->putAndInsertString (DCM_NumberOfCompensators, "0");
@@ -318,11 +333,14 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             DcmItem *rs_item = 0;
             ib_item->findOrCreateSequenceItem (
                 DCM_RangeShifterSequence, rs_item, -2);
-            rs_item->putAndInsertString (DCM_RangeShifterNumber, "0");
+            rs_item->putAndInsertString (DCM_RangeShifterNumber, 
+                rtplan->range_shifter_number.c_str());
             rs_item->putAndInsertString (DCM_RangeShifterID,
                 rtplan->range_shifter_id.c_str());
             rs_item->putAndInsertString (DCM_AccessoryCode,
                 rtplan->range_shifter_code.c_str());
+            rs_item->putAndInsertString (DCM_RangeShifterType,
+                rtplan->range_shifter_type.c_str());
         }
         if (rtplan->range_modulator_id != "") {
             DcmItem *rm_item = 0;
@@ -334,10 +352,15 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             rm_item->putAndInsertString (DCM_AccessoryCode,
                 rtplan->range_modulator_code.c_str());
         }
-        ib_item->putAndInsertString (DCM_NumberOfRangeShifters, "0");
-        ib_item->putAndInsertString (DCM_NumberOfLateralSpreadingDevices, "0");
+        ib_item->putAndInsertString (DCM_NumberOfRangeShifters, 
+	    rtplan->number_of_range_shifters.c_str());
+        ib_item->putAndInsertString (DCM_NumberOfLateralSpreadingDevices,"0"); 
         ib_item->putAndInsertString (DCM_NumberOfRangeModulators, "0");
         ib_item->putAndInsertString (DCM_PatientSupportType, "TABLE");
+        ib_item->putAndInsertString (DCM_PatientSupportID, 
+            rtplan->patient_support_id.c_str());
+        ib_item->putAndInsertString (DCM_PatientSupportAccessoryCode, 
+            rtplan->patient_support_accessory_code.c_str());
         dcmtk_put (ib_item, DCM_FinalCumulativeMetersetWeight,
             beam->final_cumulative_meterset_weight);
 
@@ -354,19 +377,52 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
             cp_item->putAndInsertString (DCM_CumulativeMetersetWeight,
                 s.c_str());
 	    if (c == 0) {
-                dcmtk_put (cp_item, DCM_SnoutPosition, 
-                    beam->snout_position);
+                s = PLM_to_string (beam->snout_position);
+                cp_item->putAndInsertString (DCM_SnoutPosition, s.c_str());
+                s = PLM_to_string (beam->gantry_angle);
+                cp_item->putAndInsertString (DCM_GantryAngle, s.c_str());
+                cp_item->putAndInsertString (DCM_GantryRotationDirection,
+                    beam->gantry_rotation_direction.c_str());
+                s = PLM_to_string (beam->gantry_pitch_angle);
+	        cp_item->putAndInsertString (DCM_GantryPitchAngle, s.c_str());
+	        cp_item->putAndInsertString (DCM_GantryPitchRotationDirection, 
+	            beam-> gantry_pitch_rotation_direction.c_str());		
+                s = PLM_to_string (beam->beam_limiting_device_angle);
+	        cp_item->putAndInsertString (DCM_BeamLimitingDeviceAngle, s.c_str());
+	        cp_item->putAndInsertString (DCM_BeamLimitingDeviceRotationDirection, 
+	            beam-> beam_limiting_device_rotation_direction.c_str());
+                s = PLM_to_string (beam->patient_support_angle);
+	        cp_item->putAndInsertString (DCM_PatientSupportAngle, s.c_str());
+	        cp_item->putAndInsertString (DCM_PatientSupportRotationDirection, 
+	            beam-> patient_support_rotation_direction.c_str());
+                s = PLM_to_string (beam->table_top_vertical_position);
+	        cp_item->putAndInsertString (DCM_TableTopVerticalPosition, s.c_str());
+                s = PLM_to_string (beam->table_top_longitudinal_position);
+	        cp_item->putAndInsertString (DCM_TableTopLongitudinalPosition, s.c_str());
+                s = PLM_to_string (beam->table_top_lateral_position);
+	        cp_item->putAndInsertString (DCM_TableTopLateralPosition, s.c_str());
+                s = PLM_to_string (beam->table_top_pitch_angle);
+	        cp_item->putAndInsertString (DCM_TableTopPitchAngle, s.c_str());
+	        cp_item->putAndInsertString (DCM_TableTopPitchRotationDirection, 
+	            beam-> table_top_pitch_rotation_direction.c_str());
+                s = PLM_to_string (beam->table_top_roll_angle);
+	        cp_item->putAndInsertString (DCM_TableTopRollAngle, s.c_str());
+	        cp_item->putAndInsertString (DCM_TableTopRollRotationDirection, 
+	            beam-> table_top_roll_rotation_direction.c_str());
+		s = string_format ("%f\\%f\\%f", 
+		    beam->isocenter_position[0],
+		    beam->isocenter_position[1],
+		    beam->isocenter_position[2]);
+	        cp_item->putAndInsertString (DCM_IsocenterPosition, s.c_str());		
 	    }
             s = PLM_to_string (cp->nominal_beam_energy);
             cp_item->putAndInsertString (DCM_NominalBeamEnergy, s.c_str());
-            s = PLM_to_string (cp->gantry_angle);
-            cp_item->putAndInsertString (DCM_GantryAngle, s.c_str());
-            cp_item->putAndInsertString (DCM_GantryRotationDirection,
-                cp->gantry_rotation_direction.c_str());
+
             s = PLM_to_string (cp->number_of_paintings);
             cp_item->putAndInsertString (DCM_NumberOfPaintings,
                 s.c_str());
-	    cp_item->putAndInsertString (DCM_ScanSpotTuneID, cp->scan_spot_tune_id.c_str());
+	    cp_item->putAndInsertString (DCM_ScanSpotTuneID, 
+                cp->scan_spot_tune_id.c_str());
             s = string_format ("%f\\%f", cp->scanning_spot_size[0],
                 cp->scanning_spot_size[1]);
             cp_item->putAndInsertString (DCM_ScanningSpotSize,

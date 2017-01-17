@@ -27,8 +27,27 @@ Rtplan_beam::clear()
 {  
     this->name = "";
     this->description = "";
+    this->treatment_machine_name = "";
     this->final_cumulative_meterset_weight = 0.f;
     this->snout_position = 0.f;
+    this->gantry_angle = 0.f;
+    this->gantry_rotation_direction = "NONE";
+    this->beam_limiting_device_angle = 0.f;
+    this->beam_limiting_device_rotation_direction = "NONE";
+    this->patient_support_angle = 0.f;
+    this->patient_support_rotation_direction = "NONE";
+    this->table_top_vertical_position = 0.f;
+    this->table_top_longitudinal_position = 0.f;
+    this->table_top_lateral_position = 0.f;
+    this->table_top_pitch_angle = 0.f;
+    this->table_top_pitch_rotation_direction = "NONE";
+    this->table_top_roll_angle = 0.f;
+    this->table_top_roll_rotation_direction = "NONE";
+    this->gantry_pitch_angle = 0.f;
+    this->gantry_pitch_rotation_direction = "NONE";
+    this->isocenter_position[0] = 0.f;
+    this->isocenter_position[1] = 0.f;
+    this->isocenter_position[2] = 0.f;
 
     for (size_t i = 0; i < this->cplist.size(); i++) {
         delete this->cplist[i];
