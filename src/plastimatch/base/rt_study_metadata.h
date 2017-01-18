@@ -38,12 +38,12 @@ public:
 public:
     const char* get_ct_series_uid () const;
     void set_ct_series_uid (const char* uid);
-    const char* get_dose_instance_uid () const;
+    const std::string& get_dose_instance_uid () const;
     const char* get_dose_series_uid () const;
     const char* get_frame_of_reference_uid () const;
     void set_frame_of_reference_uid (const char* uid);
     const char* get_plan_instance_uid () const;
-    const char* get_rtstruct_instance_uid () const;
+    const std::string& get_rtstruct_instance_uid () const;
     const char* get_rtstruct_series_uid () const;
 
     const char* get_position_reference_indicator () const;

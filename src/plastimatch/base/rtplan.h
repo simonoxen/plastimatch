@@ -22,6 +22,7 @@ public:
     SMART_POINTER_SUPPORT(Rtplan);
 public:
     size_t number_of_fractions_planned;
+    std::string patient_position;
     std::string snout_id;
     std::string general_accessory_id;
     std::string general_accessory_code;

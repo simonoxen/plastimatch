@@ -116,10 +116,10 @@ Rt_study_metadata::set_ct_series_uid (const char* uid)
     d_ptr->ct_series_uid = uid;
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_dose_instance_uid () const
 {
-    return d_ptr->dose_instance_uid.c_str();
+    return d_ptr->dose_instance_uid;
 }
 
 const char*
@@ -147,10 +147,10 @@ Rt_study_metadata::get_plan_instance_uid () const
     return d_ptr->plan_instance_uid.c_str();
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_rtstruct_instance_uid () const
 {
-    return d_ptr->rtstruct_instance_uid.c_str();
+    return d_ptr->rtstruct_instance_uid;
 }
 
 const char*

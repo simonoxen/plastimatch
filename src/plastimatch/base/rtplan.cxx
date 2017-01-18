@@ -37,6 +37,7 @@ void
 Rtplan::clear(void)
 {
     this->number_of_fractions_planned = 0;
+    this->patient_position = "HFS";
     this->snout_id = "";
     this->general_accessory_id = "";
     this->general_accessory_code = "";

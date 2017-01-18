@@ -203,16 +203,35 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertString (DCM_RTPlanDate, rtplan->rt_plan_date.c_str());
     dataset->putAndInsertString (DCM_RTPlanTime, rtplan->rt_plan_time.c_str());
 
-    /* GCS TODO: Add support for PATIENT at some point */
-    // dataset->putAndInsertString (DCM_RTPlanGeometry, "PATIENT");
-    dataset->putAndInsertString (DCM_RTPlanGeometry, "TREATMENT_DEVICE");
+    if (rsm->get_rtstruct_instance_uid() == "") {
+        dataset->putAndInsertString (DCM_RTPlanGeometry, "TREATMENT_DEVICE");
+    } else {
+        dataset->putAndInsertString (DCM_RTPlanGeometry, "PATIENT");
+        DcmItem *rsss_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_ReferencedStructureSetSequence, rsss_item, -2);
+        dcmtk_put (rsss_item, DCM_ReferencedSOPClassUID,
+            UID_RTStructureSetStorage);
+        dcmtk_put (rsss_item, DCM_ReferencedSOPInstanceUID,
+            rsm->get_rtstruct_instance_uid());
+    }
+
+    if (rsm->get_dose_instance_uid() != "") {
+        DcmItem *rds_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_ReferencedDoseSequence, rds_item, -2);
+        dcmtk_put (rds_item, DCM_ReferencedSOPClassUID,
+            UID_RTDoseStorage);
+        dcmtk_put (rds_item, DCM_ReferencedSOPInstanceUID,
+            rsm->get_dose_instance_uid());
+    }
 
     /* SOP common module */
     /* GCS TODO: Figure out whether to use Plan or Ion Plan */
     // dataset->putAndInsertString (DCM_SOPClassUID, UID_RTPlanStorage);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTIonPlanStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
-        d_ptr->rt_study_metadata->get_dose_instance_uid());
+    dcmtk_put (dataset, DCM_SOPInstanceUID, 
+        d_ptr->rt_study_metadata->get_plan_instance_uid());
     dataset->putAndInsertString(DCM_InstanceCreationDate, 
         d_ptr->rt_study_metadata->get_study_date());
     dataset->putAndInsertString(DCM_InstanceCreationTime, 
@@ -245,7 +264,14 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         dcmtk_put (iots_item, DCM_SnoutPositionTolerance,
             rtplan->tolerance_snout_position);
     }
-        
+
+    /* RT patient setup module */
+    DcmItem *ps_item = 0;
+    dataset->findOrCreateSequenceItem (
+        DCM_PatientSetupSequence, ps_item, -2);
+    dcmtk_put (ps_item, DCM_PatientSetupNumber, 1);
+    dcmtk_put (ps_item, DCM_PatientPosition, rtplan->patient_position);
+    
     /* RT fraction scheme module */
     DcmItem *fgs_item = 0;
     dataset->findOrCreateSequenceItem (
