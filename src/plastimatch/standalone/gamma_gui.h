@@ -58,6 +58,8 @@ public:
 
     QString ConvertMGHProtonDoseToMha(QString& strPathBinnary, VEC3D& fDim, VEC3D& fOrigin, VEC3D& fSpacing);
 
+	bool ConvertOPG2FloatMHA(QString& strFilePathOPG, QString& strFilePathMHA);
+
     public slots:        
         void SLT_Load_RD_Ref();
         void SLT_Load_RD_Comp();        
@@ -132,6 +134,7 @@ public:
         void SLTM_ExportBatchReport();
 
         void SLTM_LoadProtonDoseSetFile();       
+		void SLTM_ConvertIBAOPG_Files();
 
 public:    
     QStringList m_strlistPath_RD_Original_Ref; //RD files, before the conversion

@@ -1048,6 +1048,7 @@
      <string>Tool</string>
     </property>
     <addaction name="actionRename_RD_files"/>
+    <addaction name="actionConvert_IBA_OPG_files"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -1093,6 +1094,11 @@
   <action name="actionExport_Comp_Profile_as_RFA300">
    <property name="text">
     <string>Export Comp Profile as RFA300</string>
+   </property>
+  </action>
+  <action name="actionConvert_IBA_OPG_files">
+   <property name="text">
+    <string>Convert IBA OPG files</string>
    </property>
   </action>
  </widget>
@@ -1608,6 +1614,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionConvert_IBA_OPG_files</sender>
+   <signal>triggered()</signal>
+   <receiver>gamma_guiClass</receiver>
+   <slot>SLTM_ConvertIBAOPG_Files()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>604</x>
+     <y>430</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_Load_RD_Ref()</slot>
@@ -1630,5 +1652,6 @@
   <slot>SLTM_ExportBatchReport()</slot>
   <slot>SLTM_LoadProtonDoseSetFile()</slot>
   <slot>SLTM_ExportCompProfileRFA300_ASC()</slot>
+  <slot>SLTM_ConvertIBAOPG_Files()</slot>
  </slots>
 </ui>
