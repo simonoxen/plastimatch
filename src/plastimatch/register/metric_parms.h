@@ -7,21 +7,22 @@
 #include "plmregister_config.h"
 #include <string>
 #include <vector>
+#include "plm_return_code.h"
 #include "similarity_metric_type.h"
 
 class PLMREGISTER_API Metric_parms {
 public:
     Metric_parms ();
 public:
-    std::vector<Similarity_metric_type> metric_type;
-    std::vector<float> metric_lambda;
+    Similarity_metric_type metric_type;
+    float metric_lambda;
 
     std::string fixed_fn;
     std::string moving_fn;
     std::string fixed_roi_fn;
     std::string moving_roi_fn;
 public:
-    void set_metric_type (const std::string& val);
+    Plm_return_code set_metric_type (const std::string& val);
 };
 
 #endif

@@ -15,6 +15,7 @@
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_rtdose.h"
 #include "dcmtk_series.h"
+#include "dcmtk_util.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "plm_image.h"
@@ -330,7 +331,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 
     /* SOP common module */
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTDoseStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+    dcmtk_put (dataset, DCM_SOPInstanceUID, 
         d_ptr->rt_study_metadata->get_dose_instance_uid());
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, 
         d_ptr->rt_study_metadata->get_study_date());
@@ -473,7 +474,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
         DCM_ReferencedStructureSetSequence, dcm_item, -2);
     dcm_item->putAndInsertString (DCM_ReferencedSOPClassUID,
         UID_RTStructureSetStorage);
-    dcm_item->putAndInsertString (DCM_ReferencedSOPInstanceUID,
+    dcmtk_put (dcm_item, DCM_ReferencedSOPInstanceUID,
         d_ptr->rt_study_metadata->get_rtstruct_instance_uid());
 
     /* Convert image bytes to integer, then add to dataset */

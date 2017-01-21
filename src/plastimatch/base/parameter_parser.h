@@ -39,6 +39,7 @@ public:
     /*! \brief Choose what index is passed to set_key_value() 
       when no index is found in the file.  Default is "". */
     void set_default_index (std::string& default_index);
+    void set_default_index (const char *default_index);
 
     /* Return zero if config string is correctly parsed */
     Plm_return_code parse_config_string (

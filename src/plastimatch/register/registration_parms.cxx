@@ -10,12 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#if defined (_WIN32)
-// win32 directory stuff
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
 
 #include "logfile.h"
 #include "parameter_parser.h"
@@ -57,6 +51,7 @@ public:
     {
         this->rp = rp;
         this->enable_key_regularization (true);
+        this->set_default_index (DEFAULT_IMAGE_KEY);
     }
 public:
     virtual Plm_return_code begin_section (
@@ -477,17 +472,17 @@ Registration_parms::set_key_value (
     }
     else if (key == "metric" || key == "smetric") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        shared->metric[index].set_metric_type (val);
-        if (shared->metric[index].metric_type.size() == 0) {
+        if (shared->metric[index].set_metric_type (val) != PLM_SUCCESS) {
             goto error_exit;
         }
     }
     else if (key == "metric_lambda" || key == "smetric_lambda") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        shared->metric[index].metric_lambda = parse_float_string (val);
-        if (shared->metric[index].metric_lambda.size() == 0) {
+        float f;
+        if (sscanf (val.c_str(), "%f", &f) != 1) {
             goto error_exit;
         }
+        shared->metric[index].metric_lambda = f;
     }
     else if (key == "histogram_type") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
@@ -999,7 +994,7 @@ error_exit:
     return PLM_ERROR;
 }
 
-int
+Plm_return_code
 Registration_parms::set_command_string (
     const std::string& command_string
 )
@@ -1009,7 +1004,7 @@ Registration_parms::set_command_string (
     return rpp.parse_config_string (command_string);
 }
 
-int
+Plm_return_code
 Registration_parms::parse_command_file (const char* options_fn)
 {
     /* Read file into string */

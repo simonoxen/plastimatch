@@ -40,6 +40,7 @@ public:
 
 public:
     void copy (const Shared_parms *s);
+    void log ();
 };
 
 #endif

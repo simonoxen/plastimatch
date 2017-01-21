@@ -14,6 +14,7 @@
 #include "dcmtk_rt_study_p.h"
 #include "dcmtk_series.h"
 #include "dcmtk_slice_data.h"
+#include "dcmtk_util.h"
 #include "file_util.h"
 #include "logfile.h"
 #include "metadata.h"
@@ -269,7 +270,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dataset->putAndInsertOFStringArray(DCM_InstanceCreatorUID, 
         PLM_UID_PREFIX);
     dataset->putAndInsertString (DCM_SOPClassUID, UID_RTStructureSetStorage);
-    dataset->putAndInsertString (DCM_SOPInstanceUID, 
+    dcmtk_put (dataset, DCM_SOPInstanceUID, 
         d_ptr->rt_study_metadata->get_rtstruct_instance_uid());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
         d_ptr->rt_study_metadata->get_study_date());

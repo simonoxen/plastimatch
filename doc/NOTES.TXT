@@ -1,4 +1,57 @@
 ******************************************************************************
+Global vs stage vs shared
+
+There are only a few small differences.
+
+Review of global options
+
+- No registration is run
+- Allows process stage before first registration stage
+- Global outputs are written after final stage
+-- Written at original resolution, potentially with different options
+- Logfile is global
+-- I suppose you could switch logfile per stage if you wanted
+
+Review of stage options
+
+- Resume stage / finalize stage
+
+******************************************************************************
+Alternate syntax
+
+[METRIC]
+id=0
+metric=mse
+fixed=x1
+moving=y1
+lambda=0.1
+
+[METRIC]
+id=1
+metric=dmap
+fixed=x2
+moving=y2
+lambda=1.0
+histogram_bins=30
+
+[STAGE]
+metric=mse,dmap
+
+Note that this is not more powerful.  Instead we could do this:
+
+fixed[0]=x1
+moving[0]=y1
+metric[0]=mse
+fixed[1]=x2
+moving[1]=y2
+metric[1]=mi
+histogram_bins[1]=30
+
+Also, with the first syntax, you might want some way to specify
+warped images (warped y1 and y2).  
+
+
+******************************************************************************
 Registration similarity parms/data (cont.)
 
 On the use of std::map.

@@ -70,7 +70,7 @@ public:
 
         /* Update cost function gradient */
         ssd->update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
-        ssd->num_vox++;
+        ssd->curr_num_vox++;
     }
 };
 

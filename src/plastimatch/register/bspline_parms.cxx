@@ -12,9 +12,6 @@ Bspline_parms::Bspline_parms ()
 {
     this->threading = BTHR_CPU;
     this->optimization = BOPT_LBFGSB;
-    this->metric_type.push_back (SIMILARITY_METRIC_MSE);
-    this->metric_lambda.push_back (1.0);
-    this->implementation = '\0';
     this->min_its = 0;
     this->max_its = 10;
     this->max_feval = 10;

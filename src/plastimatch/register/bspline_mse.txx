@@ -64,7 +64,7 @@ public:
         this->score_acc += diff * diff;
 
         /* Update voxel count */
-        ssd->num_vox++;
+        ssd->curr_num_vox++;
 
         /* Compute spatial gradient using nearest neighbors */
         dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
@@ -73,7 +73,6 @@ public:
 
         /* Update cost function gradient */
         ssd->update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
-        ssd->num_vox++;
     }
 };
 
@@ -148,7 +147,7 @@ public:
         this->score_acc += diff * diff;
 
         /* Update voxel count */
-        ssd->num_vox++;
+        ssd->curr_num_vox++;
 
         /* Compute spatial gradient using nearest neighbors */
         dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */

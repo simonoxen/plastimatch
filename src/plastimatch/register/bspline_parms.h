@@ -10,9 +10,9 @@
 #include <vector>
 #include "double_align8.h"
 #include "joint_histogram.h"
+#include "metric_state.h"
 #include "similarity_metric_type.h"
 #include "smart_pointer.h"
-#include "stage_similarity_data.h"
 
 enum BsplineOptimization {
     BOPT_LBFGSB,
@@ -61,11 +61,9 @@ public:
     enum BsplineThreading threading;
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
 
-    /* Similarity metric */
-    std::list<Stage_similarity_data::Pointer> similarity_data;
-    std::vector<Similarity_metric_type> metric_type;
-    std::vector<float> metric_lambda;
-    char implementation;         /* Implementation ('a', 'b', etc.) */
+    /*! \brief Implementation ('a', 'b', etc.) -- to be moved into 
+      Stage_similarity_data */
+    char implementation;
 
     /* MI similarity metric */
     enum Mi_hist_type mi_hist_type;

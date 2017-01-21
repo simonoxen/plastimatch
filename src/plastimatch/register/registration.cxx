@@ -73,13 +73,13 @@ Registration::~Registration ()
     delete d_ptr;
 }
 
-int
+Plm_return_code
 Registration::set_command_file (const std::string& command_file)
 {
     return d_ptr->rparms->parse_command_file (command_file.c_str());
 }
 
-int
+Plm_return_code
 Registration::set_command_string (const std::string& command_string)
 {
     return d_ptr->rparms->set_command_string (command_string);

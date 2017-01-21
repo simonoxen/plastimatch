@@ -37,6 +37,7 @@ void
 Rtplan::clear(void)
 {
     this->number_of_fractions_planned = 0;
+    this->patient_position = "HFS";
     this->snout_id = "";
     this->general_accessory_id = "";
     this->general_accessory_code = "";
@@ -44,12 +45,18 @@ Rtplan::clear(void)
     this->range_shifter_code = "";
     this->range_modulator_id = "";
     this->range_modulator_code = "";
+    this->rt_plan_label = "";
+    this->rt_plan_name = "";
+    this->rt_plan_date = "";
+    this->rt_plan_time = "";
     this->tolerance_table_label = "";
     this->tolerance_gantry_angle = "";
     this->tolerance_patient_support_angle = "";
     this->tolerance_table_top_vertical = "";
     this->tolerance_table_top_longitudinal = "";
     this->tolerance_table_top_lateral = "";
+    this->tolerance_table_top_pitch = "";
+    this->tolerance_table_top_roll = "";
     this->tolerance_snout_position = "";
     for (size_t i = 0; i < this->beamlist.size(); i++) {
         delete this->beamlist[i];

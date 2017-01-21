@@ -300,7 +300,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n1] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw1[0] * dS_dP;
         dc_dv[1] -= dw1[1] * dS_dP;
         dc_dv[2] -= dw1[2] * dS_dP;
@@ -310,7 +310,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n2] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw2[0] * dS_dP;
         dc_dv[1] -= dw2[1] * dS_dP;
         dc_dv[2] -= dw2[2] * dS_dP;
@@ -320,7 +320,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n3] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw3[0] * dS_dP;
         dc_dv[1] -= dw3[1] * dS_dP;
         dc_dv[2] -= dw3[2] * dS_dP;
@@ -330,7 +330,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n4] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw4[0] * dS_dP;
         dc_dv[1] -= dw4[1] * dS_dP;
         dc_dv[2] -= dw4[2] * dS_dP;
@@ -340,7 +340,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n5] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw5[0] * dS_dP;
         dc_dv[1] -= dw5[1] * dS_dP;
         dc_dv[2] -= dw5[2] * dS_dP;
@@ -350,7 +350,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n6] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw6[0] * dS_dP;
         dc_dv[1] -= dw6[1] * dS_dP;
         dc_dv[2] -= dw6[2] * dS_dP;
@@ -360,7 +360,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n7] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw7[0] * dS_dP;
         dc_dv[1] -= dw7[1] * dS_dP;
         dc_dv[2] -= dw7[2] * dS_dP;
@@ -370,7 +370,7 @@ bspline_mi_pvi_8_dc_dv (
     idx_mbin = floor ((m_img[n8] - mi_hist->moving.offset) / mi_hist->moving.delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
-        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+        dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->curr_smetric;
         dc_dv[0] -= dw8[0] * dS_dP;
         dc_dv[1] -= dw8[1] * dS_dP;
         dc_dv[2] -= dw8[2] * dS_dP;
@@ -620,7 +620,7 @@ CUDA_bspline_mi_a (
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
     Bspline_score* ssd; // Holds the SSD "Score" information
-    Joint_histogram* mi_hist = bst->mi_hist;
+    Joint_histogram* mi_hist = bst->get_mi_hist();
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
@@ -674,9 +674,9 @@ CUDA_bspline_mi_a (
     if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
         (mi_hist->moving.bins > GPU_MAX_BINS)) {
 
-        ssd->num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
+        ssd->curr_num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
     } else {
-        ssd->num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+        ssd->curr_num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
     }
     // ----------------------------------------------------------
 
@@ -698,7 +698,7 @@ CUDA_bspline_mi_a (
 
     // --- COMPUTE SCORE ----------------------------------------
 #if defined (MI_SCORE_CPU)
-    ssd->smetric[0] = CPU_MI_Score(mi_hist, ssd->num_vox);
+    ssd->curr_smetric = CPU_MI_Score(mi_hist, ssd->curr_num_vox);
 #else
     // Doing this on the GPU may be silly.
     // The CPU generally completes this computation extremely quickly
@@ -709,13 +709,13 @@ CUDA_bspline_mi_a (
 #if defined (MI_GRAD_CPU)
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)ssd->num_vox);
 #else
-    float score = ssd->smetric[0];
+    float score = ssd->curr_smetric;
     CUDA_bspline_mi_grad (
         bst,
         bxf,
         fixed,
         moving,
-        (float)ssd->num_vox,
+        (float) ssd->curr_num_vox,
         score,
         dev_ptrs
     );
@@ -787,12 +787,12 @@ CUDA_bspline_mse_j (
         fixed,
         bxf->vox_per_rgn,
         fixed->dim,
-        &(ssd->smetric[0]),
-        bst->ssd.smetric_grad,
+        &(ssd->curr_smetric),
+        bst->ssd.curr_smetric_grad,
         &ssd_grad_mean,
         &ssd_grad_norm,
         dev_ptrs,
-        &(ssd->num_vox)
+        &(ssd->curr_num_vox)
     );
 
     if (parms->debug) {

@@ -19,8 +19,8 @@ public:
     Registration ();
     ~Registration ();
 public:
-    int set_command_file (const std::string& command_file);
-    int set_command_string (const std::string& command_string);
+    Plm_return_code set_command_file (const std::string& command_file);
+    Plm_return_code set_command_string (const std::string& command_string);
     void set_fixed_image (Plm_image::Pointer& fixed);
     void set_moving_image (Plm_image::Pointer& moving);
     void set_fixed_roi (Plm_image::Pointer& fixed_roi);

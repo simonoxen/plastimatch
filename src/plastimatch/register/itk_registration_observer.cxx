@@ -128,7 +128,7 @@ public:
             double duration = timer->report ();
 
             lprintf ("%s [%2d,%3d] %9.3f [%6.3f secs]\n", 
-                (metric_parms.metric_type[0] == SIMILARITY_METRIC_MSE)
+                (metric_parms.metric_type == SIMILARITY_METRIC_MSE)
                 ? "MSE" : "MI",
                 it, m_feval, val, duration);
             timer->start ();
@@ -152,12 +152,12 @@ public:
             /* Print out score & optimizer stats */
             if (irp->stage->optim_type == OPTIMIZATION_AMOEBA) {
                 lprintf ("%s [%3d] %9.3f ",
-                    (metric_parms.metric_type[0] == SIMILARITY_METRIC_MSE) 
+                    (metric_parms.metric_type == SIMILARITY_METRIC_MSE) 
                     ? "MSE" : "MI",
                     m_feval / 2, val);
             } else {
                 lprintf ("%s [%2d,%3d,%5.2f] %9.3f ",
-                    (metric_parms.metric_type[0] == SIMILARITY_METRIC_MSE) 
+                    (metric_parms.metric_type == SIMILARITY_METRIC_MSE) 
                     ? "MSE" : "MI",
                     it, m_feval, ss, val);
             }

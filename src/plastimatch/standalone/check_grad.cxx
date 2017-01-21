@@ -93,15 +93,16 @@ check_gradient (
     Bspline_optimize bod;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
+    Bspline_state *bst = bod.get_bspline_state ();
 
     /* Fixate images into bspline parms */
-    Stage_similarity_data::Pointer sim = Stage_similarity_data::New();
-    parms->similarity_data.push_back (sim);
+    Metric_state::Pointer sim = Metric_state::New();
+    bst->similarity_data.push_back (sim);
+    parms->implementation = options->bsp_implementation;
     sim->fixed_ss.reset (fixed);
     sim->moving_ss.reset (moving);
     sim->moving_grad.reset (moving_grad);
-    parms->implementation = options->bsp_implementation;
-    parms->metric_type[0] = options->bsp_metric;
+    sim->metric_type = options->bsp_metric;
 
     /* Maybe we got a roi too */
     Plm_image::Pointer pli_fixed_roi;
@@ -142,8 +143,8 @@ check_gradient (
             }
         }
     }
-    bod.initialize (bxf, parms);
-    Bspline_state *bst = bod.get_bspline_state ();
+    bod.set_bspline_xform (bxf);
+    bod.set_bspline_parms (parms);
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
@@ -155,9 +156,7 @@ check_gradient (
         x[i] = bxf->coeff[i];
     }
 
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        bst->mi_hist->initialize (fixed, moving);
-    }
+    bst->initialize_mi_histograms ();
 
     /* Get score and gradient */
     bspline_score (&bod);
@@ -169,7 +168,7 @@ check_gradient (
     for (i = 0; i < bxf->num_coeff; i++) {
         grad[i] = bst->ssd.total_grad[i];
     }
-    score = bst->ssd.score;
+    score = bst->ssd.total_score;
 
     /* If a search dir was specified, use that instead of the gradient */
     if (options->input_search_dir_fn != "") {
@@ -215,7 +214,7 @@ check_gradient (
             }
         
             /* Compute difference between grad and grad_fd */
-            fprintf (fp, "%4d,%12.12f\n", i, bst->ssd.score);
+            fprintf (fp, "%4d,%12.12f\n", i, bst->ssd.total_score);
 
             // JAS 04.19.2010
             // This loop could take a while to exit.  This will
@@ -248,7 +247,7 @@ check_gradient (
             }
         
             /* Stash score difference in grad_fd */
-            grad_fd[i] = (bst->ssd.score - score) / options->step_size;
+            grad_fd[i] = (bst->ssd.total_score - score) / options->step_size;
 
             /* Compute difference between grad and grad_fd */
             fprintf (fp, "%12.12f,%12.12f\n", grad[i], grad_fd[i]);

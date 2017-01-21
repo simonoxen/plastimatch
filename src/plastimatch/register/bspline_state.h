@@ -5,13 +5,14 @@
 #define _bspline_state_h_
 
 #include "plmregister_config.h"
+#include <list>
 #include <string>
 
 #include "bspline_regularize.h"
 #include "bspline_score.h"
+#include "metric_state.h"
 #include "plm_int.h"
 #include "smart_pointer.h"
-#include "stage_similarity_data.h"
 
 class Bspline_state_private;
 class Bspline_parms;
@@ -31,9 +32,11 @@ public:
     Bspline_score ssd;              /* Score and Gradient  */
     void* dev_ptrs;                 /* GPU Device Pointers */
 
-    /*! \brief Current similarity images */
-    /* GCS FIX.  These can be replaced with Stage_similarity_data 
-       if nvcc can be made to use a c++ compiler */
+    /* Similarity metric */
+    std::list<Metric_state::Pointer> similarity_data;
+
+    /*! \brief Current similarity images.  These are raw pointers 
+     because they are passed to CUDA code.  */
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;
@@ -41,13 +44,25 @@ public:
     Volume *moving_roi;
     
     Bspline_regularize rst;
+
+protected:
+    /*! \brief Current joint histogram.  This is raw pointer 
+      because it is passed to CUDA code.  */
     Joint_histogram *mi_hist;
+
 public:
     void initialize (Bspline_xform *bxf, Bspline_parms *parms);
     void initialize_similarity_images ();
+    void initialize_mi_histograms ();
+    void set_metric_state (const Metric_state::Pointer& ms);
     Bspline_score* get_bspline_score () {
         return &ssd;
     }
+    Joint_histogram* get_mi_hist () {
+        return mi_hist;
+    }
+    bool has_metric_type (Similarity_metric_type metric_type);
+    void log_metric ();
 };
 
 #endif

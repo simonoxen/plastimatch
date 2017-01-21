@@ -9,10 +9,10 @@
 #include "print_and_exit.h"
 #include "registration_data.h"
 #include "registration_parms.h"
+#include "registration_resample.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
-
-#define DEFAULT_IMAGE_KEY "0"
+#include "volume_grad.h"
 
 class Registration_data_private
 {
@@ -20,7 +20,7 @@ public:
     Stage_parms auto_parms;
     std::map <std::string, Registration_similarity_data::Pointer>
         similarity_images;
-    std::list<std::string> image_indices;
+    std::list<std::string> similarity_indices;
 public:
     Registration_data_private () {
     }
@@ -66,37 +66,33 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
 
         /* Sanity check -- there should be at least a fixed and moving */
         if (mp.fixed_fn == "") {
-            logfile_printf ("Skipping metric without fixed_fn (%s)\n", 
-                index.c_str());
             continue;
         }
         if (mp.moving_fn == "") {
-            logfile_printf ("Skipping metric without moving_fn (%s)\n", 
-                index.c_str());
             continue;
         }
         
         /* Load images */
         logfile_printf ("Loading fixed image [%s]: %s\n", 
             index.c_str(), mp.fixed_fn.c_str());
-        this->set_fixed_image (index.c_str(), 
+        this->set_fixed_image (index,
             Plm_image::New (mp.fixed_fn, PLM_IMG_TYPE_ITK_FLOAT));
         logfile_printf ("Loading moving image [%s]: %s\n", 
             index.c_str(), mp.moving_fn.c_str());
-        this->set_moving_image (index.c_str(), 
+        this->set_moving_image (index,
             Plm_image::New (mp.moving_fn, PLM_IMG_TYPE_ITK_FLOAT));
         
         /* Load rois */
         if (mp.fixed_roi_fn != "") {
             logfile_printf ("Loading fixed roi [%s]: %s\n", 
                 index.c_str(), mp.fixed_roi_fn.c_str());
-            this->set_fixed_roi (index.c_str(), 
+            this->set_fixed_roi (index,
                 Plm_image::New (mp.fixed_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
         }
         if (mp.moving_roi_fn != "") {
             logfile_printf ("Loading moving roi [%s]: %s\n", 
                 index.c_str(), mp.moving_roi_fn.c_str());
-            this->set_moving_roi (index.c_str(), 
+            this->set_moving_roi (index,
                 Plm_image::New (mp.moving_roi_fn, PLM_IMG_TYPE_ITK_UCHAR));
         }
     }
@@ -263,9 +259,9 @@ Registration_data::get_moving_roi (
 }
 
 const std::list<std::string>&
-Registration_data::get_image_indices ()
+Registration_data::get_similarity_indices ()
 {
-    d_ptr->image_indices.clear ();
+    d_ptr->similarity_indices.clear ();
     
     std::map<std::string,
         Registration_similarity_data::Pointer>::const_iterator it;
@@ -274,17 +270,71 @@ Registration_data::get_image_indices ()
     {
         if (it->second->fixed && it->second->moving) {
             if (it->first == DEFAULT_IMAGE_KEY) {
-                d_ptr->image_indices.push_front (it->first);
+                d_ptr->similarity_indices.push_front (it->first);
             } else {
-                d_ptr->image_indices.push_back (it->first);
+                d_ptr->similarity_indices.push_back (it->first);
             }
         }
     }
-    return d_ptr->image_indices;
+    return d_ptr->similarity_indices;
 }
 
 Stage_parms*
 Registration_data::get_auto_parms ()
 {
     return &d_ptr->auto_parms;
+}
+
+void populate_similarity_list (
+    std::list<Metric_state::Pointer>& similarity_data,
+    Registration_data *regd,
+    const Stage_parms *stage
+)
+{
+    const Shared_parms *shared = stage->get_shared_parms();
+
+    printf ("HELLO\n");
+
+    /* Clear out the list */
+    similarity_data.clear ();
+
+    const std::list<std::string>& similarity_indices
+        = regd->get_similarity_indices ();
+    std::list<std::string>::const_iterator ind_it;
+    for (ind_it = similarity_indices.begin();
+         ind_it != similarity_indices.end(); ++ind_it)
+    {
+        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
+        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
+        Volume::Pointer& fixed = fixed_image->get_volume_float ();
+        Volume::Pointer& moving = moving_image->get_volume_float ();
+
+        Metric_state::Pointer ssi = Metric_state::New();
+
+        /* Subsample images */
+        ssi->fixed_ss = registration_resample_volume (
+            fixed, stage, stage->resample_rate_fixed);
+        ssi->moving_ss = registration_resample_volume (
+            moving, stage, stage->resample_rate_moving);
+
+        /* Metric */
+        const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
+        ssi->metric_type = metric_parms.metric_type;
+        if (ssi->metric_type == SIMILARITY_METRIC_MI_VW) {
+            ssi->metric_type = SIMILARITY_METRIC_MI_MATTES;
+        }
+        ssi->metric_lambda = metric_parms.metric_lambda;
+
+        /* Gradient magnitude is MSE on gradient image */
+        if (ssi->metric_type == SIMILARITY_METRIC_GM) {
+            ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
+            ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
+        }
+
+        /* Make spatial gradient image */
+        ssi->moving_grad = volume_gradient (ssi->moving_ss);
+
+        /* Append to list */
+        similarity_data.push_back (ssi);
+    }
 }

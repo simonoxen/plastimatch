@@ -74,7 +74,6 @@ Bspline_state::~Bspline_state ()
 {
     bspline_cuda_state_destroy (d_ptr->parms, this, d_ptr->bxf);
     delete d_ptr;
-    delete mi_hist;
 }
 
 void
@@ -103,11 +102,19 @@ Bspline_state::initialize (
     }
 
     /* Initialize MI histograms */
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
-        this->mi_hist = new Joint_histogram (
-            parms->mi_hist_type,
-            parms->mi_hist_fixed_bins,
-            parms->mi_hist_moving_bins);
+    printf (">> Checking JH allocation\n");
+    std::list<Metric_state::Pointer>::const_iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        const Metric_state::Pointer& ms = *it;
+        if (ms->metric_type == SIMILARITY_METRIC_MI_MATTES) {
+            printf (">> Performing JH allocation\n");
+            ms->mi_hist = new Joint_histogram (
+                parms->mi_hist_type,
+                parms->mi_hist_fixed_bins,
+                parms->mi_hist_moving_bins);
+        }
     }
 
     /* Landmarks */
@@ -123,6 +130,34 @@ Bspline_state::initialize_similarity_images ()
      */
     /* Copy images into CUDA memory */
     bspline_cuda_state_create (d_ptr->parms, this, d_ptr->bxf);
+}
+
+void
+Bspline_state::initialize_mi_histograms ()
+{
+    std::list<Metric_state::Pointer>::const_iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        const Metric_state::Pointer& ms = *it;
+        if (ms->metric_type == SIMILARITY_METRIC_MI_MATTES) {
+            printf (">> Performing JH initialization\n");
+            ms->mi_hist->initialize (
+                ms->fixed_ss.get(),
+                ms->moving_ss.get());
+        }
+    }
+}
+
+void 
+Bspline_state::set_metric_state (const Metric_state::Pointer& ms)
+{
+    this->fixed = ms->fixed_ss.get();
+    this->moving = ms->moving_ss.get();
+    this->moving_grad = ms->moving_grad.get();
+    this->fixed_roi = ms->fixed_roi.get();
+    this->moving_roi = ms->moving_roi.get();
+    this->mi_hist = ms->mi_hist;
 }
 
 static void
@@ -153,8 +188,10 @@ bspline_cuda_state_create (
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
     bst->dev_ptrs = dev_ptrs;
-    
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
+
+    /* GCS FIX: You cannot have more than one CUDA metric because 
+       dev_ptrs is not defined per metric */
+    if (bst->has_metric_type (SIMILARITY_METRIC_MSE)) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmregistercuda);
@@ -173,7 +210,7 @@ bspline_cuda_state_create (
 
         UNLOAD_LIBRARY (libplmregistercuda);
     } 
-    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    else if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmregistercuda);
@@ -213,13 +250,13 @@ bspline_cuda_state_destroy (
     Volume *moving = bst->moving;
     Volume *moving_grad = bst->moving_grad;
 
-    if (parms->metric_type[0] == SIMILARITY_METRIC_MSE) {
+    if (bst->has_metric_type (SIMILARITY_METRIC_MSE)) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmregistercuda);
         CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmregistercuda);
     }
-    else if (parms->metric_type[0] == SIMILARITY_METRIC_MI_MATTES) {
+    else if (bst->has_metric_type (SIMILARITY_METRIC_MI_MATTES)) {
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmregistercuda);
         CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
@@ -229,4 +266,39 @@ bspline_cuda_state_destroy (
     free (bst->dev_ptrs);
     bst->dev_ptrs = 0;
 #endif
+}
+
+bool
+Bspline_state::has_metric_type (Similarity_metric_type metric_type)
+{
+    std::list<Metric_state::Pointer>::iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        if ((*it)->metric_type == metric_type) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void
+Bspline_state::log_metric ()
+{
+    printf ("BST METRICS\n");
+    std::list<Metric_state::Pointer>::iterator it;
+    for (it = this->similarity_data.begin();
+         it != this->similarity_data.end(); ++it)
+    {
+        printf ("MET %c%c%c%c%c%c %s %f\n",
+            (*it)->fixed_ss ? '1' : '0',
+            (*it)->moving_ss ? '1' : '0',
+            (*it)->fixed_grad ? '1' : '0',
+            (*it)->moving_grad ? '1' : '0',
+            (*it)->fixed_roi ? '1' : '0',
+            (*it)->moving_roi ? '1' : '0',
+            (*it)->metric_string(),
+            (*it)->metric_lambda
+        );
+    }
 }

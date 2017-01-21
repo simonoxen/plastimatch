@@ -15,11 +15,16 @@
 class Rt_study_metadata_private {
 public:
     std::string date_string;
+    std::string description_string;
+    std::string referring_physician_name_string;
+    std::string accession_number_string;
     std::string time_string;
     std::string study_id_string;
 
     std::string study_uid;
     std::string for_uid;
+
+    std::string position_reference_indicator_string;
 
     std::string ct_series_uid;
     std::string dose_instance_uid;
@@ -111,10 +116,10 @@ Rt_study_metadata::set_ct_series_uid (const char* uid)
     d_ptr->ct_series_uid = uid;
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_dose_instance_uid () const
 {
-    return d_ptr->dose_instance_uid.c_str();
+    return d_ptr->dose_instance_uid;
 }
 
 const char*
@@ -142,16 +147,92 @@ Rt_study_metadata::get_plan_instance_uid () const
     return d_ptr->plan_instance_uid.c_str();
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_rtstruct_instance_uid () const
 {
-    return d_ptr->rtstruct_instance_uid.c_str();
+    return d_ptr->rtstruct_instance_uid;
 }
 
 const char*
 Rt_study_metadata::get_rtstruct_series_uid () const
 {
     return d_ptr->rtstruct_series_uid.c_str();
+}
+
+const char*
+Rt_study_metadata::get_referring_physician_name () const
+{
+    return d_ptr->referring_physician_name_string.c_str();
+}
+
+void
+Rt_study_metadata::set_referring_physician_name (const char* referring_physician_name)
+{
+    if (!referring_physician_name) return;
+    d_ptr->referring_physician_name_string = referring_physician_name;
+}
+
+void
+Rt_study_metadata::set_referring_physician_name (const std::string& referring_physician_name)
+{
+    d_ptr->referring_physician_name_string = referring_physician_name;
+}
+
+const char*
+Rt_study_metadata::get_position_reference_indicator () const
+{
+    return d_ptr->position_reference_indicator_string.c_str();
+}
+
+void
+Rt_study_metadata::set_position_reference_indicator (const char* position_reference_indicator)
+{
+    if (!position_reference_indicator) return;
+    d_ptr->position_reference_indicator_string = position_reference_indicator;
+}
+
+void
+Rt_study_metadata::set_position_reference_indicator (const std::string& position_reference_indicator)
+{
+    d_ptr->position_reference_indicator_string = position_reference_indicator;
+}
+
+const char*
+Rt_study_metadata::get_accession_number () const
+{
+    return d_ptr->accession_number_string.c_str();
+}
+
+void
+Rt_study_metadata::set_accession_number (const char* accession_number)
+{
+    if (!accession_number) return;
+    d_ptr->accession_number_string = accession_number;
+}
+
+void
+Rt_study_metadata::set_accession_number (const std::string& accession_number)
+{
+    d_ptr->accession_number_string = accession_number;
+}
+
+const char*
+Rt_study_metadata::get_study_description () const
+{
+    return d_ptr->description_string.c_str();
+}
+
+void
+Rt_study_metadata::set_study_description (const char* description)
+{
+    if (!description) return;
+    d_ptr->description_string = description;
+}
+
+void
+Rt_study_metadata::set_study_description (const std::string& description)
+{
+    d_ptr->description_string = description;
 }
 
 const char*

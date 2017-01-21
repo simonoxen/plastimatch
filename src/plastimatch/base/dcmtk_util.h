@@ -19,5 +19,7 @@ template<class T> PLMBASE_API OFCondition
 dcmtk_put (DcmItem*, const DcmTag &, T);
 PLMBASE_API OFCondition
 dcmtk_put (DcmItem*, const DcmTag &, const std::string&);
+PLMBASE_API OFCondition
+dcmtk_put (DcmItem*, const DcmTag &, const char*);
 
 #endif

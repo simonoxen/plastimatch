@@ -214,7 +214,7 @@ Itk_registration_private::set_metric (FloatImageType::Pointer& fixed_ss)
         break;
     }
     
-    switch (metric_parms.metric_type[0]) {
+    switch (metric_parms.metric_type) {
     case SIMILARITY_METRIC_MSE:
     {
         MSEMetricType::Pointer metric = MSEMetricType::New();

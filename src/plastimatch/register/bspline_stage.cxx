@@ -25,7 +25,6 @@
 #include "registration_resample.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
-#include "stage_similarity_data.h"
 #include "string_util.h"
 #include "volume.h"
 #include "volume_grad.h"
@@ -110,7 +109,22 @@ Bspline_stage::initialize ()
     const Shared_parms *shared = d_ptr->stage->get_shared_parms();
     Xform *xf_in = d_ptr->xf_in;
     Xform *xf_out = d_ptr->xf_out.get();
+    Bspline_optimize *bod = &d_ptr->bod;
     Bspline_parms *parms = &d_ptr->parms;
+    Bspline_state *bst = bod->get_bspline_state ();
+
+    /* Tell bod what parameters to use */
+    d_ptr->bod.set_bspline_parms (parms);
+
+    /* Set up metric state */
+    populate_similarity_list (bst->similarity_data, regd, stage);
+
+    /* Transform input xform to bspline and give to bod */
+    Plm_image_header pih;
+    pih.set (bst->similarity_data.front()->fixed_ss);
+    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+    Bspline_xform *bxf = xf_out->get_gpuit_bsp();
+    d_ptr->bod.set_bspline_xform (bxf);
 
     /* Set roi's */
     Volume::Pointer m_roi;
@@ -120,48 +134,6 @@ Bspline_stage::initialize ()
     }
     if (shared->moving_roi_enable && regd->get_moving_roi()) {
         m_roi = regd->get_moving_roi()->get_volume_uchar();
-    }
-
-    /* GCS FIX, split metric vector into separate items in 
-       Stage_similarity_data list */
-    Metric_parms metric_parms;
-    std::map<std::string,Metric_parms>::const_iterator metric_it;
-    for (metric_it = shared->metric.begin();
-         metric_it != shared->metric.end(); ++metric_it) {
-        metric_parms = metric_it->second;
-        break;
-    }
-    
-    const std::list<std::string>& image_indices
-        = regd->get_image_indices ();
-    std::list<std::string>::const_iterator ind_it;
-    for (ind_it = image_indices.begin();
-         ind_it != image_indices.end(); ++ind_it)
-    {
-        Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
-        Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
-        Volume::Pointer& fixed = fixed_image->get_volume_float ();
-        Volume::Pointer& moving = moving_image->get_volume_float ();
-
-        Stage_similarity_data::Pointer ssi = Stage_similarity_data::New();
-
-        /* Subsample images */
-        ssi->fixed_ss = registration_resample_volume (
-            fixed, stage, stage->resample_rate_fixed);
-        ssi->moving_ss = registration_resample_volume (
-            moving, stage, stage->resample_rate_moving);
-
-        /* Gradient magnitude is MSE on gradient image */
-        if (metric_parms.metric_type[0] == SIMILARITY_METRIC_GM) {
-            ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
-            ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
-        }
-
-        /* Make spatial gradient image */
-        ssi->moving_grad = volume_gradient (ssi->moving_ss);
-
-        /* Add images to stage image list */
-        parms->similarity_data.push_back (ssi);
     }
 
     /* Copy parameters from stage_parms to bspline_parms */
@@ -223,13 +195,13 @@ Bspline_stage::initialize ()
         Volume::Pointer m_roi_ss = 
             volume_subsample_vox_legacy_nn (
                 m_roi, stage->resample_rate_moving);
-        parms->similarity_data.front()->moving_roi = m_roi_ss;
+        bst->similarity_data.front()->moving_roi = m_roi_ss;
     }
     if (f_roi) {
         Volume::Pointer f_roi_ss = 
             volume_subsample_vox_legacy_nn (
                 f_roi, stage->resample_rate_fixed);
-        parms->similarity_data.front()->fixed_roi = f_roi_ss;
+        bst->similarity_data.front()->fixed_roi = f_roi_ss;
     }
 
     /* GCS FIX END */
@@ -257,15 +229,6 @@ Bspline_stage::initialize ()
     }
     parms->lbfgsb_pgtol = stage->pgtol;
     parms->lbfgsb_mmax = stage->lbfgsb_mmax;
-
-    /* Metric */
-    parms->metric_type = metric_parms.metric_type;
-    for (size_t i = 0; i < parms->metric_type.size(); i++) {
-        if (parms->metric_type[i] == SIMILARITY_METRIC_MI_VW) {
-            parms->metric_type[i] = SIMILARITY_METRIC_MI_MATTES;
-        }
-    }
-    parms->metric_lambda = metric_parms.metric_lambda;
 
     /* Threading */
     switch (stage->threading_type) {
@@ -356,16 +319,6 @@ Bspline_stage::initialize ()
         parms->blm->landmark_stiffness = stage->landmark_stiffness;
     }
 
-    /* Transform input xform to gpuit vector field */
-    Plm_image_header pih;
-    pih.set (parms->similarity_data.front()->fixed_ss);
-    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
-
-    Bspline_optimize *bod = &d_ptr->bod;
-    Bspline_xform *bxf = xf_out->get_gpuit_bsp();
-    bod->initialize (bxf, parms);
-    Bspline_state *bst = bod->get_bspline_state ();
-
     /* Set debugging directory */
     if (stage->debug_dir != "") {
         parms->debug = 1;
@@ -379,15 +332,15 @@ Bspline_stage::initialize ()
         fn = string_format ("%s/%02d/fixed.mha",
             parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(), 
-            parms->similarity_data.front()->fixed_ss.get());
+            bst->similarity_data.front()->fixed_ss.get());
         fn = string_format ("%s/%02d/moving.mha",
             parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(),
-            parms->similarity_data.front()->moving_ss.get());
+            bst->similarity_data.front()->moving_ss.get());
         fn = string_format ("%s/%02d/moving_grad.mha", 
             parms->debug_dir.c_str(), parms->debug_stage);
         write_mha (fn.c_str(), 
-            parms->similarity_data.front()->moving_grad.get());
+            bst->similarity_data.front()->moving_grad.get());
     }
 }
 

@@ -1,20 +1,22 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _stage_similarity_data_h_
-#define _stage_similarity_data_h_
+#ifndef _metric_state_h_
+#define _metric_state_h_
 
 #include "plmregister_config.h"
 #include "similarity_metric_type.h"
 #include "volume.h"
 
-class PLMREGISTER_API Stage_similarity_data
+class Joint_histogram;
+
+class PLMREGISTER_API Metric_state
 {
 public:
-    SMART_POINTER_SUPPORT (Stage_similarity_data);
+    SMART_POINTER_SUPPORT (Metric_state);
 public:
-    Stage_similarity_data () {
-    }
+    Metric_state ();
+    ~Metric_state ();
 public:
     Volume::Pointer fixed_ss;
     Volume::Pointer moving_ss;
@@ -25,8 +27,13 @@ public:
 
     Similarity_metric_type metric_type;
     float metric_lambda;
-    /*! \brief Implementation ('a', 'b', etc.) */
-    char implementation;
+
+    Joint_histogram *mi_hist;
+
+public:
+    const char *metric_string () {
+        return similarity_metric_type_string (metric_type);
+    }
 };
 
 #endif

@@ -38,17 +38,33 @@ public:
 public:
     const char* get_ct_series_uid () const;
     void set_ct_series_uid (const char* uid);
-    const char* get_dose_instance_uid () const;
+    const std::string& get_dose_instance_uid () const;
     const char* get_dose_series_uid () const;
     const char* get_frame_of_reference_uid () const;
     void set_frame_of_reference_uid (const char* uid);
     const char* get_plan_instance_uid () const;
-    const char* get_rtstruct_instance_uid () const;
+    const std::string& get_rtstruct_instance_uid () const;
     const char* get_rtstruct_series_uid () const;
+
+    const char* get_position_reference_indicator () const;
+    void set_position_reference_indicator (const char* position_reference_indicator);
+    void set_position_reference_indicator (const std::string& position_reference_indicator);
+
+    const char* get_referring_physician_name () const;
+    void set_referring_physician_name (const char* referring_physician_name);
+    void set_referring_physician_name (const std::string& referring_physician_name);
+
+    const char* get_accession_number () const;
+    void set_accession_number (const char* accession_number);
+    void set_accession_number (const std::string& accession_number);
 
     const char* get_study_date () const;
     void set_study_date (const char* date);
     void set_study_date (const std::string& date);
+
+    const char* get_study_description () const;
+    void set_study_description (const char* description);
+    void set_study_description (const std::string& description);
 
     const char* get_study_time () const;
     void set_study_time (const char* time);

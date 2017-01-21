@@ -6,6 +6,7 @@
 
 #include "plmregister_config.h"
 #include "itk_image_type.h"
+#include "metric_state.h"
 #include "plm_image.h"
 #include "pointset.h"
 #include "registration_parms.h"
@@ -76,9 +77,15 @@ public:
       The default image (index "0") will be the first index in the list.  
       The remaining indices will be sorted in order they appear 
       in the command file. */
-    const std::list<std::string>& get_image_indices ();
+    const std::list<std::string>& get_similarity_indices ();
     
     Stage_parms* get_auto_parms ();
 };
+
+void populate_similarity_list (
+    std::list<Metric_state::Pointer>& similarity_data,
+    Registration_data *regd,
+    const Stage_parms *stage
+);
 
 #endif
