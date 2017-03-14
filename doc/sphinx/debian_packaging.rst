@@ -67,11 +67,12 @@ Setting up a build system for the first time
      git-pbuilder login --save-after-login
      apt-get update
      apt-get install \
-       apt-utils fakeroot \
-       debhelper cmake libblas-dev libdcmtk-dev libdlib-dev libgdcm2-dev \
-       libfftw3-dev libinsighttoolkit4-dev \
-       liblapack-dev libpng-dev libsqlite3-dev libtiff-dev \
-       uuid-dev zlib1g-dev
+       apt-utils fakeroot debhelper \
+       cmake \
+       libblas-dev liblapack-dev libsqlite-dev \
+       libdcmtk-dev libdlib-dev libfftw3-dev \
+       libgdcm2-dev libinsighttoolkit4-dev \
+       libpng-dev libtiff-dev uuid-dev zlib1g-dev
   
    See this link for more information https://wiki.debian.org/git-pbuilder
 

@@ -39,6 +39,7 @@ On debian, all the needed dependencies are already included.
 The following command will install all the needed prerequisites.::
 
    sudo apt-get install g++ make git cmake-curses-gui \
+     libblas-dev liblapack-dev libsqlite-dev \
      libdcmtk-dev libdlib-dev libfftw3-dev \
      libgdcm2-dev libinsighttoolkit4-dev \
      libpng-dev libtiff-dev uuid-dev zlib1g-dev 
