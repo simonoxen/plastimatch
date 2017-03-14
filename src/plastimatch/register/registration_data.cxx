@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmregister_config.h"
 
+#include "distance_map.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
@@ -285,6 +286,19 @@ Registration_data::get_auto_parms ()
     return &d_ptr->auto_parms;
 }
 
+static Volume::Pointer
+make_dmap (const Volume::Pointer& image)
+{
+    Plm_image::Pointer pi = Plm_image::New (image);
+    Distance_map dm;
+
+    dm.set_input_image (pi);
+    dm.run ();
+
+    Plm_image im_out (dm.get_output_image());
+    return im_out.get_volume_float ();
+}
+
 void populate_similarity_list (
     std::list<Metric_state::Pointer>& similarity_data,
     Registration_data *regd,
@@ -292,8 +306,6 @@ void populate_similarity_list (
 )
 {
     const Shared_parms *shared = stage->get_shared_parms();
-
-    printf ("HELLO\n");
 
     /* Clear out the list */
     similarity_data.clear ();
@@ -329,6 +341,12 @@ void populate_similarity_list (
         if (ssi->metric_type == SIMILARITY_METRIC_GM) {
             ssi->fixed_ss = volume_gradient_magnitude (ssi->fixed_ss);
             ssi->moving_ss = volume_gradient_magnitude (ssi->moving_ss);
+        }
+
+        /* Distance map is MSE on distance map images */
+        if (ssi->metric_type == SIMILARITY_METRIC_DMAP) {
+            ssi->fixed_ss = make_dmap (ssi->fixed_ss);
+            ssi->moving_ss = make_dmap (ssi->moving_ss);
         }
 
         /* Make spatial gradient image */

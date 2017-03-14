@@ -16,7 +16,11 @@ Metric_parms::Metric_parms ()
 Plm_return_code
 Metric_parms::set_metric_type (const std::string& val)
 {
-    if (val == "gm") {
+    if (val == "dm" || val == "dmap") {
+        this->metric_type = SIMILARITY_METRIC_DMAP;
+        return PLM_SUCCESS;
+    }
+    else if (val == "gm") {
         this->metric_type = SIMILARITY_METRIC_GM;
         return PLM_SUCCESS;
     }

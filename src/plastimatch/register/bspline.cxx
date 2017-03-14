@@ -68,7 +68,8 @@
 // Author: James Shackleford
 // Data: July 30th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-int* calc_offsets(int* tile_dims, int* cdims)
+int*
+calc_offsets (int* tile_dims, int* cdims)
 {
     int vox_per_tile = (tile_dims[0] * tile_dims[1] * tile_dims[2]);
     int pad = 32 - (vox_per_tile % 32);
@@ -99,7 +100,8 @@ int* calc_offsets(int* tile_dims, int* cdims)
 // Author: James Shackleford
 // Data: July 13th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-void find_knots (
+void
+find_knots (
     plm_long* knots, 
     plm_long tile_num, 
     plm_long* rdims, 
@@ -117,11 +119,6 @@ void find_knots (
     tile_loc[0] = tile_num % num_tiles_x;
     tile_loc[1] = ((tile_num - tile_loc[0]) / num_tiles_x) % num_tiles_y;
     tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / num_tiles_y) % num_tiles_z);
-    /*
-      tile_loc[0] = tile_num % rdims[0];
-      tile_loc[1] = ((tile_num - tile_loc[0]) / rdims[0]) % rdims[1];
-      tile_loc[2] = ((((tile_num - tile_loc[0]) / rdims[0]) / rdims[1]) % rdims[2]);
-    */
 
     // Tiles do not start on the edges of the grid, so we
     // push them to the center of the control grid.
@@ -131,15 +128,15 @@ void find_knots (
 
     // Find 64 knots' [x,y,z] coordinates
     // and convert into a linear knot index
-    for (k = -1; k < 3; k++)
-        for (j = -1; j < 3; j++)
+    for (k = -1; k < 3; k++) {
+        for (j = -1; j < 3; j++) {
             for (i = -1; i < 3; i++)
             {
                 knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) + (cdims[0]*(tile_loc[1]+j)) + (tile_loc[0]+i);
             }
-
+        }
+    }
 }
-
 
 
 /* -----------------------------------------------------------------------
@@ -427,7 +424,7 @@ bspline_score (Bspline_optimize *bod)
     /* Zero out the score for this iteration */
     bst->ssd.reset_score ();
 
-    /* Compute similarity metric.  This is done for each image plane, 
+    /* Compute similarity metric.  This is done for each metric 
        and each similarity metric within each image plane. */
     std::list<Metric_state::Pointer>::const_iterator it_sd;
     bst->sm = 0;
@@ -440,6 +437,7 @@ bspline_score (Bspline_optimize *bod)
         timer.start ();
 
         switch ((*it_sd)->metric_type) {
+        case SIMILARITY_METRIC_DMAP:
         case SIMILARITY_METRIC_MSE:
             bspline_score_mse (bod);
             break;

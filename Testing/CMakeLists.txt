@@ -31,6 +31,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-mi-c.txt"
   "plm-bsp-mi-k.txt"
   "plm-bsp-gm-k.txt"
+  "plm-bsp-dmap-k.txt"
   "plm-bsp-sm-multi-a.txt"
   "plm-bsp-cuda.txt"
   "plm-bsp-rect.txt"
@@ -255,6 +256,11 @@ add_custom_target (speedtest
 ##   rect-7            Standard rect, centered, direction cosines alt-3
 ##   rect-8            Uchar rect, off-center
 ##   rect-9            Uchar rect, centered, higher resolution
+##   rect-10-roi-1
+##   rect-10-roi-2
+##   rect-10
+##   rect-11
+##   rect-11-roi
 ##   rect-12           Small rect, bg=0, fg=10
 ##   rect-13           Small rect, bg=0, fg=11
 ##   rect-14           Small, off-center rect, bg=0, fg=10
@@ -2722,6 +2728,29 @@ set_tests_properties (plm-bsp-gm-k-stats PROPERTIES
   DEPENDS plm-bsp-gm-k)
 set_tests_properties (plm-bsp-gm-k-check PROPERTIES 
   DEPENDS plm-bsp-gm-k-stats)
+
+plm_add_test (
+  "plm-bsp-dmap-k" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k.txt"
+  )
+plm_add_test (
+  "plm-bsp-dmap-k-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-dmap-k-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-122.5"
+  "-121.5"
+  )
+set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-4)
+set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-8)
+set_tests_properties (plm-bsp-dmap-k-stats PROPERTIES 
+  DEPENDS plm-bsp-dmap-k)
+set_tests_properties (plm-bsp-dmap-k-check PROPERTIES 
+  DEPENDS plm-bsp-dmap-k-stats)
 
 plm_add_test (
   "plm-bsp-sm-multi-a" 
