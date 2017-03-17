@@ -18,6 +18,7 @@
 #include "pcmd_dice.h"
 #include "pcmd_diff.h"
 #include "pcmd_dmap.h"
+#include "pcmd_dose.h"
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
 #include "pcmd_filter.h"
@@ -42,6 +43,7 @@
 #include "pcmd_threshold.h"
 #include "pcmd_thumbnail.h"
 #include "pcmd_union.h"
+#include "pcmd_vf_invert.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
 #include "pcmd_xio_dvh.h"
@@ -77,37 +79,40 @@ print_usage (int return_code)
         "  diff        "
         "\n"
         "  dmap        "
+        "  dose        "
 //        "  drr         "
         "  dvh         "
         "  fill        "
         "  filter      "
-        "  gamma       "
         "\n"
+        "  gamma       "
         "  header      "
         "  jacobian    "
         "  mabs        "
         "  mask        "
-        "  maximum     "
         "\n"
+        "  maximum     "
         "  ml-convert  "
         "  multiply    "
         "  probe       "
         "  register    "
-        "  resample    "
         "\n"
+        "  resample    "
         "  scale       "
         "  segment     "
 //        "  sift        "
         "  stats       "
         "  synth       "
-        "  synth-vf    "
         "\n"
+        "  synth-vf    "
         "  threshold   "
         "  thumbnail   "
         "  union       "
+        "  vf-invert   "
+        "\n"
         "  warp        "
-        "  xf-convert  "
 //        "  xio-dvh     "
+        "  xf-convert  "
         "\n"
         "\n"
         "For detailed usage of a specific command, type:\n"
@@ -170,6 +175,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "diff")) {
         do_command_diff (argc, argv);
+    }
+    else if (!strcmp (command, "dose")) {
+        do_command_dose (argc, argv);
     }
     else if (!strcmp (command, "drr")) {
         do_command_drr (argc, argv);
@@ -255,6 +263,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "union")) {
         do_command_union (argc, argv);
+    }
+    else if (!strcmp (command, "vf-invert")) {
+        do_command_vf_invert (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
         /* convert and warp are the same */

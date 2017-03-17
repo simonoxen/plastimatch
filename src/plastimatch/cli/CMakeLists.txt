@@ -31,6 +31,7 @@ set (PLASTIMATCH_SRC
   pcmd_dice.cxx 
   pcmd_diff.cxx 
   pcmd_dmap.cxx
+  pcmd_dose.cxx pcmd_dose.h
   pcmd_drr.cxx 
   pcmd_dvh.cxx 
   pcmd_filter.cxx
@@ -55,6 +56,7 @@ set (PLASTIMATCH_SRC
   pcmd_threshold.cxx
   pcmd_thumbnail.cxx 
   pcmd_union.cxx
+  pcmd_vf_invert.cxx pcmd_vf_invert.h
   pcmd_warp.cxx 
   pcmd_warp_dij.cxx 
   pcmd_warp_pointset.cxx 

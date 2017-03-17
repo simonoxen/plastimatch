@@ -4278,8 +4278,8 @@ set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 ## -------------------------------------------------------------------------
 plm_add_test (
   "vf-invert-zero-1"
-  ${PLM_PLASTIMATCH_PATH}/vf_invert
-  "--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "vf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
   )
 plm_add_test (
   "vf-invert-zero-1-stats"
@@ -4300,8 +4300,8 @@ set_tests_properties (vf-invert-zero-1-check
 
 plm_add_test (
   "vf-invert-trans-1"
-  ${PLM_PLASTIMATCH_PATH}/vf_invert
-  "--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha;--iterations;10"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "vf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha;--iterations;10"
   )
 plm_add_test (
   "vf-invert-trans-1-stats"

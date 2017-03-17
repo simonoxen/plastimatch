@@ -13,4 +13,5 @@ User guide
    segmentation_command_file_reference
    fdk_tutorial_i
    fdk_tutorial_ii
+   dose_calculation_command_file_reference
    3d_slicer_integration
