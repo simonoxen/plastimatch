@@ -994,7 +994,7 @@ if (PLM_BUILD_TESTING)
 
   # Copy the lconv script
   configure_file (
-    "${CMAKE_SOURCE_DIR}/run_lcov.sh" 
+    "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh" 
     "${CMAKE_BINARY_DIR}/run_lcov.sh"
     COPYONLY)
 endif ()
