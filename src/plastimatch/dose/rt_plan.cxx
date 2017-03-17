@@ -85,6 +85,7 @@ public:
 Rt_plan::Rt_plan ()
 {
     this->d_ptr = new Rt_plan_private;
+    d_ptr->rt_parms->set_rt_plan (this);
 }
 
 Rt_plan::~Rt_plan ()
@@ -95,8 +96,13 @@ Rt_plan::~Rt_plan ()
 Plm_return_code
 Rt_plan::parse_args (int argc, char* argv[])
 {
-    d_ptr->rt_parms->set_rt_plan (this);
     return d_ptr->rt_parms->parse_args (argc, argv);
+}
+
+Plm_return_code
+Rt_plan::set_command_file (const char *command_file)
+{
+    return d_ptr->rt_parms->set_command_file (command_file);
 }
 
 void

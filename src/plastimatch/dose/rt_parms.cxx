@@ -496,6 +496,13 @@ error_exit:
 }
 
 Plm_return_code
+Rt_parms::set_command_file (const char *command_file)
+{
+    Rt_parms_parser rpp (this);
+    return rpp.parse_config_file (command_file);
+}
+
+Plm_return_code
 Rt_parms::parse_args (int argc, char** argv)
 {
     int i;
@@ -514,6 +521,6 @@ Rt_parms::parse_args (int argc, char** argv)
     if (!argv[i]) {
         print_usage ();
     }
-    Rt_parms_parser rpp (this);
-    return rpp.parse_config_file (argv[i]);
+
+    return this->set_command_file (argv[i]);
 }

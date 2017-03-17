@@ -27,6 +27,7 @@ public:
 
 public:
     void set_rt_plan (Rt_plan *rt_plan);
+    Plm_return_code set_command_file (const char *command_file);
     Plm_return_code parse_args (int argc, char** argv);
     Plm_return_code set_key_value (
         const std::string& section,
@@ -36,6 +37,7 @@ public:
 
     void append_beam ();
     void append_peak ();
+
 
 protected:
     void parse_config (const char* config_fn);
