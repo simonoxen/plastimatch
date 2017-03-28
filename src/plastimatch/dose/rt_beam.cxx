@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmdose_config.h"
-#include "proj_volume.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,6 +9,7 @@
 #include <math.h>
 
 #include "bragg_curve.h"
+#include "proj_volume.h"
 #include "rt_beam.h"
 #include "rt_plan.h"
 
@@ -47,6 +47,8 @@ public:
     std::string range_compensator_out;
     std::string sigma_out;
     std::string wed_out;
+    std::string beam_dump_out;
+    
     std::string beam_line_type;
 
 public:
@@ -122,10 +124,16 @@ public:
 Rt_beam::Rt_beam ()
 {
     this->d_ptr = new Rt_beam_private();
-    this->rpl_vol = new Rpl_volume();
 
     /* Creation of the volumes useful for dose calculation */
-
+    this->rpl_vol = new Rpl_volume();
+    this->rpl_ct_vol_HU = 0;
+    this->sigma_vol = 0;
+    this->rpl_vol_lg = 0;
+    this->rpl_ct_vol_HU_lg = 0;
+    this->sigma_vol_lg = 0;
+    this->rpl_dose_vol = 0;
+    
     if (this->get_flavor() == 'f')
     {    
         this->rpl_ct_vol_HU = new Rpl_volume();
@@ -334,8 +342,14 @@ Rt_beam::dump (const char* dir)
     d_ptr->mebs->dump (dir);
 }
 
+void
+Rt_beam::dump (const std::string& dir)
+{
+    this->dump (dir.c_str());
+}
+
 void 
-Rt_beam::compute_prerequisites_beam_tools(Plm_image::Pointer& target)
+Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
 {
     if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
     {
@@ -735,6 +749,18 @@ Rt_beam::get_sigma_out()
 }
 
 void 
+Rt_beam::set_beam_dump_out(std::string str)
+{
+    d_ptr->beam_dump_out = str;
+}
+
+std::string 
+Rt_beam::get_beam_dump_out()
+{
+    return d_ptr->beam_dump_out;
+}
+
+void 
 Rt_beam::set_wed_out(std::string str)
 {
     d_ptr->wed_out = str;
@@ -967,4 +993,64 @@ float Rt_beam::get_distal_margin () const
 void Rt_beam::set_prescription (float prescription_min, float prescription_max)
 {
     d_ptr->mebs->set_prescription (prescription_min, prescription_max);
+}
+
+void
+Rt_beam::save_beam_output ()
+{
+    /* Save beam modifiers */
+    if (this->get_aperture_out() != "") {
+        Rpl_volume *rpl_vol = this->rpl_vol;
+        Plm_image::Pointer& ap = rpl_vol->get_aperture()->get_aperture_image();
+        ap->save_image (this->get_aperture_out().c_str());
+    }
+
+    if (this->get_range_compensator_out() != "" && this->get_beam_line_type() == "passive") {
+        Rpl_volume *rpl_vol = this->rpl_vol;
+        Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
+        rc->save_image (this->get_range_compensator_out().c_str());
+    }
+
+    /* Save projected density volume */
+    if (d_ptr->proj_img_out != "") {
+        Rpl_volume* proj_img = this->rpl_ct_vol_HU;
+        if (proj_img) {
+            proj_img->save (d_ptr->proj_img_out);
+        }
+    }
+
+    /* Save projected dose volume */
+    if (this->get_proj_dose_out() != "") {
+        Rpl_volume* proj_dose = this->rpl_dose_vol;
+        if (proj_dose) {
+            proj_dose->save (this->get_proj_dose_out());
+        }
+    }
+
+    /* Save sigma volume */
+    if (this->get_sigma_out() != "") {
+        Rpl_volume* sigma_img = this->sigma_vol;
+        if (sigma_img) {
+            sigma_img->save (this->get_sigma_out());
+        }
+    }
+
+    /* Save wed volume */
+    if (this->get_wed_out() != "") {
+        Rpl_volume* rpl_vol = this->rpl_vol;
+        if (rpl_vol) {
+            rpl_vol->save (this->get_wed_out());
+        }
+    }
+
+    /* Save the spot map */
+    if (this->get_mebs()->get_particle_number_out() != "") {
+        this->get_mebs()->export_spot_map_as_txt (this->get_aperture());
+    }
+
+    /* Dump beam information */
+    if (this->get_beam_dump_out() != "") {
+        this->dump (this->get_beam_dump_out());
+    }
+
 }

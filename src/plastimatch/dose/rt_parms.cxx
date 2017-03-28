@@ -299,6 +299,9 @@ Rt_parms::set_key_value (
         else if (key == "wed_out") {
             rt_beam->set_wed_out (val);
         }
+        else if (key == "beam_dump_out") {
+            rt_beam->set_beam_dump_out (val);
+        }
         else if (key == "beam_type") {
             Particle_type part = particle_type_parse (val);
             if (part == PARTICLE_TYPE_UNKNOWN) {

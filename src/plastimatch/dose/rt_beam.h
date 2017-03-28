@@ -92,7 +92,8 @@ public:
     void set_debug (const std::string& dir);
 
     /*! \name Outputs */
-    void dump (const char* dir);     /* Print debugging information */
+    void dump (const char* dir);
+    void dump (const std::string& dir);
 
     /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
     void compute_prerequisites_beam_tools(Plm_image::Pointer& target);
@@ -162,6 +163,9 @@ public:
     void set_sigma_out(std::string str);
     std::string get_sigma_out();
 
+    void set_beam_dump_out(std::string str);
+    std::string get_beam_dump_out();
+
     void set_wed_out(std::string str);
     std::string get_wed_out();
 
@@ -183,6 +187,9 @@ public:
     void set_distal_margin (float distal_margin);
     float get_distal_margin() const;
     void set_prescription (float prescription_min, float prescription_max);
+
+    /* Save beam-specific output files to disk */
+    void save_beam_output ();
     
 public: 
 

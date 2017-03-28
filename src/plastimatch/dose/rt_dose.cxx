@@ -470,14 +470,15 @@ compute_dose_ray_sharp (
 
             if (beam->get_aperture()->have_aperture_image())
             {
-                if((float) ap_img[idx2d_sm] == 0 || num_part[beam_index * beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1) + idx2d_sm] == 0)
+                if ((float) ap_img[idx2d_sm] == 0 || num_part[beam_index * beam->get_aperture()->get_dim(0) * beam->get_aperture()->get_dim(1) + idx2d_sm] == 0)
                 {
                     continue;
                 }
             }
             if (beam->get_aperture()->have_range_compensator_image())
             {
-                range_comp = rc_img[idx2d_sm] * PMMA_DENSITY * PMMA_STPR; // Lucite Material: d * rho * WER, MD Fix
+                // Lucite Material: d * rho * WER, MD Fix
+                range_comp = rc_img[idx2d_sm] * PMMA_DENSITY * PMMA_STPR;
             }
             else
             {
@@ -559,7 +560,7 @@ compute_dose_ray_sharp (
                         {
                             rpl_dose_img[idx3d_travel] += central_axis_dose 
                                 * WER / DENSITY
-                                * off_axis_factor ;
+                                * off_axis_factor;
                         }
                     } //for j1
                 } //for i1

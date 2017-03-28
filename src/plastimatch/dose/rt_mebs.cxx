@@ -529,7 +529,7 @@ Rt_mebs::dump (const char* dir)
 
     /* Dump SOBP */
     std::string sobp_fn = string_format ("%s/bragg_curve.txt", dir);
-    FILE* fp = fopen (sobp_fn.c_str(), "w");
+    FILE* fp = plm_fopen (sobp_fn.c_str(), "w");
     for (int i=0; i < d_ptr->num_samples; i++) {
         fprintf (fp, "%3.2f %3.2f\n", d_ptr->d_lut[i], d_ptr->e_lut[i]);
     }
