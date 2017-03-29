@@ -36,66 +36,6 @@
 static bool voxel_debug = false;
 #endif
 
-/* This function is used to rotate a point about a ray in an orbit
- * perpendicular to the ray.  It is assumed that the arbitrary axis of
- * rotation (ray) originates at the Cartesian origin.
- */
-static void
-rotate_about_ray (
-    double *xyz_new,    /* rotated point */
-    double *xyz,        /* point to rotate */
-    double t,           /* angle of rotation */
-    double *ray         /* axis of rotation */
-)
-{
-    double u[3];
-    double v[3];
-    double w[3];
-    double tmp[3] = {0.0, 0.0, 1.0};
-    double M[12];
-
-#if defined (commentout)
-    double M[16];
-#endif
-
-    /* Generate coordinate system */
-    vec3_copy (w, ray);
-    vec3_normalize1 (w);
-    vec3_cross (v, w, tmp);
-    vec3_normalize1 (v);
-    vec3_cross (u, v, w);
-
-    /* Build the composite matrix
-     *   -- Axis rotation: W coincident Z
-     *   -- Rotates about Z by theta radians
-     *   -- Undoes axis rotation (Z -> W)
-     */
-    M[4*0 + 0] = u[0]*u[0]*cos(t) + u[0]*v[0]*sin(t) - u[0]*v[0]*sin(t) + v[0]*v[0]*cos(t) + w[0]*w[0];
-    M[4*0 + 1] = u[0]*u[1]*cos(t) + u[0]*v[1]*sin(t) - u[1]*v[0]*sin(t) + v[0]*v[1]*cos(t) + w[0]*w[1];
-    M[4*0 + 2] = u[0]*u[2]*cos(t) + u[0]*v[2]*sin(t) - u[2]*v[0]*sin(t) + v[0]*v[2]*cos(t) + w[0]*w[2];
-    M[4*0 + 3] = 0;
-
-    M[4*1 + 0] = u[1]*u[0]*cos(t) + u[1]*v[0]*sin(t) - u[0]*v[1]*sin(t) + v[1]*v[0]*cos(t) + w[1]*w[0];
-    M[4*1 + 1] = u[1]*u[1]*cos(t) + u[1]*v[1]*sin(t) - u[1]*v[1]*sin(t) + v[1]*v[1]*cos(t) + w[1]*w[1]; 
-    M[4*1 + 2] = u[1]*u[2]*cos(t) + u[1]*v[2]*sin(t) - u[2]*v[1]*sin(t) + v[1]*v[2]*cos(t) + w[1]*w[2]; 
-    M[4*1 + 3] = 0;
-
-    M[4*2 + 0] = u[2]*u[0]*cos(t) + u[2]*v[0]*sin(t) - u[0]*v[2]*sin(t) + v[2]*v[0]*cos(t) + w[2]*w[0];
-    M[4*2 + 1] = u[2]*u[1]*cos(t) + u[2]*v[1]*sin(t) - u[1]*v[2]*sin(t) + v[2]*v[1]*cos(t) + w[2]*w[1];
-    M[4*2 + 2] = u[2]*u[2]*cos(t) + u[2]*v[2]*sin(t) - u[2]*v[2]*sin(t) + v[2]*v[2]*cos(t) + w[2]*w[2];
-    M[4*2 + 3] = 0;
-
-#if defined (commentout)
-    M[4*3 + 0] = 0;
-    M[4*3 + 1] = 0;
-    M[4*3 + 2] = 0;
-    M[4*3 + 3] = 1;
-#endif
-
-    /* Apply rotation transform */
-    mat43_mult_vec3(xyz_new, M, xyz);
-}
-
 /* Ray Tracer */
 double
 energy_direct (
@@ -130,7 +70,6 @@ void compute_dose_ray_desplanques (
     int dim[2] = {beam->sigma_vol->get_aperture()->get_dim(0),beam->sigma_vol->get_aperture()->get_dim(1)};
     double ray_bev[3] = {0,0,0};
     double xyz_ray_center[3] = {0.0, 0.0, 0.0};
-    double xyz_ray_pixel_center[3] = {0.0, 0.0, 0.0};
     double entrance_bev[3] = {0.0f, 0.0f, 0.0f}; // coordinates of intersection with the volume in the bev frame
     double xyz_room[3] = {0.0f, 0.0f, 0.0f}; 
     double xyz_room_tmp[3] = {0.0f, 0.0f, 0.0f};
@@ -138,7 +77,6 @@ void compute_dose_ray_desplanques (
     double entrance_length = 0;
     double distance = 0; // distance from the aperture to the POI
     double tmp[3] = {0.0f, 0.0f, 0.0f};
-    double PB_density = 1/(beam->rpl_vol->get_aperture()->get_spacing(0) * beam->rpl_vol->get_aperture()->get_spacing(1));
     double ct_density = 0;
     double WER = 0;
     double STPR = 0;
@@ -151,7 +89,6 @@ void compute_dose_ray_desplanques (
     float off_axis_factor = 0;
 
     int idx = 0; // index to travel in the dose volume
-    int idx_bev = 0; // second index for reconstructing the final image
     int idx_room = 0;
     int i_min = 0;
     int i_max = 0;
@@ -162,7 +99,6 @@ void compute_dose_ray_desplanques (
 
     float* img = (float*) dose_volume->img;
     float* ct_img = (float*) ct_vol->img;
-    float* rpl_image = (float*) beam->rpl_vol->get_vol()->img;
     float* rc_img = 0;
     unsigned char *ap_img = 0;
 
@@ -177,9 +113,6 @@ void compute_dose_ray_desplanques (
     }
 
     std::vector<float> num_part = beam->get_mebs()->get_num_particles();
-
-    double dist = 0;
-    int offset_step = 0;
 
     double vec_pdn_tmp[3] = {0,0,0};
     double vec_prt_tmp[3] = {0,0,0};
@@ -344,7 +277,6 @@ void compute_dose_ray_desplanques (
                     if (*in == true)
                     {
                         dose_volume->get_ijk_from_xyz(ijk_bev_trunk, xyz_bev, in);
-                        idx_bev = ijk_bev_trunk[0] + ijk_bev[1]*dose_volume->dim[0] + ijk_bev[2] * dose_volume->dim[0] * dose_volume->dim[1];
                         li_clamp_3d(ijk_bev, mijk_f, mijk_r, li_frac1, li_frac2, dose_volume);
                         idx_lower_left =  mijk_f[0] + dose_bev_dim[0] *(mijk_f[1] + mijk_f[2] * dose_bev_dim[1]);
                         final_dose_img[idx] += li_value(li_frac1[0], li_frac2[0], li_frac1[1], li_frac2[1], li_frac1[2], li_frac2[2], idx_lower_left, img, dose_volume);
@@ -369,22 +301,17 @@ compute_dose_ray_sharp (
     int ap_ij_sm[2] = {0,0};
     int dim_lg[3] = {0,0,0};
     int dim_sm[3] = {0,0,0};
-    const plm_long *dim_ct = ct_vol->dim;
     int idx2d_sm = 0;
     int idx2d_lg = 0;
     int idx3d_sm = 0;
     int idx3d_lg = 0;
     int idx3d_travel = 0;
-    int idx_ct = 0;
-    int ijk_ct[3] = {0,0,0};
     int i_min = 0;
     int i_max = 0;
     int j_min = 0;
     int j_max = 0;
 
     float ct_density = 0;
-    float WER = 0;
-    float DENSITY = 0;
     float STPR = 0;
     double sigma = 0;
     double sigma_x3 = 0;
@@ -395,8 +322,6 @@ compute_dose_ray_sharp (
     double lateral_step[2] = {0,0};
     double central_ray_xyz[3] = {0.0, 0.0, 0.0};
     double travel_ray_xyz[3] = {0.0, 0.0, 0.0};
-    double xyz_room[4] = {0.0, 0.0, 0.0, 1.0};
-    double PB_density = 1 / ( beam->rpl_vol->get_aperture()->get_spacing(0) *  beam->rpl_vol->get_aperture()->get_spacing(1));
 
     dim_lg[0] = rpl_dose_volume->get_vol()->dim[0];
     dim_lg[1] = rpl_dose_volume->get_vol()->dim[1];
@@ -409,14 +334,10 @@ compute_dose_ray_sharp (
     float* sigma_img = (float*) beam->sigma_vol->get_vol()->img;
     float* rpl_dose_img = (float*) rpl_dose_volume->get_vol()->img;
     float* ct_rpl_img = (float*) beam->rpl_ct_vol_HU->get_vol()->img;
-    float* ct_img = (float*) ct_vol->img;
     float* rc_img = 0;
     unsigned char *ap_img = 0;
     float range_comp = 0;
 
-    Ray_data* ray_data;
-    Ray_data* ray_data_tmp;
-	
     if (beam->get_aperture()->have_aperture_image()) {
         Volume::Pointer ap_vol = beam->get_aperture()->get_aperture_volume();
         ap_img = (unsigned char*) ap_vol->img;
@@ -426,8 +347,6 @@ compute_dose_ray_sharp (
     {
         rc_img = (float*) beam->get_aperture()->get_range_compensator_volume ()->img;
     }
-    double dist = 0;
-    double radius = 0;
 
     /* Creation of the rpl_volume containing the coordinates xyz (beam eye view) and the CT density vol*/
     std::vector<double> xyz_init (4,0);
@@ -459,10 +378,22 @@ compute_dose_ray_sharp (
 
     std::vector<float> num_part = beam->get_mebs()->get_num_particles();
 
+    printf ("Aperture margin = %d %d\n", margins[0], margins[1]);
+    
     /* calculation of the dose in the rpl_volume */
-    for (ap_ij_lg[0] = margins[0]; ap_ij_lg[0] < rpl_dose_volume->get_vol()->dim[0]-margins[0]; ap_ij_lg[0]++){
-        for (ap_ij_lg[1] = margins[1]; ap_ij_lg[1] < rpl_dose_volume->get_vol()->dim[1]-margins[1]; ap_ij_lg[1]++){
-
+    for (ap_ij_lg[0] = margins[0];
+         ap_ij_lg[0] < rpl_dose_volume->get_vol()->dim[0]-margins[0];
+         ap_ij_lg[0]++)
+    {
+        for (ap_ij_lg[1] = margins[1];
+             ap_ij_lg[1] < rpl_dose_volume->get_vol()->dim[1]-margins[1];
+             ap_ij_lg[1]++)
+        {
+            bool debug = false;
+//            if (ap_ij_lg[0] == 28 && ap_ij_lg[1] == 28) {
+//                debug = true;
+//            }
+            
             ap_ij_sm[0] = ap_ij_lg[0] - margins[0];
             ap_ij_sm[1] = ap_ij_lg[1] - margins[1];
             idx2d_lg = ap_ij_lg[1] * dim_lg[0] + ap_ij_lg[0];
@@ -485,7 +416,6 @@ compute_dose_ray_sharp (
                 range_comp = 0;
             }
 
-            ray_data = &rpl_dose_volume->get_Ray_data()[idx2d_lg];
             for (int k = 0; k < dim_sm[2]; k++)
             {
                 idx3d_lg = idx2d_lg + k * dim_lg[0]*dim_lg[1];
@@ -522,16 +452,14 @@ compute_dose_ray_sharp (
                 j_max = ap_ij_lg[1] + (int) ceil(sigma_x3 / lateral_minimal_step[k]);
                 if (j_max > dim_lg[1]-1 ) {j_max = dim_lg[1]-1;}
 
+                float tot_off_axis = 0.f;
                 for (int i1 = i_min; i1 <= i_max; i1++) {
                     for (int j1 = j_min; j1 <= j_max; j1++) {
                         idx3d_travel = k * dim_lg[0]*dim_lg[1] + j1 * dim_lg[0] + i1;
 
-                        ray_data_tmp = &rpl_dose_volume->get_Ray_data()[j1 * dim_lg[0] + i1];
-
                         travel_ray_xyz[0] = xyz_coor_vol[idx3d_travel][0];
                         travel_ray_xyz[1] = xyz_coor_vol[idx3d_travel][1];
                         travel_ray_xyz[2] = xyz_coor_vol[idx3d_travel][2];
-                        radius = vec3_dist(travel_ray_xyz, central_ray_xyz);
 
                         if (sigma == 0)
                         {
@@ -539,31 +467,21 @@ compute_dose_ray_sharp (
                         }
                         else
                         {
-                            off_axis_factor = double_gaussian_interpolation(central_ray_xyz, travel_ray_xyz, sigma, lateral_step);
+                            off_axis_factor = double_gaussian_interpolation (
+                                central_ray_xyz, travel_ray_xyz,
+                                sigma, lateral_step);
                         }
 
-                        vec3_copy(xyz_room, ray_data_tmp->ray);
-                        vec3_scale2(xyz_room, rpl_dose_volume->get_aperture()->get_distance() + rpl_dose_volume->get_front_clipping_plane() + (double) k);
-                        vec3_add2(xyz_room, rpl_dose_volume->get_proj_volume()->get_src());
-                        find_ijk_pixel(ijk_ct, xyz_room, ct_vol);
-                        if (ijk_ct[0] < 0 || ijk_ct[0] >= dim_ct[0] || ijk_ct[1] < 0 || ijk_ct[1] >= dim_ct[1] || ijk_ct[2] < 0 || ijk_ct[2] >= dim_ct[2] )
-                        {
-                            WER = PROTON_WER_AIR;
-                            DENSITY = AIR_DENSITY;
-                        }
-                        else
-                        {
-                            WER = compute_PrWER_from_HU(ct_img[ijk_ct[2] * dim_ct[0]*dim_ct[1] + ijk_ct[1] * dim_ct[0] + ijk_ct[0] ] );
-                            DENSITY = compute_density_from_HU(ct_img[ijk_ct[2] * dim_ct[0]*dim_ct[1] + ijk_ct[1] * dim_ct[0] + ijk_ct[0] ] );
-                        }
-                        if (DENSITY > 0.8)
-                        {
-                            rpl_dose_img[idx3d_travel] += central_axis_dose 
-                                * WER / DENSITY
-                                * off_axis_factor;
-                        }
+                        rpl_dose_img[idx3d_travel] += central_axis_dose 
+                            * off_axis_factor / ct_density / STPR;
+                        tot_off_axis += off_axis_factor;
+                        
                     } //for j1
                 } //for i1
+                if (debug) {
+                    printf ("%d %f %f %f %f\n", k, (float) central_axis_dose,
+                        tot_off_axis, ct_density, STPR);
+                }
             } // for k
         } // ap_ij[1]
     } // ap_ij[0]   
@@ -588,7 +506,6 @@ void compute_dose_ray_shackleford (
     const plm_long *dose_dim = dose_vol->dim;
     double vec_ud[4] = {0,0,0,1};
     double vec_rl[4] = {0,0,0,1};
-    float* ct_img = (float*) plan->get_patient_volume()->img;
     float* dose_img = (float*) dose_vol->img;
     double sigma_travel = 0;
     double sigma_3 = 0;
@@ -598,7 +515,6 @@ void compute_dose_ray_shackleford (
     float HU = 0;
     double central_sector_dose = 0;
     double radius = 0;
-    double theta = 0;
     double dr = 0;
 
     double idx_ap[2] = {0,0};

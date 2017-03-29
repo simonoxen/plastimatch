@@ -203,7 +203,7 @@ public:
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* rpl_ct_vol_HU_lg;
     Rpl_volume* sigma_vol_lg;
-    Rpl_volume* rpl_dose_vol; // contains the dose vol for the divergent geometry algorithm
+    Rpl_volume* rpl_dose_vol;
     
 private:
     bool load_xio (const char* fn);
