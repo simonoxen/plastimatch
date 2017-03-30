@@ -40,8 +40,8 @@ static bool voxel_debug = false;
 double
 energy_direct (
     float rgdepth,          /* voxel to dose */
-	Rt_beam* beam,
-	int beam_idx
+    Rt_beam* beam,
+    int beam_idx
 )
 {
     /* The voxel was not hit directly by the beam */

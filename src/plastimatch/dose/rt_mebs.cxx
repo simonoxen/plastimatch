@@ -1549,13 +1549,17 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
     }
 }
 
-/* This function returns optimized weighted peaks for passive systems (SOBP weights)
-	and active systems (beamlet particle numbers for each energy) */
+/* This function returns optimized weighted peaks for passive systems 
+   (SOBP weights) and active systems (beamlet particle numbers 
+   for each energy) */
 void 
-Rt_mebs::get_optimized_peaks(float dmin, float dmax, std::vector<float>* weight_tmp, std::vector<Rt_depth_dose*>* depth_dose_tmp)
+Rt_mebs::get_optimized_peaks (
+    float dmin,
+    float dmax,
+    std::vector<float>* weight_tmp,
+    std::vector<Rt_depth_dose*>* depth_dose_tmp)
 {
-    if (dmin == 0 || dmax == 0)
-    {
+    if (dmin == 0 || dmax == 0) {
         return;
     }
     int energy_min_index = (int) floor(pow((dmin/(10*d_ptr->alpha)),(1/d_ptr->p)) / d_ptr->energy_res);

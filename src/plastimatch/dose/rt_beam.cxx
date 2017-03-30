@@ -133,32 +133,6 @@ Rt_beam::Rt_beam ()
     this->rpl_ct_vol_HU_lg = 0;
     this->sigma_vol_lg = 0;
     this->rpl_dose_vol = 0;
-    
-    if (this->get_flavor() == 'f')
-    {    
-        this->rpl_ct_vol_HU = new Rpl_volume();
-        this->sigma_vol = new Rpl_volume();
-    }
-
-    if (this->get_flavor() == 'g')
-    {    
-        this->rpl_ct_vol_HU = new Rpl_volume();
-        this->sigma_vol = new Rpl_volume();
-        this->rpl_vol_lg = new Rpl_volume();
-        this->rpl_ct_vol_HU_lg = new Rpl_volume();
-        this->sigma_vol_lg = new Rpl_volume();
-        this->rpl_dose_vol = new Rpl_volume();
-    }
-
-    if (this->get_flavor() == 'h')
-    {    
-        this->rpl_ct_vol_HU = new Rpl_volume();
-        this->sigma_vol = new Rpl_volume();
-        this->rpl_vol_lg = new Rpl_volume();
-        this->rpl_ct_vol_HU_lg = new Rpl_volume();
-        this->sigma_vol_lg = new Rpl_volume();
-        this->rpl_dose_vol = new Rpl_volume();
-    }
 }
 
 Rt_beam::Rt_beam (const Rt_beam* rt_beam)
@@ -643,13 +617,13 @@ Rt_beam::set_aperture_spacing (const float ap_spacing[])
 void 
 Rt_beam::set_step_length(float step)
 {
-	d_ptr->step_length = step;
+    d_ptr->step_length = step;
 }
 
 float 
 Rt_beam::get_step_length()
 {
-	return d_ptr->step_length;
+    return d_ptr->step_length;
 }
 
 void
@@ -775,14 +749,14 @@ Rt_beam::get_wed_out()
 void 
 Rt_beam::set_beam_line_type(std::string str)
 {
-	if (str == "active")
-	{
-		d_ptr->beam_line_type = str;
-	}
-	else
-	{
-		d_ptr->beam_line_type = "passive";
-	}
+    if (str == "active")
+    {
+        d_ptr->beam_line_type = str;
+    }
+    else
+    {
+        d_ptr->beam_line_type = "passive";
+    }
 }
 
 std::string
@@ -879,49 +853,49 @@ Rt_beam::load_txt (const char* fn)
 bool
 Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz)
 {
-	double ray[3] = {0,0,0};
-	double length_on_normal_axis = 0;
+    double ray[3] = {0,0,0};
+    double length_on_normal_axis = 0;
 	
-	vec3_copy(ray, ct_xyz);
-	vec3_sub2(ray, d_ptr->source);
+    vec3_copy(ray, ct_xyz);
+    vec3_sub2(ray, d_ptr->source);
 
-	length_on_normal_axis = -vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_nrm()); // MD Fix: why is the aperture not updated at this point? and why proj vol is?
-	if (length_on_normal_axis < 0)
-	{
-		return false;
-	}
+    length_on_normal_axis = -vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_nrm()); // MD Fix: why is the aperture not updated at this point? and why proj vol is?
+    if (length_on_normal_axis < 0)
+    {
+        return false;
+    }
 
-	vec3_scale2(ray, this->get_aperture()->get_distance()/length_on_normal_axis);
+    vec3_scale2(ray, this->get_aperture()->get_distance()/length_on_normal_axis);
 
-	vec3_add2(ray, d_ptr->source);
-	vec3_sub2(ray, rpl_ct_vol_HU->get_proj_volume()->get_ul_room());
+    vec3_add2(ray, d_ptr->source);
+    vec3_sub2(ray, rpl_ct_vol_HU->get_proj_volume()->get_ul_room());
 					
-	idx_ap[0] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_c()) / (this->get_aperture()->get_spacing(0) * this->get_aperture()->get_spacing(0));
-	idx_ap[1] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_r()) / (this->get_aperture()->get_spacing(1) * this->get_aperture()->get_spacing(1));
-	idx[0] = (int) floor(idx_ap[0]);
-	idx[1] = (int) floor(idx_ap[1]);
-	rest[0] = idx_ap[0] - (double) idx[0];
-	rest[1] = idx_ap[1] - (double) idx[1];
-	return true;
+    idx_ap[0] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_c()) / (this->get_aperture()->get_spacing(0) * this->get_aperture()->get_spacing(0));
+    idx_ap[1] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_r()) / (this->get_aperture()->get_spacing(1) * this->get_aperture()->get_spacing(1));
+    idx[0] = (int) floor(idx_ap[0]);
+    idx[1] = (int) floor(idx_ap[1]);
+    rest[0] = idx_ap[0] - (double) idx[0];
+    rest[1] = idx_ap[1] - (double) idx[1];
+    return true;
 }
 
 bool 
 Rt_beam::is_ray_in_the_aperture(int* idx, unsigned char* ap_img)
 {
-	if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
-	if (idx[0] + 1 < this->get_aperture()->get_dim(0))
-	{
-		if ((float) ap_img[idx[0] + 1 + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
-	}
-	if (idx[1] + 1 < this->get_aperture()->get_dim(1))
-	{
-		if ((float) ap_img[idx[0] + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
-	}
-	if (idx[0] + 1 < this->get_aperture()->get_dim(0) && idx[1] + 1 < this->get_aperture()->get_dim(1))
-	{
-		if ((float) ap_img[idx[0] + 1 + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
-	}
-	 return true;
+    if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
+    if (idx[0] + 1 < this->get_aperture()->get_dim(0))
+    {
+        if ((float) ap_img[idx[0] + 1 + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
+    }
+    if (idx[1] + 1 < this->get_aperture()->get_dim(1))
+    {
+        if ((float) ap_img[idx[0] + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
+    }
+    if (idx[0] + 1 < this->get_aperture()->get_dim(0) && idx[1] + 1 < this->get_aperture()->get_dim(1))
+    {
+        if ((float) ap_img[idx[0] + 1 + (idx[1] + 1) * this->get_aperture()->get_dim(0)] == 0) {return false;}
+    }
+    return true;
 }
 
 float 
@@ -1052,5 +1026,4 @@ Rt_beam::save_beam_output ()
     if (this->get_beam_dump_out() != "") {
         this->dump (this->get_beam_dump_out());
     }
-
 }

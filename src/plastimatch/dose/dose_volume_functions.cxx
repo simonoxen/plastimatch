@@ -1,13 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-
+#include "plmdose_config.h"
 #include "dose_volume_functions.h"
 #include "proj_volume.h"
 #include "ray_data.h"
 #include "rt_lut.h"
 
-void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range)
+void
+dose_volume_create (
+    Volume* dose_volume,
+    float* sigma_max,
+    Rpl_volume* volume,
+    double range)
 {
     /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
     /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
@@ -58,7 +63,9 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
 }
 
 void
-calculate_rpl_coordinates_xyz(std::vector<std:: vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume)
+calculate_rpl_coordinates_xyz (
+    std::vector<std:: vector<double> >* xyz_coordinates_volume,
+    Rpl_volume* rpl_volume)
 {
     double aperture[3] = {0.0,0.0,0.0};
     double entrance[3] = {0.0,0.0,0.0};
@@ -134,7 +141,12 @@ dose_volume_reconstruction (
     }
 }
 
-void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample)
+void
+build_hong_grid (
+    std::vector<double>* area,
+    std::vector<double>* xy_grid,
+    int radius_sample,
+    int theta_sample)
 {
     double dr = 1.0 / (double) radius_sample;
     double dt = 2.0 * M_PI / (double) theta_sample;
@@ -228,44 +240,44 @@ double get_off_axis(double radius, double dr, double sigma)
 /* MD Fix: don't consider any cosines directions */
 void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_beam* beam)
 {
-	int idx = 0;
-	double norm = 0;
-	int ijk_max[3] = {0,0,0};
-	float* img = (float*) dose_volume->img;
+    int idx = 0;
+    double norm = 0;
+    int ijk_max[3] = {0,0,0};
+    float* img = (float*) dose_volume->img;
 
-	for(int i = 0; i < dose_volume->dim[0]; i++)
-	{
-		for(int j = 0; j < dose_volume->dim[1]; j++)
-		{
-			for(int k = 0; k < dose_volume->dim[2]; k++)
-			{
-				idx = i + (dose_volume->dim[0] * (j + dose_volume->dim[1] * k));
+    for(int i = 0; i < dose_volume->dim[0]; i++)
+    {
+        for(int j = 0; j < dose_volume->dim[1]; j++)
+        {
+            for(int k = 0; k < dose_volume->dim[2]; k++)
+            {
+                idx = i + (dose_volume->dim[0] * (j + dose_volume->dim[1] * k));
 
-				if (img[idx] > norm)
-				{
-					norm = img[idx];
-					ijk_max[0] = i;
-					ijk_max[1] = j;
-					ijk_max[2] = k;
-				}
-			}
-		}
-	}
-	if (norm > 0)
-	{
-		for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
-		{
-			img[i] = img[i] / norm * dose;
-		}
-    int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
-    beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
+                if (img[idx] > norm)
+                {
+                    norm = img[idx];
+                    ijk_max[0] = i;
+                    ijk_max[1] = j;
+                    ijk_max[2] = k;
+                }
+            }
+        }
+    }
+    if (norm > 0)
+    {
+        for (int i = 0; i < dose_volume->dim[0] * dose_volume->dim[1] * dose_volume->dim[2]; i++)
+        {
+            img[i] = img[i] / norm * dose;
+        }
+        int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+        beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
 
-		printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
-	}
-	else
-	{
-		printf("Dose is null in the entire volume. Please check your input conditions.\n");
-	}
+        printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
+    }
+    else
+    {
+        printf("Dose is null in the entire volume. Please check your input conditions.\n");
+    }
 }
 
 /* MD Fix: don't consider any cosines directions */
@@ -286,7 +298,7 @@ void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double do
     }
     else
     {
-        printf("***WARNING***\nDose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
+        printf("Dose null at the reference dose point.\nDose normalized to the dose maximum in the volume.\n");
         dose_normalization_to_dose(dose_volume, dose,beam);
     }
 }

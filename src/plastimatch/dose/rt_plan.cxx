@@ -283,25 +283,25 @@ Rt_plan::set_ref_dose_point (const double* rdp)
 void 
 Rt_plan::set_have_ref_dose_point(bool have_rdp)
 {
-	d_ptr->have_rdp = have_rdp;
+    d_ptr->have_rdp = have_rdp;
 }
 
 bool
 Rt_plan::get_have_ref_dose_point()
 {
-	return d_ptr->have_rdp;
+    return d_ptr->have_rdp;
 }
 
 void 
 Rt_plan::set_have_dose_norm (bool have_dose_norm)
 {
-	d_ptr->have_dose_norm = have_dose_norm;
+    d_ptr->have_dose_norm = have_dose_norm;
 }
 
 bool
 Rt_plan::get_have_dose_norm()
 {
-	return d_ptr->have_dose_norm;
+    return d_ptr->have_dose_norm;
 }
 
 char 
@@ -313,7 +313,7 @@ Rt_plan::get_non_norm_dose () const
 void 
 Rt_plan::set_non_norm_dose (char non_norm_dose)
 {
-	d_ptr->non_norm_dose = non_norm_dose;
+    d_ptr->non_norm_dose = non_norm_dose;
 }
 
 void
@@ -478,8 +478,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         float* sigma_img = (float*) sigma_vol->get_vol()->img;
         UNUSED_VARIABLE (sigma_img);
 
-        /* building the sigma_dose_vol */
-        if (beam->get_flavor() == 'g') {
+        if (beam->get_flavor() == 'a' || beam->get_flavor() == 'g') {
             beam->rpl_dose_vol = new Rpl_volume;
         }
 
@@ -620,7 +619,8 @@ Rt_plan::compute_dose (Rt_beam *beam)
     }
     if (beam->get_flavor() == 'a') // pull algorithm
     {    
-        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, if there is a range compensator */
+        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
+           if there is a range compensator */
         if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
         {
             add_rcomp_length_to_rpl_volume(beam);
@@ -667,21 +667,17 @@ Rt_plan::compute_dose (Rt_beam *beam)
                         continue;
                     }
 
-                    switch (beam->get_flavor()) {
-                    case 'a':
-                        dose = 0;
-                        rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
-                        WER =  compute_PrWER_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
+                    dose = 0;
+                    rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
+                    WER =  compute_PrWER_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
 
-                        for (size_t beam_idx = 0; beam_idx < beam->get_mebs()->get_depth_dose().size(); beam_idx++)
+                    for (size_t beam_idx = 0; beam_idx < beam->get_mebs()->get_depth_dose().size(); beam_idx++)
+                    {
+                        particle_number = beam->get_mebs()->get_particle_number_xyz(idx_ap_int, rest, beam_idx, beam->get_aperture()->get_dim());
+                        if (particle_number != 0 && rgdepth >=0 && rgdepth < beam->get_mebs()->get_depth_dose()[beam_idx]->dend) 
                         {
-                            particle_number = beam->get_mebs()->get_particle_number_xyz(idx_ap_int, rest, beam_idx, beam->get_aperture()->get_dim());
-                            if (particle_number != 0 && rgdepth >=0 && rgdepth < beam->get_mebs()->get_depth_dose()[beam_idx]->dend) 
-                            {
-                                dose += particle_number * WER * energy_direct (rgdepth, beam, beam_idx);
-                            }
+                            dose += particle_number * WER * energy_direct (rgdepth, beam, beam_idx);
                         }
-                        break;
                     }
 
                     /* Insert the dose into the dose volume */
