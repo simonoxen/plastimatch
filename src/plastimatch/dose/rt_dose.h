@@ -17,6 +17,11 @@ energy_direct (
 	int beam_idx
 );
 
+void compute_dose_ray_trace (
+    Volume::Pointer dose_vol, 
+    Rt_beam* beam, 
+    const Volume::Pointer ct_vol
+);
 void compute_dose_ray_desplanques (
     Volume* dose_volume, 
     Volume::Pointer ct_vol, 
@@ -28,7 +33,7 @@ void compute_dose_ray_sharp (
     const Volume::Pointer ct_vol,  
     Rt_beam* beam,
     Rpl_volume* rpl_dose_volume,
-	int beam_index,
+    int beam_index,
     const int* margins
 );
 void compute_dose_ray_shackleford (

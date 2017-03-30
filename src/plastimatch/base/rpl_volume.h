@@ -95,7 +95,6 @@ public:
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol);
     void compute_beam_modifiers_active_scanning (Volume *seg_vol);
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
-    void compute_beam_modifiers_passive_scattering_slicerRt(Plm_image::Pointer& plmTgt, float smearing, float proximal_margin, float distal_margin);
     void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin);
     void compute_beam_modifiers_passive_scattering (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
     void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
@@ -112,12 +111,10 @@ public:
     void load_img (const std::string& filename);
 
     void compute_ray_data ();
-    void compute_beam_modifiers_core_slicerRt (Plm_image::Pointer& plmTgt, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
 
 protected:
     void compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     void compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
-    void compute_target_distance_limits_slicerRt (Plm_image::Pointer& plmTgt, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
     void apply_smearing_to_target (float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
 
     void rpl_ray_trace (

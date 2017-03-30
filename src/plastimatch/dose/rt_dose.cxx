@@ -53,7 +53,116 @@ energy_direct (
     return (double) beam->get_mebs()->get_depth_dose()[beam_idx]->lookup_energy(rgdepth);
 }
 
-void compute_dose_ray_desplanques (
+void
+compute_dose_ray_trace (
+    Volume::Pointer dose_vol, 
+    Rt_beam* beam, 
+    const Volume::Pointer ct_vol
+)
+{
+    float* dose_img = (float*) dose_vol->img;
+
+    /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
+       if there is a range compensator */
+    if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
+    {
+        add_rcomp_length_to_rpl_volume(beam);
+    }
+
+    /* scan through patient CT Volume */
+    plm_long ct_ijk[3];
+    double ct_xyz[4];
+    plm_long idx = 0;
+    double idx_ap[2] = {0,0};
+    int idx_ap_int[2] = {0,0};
+    double rest[2] = {0,0};
+    unsigned char* ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
+    double particle_number = 0;
+    float WER = 0;
+    float rgdepth = 0;
+
+    for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
+        for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
+            for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
+                double dose = 0.0;
+
+                bool debug = false;
+                if (ct_ijk[2] == 98 && ct_ijk[1] == 213 && ct_ijk[0] == 200) {
+                    debug = true;
+                }
+                if (ct_ijk[2] == 98 && ct_ijk[1] == 245 && ct_ijk[0] == 217) {
+                    debug = true;
+                }
+
+                /* Transform vol index into space coords */
+                ct_xyz[0] = (double) (ct_vol->origin[0] + ct_ijk[0] * ct_vol->spacing[0]);
+                ct_xyz[1] = (double) (ct_vol->origin[1] + ct_ijk[1] * ct_vol->spacing[1]);
+                ct_xyz[2] = (double) (ct_vol->origin[2] + ct_ijk[2] * ct_vol->spacing[2]);
+                ct_xyz[3] = (double) 1.0;
+
+                if (beam->get_intersection_with_aperture(idx_ap, idx_ap_int, rest, ct_xyz) == false)
+                {
+                    continue;
+                }
+
+                if (debug) {
+                    printf ("**** DEBUG\n");
+                    printf (" idx_ap = %f, %f\n",
+                        (float) idx_ap[0], (float) idx_ap[1]);
+                    printf (" idx_ap_int = %d, %d\n",
+                        idx_ap_int[0], idx_ap_int[1]);
+                    printf (" rest = %f %f\n", 
+                        rest[0], rest[1]);
+                }
+
+                /* Check that the ray cross the aperture */
+                if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(0)-1
+                    || idx_ap[1] < 0 || idx_ap[1] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(1)-1)
+                {
+                    continue;
+                }
+
+                /* Check that the ray cross the active part of the aperture */
+                if (beam->get_aperture()->have_aperture_image() && beam->is_ray_in_the_aperture(idx_ap_int, ap_img) == false)
+                {
+                    continue;
+                }
+
+                dose = 0;
+                rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
+                WER =  compute_PrWER_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
+
+                if (debug) {
+                    printf (" rgdepth = %f, WER = %f\n", rgdepth, WER);
+                }
+                
+                for (size_t dd_idx = 0; dd_idx < beam->get_mebs()->get_depth_dose().size(); dd_idx++)
+                {
+                    particle_number = beam->get_mebs()->get_particle_number_xyz(idx_ap_int, rest, dd_idx, beam->get_aperture()->get_dim());
+                    if (debug) {
+                        printf ("  %d %f %f\n", (int)dd_idx,
+                            (float) particle_number,
+                            (float) beam->get_mebs()->get_depth_dose()[dd_idx]->dend);
+                    }
+                    if (particle_number != 0 && rgdepth >=0 && rgdepth < beam->get_mebs()->get_depth_dose()[dd_idx]->dend) 
+                    {
+                        dose += particle_number * WER * energy_direct (rgdepth, beam, dd_idx);
+                    }
+                }
+
+                /* Insert the dose into the dose volume */
+                idx = volume_index (dose_vol->dim, ct_ijk);
+                dose_img[idx] = dose;
+                if (debug) {
+                    printf (" dose = %f\n", dose);
+                }
+            }
+        }
+    }
+}
+
+void
+compute_dose_ray_desplanques (
     Volume* dose_volume, 
     Volume::Pointer ct_vol, 
     Rt_beam* beam, 

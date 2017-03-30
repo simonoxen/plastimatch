@@ -102,7 +102,6 @@ public:
     void compute_beam_data_from_spot_map();
     void compute_beam_data_from_manual_peaks();
     void compute_beam_data_from_manual_peaks(Plm_image::Pointer& target);
-    void compute_beam_data_from_manual_peaks_passive_slicerRt(Plm_image::Pointer& target);
     void compute_beam_data_from_prescription(Plm_image::Pointer& target);
     void compute_beam_data_from_target(Plm_image::Pointer& target);
     void compute_default_beam();

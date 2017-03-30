@@ -28,8 +28,6 @@
 #include "volume.h"
 #include "volume_macros.h"
 
-static void display_progress (float is, float of);
-
 class Rt_plan_private {
 
 public:
@@ -618,75 +616,8 @@ Rt_plan::compute_dose (Rt_beam *beam)
         }
     }
     if (beam->get_flavor() == 'a') // pull algorithm
-    {    
-        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
-           if there is a range compensator */
-        if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
-        {
-            add_rcomp_length_to_rpl_volume(beam);
-        }
-
-        /* scan through patient CT Volume */
-        plm_long ct_ijk[3];
-        double ct_xyz[4];
-        plm_long idx = 0;
-        double idx_ap[2] = {0,0};
-        int idx_ap_int[2] = {0,0};
-        double rest[2] = {0,0};
-        unsigned char* ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
-        double particle_number = 0;
-        float WER = 0;
-        float rgdepth = 0;
-
-        for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
-            for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
-                for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                    double dose = 0.0;
-
-                    /* Transform vol index into space coords */
-                    ct_xyz[0] = (double) (ct_vol->origin[0] + ct_ijk[0] * ct_vol->spacing[0]);
-                    ct_xyz[1] = (double) (ct_vol->origin[1] + ct_ijk[1] * ct_vol->spacing[1]);
-                    ct_xyz[2] = (double) (ct_vol->origin[2] + ct_ijk[2] * ct_vol->spacing[2]);
-                    ct_xyz[3] = (double) 1.0;
-
-                    if (beam->get_intersection_with_aperture(idx_ap, idx_ap_int, rest, ct_xyz) == false)
-                    {
-                        continue;
-                    }
-
-                    /* Check that the ray cross the aperture */
-                    if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(0)-1
-                        || idx_ap[1] < 0 || idx_ap[1] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(1)-1)
-                    {
-                        continue;
-                    }
-
-                    /* Check that the ray cross the active part of the aperture */
-                    if (beam->get_aperture()->have_aperture_image() && beam->is_ray_in_the_aperture(idx_ap_int, ap_img) == false)
-                    {
-                        continue;
-                    }
-
-                    dose = 0;
-                    rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
-                    WER =  compute_PrWER_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
-
-                    for (size_t beam_idx = 0; beam_idx < beam->get_mebs()->get_depth_dose().size(); beam_idx++)
-                    {
-                        particle_number = beam->get_mebs()->get_particle_number_xyz(idx_ap_int, rest, beam_idx, beam->get_aperture()->get_dim());
-                        if (particle_number != 0 && rgdepth >=0 && rgdepth < beam->get_mebs()->get_depth_dose()[beam_idx]->dend) 
-                        {
-                            dose += particle_number * WER * energy_direct (rgdepth, beam, beam_idx);
-                        }
-                    }
-
-                    /* Insert the dose into the dose volume */
-                    idx = volume_index (dose_vol->dim, ct_ijk);
-                    dose_img[idx] = dose;
-                }
-            }
-        }
-        display_progress ((float)idx, (float)ct_vol->npix);
+    {
+        compute_dose_ray_trace (dose_vol, beam, ct_vol);
     }
 
     /* Dose normalization process*/
@@ -800,63 +731,11 @@ Rt_plan::compute_plan ()
         if (!this->prepare_beam_for_calc (beam)) {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-        /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
+        
+        /* Compute beam modifiers, SOBP etc. according to the 
+           teatment strategy */
         beam->compute_prerequisites_beam_tools (this->get_target());
 
-        /* GCS FIX: The below code is commented out by Max.  
-           Need to figure out if it can be safely deleted. */
-#if defined (commentout)
-        if (beam->get_beam_line_type() == "passive")
-        {
-            /* handle auto-generated beam modifiers */
-            if (d_ptr->target_fn != "") {
-                printf ("Target fn = %s\n", d_ptr->target_fn.c_str());
-                this->set_target (d_ptr->target_fn);
-                beam->compute_beam_modifiers (this->get_target()->get_vol());
-            }
-	
-            /* generate depth dose curve, might be manual peaks or 
-               optimized based on prescription, or automatic based on target */
-
-            if ((beam->get_mebs()->get_have_copied_peaks() == false && beam->get_mebs()->get_have_prescription() == false && d_ptr->target_fn == "")||(beam->get_mebs()->get_have_manual_peaks() == true)) {
-		
-                /* Manually specified, so do not optimize */
-                if (!beam->get_mebs()->generate ()) {
-                    return PLM_ERROR;
-                }
-            } 
-            else if (d_ptr->target_fn != "" && !beam->get_mebs()->get_have_prescription()) {
-                /* Optimize based on target volume */
-                Rpl_volume *rpl_vol = beam->rpl_vol;
-                beam->get_mebs()->set_prescription(rpl_vol->get_min_wed() - beam->get_mebs()->get_proximal_margin(), rpl_vol->get_max_wed() + beam->get_mebs()->get_distal_margin());
-                beam->get_mebs()->optimize_sobp ();
-            } else {
-                /* Optimize based on manually specified range and modulation */
-                beam->get_mebs()->optimize_sobp ();
-            }
-			
-            /* compute the pencil beam spot matrix for passive beams */
-            beam->get_mebs()->initialize_and_compute_particle_number_matrix_passive(beam->get_aperture());
-        }
-        else // active
-        {
-            // to be computed
-
-            /* Compute the aperture and wed matrices */
-            if (beam->get_mebs()->get_have_particle_number_map() == false)
-            {
-                /* we extract the max and min energies to cover the target/prescription */
-                beam->compute_beam_modifiers(
-                    beam->get_mebs()->compute_particle_number_matrix_from_target_active(beam->rpl_vol, beam->get_target(), beam->get_aperture());
-                    }
-                else // spot map exists as a txt file
-                {
-                    beam->get_mebs()->initialize_and_read_particle_number_matrix_active(beam->get_aperture());
-                }
-            }
-        }
-#endif
-            
         /* Generate dose */
         this->set_debug (true);
         this->compute_dose (beam);
@@ -904,19 +783,6 @@ void
 Rt_plan::set_dose(Plm_image::Pointer& dose)
 {
     d_ptr->dose = dose;
-}
-
-static inline void
-display_progress (
-    float is,
-    float of
-) 
-{
-#if defined (PROGRESS)
-    printf (" [%3i%%]\b\b\b\b\b\b\b",
-        (int)floorf((is/of)*100.0f));
-    fflush (stdout);
-#endif
 }
 
 void

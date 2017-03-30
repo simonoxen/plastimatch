@@ -325,7 +325,8 @@ Rt_beam::dump (const std::string& dir)
 void 
 Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
 {
-    if (d_ptr->mebs->get_have_particle_number_map() == true && d_ptr->beam_line_type == "passive")
+    if (d_ptr->mebs->get_have_particle_number_map() == true
+        && d_ptr->beam_line_type == "passive")
     {
         printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
         printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
@@ -333,7 +334,12 @@ Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
         return;
     }
 
-    /* The priority gets to spot map > manual peaks > dose prescription > target */
+    /* The priority how to generate dose is:
+       1. manual spot map 
+       2. manual peaks 
+       3. dose prescription 
+       4. target 
+       5. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
         printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
@@ -406,19 +412,6 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks_passive_slicerRt(Plm_image::Pointer& target)
-{
-    /* The spot map will be identical for passive or scanning beam lines */
-    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
-    this->get_mebs()->generate_part_num_from_weight(ap_dim);
-
-    this->rpl_vol->compute_beam_modifiers_passive_scattering_slicerRt(target, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
-    
-    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator();
-}
-
-void
 Rt_beam::compute_beam_data_from_manual_peaks()
 {
     /* The spot map will be identical for passive or scanning beam lines */
@@ -442,14 +435,16 @@ Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
 {
     /* Compute beam aperture, range compensator 
        + SOBP for passively scattered beam lines */
-	
     if (this->get_beam_line_type() != "passive")
     {
-        d_ptr->mebs->compute_particle_number_matrix_from_target_active(this->rpl_vol, this->get_target(), d_ptr->smearing);
+        d_ptr->mebs->compute_particle_number_matrix_from_target_active (
+            this->rpl_vol, this->get_target(), d_ptr->smearing);
     }
     else
     {
-        this->compute_beam_modifiers (d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(), this->get_mebs()->get_max_wed_map());
+        this->compute_beam_modifiers (
+            d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(),
+            this->get_mebs()->get_max_wed_map());
         this->compute_beam_data_from_prescription(target);
     }
 }

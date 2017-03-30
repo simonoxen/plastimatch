@@ -1235,7 +1235,10 @@ Rt_mebs::optimizer (std::vector<float>* weight_tmp, std::vector<float>* energy_t
 }
 
 void
-Rt_mebs::initialize_energy_weight_and_depth_dose_vectors(std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, std::vector<Rt_depth_dose*>* depth_dose_tmp)
+Rt_mebs::initialize_energy_weight_and_depth_dose_vectors (
+    std::vector<float>* weight_tmp,
+    std::vector<float>* energy_tmp,
+    std::vector<Rt_depth_dose*>* depth_dose_tmp)
 {
     /* initialize the energies in the table */
     printf("\n %d Mono-energetic BP used:\n", d_ptr->energy_number);
@@ -1249,7 +1252,7 @@ Rt_mebs::initialize_energy_weight_and_depth_dose_vectors(std::vector<float>* wei
             d_ptr->energy_number--;
             (*energy_tmp).pop_back();
             weight_tmp->pop_back();
-            printf("sobp: peak with energy < 0, Energy resolution error. Last peak deleted.\n");
+            printf ("sobp: peak with energy < 0, Energy resolution error. Last peak deleted.\n");
         }
     }
     printf("\n");
@@ -1290,16 +1293,16 @@ Rt_mebs::scale_num_part(double A, int* ap_dim)
 }
 
 double 
-Rt_mebs::get_particle_number_xyz(int* idx, double* rest, int idx_beam, const int* ap_dim)
+Rt_mebs::get_particle_number_xyz (int* idx, double* rest, int dd_idx, const int* ap_dim)
 {
-    /* The boundaries possible errors like idx = dim are already excluded by the test on the aperture
-       Practically, idx = dim -1 is not possible */
+    /* The boundaries possible errors like idx = dim are already excluded by 
+       the test on the aperture. Practically, idx = dim -1 is not possible */
     double A = 0;
     double B = 0;
     int spot = 0;
-    spot = ap_dim[0] * ap_dim[1] * idx_beam + ap_dim[0] * idx[1] + idx[0];
+    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
     A = d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
-    spot = ap_dim[0] * ap_dim[1] * idx_beam + ap_dim[0] * (idx[1] +1 ) + idx[0];
+    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1] +1) + idx[0];
     B =  d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
     return A + rest[1] * (B-A);
 }
@@ -1414,84 +1417,24 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
 }
 
 void
-Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing)
+Rt_mebs::compute_particle_number_matrix_from_target_active (
+    Rpl_volume* rpl_vol,
+    Plm_image::Pointer& target,
+    float smearing)
 {
-    int dim[2] = {rpl_vol->get_aperture()->get_dim()[0], rpl_vol->get_aperture()->get_dim()[1]};
+    int dim[2] = {
+        rpl_vol->get_aperture()->get_dim()[0],
+        rpl_vol->get_aperture()->get_dim()[1]
+    };
 
     /* vector containing the min and the max of depth of the target */
     std::vector <double> dmin;
     std::vector <double> dmax;
     float min = 0;
     float max = 0;
-    rpl_vol->compute_beam_modifiers_active_scanning(target->get_vol(), smearing, d_ptr->proximal_margin, d_ptr->distal_margin, dmin, dmax);
-
-    /* Sanity check */
-    if (dmin.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 
-        || dmax.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1))
-    {
-        printf("ERROR: the aperture size doesn't correspond to the min and max depth maps of the target.\n");
-        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), (int) dmin.size(), (int) dmax.size());
-    }
-
-    for (size_t i = 0; i < dmax.size(); i++)
-    {
-        if (dmax[i] > max)
-        {
-            max = dmax[i];
-        }
-    }
-    min = max;
-    for (size_t i = 0; i < dmin.size(); i++)
-    {
-        if (dmin[i] < min && dmin[i] != 0)
-        {
-            min = dmin[i];
-        }
-    }
-    this->set_prescription_depths(min, max);
-    printf("Min and max depths in the PTV (target + margins): %lg mm and %lg mm.\n", d_ptr->prescription_depth_min, d_ptr->prescription_depth_max);
-    printf("Min and max energies for treating the PTV: %lg MeV and %lg MeV.\n", d_ptr->beam_min_energy, d_ptr->beam_max_energy);
-
-    std::vector<float> energy_tmp;
-    std::vector<float> weight_tmp;
-    std::vector<Rt_depth_dose*> depth_dose_tmp;
-    this->initialize_energy_weight_and_depth_dose_vectors(&weight_tmp, &energy_tmp, &depth_dose_tmp);
-
-    /* initialization of the dose matrix slice for monoenergetic slice */
-    for (int i = 0; i < dim[0] *  dim[1] * d_ptr->energy_number;i++)
-    {
-        d_ptr->num_particles.push_back(0);
-    }
-
-    printf("Optimization of the particle number map for any mono-energetic slice in progress...\n");
-    /* Let's optimize the SOBP for each beamlet */
-    for (size_t i = 0; i < dmin.size(); i++)
-    {
-        this->get_optimized_peaks(dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
-        for (int j = 0; j < d_ptr->energy_number; j++)
-        {
-            d_ptr->num_particles[i + j *  dim[0] *  dim[1] ] = weight_tmp[j];
-            /* Reset weight_tmp for next turn */
-            weight_tmp[j] = 0;
-        }
-    }
-    for (size_t i = 0; i < energy_tmp.size(); i++)
-    {
-        add_peak(energy_tmp[i], d_ptr->spread, 1);
-    }
-}
-
-void
-Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing)
-{
-    int dim[2] = {rpl_vol->get_aperture()->get_dim()[0], rpl_vol->get_aperture()->get_dim()[1]};
-
-    /* vector containing the min and the max of depth of the target */
-    std::vector <double> dmin;
-    std::vector <double> dmax;
-    float min = 0;
-    float max = 0;
-    rpl_vol->compute_beam_modifiers_core_slicerRt(target, true, smearing, d_ptr->proximal_margin, d_ptr->distal_margin, dmin, dmax);
+    rpl_vol->compute_beam_modifiers_active_scanning (
+        target->get_vol(), smearing, d_ptr->proximal_margin,
+        d_ptr->distal_margin, dmin, dmax);
 
     /* Sanity check */
     if (dmin.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 
