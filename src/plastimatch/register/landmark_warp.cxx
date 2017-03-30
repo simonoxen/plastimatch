@@ -129,7 +129,7 @@ landmark_convert_mm_to_voxel (
     plm_long *dim,
     const float *direction_cosines)
 {
-    for (int i = 0; i < landmarks_mm.get_count(); i++) {
+    for (size_t i = 0; i < landmarks_mm.get_count(); i++) {
 	for (int d = 0; d < 3; d++) {
 	    landvox[i*3 + d] = ROUND_INT (
 		( landmarks_mm.point(i,d)

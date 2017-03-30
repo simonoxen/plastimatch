@@ -207,8 +207,6 @@ bspline_loop_tile_serial (
     // Serial across tiles
     plm_long pidx;
     LOOP_THRU_VOL_TILES (pidx, bxf) {
-        int rc;
-
         int ijk_tile[3];
         plm_long q[3];
 
@@ -217,14 +215,9 @@ bspline_loop_tile_serial (
         float mijk[3];              /* Indices within moving image (vox) */
         float mxyz[3];              /* Position within moving image (mm) */
         plm_long mijk_f[3], midx_f; /* Floor */
-        plm_long mijk_r[3], midx_r; /* Round */
-
+        plm_long mijk_r[3];         /* Round */
         float dxyz[3];
-
         float li_1[3], li_2[3];
-        float m_val, diff;
-    
-        float dc_dv[3];
 
         float sets_x[64];
         float sets_y[64];
@@ -294,7 +287,6 @@ bspline_loop_tile_serial (
 
                     // Find linear indices for moving image
                     midx_f = volume_index (moving->dim, mijk_f);
-                    midx_r = volume_index (moving->dim, mijk_r);
 
                     /* Run the target function */
                     bspline_loop_user.loop_function (

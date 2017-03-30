@@ -189,19 +189,19 @@ public:
         this->particle_number_out = rsp->particle_number_out;
 
         /* copy the associated depth dose and update the dept dose curve */
-        for (int i = 0; i < rsp->depth_dose.size(); i++)
+        for (size_t i = 0; i < rsp->depth_dose.size(); i++)
         {
             this->depth_dose.push_back(rsp->depth_dose[i]);
         }
-        for (int i = 0; i < rsp->depth_dose_weight.size(); i++)
+        for (size_t i = 0; i < rsp->depth_dose_weight.size(); i++)
         {
             this->depth_dose_weight.push_back(rsp->depth_dose_weight[i]);
         }
-        for (int i = 0; i < rsp->energies.size(); i++)
+        for (size_t i = 0; i < rsp->energies.size(); i++)
         {
             this->energies.push_back(rsp->energies[i]);
         }
-        for (int i = 0; i < rsp->num_particles.size(); i++)
+        for (size_t i = 0; i < rsp->num_particles.size(); i++)
         {
             this->num_particles.push_back(rsp->num_particles[i]);
         }
@@ -494,7 +494,7 @@ Rt_mebs::generate ()
         d_ptr->f_lut[i] = 0;
     }
 
-    for (int it = 0; it < d_ptr->depth_dose.size(); it++)
+    for (size_t it = 0; it < d_ptr->depth_dose.size(); it++)
     {
         const Rt_depth_dose *ppp = d_ptr->depth_dose[it];
         /* Check that this peak has the same resolution */
@@ -553,12 +553,12 @@ Rt_mebs::printparameters()
     printf ("\nParticle type : %s, alpha: %lg, p: %lg\n", particle_type_string (d_ptr->particle_type), d_ptr->alpha, d_ptr->p);
     printf("Number of depth_dose : %d\n",d_ptr->energy_number = d_ptr->depth_dose.size());
     printf("Energy set (in MeV):\n");
-    for (int i = 0; i < d_ptr->energies.size(); i++)
+    for (size_t i = 0; i < d_ptr->energies.size(); i++)
     {
         printf("%lg ", d_ptr->energies[i]);
     }
     printf("\nweights set:\n");
-    for (int i = 0; i < d_ptr->depth_dose_weight.size(); i++)
+    for (size_t i = 0; i < d_ptr->depth_dose_weight.size(); i++)
     {
         printf("%lg ", d_ptr->depth_dose_weight[i]);
     }
@@ -1218,7 +1218,7 @@ Rt_mebs::optimize_sobp ()
     std::vector<float> energy_tmp;
     this->optimizer (&weight_tmp, &energy_tmp);
 
-    for (int i = 0; i < energy_tmp.size(); i++)
+    for (size_t i = 0; i < energy_tmp.size(); i++)
     {
         add_peak(energy_tmp[i], d_ptr->spread, weight_tmp[i]);
     }
@@ -1430,10 +1430,10 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol,
         || dmax.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1))
     {
         printf("ERROR: the aperture size doesn't correspond to the min and max depth maps of the target.\n");
-        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), dmin.size(), dmax.size());
+        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), (int) dmin.size(), (int) dmax.size());
     }
 
-    for (int i = 0; i < dmax.size(); i++)
+    for (size_t i = 0; i < dmax.size(); i++)
     {
         if (dmax[i] > max)
         {
@@ -1441,7 +1441,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol,
         }
     }
     min = max;
-    for (int i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < dmin.size(); i++)
     {
         if (dmin[i] < min && dmin[i] != 0)
         {
@@ -1465,7 +1465,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol,
 
     printf("Optimization of the particle number map for any mono-energetic slice in progress...\n");
     /* Let's optimize the SOBP for each beamlet */
-    for (int i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < dmin.size(); i++)
     {
         this->get_optimized_peaks(dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
         for (int j = 0; j < d_ptr->energy_number; j++)
@@ -1475,7 +1475,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (Rpl_volume* rpl_vol,
             weight_tmp[j] = 0;
         }
     }
-    for (int i = 0; i < energy_tmp.size(); i++)
+    for (size_t i = 0; i < energy_tmp.size(); i++)
     {
         add_peak(energy_tmp[i], d_ptr->spread, 1);
     }
@@ -1498,10 +1498,10 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
         || dmax.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1))
     {
         printf("ERROR: the aperture size doesn't correspond to the min and max depth maps of the target.\n");
-        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), dmin.size(), dmax.size());
+        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), (int) dmin.size(), (int) dmax.size());
     }
 
-    for (int i = 0; i < dmax.size(); i++)
+    for (size_t i = 0; i < dmax.size(); i++)
     {
         if (dmax[i] > max)
         {
@@ -1509,7 +1509,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
         }
     }
     min = max;
-    for (int i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < dmin.size(); i++)
     {
         if (dmin[i] < min && dmin[i] != 0)
         {
@@ -1533,7 +1533,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
 
     printf("Optimization of the particle number map for any mono-energetic slice in progress...\n");
     /* Let's optimize the SOBP for each beamlet */
-    for (int i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < dmin.size(); i++)
     {
         this->get_optimized_peaks(dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
         for (int j = 0; j < d_ptr->energy_number; j++)
@@ -1543,7 +1543,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active_slicerRt (Rpl_volume*
             weight_tmp[j] = 0;
         }
     }
-    for (int i = 0; i < energy_tmp.size(); i++)
+    for (size_t i = 0; i < energy_tmp.size(); i++)
     {
         add_peak(energy_tmp[i], d_ptr->spread, 1);
     }

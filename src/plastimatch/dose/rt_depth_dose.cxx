@@ -273,35 +273,34 @@ Rt_depth_dose::get_index_of_dose_max()
 float
 Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
 {
-	int i = 0;
-	int j = 0;
+    int i = 0;
+    int j = 0;
 
     float energy = 0.0f;
-	float dres = this->dres;
-	float dmin = depth - dz/2.0;
-	float dmax = depth + dz/2.0;
+    float dmin = depth - dz/2.0;
+    float dmax = depth + dz/2.0;
 
     /* Sanity check */
-	if (depth + dz/2.0 < 0) {
-		return 0.0f;
-	}
+    if (depth + dz/2.0 < 0) {
+        return 0.0f;
+    }
 
     /* Find index into profile arrays */
     for (i = 0; i < this->num_samples-1; i++) {
         if (this->d_lut[i]> dmin) {
-			i--;
+            i--;
             break;
         }
     }
 
-	for (j = i; j < this->num_samples; j++) {
-		if (this->d_lut[j] > dmax) {
-			j--;
-			break;
-		}
-	}
+    for (j = i; j < this->num_samples; j++) {
+        if (this->d_lut[j] > dmax) {
+            j--;
+            break;
+        }
+    }
 
-	/* Use index to lookup and interpolate energy */
+    /* Use index to lookup and interpolate energy */
     if (j >= 0 && j < this->num_samples-1) {
         // linear interpolation
         energy = this->f_lut[j]
@@ -309,23 +308,23 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
             * ((this->f_lut[j+1] - this->f_lut[j]) 
                 / (this->d_lut[j+1] - this->d_lut[j]));
     } 
-	else
-	{
-		energy = this->f_lut[num_samples-1];
-	}
+    else
+    {
+        energy = this->f_lut[num_samples-1];
+    }
 
-	if (i >= 0 && i < this->num_samples-1) {
-		// linear interpolation
+    if (i >= 0 && i < this->num_samples-1) {
+        // linear interpolation
         energy -= this->f_lut[i]
             + (dmin - this->d_lut[i])
             * ((this->f_lut[i+1] - this->f_lut[i]) 
                 / (this->d_lut[i+1] - this->d_lut[i]));
     } 
-	else if (i == num_samples-1)
-	{
-		energy -= this->f_lut[num_samples-1];
-	}
-	return energy;
+    else if (i == num_samples-1)
+    {
+        energy -= this->f_lut[num_samples-1];
+    }
+    return energy;
 }
 
 float

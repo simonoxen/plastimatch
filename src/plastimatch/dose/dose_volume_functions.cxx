@@ -18,7 +18,6 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
     plm_long dim[3] = {0,0,0};
     float origin[3] = {0,0,0};
     float spacing[3] = {0,0,0};
-    plm_long npix = 0;
     const float dc[9] = {
         dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
         dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
@@ -55,7 +54,6 @@ void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volum
             dim[i] = (plm_long) ((back_clip_useful - volume->get_front_clipping_plane())/spacing[i] + 1);
         }
     }
-    npix = dim[0]*dim[1]*dim[2];
     dose_volume->create(dim, origin, spacing, dc, PT_FLOAT,1);
 }
 
@@ -273,7 +271,6 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_bea
 /* MD Fix: don't consider any cosines directions */
 void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Rt_beam* beam)
 {
-    std::vector<float>& num_part = beam->get_mebs()->get_num_particles();
     double norm = dose_volume->get_ijk_value(rdp_ijk);
     float* img = (float*) dose_volume->img;
 

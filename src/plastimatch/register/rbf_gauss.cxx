@@ -402,14 +402,10 @@ bspline_rbf_find_coeffs (
 )
 {
     bspline_rbf_find_coeffs_reg (coeff, lw);
-    //bspline_rbf_find_coeffs_noreg(vector_field, parms);
 
-    int i;
-    for (i=0; i < lw->m_fixed_landmarks.get_count(); i++) {
-	printf("coeff %4d  %.4f %.4f %.4f\n",  i,
-	    coeff[3*i+0],
-	    coeff[3*i+1],
-	    coeff[3*i+2]);
+    for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
+	printf("coeff %4d  %.4f %.4f %.4f\n",
+            (int) i, coeff[3*i+0], coeff[3*i+1], coeff[3*i+2]);
     }
 
 #if defined (commentout)
@@ -537,7 +533,6 @@ rbf_gauss_update_vf_no_dircos (
     }
 }
 
-
 void
 rbf_gauss_warp (Landmark_warp *lw)
 {
@@ -545,7 +540,6 @@ rbf_gauss_warp (Landmark_warp *lw)
     float origin[3], spacing[3];
     float direction_cosines[9];
     plm_long dim[3];
-    int i;
     Volume::Pointer moving;
     Volume *vf_out, *warped_out;
 
@@ -557,12 +551,13 @@ rbf_gauss_warp (Landmark_warp *lw)
 	rbf_cluster_find_adapt_radius( lw );
     }
     else {
-	for(i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
+	for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
 	    lw->adapt_radius[i]=lw->rbf_radius;
     }
 
-    for (i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
+    for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
 	printf("%f\n", lw->adapt_radius[i]);
+    }
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (

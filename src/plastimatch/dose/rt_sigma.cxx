@@ -383,9 +383,9 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
 
 void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy, int* margins)
 {
-	/* There are two methods for computing the beam spread due to a range compensator */
+    /* There are two methods for computing the beam spread due to a range compensator */
     /* Method1 rc_MC_model:  Hong's algorithm (Highland)- See Hong's paper */
-	/* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
+    /* Method2:  model built on Monte Carlo simulations - Paper still unpublished */
     /* The range compensator is supposed to be made of lucite and placed right after the aperture*/
 	
     if (energy < 1)
@@ -396,17 +396,17 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     /* Range value in lucite extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
     double range = 10 * get_proton_range((double) energy);
 
-	/* Theta0 computation */
-	double theta0 = 0;
+    /* Theta0 computation */
+    double theta0 = 0;
 
-	if (beam->get_rc_MC_model() != 'y')
-	{
-			theta0 = get_theta0_Highland(range);
-	}
-	else
-	{
-			theta0 = get_theta0_MC(energy);
-	}
+    if (beam->get_rc_MC_model() != 'y')
+    {
+        theta0 = get_theta0_Highland(range);
+    }
+    else
+    {
+        theta0 = get_theta0_MC(energy);
+    }
 
     /* sigma calculation and length computations */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
@@ -440,41 +440,41 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
     double sigma;
     double nrm[3] = {0,0,0};
 		
-	/* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
+    /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 	
-    if (margins[0] == 0 && margins[1] == 0 || beam->get_flavor() != 'h')
+    if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != 'h')
     {
         for (int i = 0; i < dim[0] * dim[1]; i++)
         {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
-			if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
+            if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
             {
                 Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
 	        
                 proj = -vec3_dot(ray_data->ray, nrm);
-				if (proj == 0) 
-				{ 
-					printf("error: some rays are perpendicular to the beam axis \n");
-					return;
-				}
+                if (proj == 0) 
+                { 
+                    printf("error: some rays are perpendicular to the beam axis \n");
+                    return;
+                }
 
                 dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
                 rc_over_range =  rc_img[i] / proj * PMMA_DENSITY * PMMA_STPR / range; // energy is >1, so range > 0 (range is in water: rho * WER)
 	
                 if (rc_over_range < 1)
                 {
-					if (beam->get_rc_MC_model() != 'y')
-					{
-						theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
-						rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[i];
-					}
-					else
-					{
-						theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
-						rc_eff = get_scat_or_MC(rc_over_range) * rc_img[i];
-					}
+                    if (beam->get_rc_MC_model() != 'y')
+                    {
+                        theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+                        rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[i];
+                    }
+                    else
+                    {
+                        theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+                        rc_eff = get_scat_or_MC(rc_over_range) * rc_img[i];
+                    }
 	
                     for (int j = 0; j < dim[2]; j++)
                     {
@@ -526,31 +526,31 @@ void compute_sigma_range_compensator(Rpl_volume* sigma_vol, Rpl_volume* rpl_volu
                 /* calculation of sigma_srm, see graph A3 from the Hong's paper */
                 if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[idx2d_sm] > 0))
                 {
-					Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
+                    Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
 	        
-					proj = -vec3_dot(ray_data->ray, nrm);
+                    proj = -vec3_dot(ray_data->ray, nrm);
 
-					if (proj == 0) 
-					{ 
-						printf("error: some rays are perpendicular to the beam axis \n");
-						return;
-					}
+                    if (proj == 0) 
+                    { 
+                        printf("error: some rays are perpendicular to the beam axis \n");
+                        return;
+                    }
 
-					dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
+                    dist_cp = vec3_dist(ray_data->cp, beam->get_source_position());
                     rc_over_range = rc_img[idx2d_sm] / proj * PMMA_DENSITY * PMMA_STPR / range; // energy is >1, so range > 0
 
                     if (rc_over_range < 1)
                     {
-						if (beam->get_rc_MC_model() != 'y')
-						{
-							theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
-							rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[idx2d_sm];
-						}
-						else
-						{
-							theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
-							rc_eff = get_scat_or_MC(rc_over_range) * rc_img[idx2d_sm];
-						}
+                        if (beam->get_rc_MC_model() != 'y')
+                        {
+                            theta_srm =  theta0 * get_theta_rel_Highland(rc_over_range);
+                            rc_eff = get_scat_or_Highland(rc_over_range) * rc_img[idx2d_sm];
+                        }
+                        else
+                        {
+                            theta_srm =  theta0 * get_theta_rel_MC(rc_over_range);
+                            rc_eff = get_scat_or_MC(rc_over_range) * rc_img[idx2d_sm];
+                        }
 
                         for (int k = 0; k < dim[2]; k++)
                         {

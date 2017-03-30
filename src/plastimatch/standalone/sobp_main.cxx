@@ -80,17 +80,17 @@ int main (int argc, char* argv[])
     {
         sscanf (argv[3], "%d", &Emin);
         sscanf (argv[4], "%d", &Emax);
-		mebs.set_energies(Emin, Emax);
+        mebs.set_energies(Emin, Emax);
     }
-	std::vector<float> weight;
-	std::vector<float> energy;
+    std::vector<float> weight;
+    std::vector<float> energy;
     mebs.optimizer(&weight, &energy);
-	for (int i = 0; i < energy.size(); i++)
-	{
-		mebs.add_peak(energy[i], mebs.get_spread(), weight[i]);
-	}
-	mebs.generate();
-	mebs.printparameters();
+    for (size_t i = 0; i < energy.size(); i++)
+    {
+        mebs.add_peak(energy[i], mebs.get_spread(), weight[i]);
+    }
+    mebs.generate();
+    mebs.printparameters();
 
     return 0;
 }

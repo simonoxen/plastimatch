@@ -558,7 +558,7 @@ void
 Rtss::keyholize (void)
 {
     /* Loop through structures */
-    for (int i = 0; i < this->num_structures; i++) {
+    for (size_t i = 0; i < this->num_structures; i++) {
         lprintf ("Keyholizing structure %d.\n", i);
 	Rtss_roi *curr_structure = this->slist[i];
 
@@ -567,7 +567,7 @@ Rtss::keyholize (void)
 	std::vector<bool> used_contours;
 	used_contours.assign (curr_structure->num_contours, false);
 
-	for (int j = 0; j < curr_structure->num_contours; j++) {
+	for (size_t j = 0; j < curr_structure->num_contours; j++) {
 	    std::vector<int> group_contours;
 	    Rtss_contour *group_polyline = curr_structure->pslist[j];
 	    if (group_polyline->num_vertices == 0) {
@@ -579,7 +579,7 @@ Rtss::keyholize (void)
 	    }
 	    float group_z = group_polyline->z[0];
 	    group_contours.push_back (j);
-	    for (int k = j+1; k < curr_structure->num_contours; k++) {
+	    for (size_t k = j+1; k < curr_structure->num_contours; k++) {
 		Rtss_contour *curr_polyline = curr_structure->pslist[k];
 		if (curr_polyline->num_vertices == 0) {
 		    curr_polyline->slice_no = -1;
@@ -607,7 +607,7 @@ Rtss::keyholize (void)
             for (size_t k = 0; k < group_contours.size(); k++) {
 		int cidx = group_contours[k];
 		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
-		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+		for (size_t l = 0; l < curr_polyline->num_vertices; l++) {
 		    if (curr_polyline->x[l] < group_xmin[k]) {
                         group_xmin[k] = curr_polyline->x[l];
 		    }
@@ -622,7 +622,7 @@ Rtss::keyholize (void)
 		Rtss_contour *curr_polyline = curr_structure->pslist[cidx];
 
 		float curr_xmin = FLT_MAX;
-		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+		for (size_t l = 0; l < curr_polyline->num_vertices; l++) {
 		    if (curr_polyline->x[l] < curr_xmin) {
 			curr_xmin = curr_polyline->x[l];
 		    }
@@ -655,7 +655,7 @@ Rtss::keyholize (void)
                 if (contour_in_contour (curr_polyline, ...)
 #endif
                     
-		for (int l = 0; l < curr_polyline->num_vertices; l++) {
+		for (size_t l = 0; l < curr_polyline->num_vertices; l++) {
                     float x = curr_polyline->x[0];
                     float y = curr_polyline->y[0];
                     

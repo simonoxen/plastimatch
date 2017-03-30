@@ -33,9 +33,6 @@ ray_trace_uniform (
     double ip2[3];
     double phy_step[3];
 
-    int ai[3]={0,0,0};
-    double frac[3]={0.0, 0.0, 0.0};
-
     float pix_density;
     double pt;  
     double rlen;
