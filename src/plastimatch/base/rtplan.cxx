@@ -49,6 +49,7 @@ Rtplan::clear(void)
     this->rt_plan_name = "";
     this->rt_plan_date = "";
     this->rt_plan_time = "";
+    this->fraction_scheme_name = "";
     this->tolerance_table_label = "";
     this->tolerance_gantry_angle = "";
     this->tolerance_patient_support_angle = "";

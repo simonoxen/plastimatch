@@ -203,6 +203,9 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertString (DCM_RTPlanDate, rtplan->rt_plan_date.c_str());
     dataset->putAndInsertString (DCM_RTPlanTime, rtplan->rt_plan_time.c_str());
 
+    /* Fraction scheme module */
+    dataset->putAndInsertString (DCM_FractionGroupDescription, rtplan->fraction_scheme_name.c_str());
+
     if (rsm->get_rtstruct_instance_uid() == "") {
         dataset->putAndInsertString (DCM_RTPlanGeometry, "TREATMENT_DEVICE");
     } else {
@@ -331,9 +334,13 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
         if (rtplan->tolerance_table_label != "") {
             dcmtk_put (ib_item, DCM_ReferencedToleranceTableNumber, 0);
         }
+	if (rtplan->patient_position != "") {
+            dcmtk_put (ib_item, DCM_ReferencedPatientSetupNumber, 1);
+	}
         ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances,
 	    beam->virtual_source_axis_distances.c_str());
-        ib_item->putAndInsertString (DCM_TreatmentDeliveryType, "TREATMENT");
+        ib_item->putAndInsertString (DCM_TreatmentDeliveryType,
+	    beam->treatment_delivery_type.c_str());
         ib_item->putAndInsertString (DCM_NumberOfWedges, "0");
         ib_item->putAndInsertString (DCM_NumberOfCompensators, "0");
         ib_item->putAndInsertString (DCM_NumberOfBoli, "0");

@@ -28,6 +28,7 @@ Rtplan_beam::clear()
     this->name = "";
     this->description = "";
     this->treatment_machine_name = "";
+    this->treatment_delivery_type = "";
     this->final_cumulative_meterset_weight = 0.f;
     this->snout_position = 0.f;
     this->gantry_angle = 0.f;

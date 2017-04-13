@@ -20,6 +20,7 @@ public:
     std::string description;
     /*! \other brief descriptions */
     std::string treatment_machine_name;
+    std::string treatment_delivery_type;
     std::string manufacturer;
     std::string institution_name;
     std::string institution_address;

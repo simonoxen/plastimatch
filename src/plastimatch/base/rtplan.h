@@ -39,6 +39,7 @@ public:
     std::string rt_plan_name;
     std::string rt_plan_date;
     std::string rt_plan_time;
+    std::string fraction_scheme_name;
     std::string tolerance_table_label;
     std::string tolerance_gantry_angle;
     std::string tolerance_patient_support_angle;
