@@ -8,6 +8,7 @@
 
 #include "aperture.h"
 #include "dose_volume_functions.h"
+#include "float_pair_list.h"
 #include "plm_image.h"
 #include "plm_exception.h"
 #include "plm_timer.h"
@@ -26,6 +27,7 @@
 #include "rt_mebs.h"
 #include "rt_study.h"
 #include "volume.h"
+#include "volume_adjust.h"
 #include "volume_macros.h"
 
 class Rt_plan_private {
@@ -44,8 +46,9 @@ public:
     std::string target_fn;
     std::string output_dose_fn;
 
-    /* Patient (ct_image) , target, output dose volume */
-    Plm_image::Pointer patient;
+    /* Patient (hu), patient (ed or sp) , target, output dose volume */
+    Plm_image::Pointer patient_hu;
+    Plm_image::Pointer patient_edsp;
     Plm_image::Pointer target;
     Plm_image::Pointer dose;
 
@@ -68,7 +71,8 @@ public:
         this->non_norm_dose = 'n';
         this->depth_dose_max = 1.f;
         
-        patient = Plm_image::New();
+        patient_hu = Plm_image::New();
+        patient_edsp = Plm_image::Pointer();
         target = Plm_image::New();
         dose = Plm_image::New();
         rt_parms = Rt_parms::New ();
@@ -111,40 +115,42 @@ Rt_plan::set_patient (const std::string& patient_fn)
 void
 Rt_plan::set_patient (Plm_image::Pointer& ct_vol)
 {
-    d_ptr->patient = ct_vol;
+    d_ptr->patient_hu = ct_vol;
+    d_ptr->patient_edsp = Plm_image::Pointer ();
 }
 
 void
 Rt_plan::set_patient (ShortImageType::Pointer& ct_vol)
 {
-    d_ptr->patient->set_itk (ct_vol);
-
-    /* compute_segdepth_volume assumes float */
-    d_ptr->patient->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+    /* compute_segdepth_volume assumes float, so convert here */
+    d_ptr->patient_hu->set_itk (ct_vol);
+    d_ptr->patient_hu->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+    d_ptr->patient_edsp = Plm_image::Pointer ();
 }
 
 void
 Rt_plan::set_patient (FloatImageType::Pointer& ct_vol)
 {
-    d_ptr->patient->set_itk (ct_vol);
+    d_ptr->patient_hu->set_itk (ct_vol);
+    d_ptr->patient_edsp = Plm_image::Pointer ();
 }
 
 void
 Rt_plan::set_patient (Volume* ct_vol)
 {
-    d_ptr->patient->set_volume (ct_vol);
+    d_ptr->patient_hu->set_volume (ct_vol);
 }
 
 Volume::Pointer
 Rt_plan::get_patient_volume ()
 {
-    return d_ptr->patient->get_volume_float ();
+    return d_ptr->patient_hu->get_volume_float ();
 }
 
 Plm_image *
 Rt_plan::get_patient ()
 {
-    return d_ptr->patient.get();
+    return d_ptr->patient_hu.get();
 }
 
 void
@@ -323,6 +329,20 @@ Rt_plan::propagate_target_to_beams ()
     }
 }
 
+void
+Rt_plan::create_patient_edsp ()
+{
+    Float_pair_list lookup;
+    lookup.push_back (std::pair<float,float> (NLMIN(float), 0));
+    lookup.push_back (std::pair<float,float> (-1000, 0.00106));
+    lookup.push_back (std::pair<float,float> (41.46, 41.461174));
+    lookup.push_back (std::pair<float,float> (NLMAX(float), 0.005011));
+
+    Volume::Pointer edsp = volume_adjust (
+        d_ptr->patient_hu->get_volume(), lookup);
+    d_ptr->patient_edsp = Plm_image::New (edsp);
+}
+
 bool
 Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
 {
@@ -390,7 +410,7 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
     }
 
     /* Scan through aperture to fill in rpl_volume */
-    beam->rpl_vol->set_ct_volume (d_ptr->patient);
+    beam->rpl_vol->set_ct_volume (d_ptr->patient_edsp);   /// GCS FIX
 
     if (beam->rpl_vol->get_ct() && beam->rpl_vol->get_ct_limit())
     {
@@ -436,17 +456,83 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
 }
 
 void
+Rt_plan::normalize_beam_dose (Rt_beam *beam)
+{
+    Plm_image::Pointer dose = beam->get_dose ();
+    Volume::Pointer dose_vol = dose->get_volume ();
+    float* dose_img = (float*) dose_vol->img;
+    
+    /* Dose normalization process*/
+    if (this->get_non_norm_dose() != 'y')
+    {
+        if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
+        {
+            float rdp_ijk[3] = {0,0,0};
+            float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
+            rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
+            rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
+            rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
+			
+            if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
+            {
+                printf("Dose normalized to the dose reference point.\n");
+                dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp, beam); // if no normalization dose, norm_dose = 1 by default
+                if (this->get_have_dose_norm())
+                {
+                    printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+                }
+                else
+                {
+                    printf("%lg x 100%%.\n", beam->get_beam_weight());
+                }
+                printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+            }
+            else
+            {
+                printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
+                dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam);
+                if (this->get_have_dose_norm())
+                {
+                    printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+                }
+                else
+                {
+                    printf("%lg x 100%%.\n", beam->get_beam_weight());
+                }
+                printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+            }
+        }
+        else // case 2: no red dose point defined
+        {				
+            dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam); // normalization_dose = 1 if no dose_prescription is set
+            if (this->get_have_dose_norm())
+            {
+                printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
+            }
+            else
+            {
+                printf("%lg x 100%%.\n", beam->get_beam_weight());
+            }
+            printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
+        }
+    }
+    else // raw dose, dose not normalized
+    {
+        for (int i = 0; i < dose_vol->dim[0] * dose_vol->dim[1] * dose_vol->dim[2]; i++)
+        {
+            dose_img[i] *= beam->get_beam_weight();
+        }
+    }
+}
+
+void
 Rt_plan::compute_dose (Rt_beam *beam)
 {
     printf ("-- compute_dose entry --\n");
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
-    float* dose_img = (float*) dose_vol->img;
 
     Volume* dose_volume_tmp = new Volume;
-    float* dose_img_tmp = (float*) dose_volume_tmp->img;
-
-    UNUSED_VARIABLE (dose_img_tmp);
 
     float margin = 0;
     int margins[2] = {0,0};
@@ -620,71 +706,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
         compute_dose_ray_trace (dose_vol, beam, ct_vol);
     }
 
-    /* Dose normalization process*/
-    if (this->get_non_norm_dose() != 'y')
-    {
-        if (this->get_have_ref_dose_point()) // case 1: ref dose point defined
-        {
-            float rdp_ijk[3] = {0,0,0};
-            float rdp[3] = {this->get_ref_dose_point(0), this->get_ref_dose_point(1), this->get_ref_dose_point(2)};
-            rdp_ijk[0] = (rdp[0] - dose_vol->origin[0]) / dose_vol->spacing[0];
-            rdp_ijk[1] = (rdp[1] - dose_vol->origin[1]) / dose_vol->spacing[1];
-            rdp_ijk[2] = (rdp[2] - dose_vol->origin[2]) / dose_vol->spacing[2];
-			
-            if (rdp_ijk[0] >=0 && rdp_ijk[1] >=0 && rdp_ijk[2] >=0 && rdp_ijk[0] < dose_vol->dim[0] && rdp_ijk[1] < dose_vol->dim[1] && rdp_ijk[2] < dose_vol->dim[2])
-            {
-                printf("Dose normalized to the dose reference point.\n");
-                dose_normalization_to_dose_and_point(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), rdp_ijk, rdp, beam); // if no normalization dose, norm_dose = 1 by default
-                if (this->get_have_dose_norm())
-                {
-                    printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-                }
-                else
-                {
-                    printf("%lg x 100%%.\n", beam->get_beam_weight());
-                }
-                printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-            }
-            else
-            {
-                printf("***WARNING***\nThe reference dose point is not in the image volume.\n");
-                dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam);
-                if (this->get_have_dose_norm())
-                {
-                    printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-                }
-                else
-                {
-                    printf("%lg x 100%%.\n", beam->get_beam_weight());
-                }
-                printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-            }
-        }
-        else // case 2: no red dose point defined
-        {				
-            dose_normalization_to_dose(dose_vol, beam->get_beam_weight() * this->get_normalization_dose(), beam); // normalization_dose = 1 if no dose_prescription is set
-            if (this->get_have_dose_norm())
-            {
-                printf("%lg x %lg Gy.\n", beam->get_beam_weight(), this->get_normalization_dose());
-            }
-            else
-            {
-                printf("%lg x 100%%.\n", beam->get_beam_weight());
-            }
-            printf("Primary PB num. x, y: %d, %d, primary PB res. x, y: %lg PB/mm, %lg PB/mm\n", beam->get_aperture()->get_dim(0), beam->get_aperture()->get_dim(1), 1.0 / (double) beam->get_aperture()->get_spacing(0), 1.0 / (double) beam->get_aperture()->get_spacing(1));
-        }
-    }
-    else // raw dose, dose not normalized
-    {
-        for (int i = 0; i < dose_vol->dim[0] * dose_vol->dim[1] * dose_vol->dim[2]; i++)
-        {
-            dose_img[i] *= beam->get_beam_weight();
-        }
-    }
-
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
     beam->set_dose(dose);
+    this->normalize_beam_dose (beam);
 
     printf ("Sigma conversion: %f seconds\n", time_sigma_conv);
     printf ("Dose calculation: %f seconds\n", time_dose_calc);
@@ -708,15 +733,20 @@ Rt_plan::compute_plan ()
             "not specified in configuration file!\n");
     }
 
-    /* Load the patient CT image and save into the plan */
+    /* Load the patient CT image and store into the plan */
     Plm_image::Pointer ct = Plm_image::New (d_ptr->patient_fn,
         PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct) {
         print_and_exit ("Error: Unable to load patient volume.\n");
     }
     this->set_patient (ct);
-    this->print_verif ();
 
+    /* Convert from HU to stopping power */
+    this->create_patient_edsp ();
+    
+    /* Display debugging information */
+    this->print_verif ();
+    
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
     plm_long dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};

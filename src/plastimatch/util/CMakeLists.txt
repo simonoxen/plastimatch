@@ -26,7 +26,7 @@ set (PLMUTIL_LIBRARY_SRC
   hausdorff_distance.cxx hausdorff_distance.h 
   image_boundary.cxx image_boundary.h
   image_center.cxx image_center.h
-  itk_adjust.cxx
+  itk_adjust.cxx itk_adjust.h 
   itk_distance_map.cxx
   itk_crop.cxx
   itk_gabor.cxx
@@ -38,13 +38,14 @@ set (PLMUTIL_LIBRARY_SRC
   proj_image_filter.cxx
   plm_series.cxx
   plm_study.cxx
-  rt_study_warp.cxx rt_study_warp.h 
+  rt_study_warp.cxx rt_study_warp.h
   sift.cxx
   simplify_points.cxx 
   ss_img_stats.cxx 
   synthetic_mha.cxx
   synthetic_vf.cxx
   threshbox.cxx
+  volume_adjust.cxx volume_adjust.h
   vf_invert.cxx
   )
 if (FFTW_FOUND)

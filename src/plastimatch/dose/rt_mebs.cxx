@@ -75,6 +75,9 @@ public:
     std::string particle_number_in;
     std::string particle_number_out;
 
+    /* debug */
+    bool debug;
+    
 public:
     Rt_mebs_private ()
     {
@@ -113,6 +116,8 @@ public:
 
         this->particle_number_in ="";
         this->particle_number_out ="";
+
+        this->debug = false;
     }
     Rt_mebs_private (Particle_type part)
     {
@@ -126,9 +131,9 @@ public:
         this->energy_res = 1.f;
         this->energy_number = 1;
 
-        this->target_min_depth = 0.f;			/* lower depth  of target */
-        this->target_max_depth = 0.f;			/* higher depth of target */
-        this->depth_res = 0.01f;				/* depth resolution */
+        this->target_min_depth = 0.f;
+        this->target_max_depth = 0.f;
+        this->depth_res = 0.01f;
         this->depth_end = 20.f;
 
         this->prescription_depth_min = 0.f;
@@ -220,6 +225,8 @@ public:
             this->e_lut[i] = rsp->e_lut[i];
             this->f_lut[i] = rsp->f_lut[i];
         }
+
+        this->debug = false;
     }
     ~Rt_mebs_private ()
     {
@@ -1293,7 +1300,8 @@ Rt_mebs::scale_num_part(double A, int* ap_dim)
 }
 
 double 
-Rt_mebs::get_particle_number_xyz (int* idx, double* rest, int dd_idx, const int* ap_dim)
+Rt_mebs::get_particle_number_xyz (
+    int* idx, double* rest, int dd_idx, const int* ap_dim)
 {
     /* The boundaries possible errors like idx = dim are already excluded by 
        the test on the aperture. Practically, idx = dim -1 is not possible */
@@ -1302,8 +1310,20 @@ Rt_mebs::get_particle_number_xyz (int* idx, double* rest, int dd_idx, const int*
     int spot = 0;
     spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
     A = d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
-    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1] +1) + idx[0];
+    if (d_ptr->debug) {
+        printf (" Mebs::GPNXYZ %f %f",
+            d_ptr->num_particles[spot],
+            d_ptr->num_particles[spot+1]
+        );
+    }
+    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1]+1) + idx[0];
     B =  d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
+    if (d_ptr->debug) {
+        printf (" %f %f\n",
+            d_ptr->num_particles[spot],
+            d_ptr->num_particles[spot+1]
+        );
+    }
     return A + rest[1] * (B-A);
 }
 
@@ -1637,3 +1657,8 @@ Rt_mebs::export_spot_map_as_txt(Aperture::Pointer ap)
     fichier.close();
 }
 
+void
+Rt_mebs::set_debug (bool debug)
+{
+    d_ptr->debug = debug;
+}

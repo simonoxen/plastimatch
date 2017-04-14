@@ -131,6 +131,7 @@ public:
     /* Optimize, then generate mebs depth curve from prescription 
        range and modulation */
     void optimize_sobp ();
+
     /* Weight optimizer */
     void optimizer (std::vector<float>* weight_tmp, std::vector<float>* energy_tmp);
 
@@ -146,6 +147,9 @@ public:
     void compute_particle_number_matrix_from_target_active(Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing);
 
     void export_spot_map_as_txt(Aperture::Pointer ap);
+
+    /* Debugging */
+    void set_debug (bool);
 };
 
 #endif

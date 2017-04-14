@@ -259,13 +259,13 @@ Rt_beam::get_homo_approx () const
 void 
 Rt_beam::set_homo_approx (char homo_approx)
 {
-	d_ptr->homo_approx = homo_approx;
+    d_ptr->homo_approx = homo_approx;
 }
 
 Rt_mebs::Pointer
 Rt_beam::get_mebs()
 {
-	return d_ptr->mebs;
+    return d_ptr->mebs;
 }
 
 float

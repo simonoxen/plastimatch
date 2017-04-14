@@ -27,15 +27,6 @@
 #include "threading.h"
 #include "volume.h"
 
-#define VERBOSE 1
-#define PROGRESS 1
-//#define DEBUG_VOXEL 1
-//#define DOSE_GAUSS 1
-
-#if defined (commentout)
-static bool voxel_debug = false;
-#endif
-
 /* Ray Tracer */
 double
 energy_direct (
@@ -90,7 +81,10 @@ compute_dose_ray_trace (
                 if (ct_ijk[2] == 98 && ct_ijk[1] == 213 && ct_ijk[0] == 200) {
                     debug = true;
                 }
-                if (ct_ijk[2] == 98 && ct_ijk[1] == 245 && ct_ijk[0] == 217) {
+                if (ct_ijk[2] == 98 && ct_ijk[1] == 217 && ct_ijk[0] == 204) {
+                    debug = true;
+                }
+                if (ct_ijk[2] == 98 && ct_ijk[1] == 220 && ct_ijk[0] == 192) {
                     debug = true;
                 }
 
@@ -130,25 +124,30 @@ compute_dose_ray_trace (
 
                 dose = 0;
                 rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
-                WER =  compute_PrWER_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
+                WER = compute_PrWER_from_HU (beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
 
                 if (debug) {
                     printf (" rgdepth = %f, WER = %f\n", rgdepth, WER);
                 }
-                
-                for (size_t dd_idx = 0; dd_idx < beam->get_mebs()->get_depth_dose().size(); dd_idx++)
+
+                const Rt_mebs::Pointer& mebs = beam->get_mebs();
+                mebs->set_debug (debug);
+                for (size_t dd_idx = 0; dd_idx < mebs->get_depth_dose().size(); dd_idx++)
                 {
-                    particle_number = beam->get_mebs()->get_particle_number_xyz(idx_ap_int, rest, dd_idx, beam->get_aperture()->get_dim());
-                    if (debug) {
-                        printf ("  %d %f %f\n", (int)dd_idx,
-                            (float) particle_number,
-                            (float) beam->get_mebs()->get_depth_dose()[dd_idx]->dend);
-                    }
-                    if (particle_number != 0 && rgdepth >=0 && rgdepth < beam->get_mebs()->get_depth_dose()[dd_idx]->dend) 
+                    particle_number = mebs->get_particle_number_xyz (idx_ap_int, rest, dd_idx, beam->get_aperture()->get_dim());
+                    if (particle_number != 0 && rgdepth >=0 && rgdepth < mebs->get_depth_dose()[dd_idx]->dend) 
                     {
                         dose += particle_number * WER * energy_direct (rgdepth, beam, dd_idx);
+                        if (debug) {
+                            printf ("  %d %f %f %f\n", 
+                                (int)dd_idx,
+                                (float) particle_number,
+                                (float) mebs->get_depth_dose()[dd_idx]->dend,
+                                energy_direct (rgdepth, beam, dd_idx));
+                        }
                     }
                 }
+                mebs->set_debug (false);
 
                 /* Insert the dose into the dose volume */
                 idx = volume_index (dose_vol->dim, ct_ijk);

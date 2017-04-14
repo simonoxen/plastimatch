@@ -250,4 +250,7 @@ within_abs_tolerance (float value, float comp_value, float tolerance)
     return (fabsf (value - comp_value) <= tolerance);
 }
 
+#define NLMIN(T) (-std::numeric_limits<T>::max())
+#define NLMAX(T) std::numeric_limits<T>::max()
+
 #endif

@@ -52,7 +52,7 @@ sub my_mkdir {
 ## was not anonymized on GE.  Descriptions are cleared by GE anon tool.
 sub find_series {
     my $series_description = shift (@_);
-    if ($series_description =~ /(\d+)\%/) {
+    if ($series_description =~ /(\d+)\%[^\%]*$/) {
 	$sno = $1;
 	$sorted ++;
 	return $sno;
