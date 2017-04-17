@@ -213,6 +213,9 @@ Rt_parms::set_key_value (
         else if (key == "dose_out") {
             d_ptr->rt_plan->set_output_dose (val);
         }
+        else if (key == "edsp_out") {
+            d_ptr->rt_plan->set_output_edsp (val);
+        }
         else if (key == "debug") {
             d_ptr->rt_plan->set_debug (string_value_true (val));
         }

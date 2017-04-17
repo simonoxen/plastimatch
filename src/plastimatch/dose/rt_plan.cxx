@@ -45,6 +45,7 @@ public:
     std::string patient_fn;
     std::string target_fn;
     std::string output_dose_fn;
+    std::string output_edsp_fn;
 
     /* Patient (hu), patient (ed or sp) , target, output dose volume */
     Plm_image::Pointer patient_hu;
@@ -116,6 +117,7 @@ void
 Rt_plan::set_patient (Plm_image::Pointer& ct_vol)
 {
     d_ptr->patient_hu = ct_vol;
+    d_ptr->patient_hu->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     d_ptr->patient_edsp = Plm_image::Pointer ();
 }
 
@@ -132,6 +134,7 @@ void
 Rt_plan::set_patient (FloatImageType::Pointer& ct_vol)
 {
     d_ptr->patient_hu->set_itk (ct_vol);
+    d_ptr->patient_hu->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     d_ptr->patient_edsp = Plm_image::Pointer ();
 }
 
@@ -335,7 +338,8 @@ Rt_plan::create_patient_edsp ()
     Float_pair_list lookup;
     lookup.push_back (std::pair<float,float> (NLMIN(float), 0));
     lookup.push_back (std::pair<float,float> (-1000, 0.00106));
-    lookup.push_back (std::pair<float,float> (41.46, 41.461174));
+    lookup.push_back (std::pair<float,float> (0, 1.0));
+    lookup.push_back (std::pair<float,float> (41.46, 1.048674));
     lookup.push_back (std::pair<float,float> (NLMAX(float), 0.005011));
 
     Volume::Pointer edsp = volume_adjust (
@@ -743,6 +747,11 @@ Rt_plan::compute_plan ()
 
     /* Convert from HU to stopping power */
     this->create_patient_edsp ();
+
+    /* Save stopping power image */
+    if (d_ptr->output_edsp_fn != "") {
+        d_ptr->patient_edsp->save_image (d_ptr->output_edsp_fn);
+    }
     
     /* Display debugging information */
     this->print_verif ();
@@ -807,6 +816,12 @@ void
 Rt_plan::set_output_dose (const std::string& output_dose_fn)
 {
     d_ptr->output_dose_fn = output_dose_fn;
+}
+
+void 
+Rt_plan::set_output_edsp (const std::string& output_edsp_fn)
+{
+    d_ptr->output_edsp_fn = output_edsp_fn;
 }
 
 void 

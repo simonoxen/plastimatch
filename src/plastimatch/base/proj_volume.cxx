@@ -90,8 +90,8 @@ Proj_volume::set_geometry (
     /* save input settings */
     d_ptr->image_dim[0] = image_dim[0];
     d_ptr->image_dim[1] = image_dim[1];
-	d_ptr->image_spacing[0] = image_spacing[0];
-	d_ptr->image_spacing[1] = image_spacing[1];
+    d_ptr->image_spacing[0] = image_spacing[0];
+    d_ptr->image_spacing[1] = image_spacing[1];
     d_ptr->src[0] = src[0];
     d_ptr->src[1] = src[1];
     d_ptr->src[2] = src[2];

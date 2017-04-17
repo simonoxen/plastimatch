@@ -103,6 +103,7 @@ public:
     Plm_image::Pointer get_dose ();
     FloatImageType::Pointer get_dose_itk ();
     void set_output_dose (const std::string& output_dose_fn);
+    void set_output_edsp (const std::string& output_edsp_fn);
     void set_dose(Plm_image::Pointer& dose);
 
     void print_verif ();

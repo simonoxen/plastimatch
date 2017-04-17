@@ -510,6 +510,7 @@ Rpl_volume::compute_ray_data ()
 
 /* This function samples the CT into a RPL equivalent geometry.
    The rpl_volume should be in proj_wed format, not in proj_ct format. */
+/* GCS Note: Why do others call compute_ray_data(), but this one does not?*/
 void 
 Rpl_volume::compute_rpl_ct_density ()
 {
@@ -536,9 +537,6 @@ Rpl_volume::compute_rpl_ct_density ()
     
     /* Scan through the aperture -- second pass */
     for (int r = 0; r < ires[1]; r++) {
-
-        //if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
-
         for (int c = 0; c < ires[0]; c++) {
 
             /* Compute index of aperture pixel */
@@ -582,6 +580,7 @@ Rpl_volume::compute_rpl_ct_density ()
 }
 
 /* This function samples the CT in rpl geometry with HU units */
+/* GCS NOTE: It does not check the aperture */
 void 
 Rpl_volume::compute_rpl_HU ()
 {
@@ -640,6 +639,8 @@ Rpl_volume::compute_rpl_HU ()
     }
 }
 
+/* GCS Note: This is different from compute_rpl() functions.
+   It calls compute_ray_data(), allocates, and computes ray_data->cp.  */
 void 
 Rpl_volume::compute_rpl_void ()
 {
@@ -682,6 +683,7 @@ Rpl_volume::compute_rpl_void ()
     }
 }
 
+/* GCS Note: The rgc should be added after ray tracing */
 void 
 Rpl_volume::compute_rpl_range_length_rgc ()
 {
@@ -760,6 +762,7 @@ Rpl_volume::compute_rpl_range_length_rgc ()
     }
 }
 
+/* GCS NOTE: This also does not check the aperture */
 void 
 Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 {
@@ -786,9 +789,7 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 
     double clipping_dist[2] = {
       d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
-
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
-
     d_ptr->proj_vol->allocate ();
 
     /* Scan through the aperture -- second pass */
