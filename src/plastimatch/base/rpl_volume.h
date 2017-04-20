@@ -83,6 +83,10 @@ public:
     void compute_rpl_HU ();	// compute HU volume
     void compute_rpl_void ();	// compute void volume
 
+    void compute_rpl (bool use_aperture, Ray_trace_callback callback);
+    void compute_rpl_sample (bool use_aperture);
+    void compute_rpl_accum (bool use_aperture);
+    
     void compute_rpl_range_length_rgc(); // range length volume creation taking into account the range compensator
     void compute_rpl_PrSTRP_no_rgc (); // compute Proton Stopping Power Ratio volume without considering the range compensator
 

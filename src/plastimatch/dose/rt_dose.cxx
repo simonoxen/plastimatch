@@ -55,7 +55,7 @@ compute_dose_ray_trace (
 
     /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
        if there is a range compensator */
-    if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
+    if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
     {
         add_rcomp_length_to_rpl_volume(beam);
     }
@@ -110,8 +110,8 @@ compute_dose_ray_trace (
                 }
 
                 /* Check that the ray cross the aperture */
-                if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(0)-1
-                    || idx_ap[1] < 0 || idx_ap[1] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(1)-1)
+                if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->hu_samp_vol->get_proj_volume()->get_image_dim(0)-1
+                    || idx_ap[1] < 0 || idx_ap[1] > (double) beam->hu_samp_vol->get_proj_volume()->get_image_dim(1)-1)
                 {
                     continue;
                 }
@@ -123,8 +123,8 @@ compute_dose_ray_trace (
                 }
 
                 dose = 0;
-                rgdepth = beam->rpl_vol->get_rgdepth (ct_xyz);
-                WER = compute_PrWER_from_HU (beam->rpl_ct_vol_HU->get_rgdepth(ct_xyz));
+                rgdepth = beam->rsp_accum_vol->get_rgdepth (ct_xyz);
+                WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_rgdepth(ct_xyz));
 
                 if (debug) {
                     printf (" rgdepth = %f, WER = %f\n", rgdepth, WER);
@@ -226,11 +226,11 @@ compute_dose_ray_desplanques (
     double vec_prt_tmp[3] = {0,0,0};
     double vec_nrm_tmp[3] = {0,0,0};
 
-    vec3_copy(vec_pdn_tmp, beam->rpl_vol->get_proj_volume()->get_incr_c());
+    vec3_copy(vec_pdn_tmp, beam->rsp_accum_vol->get_proj_volume()->get_incr_c());
     vec3_normalize1(vec_pdn_tmp);
-    vec3_copy(vec_prt_tmp, beam->rpl_vol->get_proj_volume()->get_incr_r());
+    vec3_copy(vec_prt_tmp, beam->rsp_accum_vol->get_proj_volume()->get_incr_r());
     vec3_normalize1(vec_prt_tmp);
-    vec3_copy(vec_nrm_tmp, beam->rpl_vol->get_proj_volume()->get_nrm());
+    vec3_copy(vec_nrm_tmp, beam->rsp_accum_vol->get_proj_volume()->get_nrm());
     vec3_normalize1(vec_nrm_tmp);
 
     for (int i = 0; i < dim[0]*dim[1]; i++)
@@ -255,7 +255,7 @@ compute_dose_ray_desplanques (
            printf("bev: %lg %lg %lg\n", ray_bev[0], ray_bev[1], ray_bev[2]); */
 
         /* Calculation of the coordinates of the intersection of the ray with the clipping plane */
-        entrance_length = vec3_dist(beam->rpl_vol->get_proj_volume()->get_src(), ray_data->cp);
+        entrance_length = vec3_dist(beam->rsp_accum_vol->get_proj_volume()->get_src(), ray_data->cp);
 
         vec3_copy(entrance_bev, ray_bev);
         vec3_scale2(entrance_bev, entrance_length);
@@ -274,9 +274,9 @@ compute_dose_ray_desplanques (
             {
                 find_xyz_center(xyz_ray_center, ray_bev, dose_volume->origin[2],k, dose_volume->spacing[2]);
                 distance = vec3_dist(xyz_ray_center, entrance_bev);
-                ct_density = compute_density_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ap_ij, distance));
-                STPR = compute_PrSTPR_from_HU(beam->rpl_ct_vol_HU->get_rgdepth(ap_ij, distance));
-                rg_length = range_comp + beam->rpl_vol->get_rgdepth(ap_ij, distance);
+                ct_density = compute_density_from_HU(beam->hu_samp_vol->get_rgdepth(ap_ij, distance));
+                STPR = compute_PrSTPR_from_HU(beam->hu_samp_vol->get_rgdepth(ap_ij, distance));
+                rg_length = range_comp + beam->rsp_accum_vol->get_rgdepth(ap_ij, distance);
                 central_axis_dose = beam->get_mebs()->get_depth_dose()[beam_index]->lookup_energy_integration((float)rg_length, ct_density * dose_volume->spacing[2]) * STPR;
                 sigma = beam->sigma_vol->get_rgdepth(ap_ij, distance);
                 sigma_x3 = (int) ceil(3 * sigma);
@@ -313,7 +313,7 @@ compute_dose_ray_desplanques (
                         vec3_copy(xyz_room_tmp,  vec_nrm_tmp);
                         vec3_scale2(xyz_room_tmp, (double) (-dose_volume->origin[2] - (float) k * dose_volume->spacing[2]));
                         vec3_add2(xyz_room, (xyz_room_tmp));
-                        vec3_add2(xyz_room, beam->rpl_vol->get_proj_volume()->get_src());
+                        vec3_add2(xyz_room, beam->rsp_accum_vol->get_proj_volume()->get_src());
 						
                         find_ijk_pixel(ijk_ct, xyz_room, ct_vol);
                         idx_room = ijk_ct[0] + (ct_vol->dim[0] * (ijk_ct[1] + ct_vol->dim[1] * ijk_ct[2]));
@@ -376,7 +376,7 @@ compute_dose_ray_desplanques (
                     /* xyz contains the coordinates of the pixel in the room coordinates */
                     /* we now calculate the coordinates of this pixel in the dose_volume coordinates */
 
-                    vec3_sub3(tmp,  beam->rpl_vol->get_proj_volume()->get_src(), xyz_room);
+                    vec3_sub3(tmp,  beam->rsp_accum_vol->get_proj_volume()->get_src(), xyz_room);
                     xyz_bev[0] = (float) -vec3_dot(tmp, vec_prt_tmp);
                     xyz_bev[1] = (float) -vec3_dot(tmp,  vec_pdn_tmp);
                     xyz_bev[2] = (float) vec3_dot(tmp,  vec_nrm_tmp);
@@ -434,14 +434,14 @@ compute_dose_ray_sharp (
     dim_lg[0] = rpl_dose_volume->get_vol()->dim[0];
     dim_lg[1] = rpl_dose_volume->get_vol()->dim[1];
     dim_lg[2] = rpl_dose_volume->get_vol()->dim[2];
-    dim_sm[0] = beam->rpl_vol->get_vol()->dim[0];
-    dim_sm[1] = beam->rpl_vol->get_vol()->dim[1];
-    dim_sm[2] = beam->rpl_vol->get_vol()->dim[2];
+    dim_sm[0] = beam->rsp_accum_vol->get_vol()->dim[0];
+    dim_sm[1] = beam->rsp_accum_vol->get_vol()->dim[1];
+    dim_sm[2] = beam->rsp_accum_vol->get_vol()->dim[2];
 	
-    float* rpl_img = (float*) beam->rpl_vol->get_vol()->img;
+    float* rpl_img = (float*) beam->rsp_accum_vol->get_vol()->img;
     float* sigma_img = (float*) beam->sigma_vol->get_vol()->img;
     float* rpl_dose_img = (float*) rpl_dose_volume->get_vol()->img;
-    float* ct_rpl_img = (float*) beam->rpl_ct_vol_HU->get_vol()->img;
+    float* ct_rpl_img = (float*) beam->hu_samp_vol->get_vol()->img;
     float* rc_img = 0;
     unsigned char *ap_img = 0;
     float range_comp = 0;
@@ -479,9 +479,9 @@ compute_dose_ray_sharp (
 
     for (int k = 0; k < dim_sm[2]; k++)
     {
-        lateral_minimal_step[k] = (beam->rpl_vol->get_front_clipping_plane() + beam->rpl_vol->get_aperture()->get_distance() + (double) k) * minimal_lateral / beam->rpl_vol->get_aperture()->get_distance();
-        lateral_step_x[k] = (beam->rpl_vol->get_front_clipping_plane() + beam->rpl_vol->get_aperture()->get_distance() + (double) k) * beam->get_aperture()->get_spacing(0) / beam->rpl_vol->get_aperture()->get_distance();
-        lateral_step_y[k] = (beam->rpl_vol->get_front_clipping_plane() + beam->rpl_vol->get_aperture()->get_distance() + (double) k) *beam->get_aperture()->get_spacing(1) / beam->rpl_vol->get_aperture()->get_distance();
+        lateral_minimal_step[k] = (beam->rsp_accum_vol->get_front_clipping_plane() + beam->rsp_accum_vol->get_aperture()->get_distance() + (double) k) * minimal_lateral / beam->rsp_accum_vol->get_aperture()->get_distance();
+        lateral_step_x[k] = (beam->rsp_accum_vol->get_front_clipping_plane() + beam->rsp_accum_vol->get_aperture()->get_distance() + (double) k) * beam->get_aperture()->get_spacing(0) / beam->rsp_accum_vol->get_aperture()->get_distance();
+        lateral_step_y[k] = (beam->rsp_accum_vol->get_front_clipping_plane() + beam->rsp_accum_vol->get_aperture()->get_distance() + (double) k) *beam->get_aperture()->get_spacing(1) / beam->rsp_accum_vol->get_aperture()->get_distance();
     }
 
     std::vector<float> num_part = beam->get_mebs()->get_num_particles();
@@ -540,7 +540,7 @@ compute_dose_ray_sharp (
                 STPR = compute_PrSTPR_from_HU(ct_rpl_img[idx3d_sm]);
 
                 rg_length = range_comp + rpl_img[idx3d_sm];
-                central_axis_dose = num_part[beam_index * beam->get_aperture()->get_dim(0)* beam->get_aperture()->get_dim(1) + idx2d_sm] * beam->get_mebs()->get_depth_dose()[beam_index]->lookup_energy_integration(rg_length, ct_density * beam->rpl_vol->get_vol()->spacing[2]) * STPR;
+                central_axis_dose = num_part[beam_index * beam->get_aperture()->get_dim(0)* beam->get_aperture()->get_dim(1) + idx2d_sm] * beam->get_mebs()->get_depth_dose()[beam_index]->lookup_energy_integration(rg_length, ct_density * beam->rsp_accum_vol->get_vol()->spacing[2]) * STPR;
 
                 if (central_axis_dose <= 0) // no dose on the axis, no dose scattered
                 {
@@ -637,13 +637,13 @@ void compute_dose_ray_shackleford (
     }
 
     /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, if there is a range compensator */
-    if (beam->rpl_vol->get_aperture()->have_range_compensator_image())
+    if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
     {
         add_rcomp_length_to_rpl_volume(beam);
     }
-    vec3_copy(vec_ud, beam->rpl_vol->get_proj_volume()->get_incr_c());
+    vec3_copy(vec_ud, beam->rsp_accum_vol->get_proj_volume()->get_incr_c());
     vec3_normalize1(vec_ud);
-    vec3_copy(vec_rl, beam->rpl_vol->get_proj_volume()->get_incr_r());
+    vec3_copy(vec_rl, beam->rsp_accum_vol->get_proj_volume()->get_incr_r());
     vec3_normalize1(vec_rl);
 
     for (ijk[0] = 0; ijk[0] < dose_dim[0]; ijk[0]++){
@@ -675,16 +675,16 @@ void compute_dose_ray_shackleford (
                         vec3_scale2(tmp_xy, tmp_cst);
                         vec3_add2(xyz_travel,tmp_xy);
 							
-                        rg_length = beam->rpl_vol->get_rgdepth(xyz_travel);
-                        HU = beam->rpl_ct_vol_HU_lg->get_rgdepth(xyz_travel);
+                        rg_length = beam->rsp_accum_vol->get_rgdepth(xyz_travel);
+                        HU = beam->rpl_vol_samp_lg->get_rgdepth(xyz_travel);
                         if (beam->get_intersection_with_aperture(idx_ap, idx_ap_int, rest, xyz_travel) == false)
                         {
                             continue;
                         }
 
                         /* Check that the ray cross the aperture */
-                        if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(0)-1
-                            || idx_ap[1] < 0 || idx_ap[1] > (double) beam->rpl_ct_vol_HU->get_proj_volume()->get_image_dim(1)-1)
+                        if (idx_ap[0] < 0 || idx_ap[0] > (double) beam->hu_samp_vol->get_proj_volume()->get_image_dim(0)-1
+                            || idx_ap[1] < 0 || idx_ap[1] > (double) beam->hu_samp_vol->get_proj_volume()->get_image_dim(1)-1)
                         {
                             continue;
                         }
@@ -719,7 +719,7 @@ void compute_dose_ray_shackleford (
                             }
                             else
                             {
-                                central_sector_dose = particle_number * beam->get_mebs()->get_depth_dose()[beam_index]->lookup_energy_integration((float) rg_length, ct_density * beam->rpl_vol->get_vol()->spacing[2])* STPR * (1/(sigma_travel*sqrt(2*M_PI)));
+                                central_sector_dose = particle_number * beam->get_mebs()->get_depth_dose()[beam_index]->lookup_energy_integration((float) rg_length, ct_density * beam->rsp_accum_vol->get_vol()->spacing[2])* STPR * (1/(sigma_travel*sqrt(2*M_PI)));
                                 dr = sigma_3 / (2* radius_sample);
                                 dose_img[idx] +=  
                                     central_sector_dose
@@ -737,9 +737,9 @@ void compute_dose_ray_shackleford (
 
 void add_rcomp_length_to_rpl_volume (Rt_beam* beam)
 {
-    const plm_long *dim = beam->rpl_vol->get_vol()->dim;
-    float* rpl_img = (float*) beam->rpl_vol->get_vol()->img;
-    float* rc_img = (float*) beam->rpl_vol->get_aperture()->get_range_compensator_volume()->img;
+    const plm_long *dim = beam->rsp_accum_vol->get_vol()->dim;
+    float* rpl_img = (float*) beam->rsp_accum_vol->get_vol()->img;
+    float* rc_img = (float*) beam->rsp_accum_vol->get_aperture()->get_range_compensator_volume()->img;
     int idx = 0;
 
     for(int i = 0; i < dim[0] * dim[1]; i++)

@@ -1,4 +1,30 @@
 ******************************************************************************
+Dose calculation LUTs
+
+rpl_volume.cxx
+--------------
+compute_density_from_HU
+    "From Schneider paper"  (Not clear how.)
+compute_PrSTPR_Schneider_weq_from_HU
+    "From Schneider paper"  (Not clear how.)
+compute_PrSTRP_XiO_MGH_weq_from_HU
+    Not used (?)
+compute_PrWER_from_HU
+    Stopping power / density
+
+
+
+rpl_lut.cxx
+-----------
+get_proton_stop
+    energy -> ??
+get_proton_range
+    energy -> ??
+compute_X0_from_HU
+    HU -> radiation length  (Where does this come from?)
+
+
+******************************************************************************
 Global vs stage vs shared
 
 There are only a few small differences.

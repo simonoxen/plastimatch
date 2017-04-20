@@ -211,10 +211,10 @@ Rt_parms::set_key_value (
             d_ptr->rt_plan->set_threading (threading);
         }
         else if (key == "dose_out") {
-            d_ptr->rt_plan->set_output_dose (val);
+            d_ptr->rt_plan->set_output_dose_fn (val);
         }
-        else if (key == "edsp_out") {
-            d_ptr->rt_plan->set_output_edsp (val);
+        else if (key == "psp_out") {
+            d_ptr->rt_plan->set_output_psp_fn (val);
         }
         else if (key == "debug") {
             d_ptr->rt_plan->set_debug (string_value_true (val));

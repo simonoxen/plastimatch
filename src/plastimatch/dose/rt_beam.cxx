@@ -126,11 +126,11 @@ Rt_beam::Rt_beam ()
     this->d_ptr = new Rt_beam_private();
 
     /* Creation of the volumes useful for dose calculation */
-    this->rpl_vol = new Rpl_volume();
-    this->rpl_ct_vol_HU = 0;
+    this->rsp_accum_vol = new Rpl_volume();
+    this->hu_samp_vol = 0;
     this->sigma_vol = 0;
     this->rpl_vol_lg = 0;
-    this->rpl_ct_vol_HU_lg = 0;
+    this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
     this->rpl_dose_vol = 0;
 }
@@ -142,11 +142,11 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     
     /* The below calculation volumes don't need to be copied 
        from input beam */
-    this->rpl_vol = 0;
-    this->rpl_ct_vol_HU = 0;
+    this->rsp_accum_vol = 0;
+    this->hu_samp_vol = 0;
     this->sigma_vol = 0;
     this->rpl_vol_lg = 0;
-    this->rpl_ct_vol_HU_lg = 0;
+    this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
     this->rpl_dose_vol = 0;
 }
@@ -400,11 +400,11 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
     {
         if (d_ptr->beam_line_type == "active")
         {
-            this->rpl_vol->compute_beam_modifiers_active_scanning(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->rsp_accum_vol->compute_beam_modifiers_active_scanning(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
         }
         else
         {
-            this->rpl_vol->compute_beam_modifiers_passive_scattering(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
         }
     }
     /* the aperture and range compensator are erased and the ones defined in the input file are considered */
@@ -438,7 +438,7 @@ Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
     if (this->get_beam_line_type() != "passive")
     {
         d_ptr->mebs->compute_particle_number_matrix_from_target_active (
-            this->rpl_vol, this->get_target(), d_ptr->smearing);
+            this->rsp_accum_vol, this->get_target(), d_ptr->smearing);
     }
     else
     {
@@ -462,15 +462,15 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol)
 {
     if (d_ptr->beam_line_type == "active")
     {
-        this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
     }
     else
     {
-        this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
     }
 
-    d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
-    this->rpl_vol->apply_beam_modifiers ();
+    d_ptr->mebs->set_prescription_depths(this->rsp_accum_vol->get_min_wed(), this->rsp_accum_vol->get_max_wed());
+    this->rsp_accum_vol->apply_beam_modifiers ();
     return;
 }
 
@@ -479,14 +479,14 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
 {
     if (d_ptr->beam_line_type == "active")
     {
-        this->rpl_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+        this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
     else
     {
-        this->rpl_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+        this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
-    d_ptr->mebs->set_prescription_depths(this->rpl_vol->get_min_wed(), this->rpl_vol->get_max_wed());
-    this->rpl_vol->apply_beam_modifiers ();
+    d_ptr->mebs->set_prescription_depths(this->rsp_accum_vol->get_min_wed(), this->rsp_accum_vol->get_max_wed());
+    this->rsp_accum_vol->apply_beam_modifiers ();
     return;
 }
 
@@ -500,7 +500,7 @@ Rt_beam::update_aperture_and_range_compensator()
         Plm_image::Pointer ap_img = Plm_image::New (d_ptr->aperture_in, PLM_IMG_TYPE_ITK_UCHAR);
         this->get_aperture()->set_aperture_image(d_ptr->aperture_in.c_str());
         this->get_aperture()->set_aperture_volume(ap_img->get_volume_uchar());
-        if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+        if (this->rsp_accum_vol->get_minimum_distance_target() == 0) // means that there is no target defined
         {
             printf("Smearing applied to the aperture. The smearing width is defined in the aperture frame.\n");
             d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, d_ptr->aperture->get_distance());
@@ -508,7 +508,7 @@ Rt_beam::update_aperture_and_range_compensator()
         else
         {
             printf("Smearing applied to the aperture. The smearing width is defined at the target minimal distance.\n");
-            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rsp_accum_vol->get_minimum_distance_target());
         }
     }
     /* Set range compensator */
@@ -518,7 +518,7 @@ Rt_beam::update_aperture_and_range_compensator()
         this->get_aperture()->set_range_compensator_image(d_ptr->range_compensator_in.c_str());
         this->get_aperture()->set_range_compensator_volume(rgc_img->get_volume_float());
 		
-        if (this->rpl_vol->get_minimum_distance_target() == 0) // means that there is no target defined
+        if (this->rsp_accum_vol->get_minimum_distance_target() == 0) // means that there is no target defined
         {
             printf("Smearing applied to the range compensator. The smearing width is defined in the aperture frame.\n");
             d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, d_ptr->aperture->get_distance());
@@ -526,7 +526,7 @@ Rt_beam::update_aperture_and_range_compensator()
         else
         {
             printf("Smearing applied to the range compensator. The smearing width is defined at the target minimal distance.\n");
-            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rpl_vol->get_minimum_distance_target());
+            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rsp_accum_vol->get_minimum_distance_target());
         }
     }
 }
@@ -854,7 +854,7 @@ Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, 
     vec3_copy(ray, ct_xyz);
     vec3_sub2(ray, d_ptr->source);
 
-    length_on_normal_axis = -vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_nrm()); // MD Fix: why is the aperture not updated at this point? and why proj vol is?
+    length_on_normal_axis = -vec3_dot(ray, hu_samp_vol->get_proj_volume()->get_nrm()); // MD Fix: why is the aperture not updated at this point? and why proj vol is?
     if (length_on_normal_axis < 0)
     {
         return false;
@@ -863,10 +863,10 @@ Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, 
     vec3_scale2(ray, this->get_aperture()->get_distance()/length_on_normal_axis);
 
     vec3_add2(ray, d_ptr->source);
-    vec3_sub2(ray, rpl_ct_vol_HU->get_proj_volume()->get_ul_room());
+    vec3_sub2(ray, hu_samp_vol->get_proj_volume()->get_ul_room());
 					
-    idx_ap[0] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_c()) / (this->get_aperture()->get_spacing(0) * this->get_aperture()->get_spacing(0));
-    idx_ap[1] = vec3_dot(ray, rpl_ct_vol_HU->get_proj_volume()->get_incr_r()) / (this->get_aperture()->get_spacing(1) * this->get_aperture()->get_spacing(1));
+    idx_ap[0] = vec3_dot(ray, hu_samp_vol->get_proj_volume()->get_incr_c()) / (this->get_aperture()->get_spacing(0) * this->get_aperture()->get_spacing(0));
+    idx_ap[1] = vec3_dot(ray, hu_samp_vol->get_proj_volume()->get_incr_r()) / (this->get_aperture()->get_spacing(1) * this->get_aperture()->get_spacing(1));
     idx[0] = (int) floor(idx_ap[0]);
     idx[1] = (int) floor(idx_ap[1]);
     rest[0] = idx_ap[0] - (double) idx[0];
@@ -969,20 +969,20 @@ Rt_beam::save_beam_output ()
 {
     /* Save beam modifiers */
     if (this->get_aperture_out() != "") {
-        Rpl_volume *rpl_vol = this->rpl_vol;
+        Rpl_volume *rpl_vol = this->rsp_accum_vol;
         Plm_image::Pointer& ap = rpl_vol->get_aperture()->get_aperture_image();
         ap->save_image (this->get_aperture_out().c_str());
     }
 
     if (this->get_range_compensator_out() != "" && this->get_beam_line_type() == "passive") {
-        Rpl_volume *rpl_vol = this->rpl_vol;
+        Rpl_volume *rpl_vol = this->rsp_accum_vol;
         Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
         rc->save_image (this->get_range_compensator_out().c_str());
     }
 
     /* Save projected density volume */
     if (d_ptr->proj_img_out != "") {
-        Rpl_volume* proj_img = this->rpl_ct_vol_HU;
+        Rpl_volume* proj_img = this->hu_samp_vol;
         if (proj_img) {
             proj_img->save (d_ptr->proj_img_out);
         }
@@ -1006,7 +1006,7 @@ Rt_beam::save_beam_output ()
 
     /* Save wed volume */
     if (this->get_wed_out() != "") {
-        Rpl_volume* rpl_vol = this->rpl_vol;
+        Rpl_volume* rpl_vol = this->rsp_accum_vol;
         if (rpl_vol) {
             rpl_vol->save (this->get_wed_out());
         }

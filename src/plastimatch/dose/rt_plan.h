@@ -92,18 +92,18 @@ public:
     void set_non_norm_dose (char non_norm_dose);
 
     /* Compute dose */
-    void create_patient_edsp ();
+    void create_patient_psp ();
     void propagate_target_to_beams ();
     bool prepare_beam_for_calc (Rt_beam *beam);
     void compute_dose (Rt_beam *beam);
     Plm_return_code compute_plan ();
     void normalize_beam_dose (Rt_beam *beam);
 
-    /* Get outputs */
+    /* Getting outputs and creating output files */
     Plm_image::Pointer get_dose ();
     FloatImageType::Pointer get_dose_itk ();
-    void set_output_dose (const std::string& output_dose_fn);
-    void set_output_edsp (const std::string& output_edsp_fn);
+    void set_output_dose_fn (const std::string& output_dose_fn);
+    void set_output_psp_fn (const std::string& output_psp_fn);
     void set_dose(Plm_image::Pointer& dose);
 
     void print_verif ();

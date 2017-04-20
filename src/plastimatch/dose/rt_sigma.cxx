@@ -13,8 +13,8 @@ void compute_sigmas (
     const Rt_beam* beam,
     float energy,
     float* sigma_max, 
-	std::string size, 
-	int* margins)
+    std::string size, 
+    int* margins)
 {
     /* We compute the sigmas for source, range compensator and patient as described in the Hong's paper */
     /* First we set the volume in which the sigmas have to be calculated: the normal rpl_sigma_volume,  */
@@ -27,13 +27,13 @@ void compute_sigmas (
     if (size == "small")
     {
         sigma_vol = beam->sigma_vol;
-        ct_vol = beam->rpl_ct_vol_HU;
-        rgl_vol = beam->rpl_vol;
+        ct_vol = beam->hu_samp_vol;
+        rgl_vol = beam->rsp_accum_vol;
     }
     else
     {
         sigma_vol = beam->sigma_vol_lg;
-        ct_vol = beam->rpl_ct_vol_HU_lg;
+        ct_vol = beam->rpl_vol_samp_lg;
         rgl_vol = beam->rpl_vol_lg;
     }
 
@@ -116,7 +116,8 @@ float compute_sigma_pt_homo (
         printf("Error: rpl_vol & sigma_vol have different dimensions. Sigma volume not built\n");
         return 0;
     }
-    /* At this time, sigma_vol contains the range length, WITHOUT range compensator */
+    // At this time, sigma_vol contains the range length,
+    // WITHOUT range compensator
     float* sigma_volume = (float*) sigma_vol->get_vol()->img;
     float* rpl_img = (float*) rpl_vol->get_vol()->img;
     unsigned char* ap_img = NULL;
@@ -127,11 +128,13 @@ float compute_sigma_pt_homo (
     {
         ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
     } 
-    /*  Hong method to calculate the sigma value for homogeneous medium */
-    /* Range value in water extracted from a fit based on 1-250MeV from the NIST data - ranges in mm */
+    /* Hong method to calculate the sigma value for homogeneous medium */
+    /* Range value in water extracted from a fit based on 1-250MeV 
+       from the NIST data - ranges in mm */
     double range = 10 * get_proton_range(energy);
     
-    /* Sigma0 value from the Hong fit - See paper Hong "A pencil beam algorithm for proton dose calculation" - sigma in mm: x10 */
+    // Sigma0 value from the Hong fit - See paper Hong "A pencil beam 
+    // algorithm for proton dose calculation" - sigma in mm: x10
     double sigma0 = 0.02275 * range + 1.2085E-6 * range * range;
 
     /* Calculation of the sigma values from the medium equivalent depth  */
@@ -178,19 +181,19 @@ float compute_sigma_pt_homo (
 
 float compute_sigma_pt_hetero (
     Rpl_volume* sigma_vol,
-    Rpl_volume* rgl_vol,
+    Rpl_volume* rpl_vol,
     Rpl_volume* ct_vol,
     float energy)
 {
     float sigma_max = 0;
 
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
-    float* rpl_img = (float*) rgl_vol->get_vol()->img;
+    float* rpl_img = (float*) rpl_vol->get_vol()->img;
     float* ct_img = (float*) ct_vol->get_vol()->img;
     unsigned char* ap_img = 0;
-    if (rgl_vol->get_aperture()->have_aperture_image())
+    if (rpl_vol->get_aperture()->have_aperture_image())
     {
-        ap_img = (unsigned char*) rgl_vol->get_aperture()->get_aperture_volume()->img;
+        ap_img = (unsigned char*) rpl_vol->get_aperture()->get_aperture_volume()->img;
     }
     plm_long dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
 
@@ -203,7 +206,7 @@ float compute_sigma_pt_hetero (
     float spacing = sigma_vol->get_vol()->spacing[2]/10; // in cm to correspond to the Highland formula
 
     float E = energy;
-	float mc2 = (float) PROTON_REST_MASS;		/* proton mass at rest (MeV) */
+    float mc2 = (float) PROTON_REST_MASS;		/* proton mass at rest (MeV) */
     float c = (float) LIGHT_SPEED;						/* speed of light (m/s) */
     float p = 0.0;								/* Proton momentum (passed in) */
     float v = 0.0;								/* Proton velocity (passed in) */
@@ -219,10 +222,10 @@ float compute_sigma_pt_hetero (
     printf ("sigma_img: %d %d %d\n", (int) sigma_vol->get_vol()->dim[0], 
         (int) sigma_vol->get_vol()->dim[1], (int) sigma_vol->get_vol()->dim[2]);
     printf("dim: %d %d %d\n", (int) dim[0], (int) dim[1], (int) dim[2]);
-	
+
     for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {   
-        if (!rgl_vol->get_aperture()->have_aperture_image() || (rgl_vol->get_aperture()->have_aperture_image() && ap_img[apert_idx] > 0))
+        if (!rpl_vol->get_aperture()->have_aperture_image() || (rpl_vol->get_aperture()->have_aperture_image() && ap_img[apert_idx] > 0))
         {
             int first_non_null_loc = 0;
             for (int s = 0; s < dim[2]; s++)
@@ -250,13 +253,16 @@ float compute_sigma_pt_hetero (
                 }
             }
     
-            /* Step 2: Each pixel in the volume will receive its sigma (in reality y0) value, according to the differential Highland formula */
-  
+            // Step 2: Each pixel in the volume will receive its sigma 
+            // (in reality y0) value, according to the differential
+            // Highland formula */
             std::vector<double> pv_cache (dim[2], 0);
             std::vector<double> inv_rad_len (dim[2], 0);
             std::vector<double> stop_cache (dim[2], 0);
 
-            E = energy; // we set the energy of the particles to the nominal energy for this ray
+            // we set the energy of the particles to the nominal energy
+            // for this ray
+            E = energy;
 
             for (int s = first_non_null_loc; s < dim[2]; s++)
             {
@@ -264,9 +270,11 @@ float compute_sigma_pt_hetero (
                 v = c*sqrt(1-pow((mc2/(E+mc2)),2)); //in m.s-1
                 pv_cache[s] = p * v;
 
+                /* GCS FIX: The X0 depends on radiation length, not 
+                   proton stopping power.  Yuck.  */
+                // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
                 inv_rad_len[s] = 1.0f / compute_X0_from_HU(HU_ray[s]);
-                stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * get_proton_stop(E); // dE/dx_mat = dE /dx_watter * STPR (lut in g/cm2)
-
+                stop_cache[s] = compute_PrSTPR_from_HU(HU_ray[s]) * get_proton_stop(E);
                 sum = 0;
                 inverse_rad_length_integrated = 0;
 

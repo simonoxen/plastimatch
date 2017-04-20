@@ -35,6 +35,13 @@
 static bool global_debug = false;
 #endif
 
+static void rpl_callback_accum (
+    void *callback_data, size_t vox_index, 
+    double vox_len, float vox_value);
+static void rpl_callback_sample (
+    void *callback_data, size_t vox_index, 
+    double vox_len, float vox_value);
+
 static void rpl_ray_trace_callback_ct_density (
     void *callback_data, 
     size_t vox_index, 
@@ -338,6 +345,7 @@ void Rpl_volume::set_ray(Ray_data *ray)
 {
     d_ptr->ray_data = ray;
 }
+
 Ray_data* Rpl_volume::get_Ray_data()
 {
     return d_ptr->ray_data;
@@ -506,6 +514,98 @@ Rpl_volume::compute_ray_data ()
 #endif
         }
     }
+}
+
+void 
+Rpl_volume::compute_rpl (
+    bool use_aperture, Ray_trace_callback callback)
+{
+    /* A couple of abbreviations */
+    Proj_volume *proj_vol = d_ptr->proj_vol;
+    const double *src = proj_vol->get_src();
+    int ires[2];
+    ires[0] = d_ptr->proj_vol->get_image_dim (0);
+    ires[1] = d_ptr->proj_vol->get_image_dim (1);
+
+    unsigned char *ap_img = 0;
+    if (use_aperture && d_ptr->aperture->have_aperture_image()) {
+        Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
+        ap_img = (unsigned char*) ap_vol->img;
+    }
+    Volume *ct_vol = d_ptr->ct->get_vol();
+
+    /* Preprocess data by clipping against volume */
+    this->compute_ray_data ();
+
+    if (d_ptr->front_clipping_dist == DBL_MAX) {
+        lprintf ("Sorry, total failure intersecting volume\n");
+        return;
+    }
+
+    lprintf ("FPD = %f, BPD = %f\n", 
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist);
+
+    /* Ahh.  Now we can set the clipping planes and allocate the 
+       actual volume. */
+    double clipping_dist[2] = {
+        d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
+    d_ptr->proj_vol->set_clipping_dist (clipping_dist);
+    d_ptr->proj_vol->allocate ();
+ 
+    /* Scan through the aperture -- second pass */
+    for (int r = 0; r < ires[1]; r++) {
+        for (int c = 0; c < ires[0]; c++) {
+
+            /* Compute index of aperture pixel */
+            plm_long ap_idx = r * ires[0] + c;
+
+            /* Make some aliases */
+            Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
+
+            /* Compute intersection with front clipping plane */
+            vec3_scale3 (ray_data->cp, ray_data->ray, 
+                d_ptr->front_clipping_dist);
+            vec3_add2 (ray_data->cp, ray_data->p2);
+
+#if VERBOSE
+            global_debug = false;
+            if (r == 49 && (c == 49 || c == 50)) {
+                global_debug = true;
+            }
+            if (global_debug) {
+                printf ("Tracing ray (%d,%d)\n", r, c);
+            }
+#endif
+
+            /* Check if beamlet is inside aperture, if not 
+               we skip ray tracing */
+            if (ap_img && ap_img[r*ires[0]+c] == 0) {
+                continue;
+            }
+
+            this->rpl_ray_trace (
+                ct_vol,
+                ray_data,
+                callback,
+                &d_ptr->ct_limit,
+                src,
+                0,
+                ires
+            );
+        }
+    }
+}
+
+void 
+Rpl_volume::compute_rpl_sample (bool use_aperture)
+{
+    this->compute_rpl (use_aperture, rpl_callback_sample);
+}
+
+void 
+Rpl_volume::compute_rpl_accum (bool use_aperture)
+{
+    this->compute_rpl (use_aperture, rpl_callback_accum);
 }
 
 /* This function samples the CT into a RPL equivalent geometry.
@@ -766,14 +866,15 @@ Rpl_volume::compute_rpl_range_length_rgc ()
 void 
 Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 {
-    int ires[2];
     /* A couple of abbreviations */
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
+    int ires[2];
     ires[0] = d_ptr->proj_vol->get_image_dim (0);
     ires[1] = d_ptr->proj_vol->get_image_dim (1);
 
     Volume *ct_vol = d_ptr->ct->get_vol();
+    
     /* Preprocess data by clipping against volume */
     this->compute_ray_data ();
 
@@ -786,7 +887,6 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
 
     /* Ahh.  Now we can set the clipping planes and allocate the 
        actual volume. */
-
     double clipping_dist[2] = {
       d_ptr->front_clipping_dist, d_ptr->back_clipping_dist};
     d_ptr->proj_vol->set_clipping_dist (clipping_dist);
@@ -816,6 +916,7 @@ Rpl_volume::compute_rpl_PrSTRP_no_rgc ()
                 printf ("Tracing ray (%d,%d)\n", r, c);
             }
 #endif
+
             this->rpl_ray_trace (
                 ct_vol,            /* I: CT volume */
                 ray_data,          /* I: Pre-computed data for this ray */
@@ -1819,6 +1920,94 @@ Rpl_volume::rpl_ray_trace (
         //printf ("Extending step %d\n", s);
         depth_img[ap_nvox*s + ray_data->ap_idx] = cd.accum;
     }
+}
+
+static
+void
+rpl_callback_sample (
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value
+)
+{
+    Callback_data *cd = (Callback_data *) callback_data;
+    Rpl_volume *rpl_vol = cd->rpl_vol;
+    Ray_data *ray_data = cd->ray_data;
+    float *depth_img = (float*) rpl_vol->get_vol()->img;
+    int ap_idx = ray_data->ap_idx;
+    int ap_area = cd->ires[0] * cd->ires[1];
+    size_t step_num = vox_index + cd->step_offset;
+
+    cd->accum = 0;
+
+#if VERBOSE
+    if (global_debug) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
+	    vox_value, cd->accum);
+        printf ("dim = %d %d %d\n", 
+            (int) rpl_vol->get_vol()->dim[0],
+            (int) rpl_vol->get_vol()->dim[1],
+            (int) rpl_vol->get_vol()->dim[2]);
+        printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
+            ap_area, (int) ap_idx, vox_len);
+    }
+#endif
+
+    cd->last_step_completed = step_num;
+
+    /* GCS FIX: I have a rounding error somewhere -- maybe step_num
+       starts at 1?  Or maybe proj_vol is not big enough?  
+       This is a workaround until I can fix. */
+    if ((plm_long) step_num >= rpl_vol->get_vol()->dim[2]) {
+        return;
+    }
+
+    depth_img[ap_area*step_num + ap_idx] = vox_value;
+}
+
+static
+void
+rpl_callback_accum (
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value
+)
+{
+    Callback_data *cd = (Callback_data *) callback_data;
+    Rpl_volume *rpl_vol = cd->rpl_vol;
+    Ray_data *ray_data = cd->ray_data;
+    float *depth_img = (float*) rpl_vol->get_vol()->img;
+    int ap_idx = ray_data->ap_idx;
+    int ap_area = cd->ires[0] * cd->ires[1];
+    size_t step_num = vox_index + cd->step_offset;
+
+    cd->accum += vox_len * vox_value;
+
+#if VERBOSE
+    if (global_debug) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
+	    vox_value, cd->accum);
+        printf ("dim = %d %d %d\n", 
+            (int) rpl_vol->get_vol()->dim[0],
+            (int) rpl_vol->get_vol()->dim[1],
+            (int) rpl_vol->get_vol()->dim[2]);
+        printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
+            ap_area, (int) ap_idx, vox_len);
+    }
+#endif
+
+    cd->last_step_completed = step_num;
+
+    /* GCS FIX: I have a rounding error somewhere -- maybe step_num
+       starts at 1?  Or maybe proj_vol is not big enough?  
+       This is a workaround until I can fix. */
+    if ((plm_long) step_num >= rpl_vol->get_vol()->dim[2]) {
+        return;
+    }
+
+    depth_img[ap_area*step_num + ap_idx] = cd->accum;
 }
 
 static

@@ -76,36 +76,36 @@ double get_proton_stop (double energy)
 
 double get_theta0_Highland(double range)
 {
-	/* lucite sigma0 (in rads) computing- From the figure A2 of the Hong's paper (be careful, in this paper the fit shows sigma0^2)*/
-	if (range > 150)
-	{
-		return 0.05464 + 5.8348E-6 * range -5.21006E-9 * range * range;
-	}
-	else 
-	{
-		return 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;
-	}
+    /* lucite sigma0 (in rads) computing- From the figure A2 of the Hong's paper (be careful, in this paper the fit shows sigma0^2)*/
+    if (range > 150)
+    {
+        return 0.05464 + 5.8348E-6 * range -5.21006E-9 * range * range;
+    }
+    else 
+    {
+        return 0.05394 + 1.80222E-5 * range -5.5430E-8 * range * range;
+    }
 }
 
 double get_theta0_MC(float energy)
 {
-	return 4.742E-6 * energy * energy -1.918E-3 * energy + 1.158;
+    return 4.742E-6 * energy * energy -1.918E-3 * energy + 1.158;
 }
 
 double get_theta_rel_Highland(double rc_over_range)
 {
-	return rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
+    return rc_over_range * ( 1.6047 -2.7295 * rc_over_range + 2.1578 * rc_over_range * rc_over_range);
 }
 
 double get_theta_rel_MC(double rc_over_range)
 {
-	return 3.833E-2 * pow(rc_over_range, 0.657) + 2.118E-2 * pow(rc_over_range, 6.528);
+    return 3.833E-2 * pow(rc_over_range, 0.657) + 2.118E-2 * pow(rc_over_range, 6.528);
 }
 
 double get_scat_or_Highland(double rc_over_range)
 {
-	/* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
-	if (rc_over_range >= 0 && rc_over_range < 0.5)
+    /* calculation of rc_eff - see Hong's paper graph A3 - linear interpolation of the curve */
+    if (rc_over_range >= 0 && rc_over_range < 0.5)
     {
         return 1 - (0.49 + 0.060 / 0.5 * rc_over_range);
     }
@@ -135,12 +135,14 @@ double get_scat_or_Highland(double rc_over_range)
     }
 }
 
-double get_scat_or_MC(double rc_over_range)
+double
+get_scat_or_MC (double rc_over_range)
 {
-	return 0.023 * rc_over_range + 0.332;
+    return 0.023 * rc_over_range + 0.332;
 }
 
-double compute_X0_from_HU(double CT_HU)
+double
+compute_X0_from_HU (double CT_HU)
 {
     if (CT_HU <= -1000)
     {
