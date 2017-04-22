@@ -191,6 +191,12 @@ Proj_volume::get_image_dim (int dim)
     return d_ptr->image_dim [dim];
 }
 
+int
+Proj_volume::get_num_steps ()
+{
+    return d_ptr->num_steps;
+}
+
 const double*
 Proj_volume::get_incr_c ()
 {

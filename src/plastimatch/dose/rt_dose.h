@@ -17,7 +17,12 @@ energy_direct (
 	int beam_idx
 );
 
-void compute_dose_ray_trace (
+void compute_dose_ray_trace_a (
+    Volume::Pointer dose_vol, 
+    Rt_beam* beam, 
+    const Volume::Pointer ct_vol
+);
+void compute_dose_ray_trace_b (
     Volume::Pointer dose_vol, 
     Rt_beam* beam, 
     const Volume::Pointer ct_vol

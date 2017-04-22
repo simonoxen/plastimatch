@@ -161,6 +161,41 @@ return type:
      object.get_volume_float ();
 
 
+Index convention in images and volumes
+--------------------------------------
+The following convention is used for walking through images
+
+   k, z = slowest moving index (usually IS)
+   j, y = middle moving index (usually AP)
+   i, x = fastest moving index (usually RL)
+
+Arrays which hold things like the dimensions are indexed as follows:
+
+   dim[0] = dimensions of fastest moving index
+   dim[1] = dimensions of middle moving index
+   dim[2] = dimensions of slowest moving index
+
+Loops should be nested from slowest index to fastest index.  
+Therefore, the correct nesting is:
+
+    for (k = 0; k < fixed->dim[2]; k++) {
+	for (j = 0; j < fixed->dim[1]; j++) {
+	    for (i = 0; i < fixed->dim[0]; i++) { ... } } }
+
+Embedded indices, such as (x,y,z) coordinates of the vector 
+field at a voxel, should be in the order of x, then y, then z.
+
+When you pass indices into a function it should be 
+in order x, then y, then z.  For example:
+
+    int volume_index (int* dims, int i, int j, int k);
+
+For 2D images, dim is preferred over ires.  And (j,i) preferred over (r,c).
+But for legacy code, the following should be true:
+
+   r, j, dim[1], ires[1] = slowest moving index (row)
+   c, i, dim[0], ires[0] = fastest moving index (column)
+
 Variable naming for indexing  [Proposed, not implemented]
 ---------------------------------------------------------
 idx	index		one dimensional index

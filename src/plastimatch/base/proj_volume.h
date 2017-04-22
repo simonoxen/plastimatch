@@ -39,6 +39,7 @@ public:
     void set_clipping_dist (const double clipping_dist[2]);
     const int* get_image_dim ();
     int get_image_dim (int dim);
+    int get_num_steps ();
     const double* get_incr_c ();
     const double* get_incr_r ();
     Proj_matrix *get_proj_matrix ();

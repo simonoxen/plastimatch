@@ -179,6 +179,18 @@ Rpl_volume::set_aperture (Aperture::Pointer& ap)
     d_ptr->aperture = ap;
 }
 
+const int*
+Rpl_volume::get_image_dim ()
+{
+    return d_ptr->proj_vol->get_image_dim();
+}
+
+int
+Rpl_volume::get_num_steps ()
+{
+    return d_ptr->proj_vol->get_num_steps();
+}
+
 /* 1D interpolation */
 double
 Rpl_volume::get_rgdepth (
@@ -1924,50 +1936,6 @@ Rpl_volume::rpl_ray_trace (
 
 static
 void
-rpl_callback_sample (
-    void *callback_data, 
-    size_t vox_index, 
-    double vox_len, 
-    float vox_value
-)
-{
-    Callback_data *cd = (Callback_data *) callback_data;
-    Rpl_volume *rpl_vol = cd->rpl_vol;
-    Ray_data *ray_data = cd->ray_data;
-    float *depth_img = (float*) rpl_vol->get_vol()->img;
-    int ap_idx = ray_data->ap_idx;
-    int ap_area = cd->ires[0] * cd->ires[1];
-    size_t step_num = vox_index + cd->step_offset;
-
-    cd->accum = 0;
-
-#if VERBOSE
-    if (global_debug) {
-	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
-	    vox_value, cd->accum);
-        printf ("dim = %d %d %d\n", 
-            (int) rpl_vol->get_vol()->dim[0],
-            (int) rpl_vol->get_vol()->dim[1],
-            (int) rpl_vol->get_vol()->dim[2]);
-        printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
-            ap_area, (int) ap_idx, vox_len);
-    }
-#endif
-
-    cd->last_step_completed = step_num;
-
-    /* GCS FIX: I have a rounding error somewhere -- maybe step_num
-       starts at 1?  Or maybe proj_vol is not big enough?  
-       This is a workaround until I can fix. */
-    if ((plm_long) step_num >= rpl_vol->get_vol()->dim[2]) {
-        return;
-    }
-
-    depth_img[ap_area*step_num + ap_idx] = vox_value;
-}
-
-static
-void
 rpl_callback_accum (
     void *callback_data, 
     size_t vox_index, 
@@ -2008,6 +1976,50 @@ rpl_callback_accum (
     }
 
     depth_img[ap_area*step_num + ap_idx] = cd->accum;
+}
+
+static
+void
+rpl_callback_sample (
+    void *callback_data, 
+    size_t vox_index, 
+    double vox_len, 
+    float vox_value
+)
+{
+    Callback_data *cd = (Callback_data *) callback_data;
+    Rpl_volume *rpl_vol = cd->rpl_vol;
+    Ray_data *ray_data = cd->ray_data;
+    float *depth_img = (float*) rpl_vol->get_vol()->img;
+    int ap_idx = ray_data->ap_idx;
+    int ap_area = cd->ires[0] * cd->ires[1];
+    size_t step_num = vox_index + cd->step_offset;
+
+    cd->accum = 0;
+
+#if VERBOSE
+    if (global_debug) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, (int) step_num, 
+	    vox_value, cd->accum);
+        printf ("dim = %d %d %d\n", 
+            (int) rpl_vol->get_vol()->dim[0],
+            (int) rpl_vol->get_vol()->dim[1],
+            (int) rpl_vol->get_vol()->dim[2]);
+        printf ("ap_area = %d, ap_idx = %d, vox_len = %g\n", 
+            ap_area, (int) ap_idx, vox_len);
+    }
+#endif
+
+    cd->last_step_completed = step_num;
+
+    /* GCS FIX: I have a rounding error somewhere -- maybe step_num
+       starts at 1?  Or maybe proj_vol is not big enough?  
+       This is a workaround until I can fix. */
+    if ((plm_long) step_num >= rpl_vol->get_vol()->dim[2]) {
+        return;
+    }
+
+    depth_img[ap_area*step_num + ap_idx] = vox_value;
 }
 
 static

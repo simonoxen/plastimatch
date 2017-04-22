@@ -45,7 +45,7 @@ energy_direct (
 }
 
 void
-compute_dose_ray_trace (
+compute_dose_ray_trace_a (
     Volume::Pointer dose_vol, 
     Rt_beam* beam, 
     const Volume::Pointer ct_vol
@@ -81,10 +81,7 @@ compute_dose_ray_trace (
                 if (ct_ijk[2] == 98 && ct_ijk[1] == 213 && ct_ijk[0] == 200) {
                     debug = true;
                 }
-                if (ct_ijk[2] == 98 && ct_ijk[1] == 217 && ct_ijk[0] == 204) {
-                    debug = true;
-                }
-                if (ct_ijk[2] == 98 && ct_ijk[1] == 220 && ct_ijk[0] == 192) {
+                if (ct_ijk[2] == 98 && ct_ijk[1] == 230 && ct_ijk[0] == 223) {
                     debug = true;
                 }
 
@@ -155,6 +152,53 @@ compute_dose_ray_trace (
                 if (debug) {
                     printf (" dose = %f\n", dose);
                 }
+            }
+        }
+    }
+}
+
+void
+compute_dose_ray_trace_b (
+    Volume::Pointer dose_vol, 
+    Rt_beam* beam, 
+    const Volume::Pointer ct_vol
+)
+{
+    Rpl_volume *wepl_rplvol = beam->rsp_accum_vol;
+    Volume *wepl_vol = wepl_rplvol->get_vol();
+    float *wepl_img = wepl_vol->get_raw<float> ();
+
+    Rpl_volume *dose_rplvol = beam->rpl_dose_vol;
+
+    /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
+       if there is a range compensator */
+    if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
+    {
+        add_rcomp_length_to_rpl_volume(beam);
+    }
+
+    /* scan through rpl volume */
+    Aperture::Pointer& ap = beam->get_aperture ();
+    Volume *ap_vol = 0;
+    const uchar *ap_img = 0;
+    if (ap->have_aperture_image()) {
+        ap_vol = ap->get_aperture_vol ();
+        ap_img = ap_vol->get_raw<unsigned char> ();
+    }
+    const int *dim = wepl_rplvol->get_image_dim();
+    int num_steps = wepl_rplvol->get_num_steps();
+    plm_long ij[2] = {0,0};
+    for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+        for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+            if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)])
+            {
+                continue;
+            }
+            for (int s = 0; s < num_steps; s++) {
+                int index = ap_vol->index(ij[0],ij[1],s);
+                float wepl = wepl_img[index];
+
+                // TBD
             }
         }
     }

@@ -59,6 +59,9 @@ public:
     const Volume* get_vol () const;
     Proj_volume* get_proj_volume ();
 
+    const int *get_image_dim ();
+    int get_num_steps ();
+
     double get_rgdepth (int ap_ij[2], double dist);
     double get_rgdepth (double ap_ij[2], double dist);
     double get_rgdepth (const double *xyz);

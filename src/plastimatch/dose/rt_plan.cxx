@@ -560,7 +560,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
         float* sigma_img = (float*) sigma_vol->get_vol()->img;
         UNUSED_VARIABLE (sigma_img);
 
-        if (beam->get_flavor() == 'a' || beam->get_flavor() == 'g') {
+        if (beam->get_flavor() == 'a'
+            || beam->get_flavor() == 'b'
+            || beam->get_flavor() == 'g')
+        {
             beam->rpl_dose_vol = new Rpl_volume;
         }
 
@@ -582,6 +585,28 @@ Rt_plan::compute_dose (Rt_beam *beam)
             compute_sigmas (this, beam, ppp->E0, &sigma_max, "small", margins);
             time_sigma_conv += timer.report ();
 
+            if (beam->get_flavor() == 'b')
+            {
+                beam->rpl_dose_vol->set_geometry (
+                    beam->get_source_position(),
+                    beam->get_isocenter_position(),
+                    beam->get_aperture()->vup,
+                    beam->get_aperture()->get_distance(),
+                    beam->get_aperture()->get_dim(),
+                    beam->get_aperture()->get_center(),
+                    beam->get_aperture()->get_spacing(),
+                    beam->get_step_length());
+                beam->rpl_dose_vol->set_ct(beam->rsp_accum_vol->get_ct());
+                beam->rpl_dose_vol->set_ct_limit(beam->rsp_accum_vol->get_ct_limit());
+                beam->rpl_dose_vol->compute_ray_data();
+                beam->rpl_dose_vol->set_front_clipping_plane(beam->rsp_accum_vol->get_front_clipping_plane());
+                beam->rpl_dose_vol->set_back_clipping_plane(beam->rsp_accum_vol->get_back_clipping_plane());
+                beam->rpl_dose_vol->compute_rpl_void();
+
+                compute_dose_ray_trace_b (dose_vol, beam, ct_vol);
+                
+                dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
+            }
             if (beam->get_flavor() == 'f') // Desplanques' algorithm
             {
                 range = 10 * get_proton_range(ppp->E0); // range in mm
@@ -690,7 +715,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 beam->sigma_vol_lg->compute_rpl_PrSTRP_no_rgc();
 
                 compute_sigmas (this, beam, ppp->E0, &sigma_max, "large", margins);				
-                build_hong_grid(&area, &xy_grid, radius_sample, theta_sample);
+                build_hong_grid (&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford (
                     dose_vol, this, beam,
                     i, &area, &xy_grid,
@@ -699,9 +724,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
             printf("dose computed\n");
         }
     }
-    if (beam->get_flavor() == 'a') // pull algorithm
+
+    if (beam->get_flavor() == 'a')
     {
-        compute_dose_ray_trace (dose_vol, beam, ct_vol);
+        compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
     }
 
     Plm_image::Pointer dose = Plm_image::New();

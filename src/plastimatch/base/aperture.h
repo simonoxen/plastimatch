@@ -74,6 +74,7 @@ public:
     Plm_image::Pointer& get_aperture_image ();
     /*! \brief Get the aperture image as Volume */
     Volume::Pointer& get_aperture_volume ();
+    Volume* get_aperture_vol ();
     /*! \brief Load the aperture image from a file */
     void set_aperture_image (const char *ap_filename);
 
@@ -96,9 +97,9 @@ public:
 
     /*! \brief Expand aperture and smear compensator.  The smearing 
       parameters is defined as mm around the target in the beam eye view frame
-	  at the target minimal depth. */
+      at the target minimal depth. */
     void apply_smearing_to_aperture (float smearing, float target_depth);
-	void apply_smearing_to_range_compensator (float smearing, float target_depth);
+    void apply_smearing_to_range_compensator (float smearing, float target_depth);
     ///@}
 
 public:

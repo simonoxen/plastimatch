@@ -45,8 +45,8 @@ Aperture::Aperture ()
 {
     this->d_ptr = new Aperture_private;
 
-	/* The aperture and the range compensator are inizialized */
-	this->allocate_aperture_images();
+    /* The aperture and the range compensator are inizialized */
+    this->allocate_aperture_images();
 
     this->vup[0] = 0.0;
     this->vup[1] = 0.0;
@@ -71,8 +71,8 @@ Aperture::Aperture (const Aperture::Pointer& ap)
 {
     this->d_ptr = new Aperture_private (ap->d_ptr);
 
-	/* The aperture and the range compensator are initialized */
-	this->allocate_aperture_images();
+    /* The aperture and the range compensator are initialized */
+    this->allocate_aperture_images();
 
     vec3_copy (this->vup, ap->vup);
     vec3_copy (this->pdn, ap->pdn);
@@ -83,19 +83,19 @@ Aperture::Aperture (const Aperture::Pointer& ap)
     vec3_copy (this->incr_r, ap->incr_r);
     vec3_copy (this->incr_c, ap->incr_c);
 
-	Volume::Pointer ap_tmp = ap->get_aperture_volume();
-	unsigned char* ap_tmp_img = (unsigned char*) ap_tmp->img;
-	Volume::Pointer rc_tmp = ap->get_range_compensator_volume();
-	float* rc_tmp_img = (float*) rc_tmp->img;
+    Volume::Pointer ap_tmp = ap->get_aperture_volume();
+    unsigned char* ap_tmp_img = (unsigned char*) ap_tmp->img;
+    Volume::Pointer rc_tmp = ap->get_range_compensator_volume();
+    float* rc_tmp_img = (float*) rc_tmp->img;
 
-	unsigned char* ap_img = (unsigned char*) this->get_aperture_volume()->img;
-	float* rc_img = (float*) this->get_range_compensator_volume()->img;
+    unsigned char* ap_img = (unsigned char*) this->get_aperture_volume()->img;
+    float* rc_img = (float*) this->get_range_compensator_volume()->img;
 
-	for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
-	{
-		ap_img[i] = ap_tmp_img[i];
-		rc_img[i] = rc_tmp_img[i];
-	}
+    for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
+    {
+        ap_img[i] = ap_tmp_img[i];
+        rc_img[i] = rc_tmp_img[i];
+    }
 }
 
 Aperture::~Aperture ()
@@ -135,7 +135,7 @@ Aperture::set_dim (const int* dim)
     d_ptr->center[0] = (dim[0]-1) / 2;
     d_ptr->center[1] = (dim[1]-1) / 2;
 
-	this->allocate_aperture_images();
+    this->allocate_aperture_images();
 }
 
 const double*
@@ -239,15 +239,15 @@ Aperture::allocate_aperture_images ()
     Volume *ap_vol = new Volume (dim, origin, spacing, NULL, PT_UCHAR, 1);
     Volume *rc_vol = new Volume (dim, origin, spacing, NULL, PT_FLOAT, 1);
 
-	/* Set the volume to values = 0 for range compensator and 1 for aperture */
-	unsigned char* ap_img = (unsigned char*) ap_vol->img;
-	float* rc_img = (float*) rc_vol->img;
+    /* Set the volume to values = 0 for range compensator and 1 for aperture */
+    unsigned char* ap_img = (unsigned char*) ap_vol->img;
+    float* rc_img = (float*) rc_vol->img;
 
-	for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
-	{
-		ap_img[i] = 1;
-		rc_img[i] = 0;
-	}
+    for (int i = 0; i < d_ptr->dim[0] * d_ptr->dim[1]; i++)
+    {
+        ap_img[i] = 1;
+        rc_img[i] = 0;
+    }
 
     d_ptr->aperture_image = Plm_image::New (ap_vol);
     d_ptr->range_compensator_image = Plm_image::New (rc_vol);
@@ -269,6 +269,12 @@ Volume::Pointer&
 Aperture::get_aperture_volume ()
 {
     return d_ptr->aperture_image->get_volume_uchar ();
+}
+
+Volume*
+Aperture::get_aperture_vol ()
+{
+    return this->get_aperture_volume().get();
 }
 
 void 
@@ -320,8 +326,8 @@ Aperture::apply_smearing_to_aperture (float smearing, float reference_depth)
     int strel_half_size[2];
     int strel_size[2];
 
-	strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
-	strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
+    strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
+    strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
 
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];
@@ -398,8 +404,8 @@ Aperture::apply_smearing_to_range_compensator (float smearing, float reference_d
     int strel_half_size[2];
     int strel_size[2];
 
-	strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
-	strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
+    strel_half_size[0] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[0]));
+    strel_half_size[1] = ROUND_INT(smearing * d_ptr->distance / (reference_depth * d_ptr->spacing[1]));
 
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];

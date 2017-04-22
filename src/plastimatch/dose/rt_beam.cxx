@@ -974,7 +974,9 @@ Rt_beam::save_beam_output ()
         ap->save_image (this->get_aperture_out().c_str());
     }
 
-    if (this->get_range_compensator_out() != "" && this->get_beam_line_type() == "passive") {
+    if (this->get_range_compensator_out() != ""
+        && this->get_beam_line_type() == "passive")
+    {
         Rpl_volume *rpl_vol = this->rsp_accum_vol;
         Plm_image::Pointer& rc = rpl_vol->get_aperture()->get_range_compensator_image();
         rc->save_image (this->get_range_compensator_out().c_str());
