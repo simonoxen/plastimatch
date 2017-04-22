@@ -23,8 +23,8 @@ void compute_dose_ray_trace_a (
     const Volume::Pointer ct_vol
 );
 void compute_dose_ray_trace_b (
-    Volume::Pointer dose_vol, 
-    Rt_beam* beam, 
+    Rt_beam* beam,
+    const Rt_depth_dose *depth_dose,
     const Volume::Pointer ct_vol
 );
 void compute_dose_ray_desplanques (

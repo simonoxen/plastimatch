@@ -30,7 +30,7 @@ Rt_depth_dose::Rt_depth_dose (
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
-	this->f_lut = NULL;
+    this->f_lut = NULL;
 
     this->E0 = E0;
     this->spread = spread;
@@ -46,9 +46,9 @@ Rt_depth_dose::~Rt_depth_dose ()
     if (this->e_lut) {
         free (this->e_lut);
     }
-	if (this->f_lut) {
-		free (this->f_lut);
-	}
+    if (this->f_lut) {
+        free (this->f_lut);
+    }
 }
 
 bool
@@ -92,11 +92,11 @@ Rt_depth_dose::load_xio (const char* fn)
 
     this->d_lut = (float*)malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*)malloc (this->num_samples*sizeof(float));
-	this->f_lut = (float*)malloc (this->num_samples*sizeof(float));
+    this->f_lut = (float*)malloc (this->num_samples*sizeof(float));
     
     memset (this->d_lut, 0, this->num_samples*sizeof(float));
     memset (this->e_lut, 0, this->num_samples*sizeof(float));
-	memset (this->f_lut, 0, this->num_samples*sizeof(float));
+    memset (this->f_lut, 0, this->num_samples*sizeof(float));
 
     /* load in the depths (10 samples per line) */
     for (i=0, j=0; i<(this->num_samples/10)+1; i++) {
@@ -120,7 +120,7 @@ Rt_depth_dose::load_xio (const char* fn)
         }
     }
 
-	/* load in the energies (10 samples per line) */
+    /* load in the energies (10 samples per line) */
     for (i=0, j=0; i<(this->num_samples/10)+1; i++) {
         fgets (linebuf, 128, fp);
         ptoken = strtok (linebuf, ",\n\0");
@@ -143,28 +143,28 @@ Rt_depth_dose::load_txt (const char* fn)
 
     while (fgets (linebuf, 128, fp)) {
         float range, dose;
-				float dose_int =0;
+        float dose_int =0;
 
         if (2 != sscanf (linebuf, "%f %f", &range, &dose)) {
             break;
         }
 
-				dose_int += dose;
+        dose_int += dose;
         this->num_samples++;
         this->d_lut = (float*) realloc (
-                        this->d_lut,
-                        this->num_samples * sizeof(float));
+            this->d_lut,
+            this->num_samples * sizeof(float));
 
         this->e_lut = (float*) realloc (
-                        this->e_lut,
-                        this->num_samples * sizeof(float));
-				this->f_lut = (float*) realloc (
-						this->f_lut,
-						this->num_samples * sizeof(float));
+            this->e_lut,
+            this->num_samples * sizeof(float));
+        this->f_lut = (float*) realloc (
+            this->f_lut,
+            this->num_samples * sizeof(float));
 
         this->d_lut[this->num_samples-1] = range;
         this->e_lut[this->num_samples-1] = dose;
-				this->f_lut[this->num_samples-1] = dose_int;
+        this->f_lut[this->num_samples-1] = dose_int;
         this->dend = range;         /* Assume entries are sorted */
     }
     fclose (fp);
@@ -177,17 +177,17 @@ Rt_depth_dose::generate ()
     int i;
     double d;
 
-	float max_prep = -1;
-	float depth = -1;
-  if (this->E0 > 190) {depth = 240;} // To accelerate the process and avoid the region where the dose decreases in the first mm (mathematic model) when E>190...
-	float bragg = 0;
-	while (bragg > max_prep)
-	{
-		max_prep = bragg;
-		depth++;
-		bragg = bragg_curve(this->E0, this->spread, depth);
-	}
-	this->dend = depth + 20; // 2 cm margins after the Bragg peak
+    float max_prep = -1;
+    float depth = -1;
+    if (this->E0 > 190) {depth = 240;} // To accelerate the process and avoid the region where the dose decreases in the first mm (mathematic model) when E>190...
+    float bragg = 0;
+    while (bragg > max_prep)
+    {
+        max_prep = bragg;
+        depth++;
+        bragg = bragg_curve(this->E0, this->spread, depth);
+    }
+    this->dend = depth + 20; // 2 cm margins after the Bragg peak
 
 #if SPECFUN_FOUND
     if (!this->E0) {
@@ -205,46 +205,46 @@ Rt_depth_dose::generate ()
     this->num_samples = (int) ceilf (this->dend / this->dres)+1;
     this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
     this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
-	this->f_lut = (float*) malloc (this->num_samples*sizeof(float));
+    this->f_lut = (float*) malloc (this->num_samples*sizeof(float));
     
     memset (this->d_lut, 0, this->num_samples*sizeof(float));
     memset (this->e_lut, 0, this->num_samples*sizeof(float));
-	memset (this->f_lut, 0, this->num_samples*sizeof(float));
+    memset (this->f_lut, 0, this->num_samples*sizeof(float));
 
     for (d=0, i=0; i<this->num_samples; d+=this->dres, i++) {
         d_lut[i] = d;
-		e_lut[i] = bragg_curve (this->E0, this->spread, d);
+        e_lut[i] = bragg_curve (this->E0, this->spread, d);
     }
-	float max = 0;
-	if (this->num_samples > 0) 
-	{ 
-		max = e_lut[0];
-		for (int k = 1; k < this->num_samples; k++)
-		{
-			if (e_lut[k] > max)
-			{
-				max = e_lut[k];
-				this->index_of_dose_max = k;
-			}
-		}
+    float max = 0;
+    if (this->num_samples > 0) 
+    { 
+        max = e_lut[0];
+        for (int k = 1; k < this->num_samples; k++)
+        {
+            if (e_lut[k] > max)
+            {
+                max = e_lut[k];
+                this->index_of_dose_max = k;
+            }
+        }
 	
-		/* normalization and creation of the accumulated dose curve */
-		if (max > 0)
-		{
-			e_lut[0] /= max;
-			f_lut[0] = e_lut[0] * this->dres;
-			for (int k = 1; k < this->num_samples; k++)
-			{
-				e_lut[k] /= max;
-				f_lut[k] = f_lut[k-1] + e_lut[k]*this->dres;
-			}
-		}
-		else
-		{
-			printf("Error: Depth dose curve must have at least one value > 0.\n");
-			return false;
-		}
-	}
+        /* normalization and creation of the accumulated dose curve */
+        if (max > 0)
+        {
+            e_lut[0] /= max;
+            f_lut[0] = e_lut[0] * this->dres;
+            for (int k = 1; k < this->num_samples; k++)
+            {
+                e_lut[k] /= max;
+                f_lut[k] = f_lut[k-1] + e_lut[k]*this->dres;
+            }
+        }
+        else
+        {
+            printf("Error: Depth dose curve must have at least one value > 0.\n");
+            return false;
+        }
+    }
 
     return true;
 #else
@@ -267,7 +267,7 @@ Rt_depth_dose::dump (const char* fn) const
 int 
 Rt_depth_dose::get_index_of_dose_max()
 {
-	return index_of_dose_max;
+    return index_of_dose_max;
 }
 
 float
@@ -328,8 +328,7 @@ Rt_depth_dose::lookup_energy_integration (float depth, float dz) const
 }
 
 float
-Rt_depth_dose::lookup_energy (
-    float depth)
+Rt_depth_dose::lookup_energy (float depth) const
 {	
     int i = 0;
     float energy = 0.0f;

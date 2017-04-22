@@ -2356,7 +2356,7 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
 }
 
 void
-Rpl_volume::compute_target_distance_limits(Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance)
+Rpl_volume::compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance)
 {
     double threshold = .2;  //theshold for interpolated, segmented volume
     d_ptr->aperture->allocate_aperture_images();

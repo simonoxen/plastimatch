@@ -159,8 +159,8 @@ compute_dose_ray_trace_a (
 
 void
 compute_dose_ray_trace_b (
-    Volume::Pointer dose_vol, 
-    Rt_beam* beam, 
+    Rt_beam* beam,
+    const Rt_depth_dose *depth_dose,
     const Volume::Pointer ct_vol
 )
 {
@@ -168,8 +168,13 @@ compute_dose_ray_trace_b (
     Volume *wepl_vol = wepl_rplvol->get_vol();
     float *wepl_img = wepl_vol->get_raw<float> ();
 
-    Rpl_volume *dose_rplvol = beam->rpl_dose_vol;
+    Rpl_volume *rpl_dose_vol = beam->rpl_dose_vol;
+    Volume *dose_vol = rpl_dose_vol->get_vol();
+    float *dose_img = dose_vol->get_raw<float> ();
 
+    Rt_mebs::Pointer mebs = beam->get_mebs();
+    std::vector<float>& num_part = mebs->get_num_particles();
+    
     /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
        if there is a range compensator */
     if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
@@ -197,8 +202,8 @@ compute_dose_ray_trace_b (
             for (int s = 0; s < num_steps; s++) {
                 int index = ap_vol->index(ij[0],ij[1],s);
                 float wepl = wepl_img[index];
-
-                // TBD
+                float np = num_part[index];
+                dose_img[index] = np * depth_dose->lookup_energy(wepl);
             }
         }
     }
@@ -528,7 +533,7 @@ compute_dose_ray_sharp (
         lateral_step_y[k] = (beam->rsp_accum_vol->get_front_clipping_plane() + beam->rsp_accum_vol->get_aperture()->get_distance() + (double) k) *beam->get_aperture()->get_spacing(1) / beam->rsp_accum_vol->get_aperture()->get_distance();
     }
 
-    std::vector<float> num_part = beam->get_mebs()->get_num_particles();
+    std::vector<float>& num_part = beam->get_mebs()->get_num_particles();
 
     printf ("Aperture margin = %d %d\n", margins[0], margins[1]);
     

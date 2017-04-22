@@ -585,28 +585,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
             compute_sigmas (this, beam, ppp->E0, &sigma_max, "small", margins);
             time_sigma_conv += timer.report ();
 
-            if (beam->get_flavor() == 'b')
-            {
-                beam->rpl_dose_vol->set_geometry (
-                    beam->get_source_position(),
-                    beam->get_isocenter_position(),
-                    beam->get_aperture()->vup,
-                    beam->get_aperture()->get_distance(),
-                    beam->get_aperture()->get_dim(),
-                    beam->get_aperture()->get_center(),
-                    beam->get_aperture()->get_spacing(),
-                    beam->get_step_length());
-                beam->rpl_dose_vol->set_ct(beam->rsp_accum_vol->get_ct());
-                beam->rpl_dose_vol->set_ct_limit(beam->rsp_accum_vol->get_ct_limit());
-                beam->rpl_dose_vol->compute_ray_data();
-                beam->rpl_dose_vol->set_front_clipping_plane(beam->rsp_accum_vol->get_front_clipping_plane());
-                beam->rpl_dose_vol->set_back_clipping_plane(beam->rsp_accum_vol->get_back_clipping_plane());
-                beam->rpl_dose_vol->compute_rpl_void();
-
-                compute_dose_ray_trace_b (dose_vol, beam, ct_vol);
-                
-                dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
-            }
             if (beam->get_flavor() == 'f') // Desplanques' algorithm
             {
                 range = 10 * get_proton_range(ppp->E0); // range in mm
@@ -725,9 +703,35 @@ Rt_plan::compute_dose (Rt_beam *beam)
         }
     }
 
-    if (beam->get_flavor() == 'a')
-    {
+    if (beam->get_flavor() == 'a') {
         compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
+    }
+    if (beam->get_flavor() == 'b') {
+        Rt_mebs::Pointer mebs = beam->get_mebs();
+        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
+        // Loop through energies
+        for (size_t i = 0; i < depth_dose.size(); i++) {
+
+            beam->rpl_dose_vol->set_geometry (
+                beam->get_source_position(),
+                beam->get_isocenter_position(),
+                beam->get_aperture()->vup,
+                beam->get_aperture()->get_distance(),
+                beam->get_aperture()->get_dim(),
+                beam->get_aperture()->get_center(),
+                beam->get_aperture()->get_spacing(),
+                beam->get_step_length());
+            beam->rpl_dose_vol->set_ct(beam->rsp_accum_vol->get_ct());
+            beam->rpl_dose_vol->set_ct_limit(beam->rsp_accum_vol->get_ct_limit());
+            beam->rpl_dose_vol->compute_ray_data();
+            beam->rpl_dose_vol->set_front_clipping_plane(beam->rsp_accum_vol->get_front_clipping_plane());
+            beam->rpl_dose_vol->set_back_clipping_plane(beam->rsp_accum_vol->get_back_clipping_plane());
+            beam->rpl_dose_vol->compute_rpl_void();
+
+            const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[i];
+            compute_dose_ray_trace_b (beam, depth_dose, ct_vol);
+            dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+        }
     }
 
     Plm_image::Pointer dose = Plm_image::New();
