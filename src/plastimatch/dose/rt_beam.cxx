@@ -35,8 +35,10 @@ public:
 
     float step_length;
 
-    Aperture::Pointer aperture;
+    Plm_image::Pointer ct_hu;
+    Plm_image::Pointer ct_psp;
     Plm_image::Pointer target;
+    Aperture::Pointer aperture;
 
     std::string aperture_in;
     std::string range_compensator_in;
@@ -322,16 +324,109 @@ Rt_beam::dump (const std::string& dir)
     this->dump (dir.c_str());
 }
 
-void 
-Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
+bool
+Rt_beam::prepare_for_calc (
+    Plm_image::Pointer& ct_hu,
+    Plm_image::Pointer& ct_psp,
+    Plm_image::Pointer& target)
 {
+    if (!ct_hu) return false;
+    if (!ct_psp) return false;
+    d_ptr->ct_hu = ct_hu;
+    d_ptr->ct_psp = ct_psp;
+    d_ptr->target = target;
+
+    if (this->get_aperture()->get_distance() > this->get_source_distance ()) {
+        lprintf ("Source distance must be greater than aperture distance");
+        return false;
+    }
+    
+    /* Create rsp_accum_vol */
+    if (!this->rsp_accum_vol) {
+        this->rsp_accum_vol = new Rpl_volume;
+    }
+    if (!this->rsp_accum_vol) return false;
+    this->rsp_accum_vol->set_geometry (
+        this->get_source_position(),
+        this->get_isocenter_position(),
+        this->get_aperture()->vup,
+        this->get_aperture()->get_distance(),
+        this->get_aperture()->get_dim(),
+        this->get_aperture()->get_center(),
+        this->get_aperture()->get_spacing(),
+        this->get_step_length());
+
+    /* Create ct projective volume */
+    this->hu_samp_vol = new Rpl_volume;
+    if (!this->hu_samp_vol) return false;
+    this->hu_samp_vol->clone_geometry (this->rsp_accum_vol);
+
+    /* Create ct sigma volume */
+    if (this->get_flavor() == 'f'
+        || this->get_flavor() == 'g'
+        || this->get_flavor() == 'h')
+    {
+        this->sigma_vol = new Rpl_volume;
+        if (!this->sigma_vol) return false;
+        this->sigma_vol->clone_geometry (this->rsp_accum_vol);
+    }
+
+    /* Create target projective volume */
+    if (d_ptr->target) {
+        this->target_rv = Rpl_volume::New();
+        if (!this->target_rv) return false;
+        this->target_rv->clone_geometry (this->rsp_accum_vol);
+    }
+
+    /* Copy aperture from beam into rpl volume */
+    this->rsp_accum_vol->set_aperture (this->get_aperture());
+    this->hu_samp_vol->set_aperture (this->get_aperture());
+
+    /* Scan through aperture to fill in rpl_volume */
+    this->rsp_accum_vol->set_ct_volume (ct_psp);
+    if (!this->rsp_accum_vol->get_ct() || !this->rsp_accum_vol->get_ct_limit()) {
+        lprintf ("ray_data or clipping planes missing from rpl volume\n");
+        return false;
+    }
+    // this->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
+    this->rsp_accum_vol->compute_rpl_accum (false);
+
+    // We don't do everything again, we just copy the 
+    // ct & ct_limits as all the volumes geometrically equal
+    // GCS FIX: The old code re-used the ray data.  Is that really faster?
+    this->hu_samp_vol->set_ct_volume (d_ptr->ct_hu);
+    this->hu_samp_vol->compute_rpl_sample (false);
+
+    // Fill in the target_rv
+    if (this->target_rv) {
+        this->target_rv->set_ct_volume (d_ptr->target);
+        this->target_rv->compute_rpl_sample (false);
+    }
+
+    // Prepare, but don't compute the sigma volume yet
+    if (this->sigma_vol) {
+        Aperture::Pointer ap_sigma = Aperture::New(this->get_aperture());
+        this->sigma_vol->set_aperture (ap_sigma);
+        this->sigma_vol->set_aperture (this->get_aperture());
+        this->sigma_vol->set_ct (this->rsp_accum_vol->get_ct());
+        this->sigma_vol->set_ct_limit (this->rsp_accum_vol->get_ct_limit());
+        /* We don't do everything again, we just copy the 
+           ray_data & clipping planes as all the volumes 
+           are geometrically equal */
+        this->sigma_vol->set_ray(this->rsp_accum_vol->get_Ray_data());
+        this->sigma_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
+        this->sigma_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
+    }
+
+    /* Next, depending on what the user asked for, we may create apertures, 
+       range compensators, use pre-defined apertures or spot maps, etc. */
     if (d_ptr->mebs->get_have_particle_number_map() == true
         && d_ptr->beam_line_type == "passive")
     {
         printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
         printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
         this->compute_beam_data_from_spot_map();
-        return;
+        return true;
     }
 
     /* The priority how to generate dose is:
@@ -344,14 +439,14 @@ Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
     {
         printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
         this->compute_beam_data_from_spot_map();
-        return;
+        return true;
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
     {
         printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
         this->get_mebs()->set_have_manual_peaks(true);
         this->compute_beam_data_from_manual_peaks(target);
-        return;
+        return true;
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
@@ -360,7 +455,7 @@ Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
         this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
         printf("Prescription depths detected. Any target depth will not be considered.\n");
         this->compute_beam_data_from_prescription(target);
-        return;
+        return true;
     }
     if (target->get_vol())
     {
@@ -368,7 +463,7 @@ Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_target(target);
-        return;
+        return true;
     }
 	
     /* If we arrive to this point, it is because no beam was defined
@@ -376,7 +471,8 @@ Rt_beam::compute_prerequisites_beam_tools (Plm_image::Pointer& target)
     printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
     printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
     this->compute_default_beam();
-    return;
+
+    return true;
 }
 
 void
@@ -532,6 +628,24 @@ Rt_beam::update_aperture_and_range_compensator()
 }
 
 Plm_image::Pointer&
+Rt_beam::get_ct_psp ()
+{
+    return d_ptr->ct_psp;
+}
+
+const Plm_image::Pointer&
+Rt_beam::get_ct_psp () const 
+{
+    return d_ptr->ct_psp;
+}
+
+void 
+Rt_beam::set_ct_psp (Plm_image::Pointer& ct_psp)
+{
+    d_ptr->ct_psp = ct_psp;
+}
+
+Plm_image::Pointer&
 Rt_beam::get_target ()
 {
     return d_ptr->target;
@@ -544,7 +658,7 @@ Rt_beam::get_target () const
 }
 
 void 
-Rt_beam::set_target(Plm_image::Pointer& target)
+Rt_beam::set_target (Plm_image::Pointer& target)
 {
     d_ptr->target = target;
 }

@@ -141,6 +141,9 @@ public:
     void scale_num_part(double A, int* ap_dim);
     double get_particle_number_xyz(int* idx, double* rest, int idx_beam, const int* ap_dim);
 
+
+    void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
+    
     /* This computes the E_min and E_max map from a target for all pencil beam*/
     void generate_part_num_from_weight(int* ap_dim);
     void extract_particle_number_map_from_txt(Aperture::Pointer& ap);

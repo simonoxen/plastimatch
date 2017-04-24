@@ -91,9 +91,9 @@ public:
         this->energy_res = 1.f;
         this->energy_number = 1;
 
-        this->target_min_depth = 0.f;			/* lower depth  of target */
-        this->target_max_depth = 0.f;			/* higher depth of target */
-        this->depth_res = 0.01f;				/* depth resolution */
+        this->target_min_depth = 0.f;		/* lower depth  of target */
+        this->target_max_depth = 0.f;		/* higher depth of target */
+        this->depth_res = 0.01f;		/* depth resolution */
         this->depth_end = 20.f;
 
         this->prescription_depth_min = 0.f;
@@ -167,9 +167,9 @@ public:
         this->energy_res = rsp->energy_res;
         this->energy_number = rsp->energy_number;
 
-        this->target_min_depth = rsp->target_min_depth;	/* lower depth  of target */
-        this->target_max_depth = rsp->target_max_depth;	/* higher depth of target */
-        this->depth_res = rsp->depth_res;				/* depth resolution */
+        this->target_min_depth = rsp->target_min_depth;
+        this->target_max_depth = rsp->target_max_depth;
+        this->depth_res = rsp->depth_res;
         this->depth_end = rsp->depth_end;
 
         this->prescription_depth_min = rsp->prescription_depth_min;
@@ -1278,7 +1278,7 @@ Rt_mebs::initialize_energy_weight_and_depth_dose_vectors (
 }
 
 void 
-Rt_mebs::generate_part_num_from_weight(int* ap_dim)
+Rt_mebs::generate_part_num_from_weight (int* ap_dim)
 {
     //int idx = 0;
     for (int i = 0; i < d_ptr->energy_number; i++)
@@ -1436,6 +1436,8 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
     }
 }
 
+bool global_debug = false;
+
 void
 Rt_mebs::compute_particle_number_matrix_from_target_active (
     Rpl_volume* rpl_vol,
@@ -1486,10 +1488,10 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     std::vector<float> energy_tmp;
     std::vector<float> weight_tmp;
     std::vector<Rt_depth_dose*> depth_dose_tmp;
-    this->initialize_energy_weight_and_depth_dose_vectors(&weight_tmp, &energy_tmp, &depth_dose_tmp);
+    this->initialize_energy_weight_and_depth_dose_vectors (&weight_tmp, &energy_tmp, &depth_dose_tmp);
 
     /* initialization of the dose matrix slice for monoenergetic slice */
-    for (int i = 0; i < dim[0] *  dim[1] * d_ptr->energy_number;i++)
+    for (int i = 0; i < dim[0] *  dim[1] * d_ptr->energy_number; i++)
     {
         d_ptr->num_particles.push_back(0);
     }
@@ -1498,7 +1500,16 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     /* Let's optimize the SOBP for each beamlet */
     for (size_t i = 0; i < dmin.size(); i++)
     {
-        this->get_optimized_peaks(dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
+        if (i == 26*41+1 || i == 26*41+2) {
+            global_debug = true;
+        }
+        else {
+            global_debug = false;
+        }
+        if (global_debug) {
+            printf ("DEBUG: DMIN, DMAX: %f %f\n", dmin[i], dmax[i]);
+        }
+        this->get_optimized_peaks (dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
         for (int j = 0; j < d_ptr->energy_number; j++)
         {
             d_ptr->num_particles[i + j *  dim[0] *  dim[1] ] = weight_tmp[j];
@@ -1531,12 +1542,24 @@ Rt_mebs::get_optimized_peaks (
     float E_min_sobp = (float) energy_min_index * d_ptr->energy_res;
     float E_max_sobp = (float) energy_max_index * d_ptr->energy_res;
 
+    if (global_debug) {
+        printf ("DEBUG: E_min/max_sobp: %f %f\n",
+            E_min_sobp, E_max_sobp);
+    }
+
     /* This is useful only for active scanning */
-    /* check that the E_max is sufficiently high for covering the distal part of the prescription */
+    /* check that the E_max is sufficiently high for covering the distal 
+       part of the prescription */
     E_max_sobp += this->check_and_correct_max_energy(E_max_sobp, dmax);
 
-    /* check that the E_min is sufficiently low for covering the distal part of the prescription */
+    /* check that the E_min is sufficiently low for covering the distal 
+       part of the prescription */
     E_min_sobp += this->check_and_correct_min_energy(E_min_sobp, dmin);
+
+    if (global_debug) {
+        printf ("DEBUG: E_min/max_sobp: %f %f\n",
+            E_min_sobp, E_max_sobp);
+    }
 
     int i0 = (int) ((d_ptr->beam_max_energy - E_max_sobp) / d_ptr->energy_res);
     int imax = (int) ((d_ptr->beam_max_energy - E_min_sobp) / d_ptr->energy_res);
@@ -1547,6 +1570,10 @@ Rt_mebs::get_optimized_peaks (
     for (int i = 0; i < d_ptr->num_samples; i++)
     {
         d_lut_tmp[i] = (float) i * d_ptr->depth_res;
+    }
+
+    if (global_debug) {
+        printf ("DEBUG: i0/imax: %d %d\n", i0, imax);
     }
 
     int idx_max = 0;
@@ -1577,7 +1604,8 @@ Rt_mebs::get_optimized_peaks (
             e_lut_tmp[j] += (*weight_tmp)[i] *  (*depth_dose_tmp)[i]->e_lut[j];
         }
     }
-    
+
+    /* Repeat for 40 iterations */
     for (int k = 0; k < 40; k++)
     {
         for (int i = i0; i <= imax; i++)

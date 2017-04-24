@@ -24,7 +24,7 @@ void compute_dose_ray_trace_a (
 );
 void compute_dose_ray_trace_b (
     Rt_beam* beam,
-    const Rt_depth_dose *depth_dose,
+    size_t energy_index,
     const Volume::Pointer ct_vol
 );
 void compute_dose_ray_desplanques (

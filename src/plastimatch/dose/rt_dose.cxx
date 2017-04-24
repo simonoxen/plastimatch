@@ -160,7 +160,7 @@ compute_dose_ray_trace_a (
 void
 compute_dose_ray_trace_b (
     Rt_beam* beam,
-    const Rt_depth_dose *depth_dose,
+    size_t energy_index,
     const Volume::Pointer ct_vol
 )
 {
@@ -173,14 +173,8 @@ compute_dose_ray_trace_b (
     float *dose_img = dose_vol->get_raw<float> ();
 
     Rt_mebs::Pointer mebs = beam->get_mebs();
+    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
     std::vector<float>& num_part = mebs->get_num_particles();
-    
-    /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
-       if there is a range compensator */
-    if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
-    {
-        add_rcomp_length_to_rpl_volume(beam);
-    }
 
     /* scan through rpl volume */
     Aperture::Pointer& ap = beam->get_aperture ();
@@ -195,15 +189,23 @@ compute_dose_ray_trace_b (
     plm_long ij[2] = {0,0};
     for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
         for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
-            if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)])
-            {
+            if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)] == 0) {
+                continue;
+            }
+            size_t np_index = energy_index * dim[0] * dim[1]
+                + ij[1] * dim[0] + ij[0];
+            float np = num_part[np_index];
+            if (np == 0.f) {
                 continue;
             }
             for (int s = 0; s < num_steps; s++) {
-                int index = ap_vol->index(ij[0],ij[1],s);
-                float wepl = wepl_img[index];
-                float np = num_part[index];
-                dose_img[index] = np * depth_dose->lookup_energy(wepl);
+                int dose_index = ap_vol->index(ij[0],ij[1],s);
+                float wepl = wepl_img[dose_index];
+                dose_img[dose_index] += np * depth_dose->lookup_energy(wepl);
+                if (ij[1] == 26 && (ij[0] == 1 || ij[0] == 0) && np > 0) {
+                    printf ("[%2d] %d %d: %f\n",
+                        energy_index, ij[1], ij[0], dose_img[dose_index]);
+                }
             }
         }
     }

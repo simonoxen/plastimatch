@@ -153,6 +153,20 @@ Rpl_volume::set_geometry (
 }
 
 void 
+Rpl_volume::clone_geometry (const Rpl_volume *rv)
+{
+    this->set_geometry (
+        rv->d_ptr->proj_vol->get_src(),
+        rv->d_ptr->proj_vol->get_iso(),
+        rv->get_aperture()->vup,
+        rv->get_aperture()->get_distance(),
+        rv->get_aperture()->get_dim(),
+        rv->get_aperture()->get_center(),
+        rv->get_aperture()->get_spacing(),
+        rv->d_ptr->proj_vol->get_step_length());
+}
+
+void 
 Rpl_volume::set_ct_volume (Plm_image::Pointer& ct_volume)
 {
     d_ptr->ct = ct_volume;
@@ -2245,19 +2259,39 @@ rpl_ray_trace_callback_RSP (
 }
 
 void
-Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
+Rpl_volume::compute_beam_modifiers_core (
+    Volume *seg_vol,
+    bool active,
+    float smearing,
+    float proximal_margin,
+    float distal_margin,
+    std::vector<double>& map_wed_min,
+    std::vector<double>& map_wed_max)
 {
     printf("Compute target distance limits...\n");
+
     /* compute the target min and max distance (not wed!) map in the aperture */
     compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
 
+    printf ("DEBUG MM %f %f, %f %f\n",
+        (float) map_wed_min[26*41+1],
+        (float) map_wed_max[26*41+1],
+        (float) map_wed_min[26*41+2],
+        (float) map_wed_max[26*41+2]);
+    
     printf("Apply smearing to the target...\n");
     /* widen the min/max distance maps */
     if (smearing > 0)
     {
-        apply_smearing_to_target(smearing, map_wed_min, map_wed_max);
+        apply_smearing_to_target (smearing, map_wed_min, map_wed_max);
     }
 
+    printf ("DEBUG MM %f %f, %f %f\n",
+        (float) map_wed_min[26*41+1],
+        (float) map_wed_max[26*41+1],
+        (float) map_wed_min[26*41+2],
+        (float) map_wed_max[26*41+2]);
+    
     printf("Apply longitudinal margins...\n");
     /* add the margins */
     for (size_t i = 0; i < map_wed_min.size(); i++) {
@@ -2270,8 +2304,15 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
         }
     }
 
+    printf ("DEBUG MM %f %f, %f %f\n",
+        (float) map_wed_min[26*41+1],
+        (float) map_wed_max[26*41+1],
+        (float) map_wed_min[26*41+2],
+        (float) map_wed_max[26*41+2]);
+    
     printf("Compute max wed...\n");
-    /* compute wed limits from depth limits and compute max wed of the target + margins */
+    /* compute wed limits from depth limits and compute max wed of the 
+       target + margins */
     int idx = 0;
     double max_wed = 0;
     int i[2] = {0, 0};
@@ -2290,6 +2331,12 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
         }
     }
 
+    printf ("DEBUG MM %f %f, %f %f\n",
+        (float) map_wed_min[26*41+1],
+        (float) map_wed_max[26*41+1],
+        (float) map_wed_min[26*41+2],
+        (float) map_wed_max[26*41+2]);
+    
     printf("Compute the aperture...\n");
     /* compute the aperture */
     /* This assumes that dim & spacing are correctly set in aperture */
@@ -2297,8 +2344,7 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
 
     Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
     unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
-    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
-    {
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++) {
         if (map_wed_min[i] > 0) {
             aperture_img[i] = 1;
         }
@@ -2306,8 +2352,9 @@ Rpl_volume::compute_beam_modifiers_core (Volume *seg_vol, bool active, float sme
             aperture_img[i] = 0;
         }
     }
-	
-    /* compute the range compensator if passive beam line -- PMMA range compensator */
+
+    /* compute the range compensator if passive beam line with PMMA 
+       range compensator */
     Volume::Pointer range_comp_vol = d_ptr->aperture->get_range_compensator_volume ();
     float *range_comp_img = (float*) range_comp_vol->img;
 	

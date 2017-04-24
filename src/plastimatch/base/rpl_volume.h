@@ -48,6 +48,7 @@ public:
         const double image_spacing[2], // pixel size (mm)
         const double step_length       // spacing between planes
     );
+    void clone_geometry (const Rpl_volume *rv);
 
     void set_ct_volume (Plm_image::Pointer& ct_volume);
 

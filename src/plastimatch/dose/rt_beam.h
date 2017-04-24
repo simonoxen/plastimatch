@@ -96,7 +96,10 @@ public:
     void dump (const std::string& dir);
 
     /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
-    void compute_prerequisites_beam_tools(Plm_image::Pointer& target);
+    bool prepare_for_calc (
+        Plm_image::Pointer& ct_hu,
+        Plm_image::Pointer& ct_psp,
+        Plm_image::Pointer& target);
 
     /* Different strategies preparation */
     void compute_beam_data_from_spot_map();
@@ -112,6 +115,11 @@ public:
 
     /* copy the aperture and range compensator from the rpl_vol if not defined in the input file */
     void update_aperture_and_range_compensator();
+
+    /* Set/ Get ct_psp */
+    Plm_image::Pointer& get_ct_psp ();
+    const Plm_image::Pointer& get_ct_psp () const;
+    void set_ct_psp(Plm_image::Pointer& ct_psp);
 
     /* Set/ Get target */
     Plm_image::Pointer& get_target ();
@@ -193,6 +201,8 @@ public:
 public: 
 
     /*** Volumes useful for dose calculation */
+    /* contains the target */
+    Rpl_volume::Pointer target_rv;
     /* contains the radiologic path length along a ray, according to 
        stopping power */
     Rpl_volume* rsp_accum_vol;

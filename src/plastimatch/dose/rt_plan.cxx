@@ -358,9 +358,11 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         throw Plm_exception ("Source distance must be greater than aperture distance");
     }
     
+    /* Create rsp_accum_vol */
     if (!beam->rsp_accum_vol) {
         beam->rsp_accum_vol = new Rpl_volume;
     }
+    if (!beam->rsp_accum_vol) return false;
     beam->rsp_accum_vol->set_geometry (
         beam->get_source_position(),
         beam->get_isocenter_position(),
@@ -370,40 +372,23 @@ Rt_plan::prepare_beam_for_calc (Rt_beam *beam)
         beam->get_aperture()->get_center(),
         beam->get_aperture()->get_spacing(),
         beam->get_step_length());
-    if (!beam->rsp_accum_vol) return false;
 
-    /* building the ct_density_vol */
+    /* Create ct projective volume */
     beam->hu_samp_vol = new Rpl_volume;
-    beam->hu_samp_vol->set_geometry (
-        beam->get_source_position(),
-        beam->get_isocenter_position(),
-        beam->get_aperture()->vup,
-        beam->get_aperture()->get_distance(),
-        beam->get_aperture()->get_dim(),
-        beam->get_aperture()->get_center(),
-        beam->get_aperture()->get_spacing(),
-        beam->get_step_length());
     if (!beam->hu_samp_vol) return false;
+    beam->hu_samp_vol->clone_geometry (beam->rsp_accum_vol);
 
+    /* Create ct sigma volume */
     if (beam->get_flavor() == 'f'
         || beam->get_flavor() == 'g'
         || beam->get_flavor() == 'h')
     {
-        /* building the sigma_vol */
         beam->sigma_vol = new Rpl_volume;
-        beam->sigma_vol->set_geometry (
-            beam->get_source_position(),
-            beam->get_isocenter_position(),
-            beam->get_aperture()->vup,
-            beam->get_aperture()->get_distance(),
-            beam->get_aperture()->get_dim(),
-            beam->get_aperture()->get_center(),
-            beam->get_aperture()->get_spacing(),
-            beam->get_step_length());
-       if (!beam->sigma_vol) return false;
+        if (!beam->sigma_vol) return false;
+        beam->sigma_vol->clone_geometry (beam->rsp_accum_vol);
     }
 
-    /* Copy aperture from scene into rpl volume */
+    /* Copy aperture from beam into rpl volume */
     beam->rsp_accum_vol->set_aperture (beam->get_aperture());
     beam->hu_samp_vol->set_aperture (beam->get_aperture());
 
@@ -707,31 +692,68 @@ Rt_plan::compute_dose (Rt_beam *beam)
         compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
     }
     if (beam->get_flavor() == 'b') {
+        /* Set up rpl (actually proj) dose volume */
+        beam->rpl_dose_vol = new Rpl_volume;
+        beam->rpl_dose_vol->set_geometry (
+            beam->get_source_position(),
+            beam->get_isocenter_position(),
+            beam->get_aperture()->vup,
+            beam->get_aperture()->get_distance(),
+            beam->get_aperture()->get_dim(),
+            beam->get_aperture()->get_center(),
+            beam->get_aperture()->get_spacing(),
+            beam->get_step_length());
+        beam->rpl_dose_vol->set_ct(beam->rsp_accum_vol->get_ct());
+        beam->rpl_dose_vol->set_ct_limit(beam->rsp_accum_vol->get_ct_limit());
+        beam->rpl_dose_vol->compute_ray_data();
+        beam->rpl_dose_vol->set_front_clipping_plane(beam->rsp_accum_vol->get_front_clipping_plane());
+        beam->rpl_dose_vol->set_back_clipping_plane(beam->rsp_accum_vol->get_back_clipping_plane());
+        beam->rpl_dose_vol->compute_rpl_void();
+
+        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
+           if there is a range compensator */
+        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
+        {
+            add_rcomp_length_to_rpl_volume(beam);
+        }
+
+        // Loop through energies
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
-        // Loop through energies
         for (size_t i = 0; i < depth_dose.size(); i++) {
 
-            beam->rpl_dose_vol->set_geometry (
-                beam->get_source_position(),
-                beam->get_isocenter_position(),
-                beam->get_aperture()->vup,
-                beam->get_aperture()->get_distance(),
-                beam->get_aperture()->get_dim(),
-                beam->get_aperture()->get_center(),
-                beam->get_aperture()->get_spacing(),
-                beam->get_step_length());
-            beam->rpl_dose_vol->set_ct(beam->rsp_accum_vol->get_ct());
-            beam->rpl_dose_vol->set_ct_limit(beam->rsp_accum_vol->get_ct_limit());
-            beam->rpl_dose_vol->compute_ray_data();
-            beam->rpl_dose_vol->set_front_clipping_plane(beam->rsp_accum_vol->get_front_clipping_plane());
-            beam->rpl_dose_vol->set_back_clipping_plane(beam->rsp_accum_vol->get_back_clipping_plane());
-            beam->rpl_dose_vol->compute_rpl_void();
+            compute_dose_ray_trace_b (beam, i, ct_vol);
 
-            const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[i];
-            compute_dose_ray_trace_b (beam, depth_dose, ct_vol);
-            dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+            /* DEBUG */
+            Rpl_volume *rpl_dose_vol = beam->rpl_dose_vol;
+            Volume *dose_vol = rpl_dose_vol->get_vol();
+            float *dose_img = dose_vol->get_raw<float> ();
+            const int *dim = rpl_dose_vol->get_image_dim();
+            plm_long ij[2] = {0,0};
+            int num_steps = rpl_dose_vol->get_num_steps();
+            int nonzero_beamlets = 0;
+            int nonzero_voxels = 0;
+            Aperture::Pointer& ap = beam->get_aperture ();
+            Volume *ap_vol = ap->get_aperture_vol ();
+            for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+                for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+                    bool counted = false;
+                    for (int s = 0; s < num_steps; s++) {
+                        int dose_index = ap_vol->index(ij[0],ij[1],s);
+                        if (dose_img[dose_index] == 0.f) {
+                            continue;
+                        }
+                        nonzero_voxels++;
+                        if (!counted) {
+                            nonzero_beamlets++;
+                            counted = true;
+                        }
+                    }
+                }
+            }
+            printf (">>> NONZERO = %d %d\n", nonzero_beamlets, nonzero_voxels);
         }
+        dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
     }
 
     Plm_image::Pointer dose = Plm_image::New();
@@ -790,14 +812,13 @@ Rt_plan::compute_plan ()
         printf ("\nStart dose calculation Beam %d\n", (int) i + 1);
         Rt_beam *beam = d_ptr->beam_storage[i];
 
-        /* try to generate plan with the provided parameters */
-        if (!this->prepare_beam_for_calc (beam)) {
+        /* Create rpl images, compute beam modifiers, SOBP etc. according 
+           to the teatment strategy */
+        if (!beam->prepare_for_calc (d_ptr->patient_hu,
+                d_ptr->patient_psp, d_ptr->target))
+        {
             print_and_exit ("ERROR: Unable to initilize plan.\n");
         }
-        
-        /* Compute beam modifiers, SOBP etc. according to the 
-           teatment strategy */
-        beam->compute_prerequisites_beam_tools (this->get_target());
 
         /* Generate dose */
         this->set_debug (true);
