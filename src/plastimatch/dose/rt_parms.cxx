@@ -290,6 +290,9 @@ Rt_parms::set_key_value (
         else if (key == "proj_img_out") {
             rt_beam->set_proj_img_out (val);
         }
+        else if (key == "proj_target_out") {
+            rt_beam->set_proj_target_out (val);
+        }
         else if (key == "rc_out") {
             rt_beam->set_range_compensator_out (val);
         }

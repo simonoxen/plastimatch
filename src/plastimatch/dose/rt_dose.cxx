@@ -164,8 +164,8 @@ compute_dose_ray_trace_b (
     const Volume::Pointer ct_vol
 )
 {
-    Rpl_volume *wepl_rplvol = beam->rsp_accum_vol;
-    Volume *wepl_vol = wepl_rplvol->get_vol();
+    Rpl_volume *wepl_rv = beam->rsp_accum_vol;
+    Volume *wepl_vol = wepl_rv->get_vol();
     float *wepl_img = wepl_vol->get_raw<float> ();
 
     Rpl_volume *rpl_dose_vol = beam->rpl_dose_vol;
@@ -184,8 +184,8 @@ compute_dose_ray_trace_b (
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
     }
-    const int *dim = wepl_rplvol->get_image_dim();
-    int num_steps = wepl_rplvol->get_num_steps();
+    const int *dim = wepl_rv->get_image_dim();
+    int num_steps = wepl_rv->get_num_steps();
     plm_long ij[2] = {0,0};
     for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
         for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {

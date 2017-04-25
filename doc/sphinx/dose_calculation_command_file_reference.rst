@@ -76,11 +76,14 @@ The BEAM section has the following parameters
    * - ray_step
      - ?
    * - aperture_out
-     - ?
+     - Image of aperture, 0 means blocked by aperture, and 1 means open
+       in aperture
    * - proj_dose_out
-     - ?
+     - Image of dose in projective coordinate system of beam
    * - proj_img_out
-     - ?
+     - Image of input patient CT in projective coordinate system of beam
+   * - proj_target_out
+     - Image of target in projective coordinate system of beam
    * - rc_out
      - ?
    * - particle_number_out

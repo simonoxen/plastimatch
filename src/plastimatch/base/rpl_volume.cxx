@@ -254,6 +254,8 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
+// GCS FIX: This function is partly bunk.  Each ray has a different 
+// standoff distance.
 /* 3D interpolation */
 double
 Rpl_volume::get_rgdepth (
@@ -334,7 +336,12 @@ Rpl_volume::get_rgdepth (
     dist = vec3_dist (ap_xyz, ct_xyz);
 
     /* Subtract off standoff distance */
+#if defined (commentout)
     dist -= d_ptr->front_clipping_dist;
+#endif
+    // GCS FIX: The above is wrong.  Each ray starts at a different 
+    // location: ray_data->p2 + (step_offset * step_len) * ray
+    dist -= ray_data->front_dist;
 
     /* Retrieve the radiographic depth */
     rgdepth = this->get_rgdepth (ap_xy, dist);
@@ -429,11 +436,6 @@ Rpl_volume::compute_ray_data ()
     const double *nrm = proj_vol->get_nrm();
     const int *ires = d_ptr->proj_vol->get_image_dim();
     Volume *ct_vol = d_ptr->ct->get_vol();
-
-    lprintf ("Proj vol:\n");
-    proj_vol->debug ();
-    lprintf ("Ref vol:\n");
-    ct_vol->debug ();
 
     /* Allocate data for each ray */
     if (d_ptr->ray_data) delete[] d_ptr->ray_data;
@@ -1904,7 +1906,9 @@ Rpl_volume::rpl_ray_trace (
     cd.step_offset = 0;
     ray_data->step_offset = cd.step_offset;
 
-    /* Find location of first step within volume */
+    // Find location of first step within volume, which is 
+    // ray_data->p2 + (step_offset * step_len) * ray
+    // But, step_offset = zero.  So it starts at p2.
     double tmp[3];
     double first_loc[3];
     vec3_scale3 (tmp, ray_data->ray, 
@@ -1929,7 +1933,7 @@ Rpl_volume::rpl_ray_trace (
     ray_trace_uniform (
         ct_vol,                     // INPUT: CT volume
         vol_limit,                  // INPUT: CT volume bounding box
-        callback,                   // INPUT: step action cbFunction
+        callback,                   // INPUT: step action Function
         &cd,                        // INPUT: callback data
         first_loc,                  // INPUT: ray starting point
         ray_data->ip2,              // INPUT: ray ending point
@@ -2268,30 +2272,16 @@ Rpl_volume::compute_beam_modifiers_core (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
-    printf("Compute target distance limits...\n");
-
     /* compute the target min and max distance (not wed!) map in the aperture */
+    printf("Compute target distance limits...\n");
     compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
 
-    printf ("DEBUG MM %f %f, %f %f\n",
-        (float) map_wed_min[26*41+1],
-        (float) map_wed_max[26*41+1],
-        (float) map_wed_min[26*41+2],
-        (float) map_wed_max[26*41+2]);
-    
     printf("Apply smearing to the target...\n");
     /* widen the min/max distance maps */
-    if (smearing > 0)
-    {
+    if (smearing > 0) {
         apply_smearing_to_target (smearing, map_wed_min, map_wed_max);
     }
 
-    printf ("DEBUG MM %f %f, %f %f\n",
-        (float) map_wed_min[26*41+1],
-        (float) map_wed_max[26*41+1],
-        (float) map_wed_min[26*41+2],
-        (float) map_wed_max[26*41+2]);
-    
     printf("Apply longitudinal margins...\n");
     /* add the margins */
     for (size_t i = 0; i < map_wed_min.size(); i++) {
@@ -2304,12 +2294,6 @@ Rpl_volume::compute_beam_modifiers_core (
         }
     }
 
-    printf ("DEBUG MM %f %f, %f %f\n",
-        (float) map_wed_min[26*41+1],
-        (float) map_wed_max[26*41+1],
-        (float) map_wed_min[26*41+2],
-        (float) map_wed_max[26*41+2]);
-    
     printf("Compute max wed...\n");
     /* compute wed limits from depth limits and compute max wed of the 
        target + margins */
@@ -2331,12 +2315,6 @@ Rpl_volume::compute_beam_modifiers_core (
         }
     }
 
-    printf ("DEBUG MM %f %f, %f %f\n",
-        (float) map_wed_min[26*41+1],
-        (float) map_wed_max[26*41+1],
-        (float) map_wed_min[26*41+2],
-        (float) map_wed_max[26*41+2]);
-    
     printf("Compute the aperture...\n");
     /* compute the aperture */
     /* This assumes that dim & spacing are correctly set in aperture */

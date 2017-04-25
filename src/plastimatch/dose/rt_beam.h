@@ -112,8 +112,28 @@ public:
     /* This computes the aperture and range compensator */
     void compute_beam_modifiers (Volume *seg_vol);
     void compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
+    void compute_beam_modifiers_active_scanning (
+        Volume *seg_vol, float smearing, float proximal_margin,
+        float distal_margin, std::vector<double>& map_wed_min,
+        std::vector<double>& map_wed_max);
+    void compute_beam_modifiers_core (
+        Volume *seg_vol,
+        bool active,
+        float smearing,
+        float proximal_margin,
+        float distal_margin,
+        std::vector<double>& map_wed_min,
+        std::vector<double>& map_wed_max);
+    void apply_smearing_to_target (
+        float smearing,
+        std::vector <double>& map_min_distance,
+        std::vector <double>& map_max_distance);
+    void compute_target_wepl_min_max (
+        std::vector<double>& map_wed_min,
+        std::vector<double>& map_wed_max);
 
-    /* copy the aperture and range compensator from the rpl_vol if not defined in the input file */
+    /* copy the aperture and range compensator from the rpl_vol if not 
+       defined in the input file */
     void update_aperture_and_range_compensator();
 
     /* Set/ Get ct_psp */
@@ -175,6 +195,9 @@ public:
 
     void set_wed_out(std::string str);
     std::string get_wed_out();
+
+    void set_proj_target_out(std::string str);
+    std::string get_proj_target_out();
 
     void set_beam_line_type(std::string str);
     std::string get_beam_line_type();

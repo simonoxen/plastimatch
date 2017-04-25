@@ -147,7 +147,10 @@ public:
     /* This computes the E_min and E_max map from a target for all pencil beam*/
     void generate_part_num_from_weight(int* ap_dim);
     void extract_particle_number_map_from_txt(Aperture::Pointer& ap);
-    void compute_particle_number_matrix_from_target_active(Rpl_volume* rpl_vol, Plm_image::Pointer& target, float smearing);
+    void compute_particle_number_matrix_from_target_active (
+        Rpl_volume* rpl_vol,
+        std::vector <double>& wepl_min,
+        std::vector <double>& wepl_max);
 
     void export_spot_map_as_txt(Aperture::Pointer ap);
 

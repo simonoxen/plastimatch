@@ -9,6 +9,7 @@
 #include <math.h>
 
 #include "bragg_curve.h"
+#include "plm_math.h"
 #include "proj_volume.h"
 #include "rt_beam.h"
 #include "rt_plan.h"
@@ -46,6 +47,7 @@ public:
     std::string aperture_out;
     std::string proj_dose_out;
     std::string proj_img_out;
+    std::string proj_target_out;
     std::string range_compensator_out;
     std::string sigma_out;
     std::string wed_out;
@@ -82,6 +84,7 @@ public:
         this->aperture_out = "";
         this->proj_dose_out = "";
         this->proj_img_out = "";
+        this->proj_target_out = "";
         this->range_compensator_out = "";
         this->sigma_out = "";
         this->wed_out = "";
@@ -116,6 +119,7 @@ public:
         this->aperture_out = rtbp->aperture_out;
         this->proj_dose_out = rtbp->proj_dose_out;
         this->proj_img_out = rtbp->proj_img_out;
+        this->proj_target_out = rtbp->proj_target_out;
         this->range_compensator_out = rtbp->range_compensator_out;
         this->sigma_out = rtbp->sigma_out;
         this->wed_out = rtbp->wed_out;
@@ -336,12 +340,14 @@ Rt_beam::prepare_for_calc (
     d_ptr->ct_psp = ct_psp;
     d_ptr->target = target;
 
+    printf ("Preparing for calc (a).\n");
+    
     if (this->get_aperture()->get_distance() > this->get_source_distance ()) {
         lprintf ("Source distance must be greater than aperture distance");
         return false;
     }
     
-    /* Create rsp_accum_vol */
+    // Create rsp_accum_vol */
     if (!this->rsp_accum_vol) {
         this->rsp_accum_vol = new Rpl_volume;
     }
@@ -355,34 +361,7 @@ Rt_beam::prepare_for_calc (
         this->get_aperture()->get_center(),
         this->get_aperture()->get_spacing(),
         this->get_step_length());
-
-    /* Create ct projective volume */
-    this->hu_samp_vol = new Rpl_volume;
-    if (!this->hu_samp_vol) return false;
-    this->hu_samp_vol->clone_geometry (this->rsp_accum_vol);
-
-    /* Create ct sigma volume */
-    if (this->get_flavor() == 'f'
-        || this->get_flavor() == 'g'
-        || this->get_flavor() == 'h')
-    {
-        this->sigma_vol = new Rpl_volume;
-        if (!this->sigma_vol) return false;
-        this->sigma_vol->clone_geometry (this->rsp_accum_vol);
-    }
-
-    /* Create target projective volume */
-    if (d_ptr->target) {
-        this->target_rv = Rpl_volume::New();
-        if (!this->target_rv) return false;
-        this->target_rv->clone_geometry (this->rsp_accum_vol);
-    }
-
-    /* Copy aperture from beam into rpl volume */
     this->rsp_accum_vol->set_aperture (this->get_aperture());
-    this->hu_samp_vol->set_aperture (this->get_aperture());
-
-    /* Scan through aperture to fill in rpl_volume */
     this->rsp_accum_vol->set_ct_volume (ct_psp);
     if (!this->rsp_accum_vol->get_ct() || !this->rsp_accum_vol->get_ct_limit()) {
         lprintf ("ray_data or clipping planes missing from rpl volume\n");
@@ -391,20 +370,23 @@ Rt_beam::prepare_for_calc (
     // this->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
     this->rsp_accum_vol->compute_rpl_accum (false);
 
-    // We don't do everything again, we just copy the 
-    // ct & ct_limits as all the volumes geometrically equal
+    // Create ct projective volume
     // GCS FIX: The old code re-used the ray data.  Is that really faster?
+    this->hu_samp_vol = new Rpl_volume;
+    if (!this->hu_samp_vol) return false;
+    this->hu_samp_vol->clone_geometry (this->rsp_accum_vol);
+    this->hu_samp_vol->set_aperture (this->get_aperture());
     this->hu_samp_vol->set_ct_volume (d_ptr->ct_hu);
     this->hu_samp_vol->compute_rpl_sample (false);
 
-    // Fill in the target_rv
-    if (this->target_rv) {
-        this->target_rv->set_ct_volume (d_ptr->target);
-        this->target_rv->compute_rpl_sample (false);
-    }
-
     // Prepare, but don't compute the sigma volume yet
-    if (this->sigma_vol) {
+    if (this->get_flavor() == 'f'
+        || this->get_flavor() == 'g'
+        || this->get_flavor() == 'h')
+    {
+        this->sigma_vol = new Rpl_volume;
+        if (!this->sigma_vol) return false;
+        this->sigma_vol->clone_geometry (this->rsp_accum_vol);
         Aperture::Pointer ap_sigma = Aperture::New(this->get_aperture());
         this->sigma_vol->set_aperture (ap_sigma);
         this->sigma_vol->set_aperture (this->get_aperture());
@@ -418,6 +400,31 @@ Rt_beam::prepare_for_calc (
         this->sigma_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
     }
 
+    // Create target projective volume */
+    if (d_ptr->target) {
+        this->target_rv = Rpl_volume::New();
+        if (!this->target_rv) return false;
+        this->target_rv->clone_geometry (this->rsp_accum_vol);
+        this->target_rv->set_aperture (this->get_aperture());
+        this->target_rv->set_ct_volume (d_ptr->target);
+        this->target_rv->compute_rpl_sample (false);
+    }
+
+    // Create and fill in rpl_dose_volume (actually proj dose)
+    if (this->get_flavor() == 'b')
+    {
+        this->rpl_dose_vol = new Rpl_volume;
+        if (!this->rpl_dose_vol) return false;
+        this->rpl_dose_vol->clone_geometry (this->rsp_accum_vol);
+        this->rpl_dose_vol->set_aperture (this->get_aperture());
+        this->rpl_dose_vol->set_ct_volume (d_ptr->ct_hu);
+        this->rpl_dose_vol->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
+        this->rpl_dose_vol->compute_ray_data();
+        this->rpl_dose_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
+        this->rpl_dose_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
+        this->rpl_dose_vol->compute_rpl_void();
+    }
+
     /* Next, depending on what the user asked for, we may create apertures, 
        range compensators, use pre-defined apertures or spot maps, etc. */
     if (d_ptr->mebs->get_have_particle_number_map() == true
@@ -429,7 +436,9 @@ Rt_beam::prepare_for_calc (
         return true;
     }
 
-    /* The priority how to generate dose is:
+    printf ("Preparing for calc (b).\n");
+
+   /* The priority how to generate dose is:
        1. manual spot map 
        2. manual peaks 
        3. dose prescription 
@@ -450,10 +459,10 @@ Rt_beam::prepare_for_calc (
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
+        printf("Prescription depths detected. Any target depth will not be considered.\n");
         this->get_mebs()->set_have_prescription(true);
         /* Apply margins */
         this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
-        printf("Prescription depths detected. Any target depth will not be considered.\n");
         this->compute_beam_data_from_prescription(target);
         return true;
     }
@@ -465,7 +474,7 @@ Rt_beam::prepare_for_calc (
         this->compute_beam_data_from_target(target);
         return true;
     }
-	
+
     /* If we arrive to this point, it is because no beam was defined
        Creation of a default beam: 100 MeV */
     printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
@@ -531,26 +540,34 @@ Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
 {
     /* Compute beam aperture, range compensator 
        + SOBP for passively scattered beam lines */
-    if (this->get_beam_line_type() != "passive")
-    {
-        d_ptr->mebs->compute_particle_number_matrix_from_target_active (
-            this->rsp_accum_vol, this->get_target(), d_ptr->smearing);
-    }
-    else
+    if (this->get_beam_line_type() == "passive")
     {
         this->compute_beam_modifiers (
             d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(),
             this->get_mebs()->get_max_wed_map());
-        this->compute_beam_data_from_prescription(target);
+        this->compute_beam_data_from_prescription (target);
+    }
+    else
+    {
+        std::vector <double> wepl_min;
+        std::vector <double> wepl_max;
+        this->compute_beam_modifiers_active_scanning (
+            target->get_vol(), d_ptr->smearing,
+            d_ptr->mebs->get_proximal_margin(),
+            d_ptr->mebs->get_distal_margin(),
+            wepl_min, wepl_max);
+
+        d_ptr->mebs->compute_particle_number_matrix_from_target_active (
+            this->rsp_accum_vol, wepl_min, wepl_max);
     }
 }
 
 void 
 Rt_beam::compute_default_beam()
 {
-	/* Computes a default 100 MeV peak */
-	this->get_mebs()->add_peak(100, 1, 1);
-	this->compute_beam_data_from_manual_peaks();
+    /* Computes a default 100 MeV peak */
+    this->get_mebs()->add_peak(100, 1, 1);
+    this->compute_beam_data_from_manual_peaks();
 }
 
 void 
@@ -575,7 +592,11 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
 {
     if (d_ptr->beam_line_type == "active")
     {
-        this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+        //this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+        this->compute_beam_modifiers_active_scanning (
+            seg_vol, d_ptr->smearing,
+            d_ptr->mebs->get_proximal_margin(),
+            d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
     else
     {
@@ -584,6 +605,314 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
     d_ptr->mebs->set_prescription_depths(this->rsp_accum_vol->get_min_wed(), this->rsp_accum_vol->get_max_wed());
     this->rsp_accum_vol->apply_beam_modifiers ();
     return;
+}
+
+void 
+Rt_beam::compute_beam_modifiers_active_scanning (
+    Volume *seg_vol, float smearing, float proximal_margin,
+    float distal_margin, std::vector<double>& map_wed_min,
+    std::vector<double>& map_wed_max)
+{
+    this->compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin,
+        distal_margin, map_wed_min, map_wed_max);
+}
+
+void
+Rt_beam::compute_beam_modifiers_core (
+    Volume *seg_vol,
+    bool active,
+    float smearing,
+    float proximal_margin,
+    float distal_margin,
+    std::vector<double>& map_wed_min,
+    std::vector<double>& map_wed_max)
+{
+
+    /* compute the target min and max distance (not wed!) map in the aperture */
+    // GCS FIX: definitely we want wed here.
+    // compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
+    printf("Compute target distance limits...\n");
+    this->compute_target_wepl_min_max (map_wed_min, map_wed_max);
+    
+    printf ("Apply lateral smearing to the target...\n");
+    /* widen the min/max distance maps */
+    if (smearing > 0) {
+        this->apply_smearing_to_target (smearing, map_wed_min, map_wed_max);
+    }
+
+    printf ("Apply proximal and distal ...\n");
+    /* add the margins */
+    for (size_t i = 0; i < map_wed_min.size(); i++) {
+        map_wed_min[i] -= proximal_margin;
+        if (map_wed_min[i] < 0) {
+            map_wed_min[i] = 0;
+        }
+        if (map_wed_max[i] > 0) {
+            map_wed_max[i] += distal_margin;
+        }
+    }
+
+    /* Compute max wed, used by range compensator */
+    int idx = 0;
+    double max_wed = 0;
+    int i[2] = {0, 0};
+    printf("Compute max wed...\n");
+    for (i[1] = 0; i[1] < d_ptr->aperture->get_aperture_volume()->dim[1]; i[1]++) {
+        for (i[0] = 0; i[0] < d_ptr->aperture->get_aperture_volume()->dim[0]; i[0]++) {
+            idx = i[0] + i[1] * d_ptr->aperture->get_aperture_volume()->dim[0];
+            if (map_wed_max[idx] > max_wed) {
+                max_wed = map_wed_max[idx];
+            }
+        }
+    }
+
+    printf("Compute the aperture...\n");
+    /* compute the aperture */
+    /* This assumes that dim & spacing are correctly set in aperture */
+    d_ptr->aperture->allocate_aperture_images ();
+
+    Volume::Pointer aperture_vol = d_ptr->aperture->get_aperture_volume ();
+    unsigned char *aperture_img = (unsigned char*) aperture_vol->img;
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++) {
+        if (map_wed_min[i] > 0) {
+            aperture_img[i] = 1;
+        }
+        else {
+            aperture_img[i] = 0;
+        }
+    }
+
+    /* compute the range compensator if passive beam line with PMMA 
+       range compensator */
+    Volume::Pointer range_comp_vol = d_ptr->aperture->get_range_compensator_volume ();
+    float *range_comp_img = (float*) range_comp_vol->img;
+	
+    if (active == false)
+    {
+        printf("Compute range compensator...\n");
+    }
+
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if (active == true)
+        {
+            range_comp_img[i] = 0;
+        }
+        else 
+        {
+            range_comp_img[i] = (max_wed - map_wed_max[i]) / (PMMA_STPR * PMMA_DENSITY);
+        }
+    }
+
+    /* compute the max/min wed of the entire target + margins + range_comp*/
+    double total_min_wed = 0;
+    double total_max_wed = 0;
+    // Max should be the same as the max in the target as for this ray rgcomp is null
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i] > total_max_wed) { // if active beam line, range comp is null
+            total_max_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i];
+        }
+    }
+    total_min_wed = total_max_wed;
+    for (int i = 0; i < aperture_vol->dim[0] * aperture_vol->dim[1]; i++)
+    {
+        if ((range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_max[i] > 0) && (range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_min[i] < total_min_wed)) {
+            total_min_wed = range_comp_img[i] * PMMA_STPR * PMMA_DENSITY + map_wed_min[i];
+        }
+    }
+
+    printf("Max wed in the target is %lg mm.\n", total_max_wed);
+    printf("Min wed in the target is %lg mm.\n", total_min_wed);
+
+    /* Save these values in private data store */
+    // GCS FIX: To be revisited
+//    d_ptr->max_wed = total_max_wed;
+//    d_ptr->min_wed = total_min_wed;
+    return;
+}
+
+void
+Rt_beam::compute_target_wepl_min_max (
+    std::vector<double>& map_wed_min,
+    std::vector<double>& map_wed_max)
+{
+    Rpl_volume *wepl_rv = this->rsp_accum_vol;
+    Volume *wepl_vol = wepl_rv->get_vol();
+    float *wepl_img = wepl_vol->get_raw<float> ();
+    Rpl_volume::Pointer target_rv = this->target_rv;
+    Volume *target_vol = target_rv->get_vol();
+    float *target_img = target_vol->get_raw<float> ();
+
+    Aperture::Pointer& ap = this->get_aperture ();
+    Volume *ap_vol = ap->get_aperture_vol ();
+    const plm_long *dim = ap_vol->dim;
+    
+    map_wed_min.resize (dim[0]*dim[1], NLMAX(double));
+    map_wed_max.resize (dim[0]*dim[1], 0.);
+
+    int ij[2] = {0, 0};
+    int num_steps = this->rsp_accum_vol->get_num_steps();
+    for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+        for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+            int map_idx = ij[0] + ij[1] * dim[0];
+            for (int s = 0; s < num_steps; s++) {
+                int wepl_index = ap_vol->index (ij[0],ij[1],s);
+                float tgt = target_img[wepl_index];
+                float wepl = wepl_img[wepl_index];
+                if (tgt < 0.2) {
+                    continue;
+                }
+                if (map_wed_min[map_idx] > wepl) {
+                    map_wed_min[map_idx] = wepl;
+                }
+                if (map_wed_max[map_idx] < wepl) {
+                    map_wed_max[map_idx] = wepl;
+                }
+            }
+        }
+    }
+}
+
+void 
+Rt_beam::apply_smearing_to_target (
+    float smearing,
+    std::vector <double>& map_min_distance,
+    std::vector <double>& map_max_distance)
+{
+
+    // GCS FIX.  It appears that the reason for computing geometric
+    // distance in the previous version of the code was to make the
+    // smearing code act at the minimum target distance.  This is unnecessary; 
+    // it is easier/better to apply at isocenter plane.
+#if defined (commentout)
+    printf ("Apply smearing to the target.\nThe smearing width is defined at the minimum depth of the target.\n");
+    /* Create a structured element of the right size */
+    int strel_half_size[2];
+    int strel_size[2];
+
+    /* Found the min of the target to be sure the smearing (margins) at the minimal depth */
+    double min = DBL_MAX;
+    for (size_t i = 0; i < map_min_distance.size(); i++) {
+        if (map_min_distance[i] > 0 && map_min_distance[i] < min) {
+            min = map_min_distance[i];
+        }
+    }
+    if (min == DBL_MAX)
+    {
+        printf("***ERROR: Target depth min is null for each ray. Smearing not applied\n");
+        return;
+    }
+
+    float min_distance_target = min + d_ptr->aperture->get_distance()
+        + this->rsp_accum_vol->get_front_clipping_plane();
+
+    /* The smearing width is scaled to the aperture */
+    strel_half_size[0] = ROUND_INT(smearing * d_ptr->aperture->get_distance()
+        / (min_distance_target * d_ptr->aperture->get_spacing()[0]));
+    strel_half_size[1] = ROUND_INT(smearing * d_ptr->aperture->get_distance()
+        / (min_distance_target * d_ptr->aperture->get_spacing()[1]));
+#endif
+
+    /* Create a structured element of the right size */
+    int strel_half_size[2];
+    int strel_size[2];
+    strel_half_size[0] = ROUND_INT (smearing / d_ptr->aperture->get_spacing()[0]);
+    strel_half_size[1] = ROUND_INT (smearing / d_ptr->aperture->get_spacing()[1]);
+    
+    strel_size[0] = 1 + 2 * strel_half_size[0];
+    strel_size[1] = 1 + 2 * strel_half_size[1];
+
+    // GCS FIX:  Ditto.
+    //float smearing_ap = smearing * d_ptr->aperture->get_distance() / (min + d_ptr->aperture->get_distance() + this->rsp_accum_vol->get_front_clipping_plane());
+    float smearing_ap = smearing;
+
+    int *strel = new int[strel_size[0]*strel_size[1]];
+    /* (rf, cf) center of the smearing */
+    for (int r = 0; r < strel_size[1]; r++) {
+        float rf = (float) (r - strel_half_size[1]) * d_ptr->aperture->get_spacing()[0];
+        for (int c = 0; c < strel_size[0]; c++) {
+            float cf = (float) (c - strel_half_size[0]) * d_ptr->aperture->get_spacing()[1];
+
+            int idx = r*strel_size[0] + c;
+
+            strel[idx] = 0;
+            if ((rf*rf + cf*cf) <= smearing_ap*smearing_ap) {
+                strel[idx] = 1;
+            }
+        }
+    }
+
+    /* Debugging information */
+    for (int r = 0; r < strel_size[1]; r++) {
+        for (int c = 0; c < strel_size[0]; c++) {
+            int idx = r*strel_size[0] + c;
+            printf ("%d ", strel[idx]);
+        }
+        printf ("\n");
+    }
+
+    // GCS FIX.  This is also in error.  The smearing should be done 
+    // in WEPL rather than in geometric distance.
+    /* Apply smear to target maps */
+    double distance_min;
+    double distance_max;
+    std::vector<double> min_distance_tmp (map_min_distance.size(), 0);
+    std::vector<double> max_distance_tmp (map_max_distance.size(), 0);
+
+    for (int ar = 0; ar < d_ptr->aperture->get_dim()[1]; ar++) {
+        for (int ac = 0; ac < d_ptr->aperture->get_dim()[0]; ac++) {
+            int aidx = ar * d_ptr->aperture->get_dim()[0] + ac;
+
+            /* Reset the limit values */
+            distance_min = DBL_MAX;
+            distance_max = 0;
+
+            for (int sr = 0; sr < strel_size[1]; sr++) {
+                int pr = ar + sr - strel_half_size[1];
+                if (pr < 0 || pr >= d_ptr->aperture->get_dim()[1]) {
+                    continue;
+                }
+                for (int sc = 0; sc < strel_size[0]; sc++) {
+                    int pc = ac + sc - strel_half_size[0];
+                    if (pc < 0 || pc >= d_ptr->aperture->get_dim()[0]) {
+                        continue;
+                    }
+
+                    int sidx = sr * strel_size[0] + sc;
+                    if (strel[sidx] == 0) {
+                        continue;
+                    }
+
+                    int pidx = pr * d_ptr->aperture->get_dim()[0] + pc;
+                    if (map_min_distance[pidx] > 0 && map_min_distance[pidx] < distance_min) {
+                        distance_min = map_min_distance[pidx];
+                    }
+                    if (map_max_distance[pidx] > distance_max) {
+                        distance_max = map_max_distance[pidx];
+                    }
+                }
+            }
+            if (distance_min == DBL_MAX)
+            {
+                min_distance_tmp[aidx] = 0;
+            }
+            else 
+            {
+                min_distance_tmp[aidx] = distance_min;
+            }
+            max_distance_tmp[aidx] = distance_max;
+        }
+    }
+
+    /* update the initial distance map */
+    for (size_t i = 0; i < map_min_distance.size(); i++) {
+        map_min_distance[i] = min_distance_tmp[i];
+        map_max_distance[i] = max_distance_tmp[i];
+    }
+
+    /* Clean up */
+    delete[] strel;
 }
 
 void
@@ -856,6 +1185,18 @@ Rt_beam::get_wed_out()
 }
 
 void 
+Rt_beam::set_proj_target_out(std::string str)
+{
+    d_ptr->proj_target_out = str;
+}
+
+std::string 
+Rt_beam::get_proj_target_out()
+{
+    return d_ptr->proj_target_out;
+}
+
+void 
 Rt_beam::set_beam_line_type(std::string str)
 {
     if (str == "active")
@@ -1125,6 +1466,14 @@ Rt_beam::save_beam_output ()
         Rpl_volume* rpl_vol = this->rsp_accum_vol;
         if (rpl_vol) {
             rpl_vol->save (this->get_wed_out());
+        }
+    }
+
+    /* Save projected target volume */
+    if (this->get_proj_target_out() != "") {
+        Rpl_volume::Pointer rpl_vol = this->target_rv;
+        if (rpl_vol) {
+            rpl_vol->save (this->get_proj_target_out());
         }
     }
 

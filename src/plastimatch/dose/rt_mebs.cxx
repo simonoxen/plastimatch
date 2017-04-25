@@ -666,8 +666,8 @@ Rt_mebs::set_target_depths(float new_depth_min, float new_depth_max)
 void 
 Rt_mebs::set_target_depths(float new_z_min, float new_z_max, float new_step)
 {
-	d_ptr->depth_res = new_step;
-	this->set_target_depths(new_z_min, new_z_max);
+    d_ptr->depth_res = new_step;
+    this->set_target_depths(new_z_min, new_z_max);
 }
 
 void 
@@ -1436,13 +1436,11 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
     }
 }
 
-bool global_debug = false;
-
 void
 Rt_mebs::compute_particle_number_matrix_from_target_active (
     Rpl_volume* rpl_vol,
-    Plm_image::Pointer& target,
-    float smearing)
+    std::vector <double>& wepl_min,
+    std::vector <double>& wepl_max)
 {
     int dim[2] = {
         rpl_vol->get_aperture()->get_dim()[0],
@@ -1450,35 +1448,39 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     };
 
     /* vector containing the min and the max of depth of the target */
+#if defined (commentout)
     std::vector <double> dmin;
     std::vector <double> dmax;
+#endif
     float min = 0;
     float max = 0;
+#if defined (commentout)
     rpl_vol->compute_beam_modifiers_active_scanning (
         target->get_vol(), smearing, d_ptr->proximal_margin,
         d_ptr->distal_margin, dmin, dmax);
+#endif
 
     /* Sanity check */
-    if (dmin.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 
-        || dmax.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1))
+    if (wepl_min.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 
+        || wepl_max.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1))
     {
         printf("ERROR: the aperture size doesn't correspond to the min and max depth maps of the target.\n");
-        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), (int) dmin.size(), (int) dmax.size());
+        printf("Aperture size: %d, min depth map size: %d, max depth map size: %d.\n", rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1), (int) wepl_min.size(), (int) wepl_max.size());
     }
 
-    for (size_t i = 0; i < dmax.size(); i++)
+    for (size_t i = 0; i < wepl_max.size(); i++)
     {
-        if (dmax[i] > max)
+        if (wepl_max[i] > max)
         {
-            max = dmax[i];
+            max = wepl_max[i];
         }
     }
     min = max;
-    for (size_t i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < wepl_min.size(); i++)
     {
-        if (dmin[i] < min && dmin[i] != 0)
+        if (wepl_min[i] < min && wepl_min[i] != 0)
         {
-            min = dmin[i];
+            min = wepl_min[i];
         }
     }
     this->set_prescription_depths(min, max);
@@ -1498,18 +1500,10 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
 
     printf("Optimization of the particle number map for any mono-energetic slice in progress...\n");
     /* Let's optimize the SOBP for each beamlet */
-    for (size_t i = 0; i < dmin.size(); i++)
+    for (size_t i = 0; i < wepl_min.size(); i++)
     {
-        if (i == 26*41+1 || i == 26*41+2) {
-            global_debug = true;
-        }
-        else {
-            global_debug = false;
-        }
-        if (global_debug) {
-            printf ("DEBUG: DMIN, DMAX: %f %f\n", dmin[i], dmax[i]);
-        }
-        this->get_optimized_peaks (dmin[i], dmax[i], &weight_tmp, &depth_dose_tmp);
+        this->get_optimized_peaks (wepl_min[i], wepl_max[i],
+            &weight_tmp, &depth_dose_tmp);
         for (int j = 0; j < d_ptr->energy_number; j++)
         {
             d_ptr->num_particles[i + j *  dim[0] *  dim[1] ] = weight_tmp[j];
@@ -1542,11 +1536,6 @@ Rt_mebs::get_optimized_peaks (
     float E_min_sobp = (float) energy_min_index * d_ptr->energy_res;
     float E_max_sobp = (float) energy_max_index * d_ptr->energy_res;
 
-    if (global_debug) {
-        printf ("DEBUG: E_min/max_sobp: %f %f\n",
-            E_min_sobp, E_max_sobp);
-    }
-
     /* This is useful only for active scanning */
     /* check that the E_max is sufficiently high for covering the distal 
        part of the prescription */
@@ -1555,11 +1544,6 @@ Rt_mebs::get_optimized_peaks (
     /* check that the E_min is sufficiently low for covering the distal 
        part of the prescription */
     E_min_sobp += this->check_and_correct_min_energy(E_min_sobp, dmin);
-
-    if (global_debug) {
-        printf ("DEBUG: E_min/max_sobp: %f %f\n",
-            E_min_sobp, E_max_sobp);
-    }
 
     int i0 = (int) ((d_ptr->beam_max_energy - E_max_sobp) / d_ptr->energy_res);
     int imax = (int) ((d_ptr->beam_max_energy - E_min_sobp) / d_ptr->energy_res);
@@ -1572,12 +1556,7 @@ Rt_mebs::get_optimized_peaks (
         d_lut_tmp[i] = (float) i * d_ptr->depth_res;
     }
 
-    if (global_debug) {
-        printf ("DEBUG: i0/imax: %d %d\n", i0, imax);
-    }
-
     int idx_max = 0;
-
     for (int i = i0; i <= imax; i++)
     {
         idx_max = (*depth_dose_tmp)[i]->index_of_dose_max;

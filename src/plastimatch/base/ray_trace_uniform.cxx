@@ -51,7 +51,6 @@ ray_trace_uniform (
     if (!volume_limit_clip_segment (vol_limit, ip1, ip2, ip1in, ip2in)) {
 	return;
     }
-	
 
     ps[0] = vol->spacing[0];
     ps[1] = vol->spacing[1];
@@ -76,8 +75,6 @@ ray_trace_uniform (
         ipx[0] = ip1[0] + phy_step[0] * z;
         ipx[1] = ip1[1] + phy_step[1] * z;
         ipx[2] = ip1[2] + phy_step[2] * z;
-
-        // NEW VERSION - Compute CT volume indices and their fraction @ point + interpolation
 
         mijk[0] = (float) ((ipx[0] - vol->origin[0])/ps[0]);
         mijk[1] = (float) ((ipx[1] - vol->origin[1])/ps[1]);
