@@ -505,14 +505,21 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
     {
         if (d_ptr->beam_line_type == "active")
         {
-            this->rsp_accum_vol->compute_beam_modifiers_active_scanning(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->compute_beam_modifiers_active_scanning (
+                target->get_vol(), d_ptr->smearing, 
+                d_ptr->mebs->get_proximal_margin(), 
+                d_ptr->mebs->get_distal_margin());
         }
         else
         {
-            this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(target->get_vol(), d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+            this->compute_beam_modifiers_passive_scattering (
+                target->get_vol(), d_ptr->smearing, 
+                d_ptr->mebs->get_proximal_margin(), 
+                d_ptr->mebs->get_distal_margin());
         }
     }
-    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
+    /* the automatic aperture and range compensator are erased and the 
+       ones defined in the input file are considered */
     this->update_aperture_and_range_compensator();
 }
 
@@ -575,16 +582,20 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol)
 {
     if (d_ptr->beam_line_type == "active")
     {
-        this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        this->compute_beam_modifiers_active_scanning (seg_vol, 
+            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
+            d_ptr->mebs->get_distal_margin());
     }
     else
     {
-        this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin());
+        this->compute_beam_modifiers_passive_scattering (seg_vol, 
+            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
+            d_ptr->mebs->get_distal_margin());
     }
 
-    d_ptr->mebs->set_prescription_depths(this->rsp_accum_vol->get_min_wed(), this->rsp_accum_vol->get_max_wed());
+    d_ptr->mebs->set_prescription_depths (this->rsp_accum_vol->get_min_wed(), 
+        this->rsp_accum_vol->get_max_wed());
     this->rsp_accum_vol->apply_beam_modifiers ();
-    return;
 }
 
 void 
@@ -592,7 +603,6 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
 {
     if (d_ptr->beam_line_type == "active")
     {
-        //this->rsp_accum_vol->compute_beam_modifiers_active_scanning(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
         this->compute_beam_modifiers_active_scanning (
             seg_vol, d_ptr->smearing,
             d_ptr->mebs->get_proximal_margin(),
@@ -600,11 +610,35 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
     }
     else
     {
-        this->rsp_accum_vol->compute_beam_modifiers_passive_scattering(seg_vol, d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
+        this->compute_beam_modifiers_passive_scattering (seg_vol, 
+            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
+            d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
-    d_ptr->mebs->set_prescription_depths(this->rsp_accum_vol->get_min_wed(), this->rsp_accum_vol->get_max_wed());
+    d_ptr->mebs->set_prescription_depths (this->rsp_accum_vol->get_min_wed(), 
+        this->rsp_accum_vol->get_max_wed());
     this->rsp_accum_vol->apply_beam_modifiers ();
-    return;
+}
+
+void 
+Rt_beam::compute_beam_modifiers_active_scanning (
+    Volume *seg_vol, float smearing, float proximal_margin,
+    float distal_margin)
+{
+    std::vector<double> map_wed_min;
+    std::vector<double> map_wed_max;
+    this->compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin,
+        distal_margin, map_wed_min, map_wed_max);
+}
+
+void 
+Rt_beam::compute_beam_modifiers_passive_scattering (
+    Volume *seg_vol, float smearing, float proximal_margin, 
+    float distal_margin)
+{
+    std::vector<double> map_wed_min;
+    std::vector<double> map_wed_max;
+    this-> compute_beam_modifiers_core (seg_vol, false, smearing, 
+        proximal_margin, distal_margin, map_wed_min, map_wed_max);
 }
 
 void 
@@ -615,6 +649,16 @@ Rt_beam::compute_beam_modifiers_active_scanning (
 {
     this->compute_beam_modifiers_core (seg_vol, true, smearing, proximal_margin,
         distal_margin, map_wed_min, map_wed_max);
+}
+
+void 
+Rt_beam::compute_beam_modifiers_passive_scattering (
+    Volume *seg_vol, float smearing, float proximal_margin, 
+    float distal_margin, std::vector<double>& map_wed_min, 
+    std::vector<double>& map_wed_max)
+{
+    this-> compute_beam_modifiers_core (seg_vol, false, smearing, 
+        proximal_margin, distal_margin, map_wed_min, map_wed_max);
 }
 
 void

@@ -1448,17 +1448,8 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     };
 
     /* vector containing the min and the max of depth of the target */
-#if defined (commentout)
-    std::vector <double> dmin;
-    std::vector <double> dmax;
-#endif
     float min = 0;
     float max = 0;
-#if defined (commentout)
-    rpl_vol->compute_beam_modifiers_active_scanning (
-        target->get_vol(), smearing, d_ptr->proximal_margin,
-        d_ptr->distal_margin, dmin, dmax);
-#endif
 
     /* Sanity check */
     if (wepl_min.size() != rpl_vol->get_aperture()->get_dim(0) * rpl_vol->get_aperture()->get_dim(1) 
