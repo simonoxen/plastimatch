@@ -33,8 +33,10 @@ public:
     float smearing;
     char rc_MC_model;
     float source_size;
-
     float step_length;
+
+    double max_wed;
+    double min_wed;
 
     Plm_image::Pointer ct_hu;
     Plm_image::Pointer ct_psp;
@@ -76,6 +78,8 @@ public:
         this->rc_MC_model = 'n';
         this->source_size = 0.f;
         this->step_length = 1.f;
+        this->min_wed = 0.;
+        this->max_wed = 0.;
 
         aperture = Aperture::New();
 
@@ -110,6 +114,8 @@ public:
         this->smearing = rtbp->smearing;
         this->source_size = rtbp->source_size;
         this->step_length = rtbp->step_length;
+        this->min_wed = rtbp->min_wed;
+        this->max_wed = rtbp->max_wed;
 
         /* Copy the aperture object */
         aperture = Aperture::New (rtbp->aperture);
@@ -490,8 +496,8 @@ Rt_beam::compute_beam_data_from_spot_map()
     this->get_mebs()->clear_depth_dose();
     this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
 
-    /* If an aperture is defined in the input file, the aperture is erased. 
-       The range compensator is not considered if the beam line is defined as active scanning */
+    /* the automatic aperture and range compensator are erased and the 
+       ones defined in the input file are considered */
     this->update_aperture_and_range_compensator();
 }
 
@@ -529,7 +535,8 @@ Rt_beam::compute_beam_data_from_manual_peaks()
     /* The spot map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
-    /* the aperture and range compensator are erased and the ones defined in the input file are considered */
+    /* the automatic aperture and range compensator are erased and the 
+       ones defined in the input file are considered */
     this->update_aperture_and_range_compensator();
 }
 
@@ -593,8 +600,7 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol)
             d_ptr->mebs->get_distal_margin());
     }
 
-    d_ptr->mebs->set_prescription_depths (this->rsp_accum_vol->get_min_wed(), 
-        this->rsp_accum_vol->get_max_wed());
+    d_ptr->mebs->set_prescription_depths (d_ptr->min_wed, d_ptr->max_wed);
     this->rsp_accum_vol->apply_beam_modifiers ();
 }
 
@@ -614,8 +620,7 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
             d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
             d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
-    d_ptr->mebs->set_prescription_depths (this->rsp_accum_vol->get_min_wed(), 
-        this->rsp_accum_vol->get_max_wed());
+    d_ptr->mebs->set_prescription_depths (d_ptr->min_wed, d_ptr->max_wed);
     this->rsp_accum_vol->apply_beam_modifiers ();
 }
 
@@ -771,8 +776,8 @@ Rt_beam::compute_beam_modifiers_core (
 
     /* Save these values in private data store */
     // GCS FIX: To be revisited
-//    d_ptr->max_wed = total_max_wed;
-//    d_ptr->min_wed = total_min_wed;
+    d_ptr->max_wed = total_max_wed;
+    d_ptr->min_wed = total_min_wed;
     return;
 }
 
@@ -962,6 +967,8 @@ Rt_beam::apply_smearing_to_target (
 void
 Rt_beam::update_aperture_and_range_compensator()
 {
+    // GCS FIX.  The below logic is no longer valid
+#if defined (commentout)
     /* The aperture is copied from rpl_vol
        the range compensator and/or the aperture are erased if defined in the input file */
     if (d_ptr->aperture_in != "")
@@ -998,6 +1005,7 @@ Rt_beam::update_aperture_and_range_compensator()
             d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rsp_accum_vol->get_minimum_distance_target());
         }
     }
+#endif
 }
 
 Plm_image::Pointer&

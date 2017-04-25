@@ -1047,10 +1047,10 @@ Rt_mebs::get_num_particles()
 }
 
 void
-Rt_mebs::set_prescription(float prescription_min, float prescription_max)
+Rt_mebs::set_prescription (float prescription_min, float prescription_max)
 {
     d_ptr->have_prescription = true;
-    this->set_prescription_depths(prescription_min, prescription_max);
+    this->set_prescription_depths (prescription_min, prescription_max);
 }
 
 void 

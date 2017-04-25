@@ -88,10 +88,7 @@ public:
     double back_clipping_dist;
 
     Aperture::Pointer aperture;
-    double max_wed;
-    double min_wed;
-    double min_distance_target;
-
+    
 public:
     Rpl_volume_private () {
         proj_vol = new Proj_volume;
@@ -100,9 +97,6 @@ public:
         front_clipping_dist = DBL_MAX;
         back_clipping_dist = -DBL_MAX;
         aperture = Aperture::New ();
-        min_wed = 0.;
-        max_wed = 0.;
-        min_distance_target = 0.;
     }
     ~Rpl_volume_private () {
         delete proj_vol;
@@ -397,30 +391,6 @@ void Rpl_volume::set_back_clipping_plane(double back_clip)
 double Rpl_volume::get_back_clipping_plane() const
 {
     return d_ptr->back_clipping_dist;
-}
-
-void 
-Rpl_volume::set_minimum_distance_target(double min)
-{
-    d_ptr->min_distance_target = min;
-}
-	
-double 
-Rpl_volume::get_minimum_distance_target()
-{
-    return d_ptr->min_distance_target;
-}
-
-double
-Rpl_volume::get_max_wed ()
-{
-    return d_ptr->max_wed;
-}
-
-double
-Rpl_volume::get_min_wed ()
-{
-    return d_ptr->min_wed;
 }
 
 void 
@@ -1557,9 +1527,6 @@ Rpl_volume::save (const char *filename)
         d_ptr->ct_limit.dir[0],
         d_ptr->ct_limit.dir[1],
         d_ptr->ct_limit.dir[2]);
-    fprintf (fp, "min_wed = %g\n", d_ptr->min_wed);
-    fprintf (fp, "max_wed = %g\n", d_ptr->max_wed);
-    fprintf (fp, "min_distance_target = %g\n", d_ptr->min_distance_target);
     fclose (fp);
 }
 

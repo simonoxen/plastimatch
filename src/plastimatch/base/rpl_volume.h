@@ -77,11 +77,6 @@ public:
     double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);
     double get_back_clipping_plane () const;
-    void set_minimum_distance_target(double min);
-    double get_minimum_distance_target();
-
-    double get_max_wed ();
-    double get_min_wed ();
 
     void compute_rpl_ct_density (); // compute density volume
     void compute_rpl_HU ();	// compute HU volume
@@ -114,12 +109,6 @@ public:
     void compute_ray_data ();
 
 protected:
-#if defined (commentout)
-    void compute_beam_modifiers_core (Volume *seg_vol, bool active, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
-    void compute_target_distance_limits (Volume* seg_vol, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
-    void apply_smearing_to_target (float smearing, std::vector <double>& map_min_distance, std::vector <double>& map_max_distance);
-#endif
-
     void rpl_ray_trace (
         Volume *ct_vol,              /* I: CT volume */
         Ray_data *ray_data,          /* I: Pre-computed data for this ray */
