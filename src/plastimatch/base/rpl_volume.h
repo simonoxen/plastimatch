@@ -16,11 +16,7 @@
 
 PLMBASE_API float compute_PrSTPR_from_HU(float);
 PLMBASE_API float compute_PrSTPR_Schneider_weq_from_HU (float CT_HU); // Stopping Power Ratio - Schneider's model
-PLMBASE_API float compute_PrSTRP_XiO_MGH_weq_from_HU (float CT_HU); // Stopping power Ratio - XiO values from MGH
 PLMBASE_API float compute_PrWER_from_HU(float CT_HU); // WER = STRP / density
-
-extern const double lookup_PrSTPR_XiO_MGH[][2];
-
 PLMBASE_API float compute_density_from_HU (float CT_HU); // density VS HU - Schneider's model: broken curve
 
 class Proj_volume;
@@ -28,6 +24,11 @@ class Ray_data;
 class Rpl_volume_private;
 class Volume;
 class Volume_limit;
+
+enum Rpl_volume_ray_trace_start {
+    RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION,
+    RAY_TRACE_START_AT_CLIPPING_PLANE
+};
 
 class PLMBASE_API Rpl_volume 
 {
@@ -50,12 +51,13 @@ public:
     );
     void clone_geometry (const Rpl_volume *rv);
 
-    void set_ct_volume (Plm_image::Pointer& ct_volume);
+    void set_ray_trace_start (Rpl_volume_ray_trace_start rvrtt);
 
     Aperture::Pointer& get_aperture ();
     const Aperture::Pointer& get_aperture () const;
     void set_aperture (Aperture::Pointer& ap);
 
+    void set_ct_volume (Plm_image::Pointer& ct_volume);
     Volume* get_vol ();
     const Volume* get_vol () const;
     Proj_volume* get_proj_volume ();

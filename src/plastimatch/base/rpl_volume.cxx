@@ -35,6 +35,20 @@
 static bool global_debug = false;
 #endif
 
+//20140827_YKP
+//col0 = HU, col1 = Relative stopping power
+//Table: XiO, ctedproton 2007 provided by Yoost
+extern const double lookup_PrSTPR_XiO_MGH[][2] ={
+    -1000.0,    0.01,
+    0.0,        1.0,
+    40.0,       1.04,
+    1000.0,     1.52,
+    2000.0,     2.02,
+    3000.0,     2.55,
+};
+
+extern const double lookup_PrSTPR_XiO_MGH[][2];
+
 static void rpl_callback_accum (
     void *callback_data, size_t vox_index, 
     double vox_len, float vox_value);
@@ -86,8 +100,8 @@ public:
     Ray_data *ray_data;
     double front_clipping_dist;
     double back_clipping_dist;
-
     Aperture::Pointer aperture;
+    Rpl_volume_ray_trace_start rvrts;
     
 public:
     Rpl_volume_private () {
@@ -97,6 +111,7 @@ public:
         front_clipping_dist = DBL_MAX;
         back_clipping_dist = -DBL_MAX;
         aperture = Aperture::New ();
+        rvrts = RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION;
     }
     ~Rpl_volume_private () {
         delete proj_vol;
@@ -158,6 +173,13 @@ Rpl_volume::clone_geometry (const Rpl_volume *rv)
         rv->get_aperture()->get_center(),
         rv->get_aperture()->get_spacing(),
         rv->d_ptr->proj_vol->get_step_length());
+}
+
+void
+Rpl_volume::set_ray_trace_start (Rpl_volume_ray_trace_start rvrts)
+{
+    printf ("Setting RVRTS = %d\n", (int) rvrts);
+    d_ptr->rvrts = rvrts;
 }
 
 void 
@@ -248,8 +270,6 @@ Rpl_volume::get_rgdepth (
     return rgdepth;
 }
 
-// GCS FIX: This function is partly bunk.  Each ray has a different 
-// standoff distance.
 /* 3D interpolation */
 double
 Rpl_volume::get_rgdepth (
@@ -316,9 +336,8 @@ Rpl_volume::get_rgdepth (
         return -1;
     }
 
-    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
-
     /* Look up pre-computed data for this ray */
+    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
     Ray_data *ray_data = &d_ptr->ray_data[ap_idx];
     double *ap_xyz = ray_data->p2;
 
@@ -329,9 +348,13 @@ Rpl_volume::get_rgdepth (
     /* Compute distance from aperture to voxel */
     dist = vec3_dist (ap_xyz, ct_xyz);
 
-    // Subtract off standoff distance.  Each ray starts at a 
-    // different distance.
-    dist -= ray_data->front_dist;
+    // Subtract off standoff distance.  Nearest neighbor aperture index
+    // is used for this calculation.
+    if (d_ptr->rvrts == RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION) {
+        dist -= ray_data->front_dist;
+    } else {
+        dist -= d_ptr->front_clipping_dist;
+    }
 
     /* Retrieve the radiographic depth */
     rgdepth = this->get_rgdepth (ap_xy, dist);
@@ -374,7 +397,7 @@ Ray_data* Rpl_volume::get_Ray_data()
     return d_ptr->ray_data;
 }
 
-void Rpl_volume::set_front_clipping_plane(double front_clip)
+void Rpl_volume::set_front_clipping_plane (double front_clip)
 {
     d_ptr->front_clipping_dist = front_clip;
 }
@@ -489,9 +512,15 @@ Rpl_volume::compute_ray_data ()
                 ray_data->front_dist = vec3_dist (p2, ip1);
             }
             if (ray_data->front_dist < d_ptr->front_clipping_dist) {
+#if defined (commentout)
                 /* GCS FIX.  This should not be here.  */
-                // - 0.001 mm to avoid the closest ray to intersect the volume with a step inferior to its neighbours. The minimal ray will be the only one to touch the volume when offset_step = 0.
+                // - 0.001 mm to avoid the closest ray to intersect
+                // the volume with a step inferior to its neighbours.
+                // The minimal ray will be the only one to touch
+                // the volume when offset_step = 0.
                 d_ptr->front_clipping_dist = ray_data->front_dist - 0.001;
+#endif
+                d_ptr->front_clipping_dist = ray_data->front_dist;
             }
 
             /* Compute distance to back intersection point, and set 
@@ -945,13 +974,13 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
         for (int s = 0; s < dim[2]; s++)
         {
             idx = s * dim[0] * dim[1] + apert_idx;
-			if (s == dim[2]-1 || dim[2] == 0)
-			{
-				max_dist = offset + (double) dim[2] * this->get_vol()->spacing[2];
-				printf("Warning: Range > ray_length in volume => Some rays might stop outside of the volume image.\n");
-				printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
-				return max_dist;
-			}
+            if (s == dim[2]-1 || dim[2] == 0)
+            {
+                max_dist = offset + (double) dim[2] * this->get_vol()->spacing[2];
+                printf("Warning: Range > ray_length in volume => Some rays might stop outside of the volume image.\n");
+                printf("position of the maximal range on the z axis: z = %lg\n", max_dist);
+                return max_dist;
+            }
 
             if (img[idx] > range)
             {
@@ -1696,15 +1725,17 @@ Rpl_volume::rpl_ray_trace (
     cd.accum = rc_thk;
     cd.ires = ires;
 
-    /* Figure out how many steps to first step within volume */
-    cd.step_offset = 0;
-    ray_data->step_offset = cd.step_offset;
-
-    // Find location of first step within volume, which is 
-    // ray_data->p2 + (step_offset * step_len) * ray
-    // But, step_offset = zero.  So it starts at p2.
-    double tmp[3];
+    // Figure out location of, and number of steps to first step within volume
     double first_loc[3];
+    if (d_ptr->rvrts == RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION) {
+        ray_data->step_offset = cd.step_offset = 0;
+    } else {
+        ray_data->step_offset
+            = cd.step_offset
+            = (int) floor (ray_data->front_dist - d_ptr->front_clipping_dist)
+            / d_ptr->proj_vol->get_step_length ();
+    }
+    double tmp[3];
     vec3_scale3 (tmp, ray_data->ray, 
         cd.step_offset * d_ptr->proj_vol->get_step_length ());
     vec3_add3 (first_loc, ray_data->p2, tmp);
@@ -2056,14 +2087,3 @@ rpl_ray_trace_callback_RSP (
     depth_img[ap_area*step_num + ap_idx] = cd->accum;
 }
 
-//20140827_YKP
-//col0 = HU, col1 = Relative stopping power
-//Table: XiO, ctedproton 2007 provided by Yoost
-extern const double lookup_PrSTPR_XiO_MGH[][2] ={
-    -1000.0,    0.01,
-    0.0,        1.0,
-    40.0,       1.04,
-    1000.0,     1.52,
-    2000.0,     2.02,
-    3000.0,     2.55,
-};

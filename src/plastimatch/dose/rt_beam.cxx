@@ -352,6 +352,9 @@ Rt_beam::prepare_for_calc (
         lprintf ("Source distance must be greater than aperture distance");
         return false;
     }
+
+    //Rpl_volume_ray_trace_start rvrts = RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION;
+    Rpl_volume_ray_trace_start rvrts = RAY_TRACE_START_AT_CLIPPING_PLANE;
     
     // Create rsp_accum_vol */
     if (!this->rsp_accum_vol) {
@@ -368,6 +371,7 @@ Rt_beam::prepare_for_calc (
         this->get_aperture()->get_spacing(),
         this->get_step_length());
     this->rsp_accum_vol->set_aperture (this->get_aperture());
+    this->rsp_accum_vol->set_ray_trace_start (rvrts);
     this->rsp_accum_vol->set_ct_volume (ct_psp);
     if (!this->rsp_accum_vol->get_ct() || !this->rsp_accum_vol->get_ct_limit()) {
         lprintf ("ray_data or clipping planes missing from rpl volume\n");
@@ -381,6 +385,7 @@ Rt_beam::prepare_for_calc (
     this->hu_samp_vol = new Rpl_volume;
     if (!this->hu_samp_vol) return false;
     this->hu_samp_vol->clone_geometry (this->rsp_accum_vol);
+    this->hu_samp_vol->set_ray_trace_start (rvrts);
     this->hu_samp_vol->set_aperture (this->get_aperture());
     this->hu_samp_vol->set_ct_volume (d_ptr->ct_hu);
     this->hu_samp_vol->compute_rpl_sample (false);
@@ -411,6 +416,7 @@ Rt_beam::prepare_for_calc (
         this->target_rv = Rpl_volume::New();
         if (!this->target_rv) return false;
         this->target_rv->clone_geometry (this->rsp_accum_vol);
+        this->target_rv->set_ray_trace_start (rvrts);
         this->target_rv->set_aperture (this->get_aperture());
         this->target_rv->set_ct_volume (d_ptr->target);
         this->target_rv->compute_rpl_sample (false);
@@ -422,6 +428,7 @@ Rt_beam::prepare_for_calc (
         this->rpl_dose_vol = new Rpl_volume;
         if (!this->rpl_dose_vol) return false;
         this->rpl_dose_vol->clone_geometry (this->rsp_accum_vol);
+        this->rpl_dose_vol->set_ray_trace_start (rvrts);
         this->rpl_dose_vol->set_aperture (this->get_aperture());
         this->rpl_dose_vol->set_ct_volume (d_ptr->ct_hu);
         this->rpl_dose_vol->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
