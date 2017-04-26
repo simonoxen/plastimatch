@@ -94,7 +94,6 @@ public:
     /* Compute dose */
     void create_patient_psp ();
     void propagate_target_to_beams ();
-    bool prepare_beam_for_calc (Rt_beam *beam);
     void compute_dose (Rt_beam *beam);
     Plm_return_code compute_plan ();
     void normalize_beam_dose (Rt_beam *beam);

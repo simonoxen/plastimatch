@@ -41,9 +41,10 @@ public:
     float proximal_margin;
     float distal_margin;
 
-    double spread; /* spread for optimized SOBP, may be changed to a vector for each energy */
+    /* spread for optimized SOBP, may be changed to a vector for each energy */
+    double spread;
 
-    /* p  & alpha are parameters that bind depth and energy 
+    /* p & alpha are parameters that bind depth and energy 
        according to ICRU */
     Particle_type particle_type;			
     double alpha;
