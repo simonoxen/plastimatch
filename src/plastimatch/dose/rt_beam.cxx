@@ -1074,6 +1074,30 @@ Rt_beam::get_aperture () const
     return d_ptr->aperture;
 }
 
+Plm_image::Pointer&
+Rt_beam::get_aperture_image () 
+{
+    return d_ptr->aperture->get_aperture_image ();
+}
+
+const Plm_image::Pointer&
+Rt_beam::get_aperture_image () const
+{
+    return d_ptr->aperture->get_aperture_image ();
+}
+
+Plm_image::Pointer&
+Rt_beam::get_range_compensator_image () 
+{
+    return d_ptr->aperture->get_range_compensator_image ();
+}
+
+const Plm_image::Pointer&
+Rt_beam::get_range_compensator_image () const
+{
+    return d_ptr->aperture->get_range_compensator_image ();
+}
+
 void
 Rt_beam::set_aperture_vup (const float vup[])
 {

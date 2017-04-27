@@ -163,9 +163,13 @@ public:
     const Plm_image::Pointer& get_dose () const;
     void set_dose(Plm_image::Pointer& dose);
 
-    /* Get aperture */
+    /* Get aperture and range compensator */
     Aperture::Pointer& get_aperture ();
     const Aperture::Pointer& get_aperture () const;
+    Plm_image::Pointer& get_aperture_image ();
+    const Plm_image::Pointer& get_aperture_image () const;
+    Plm_image::Pointer& get_range_compensator_image ();
+    const Plm_image::Pointer& get_range_compensator_image () const;
     void set_aperture_vup (const float[]);
     void set_aperture_distance (float);
     void set_aperture_origin (const float[]);

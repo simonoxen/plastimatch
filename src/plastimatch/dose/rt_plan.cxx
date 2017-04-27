@@ -438,9 +438,19 @@ Rt_plan::compute_dose (Rt_beam *beam)
     double time_dose_misc = 0.0;
     double time_dose_reformat = 0.0;
 
+    /* Create rpl images, compute beam modifiers, SOBP etc. according 
+       to the teatment strategy */
+    if (!beam->prepare_for_calc (d_ptr->patient_hu,
+            d_ptr->patient_psp, d_ptr->target))
+    {
+        print_and_exit ("ERROR: Unable to initilize plan.\n");
+    }
+
+#if defined (commentout)
     printf ("Computing rpl_ct\n");
     beam->hu_samp_vol->compute_rpl_HU ();
-
+#endif
+    
     if (beam->get_flavor() == 'a') {
         compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
     }
@@ -671,14 +681,6 @@ Rt_plan::compute_plan ()
     {
         printf ("\nStart dose calculation Beam %d\n", (int) i + 1);
         Rt_beam *beam = d_ptr->beam_storage[i];
-
-        /* Create rpl images, compute beam modifiers, SOBP etc. according 
-           to the teatment strategy */
-        if (!beam->prepare_for_calc (d_ptr->patient_hu,
-                d_ptr->patient_psp, d_ptr->target))
-        {
-            print_and_exit ("ERROR: Unable to initilize plan.\n");
-        }
 
         /* Generate dose */
         this->set_debug (true);
