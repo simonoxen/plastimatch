@@ -79,6 +79,7 @@ public:
     double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);
     double get_back_clipping_plane () const;
+    double get_step_length () const;
 
     void compute_rpl_ct_density (); // compute density volume
     void compute_rpl_HU ();	// compute HU volume

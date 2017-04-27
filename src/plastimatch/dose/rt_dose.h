@@ -27,6 +27,11 @@ void compute_dose_ray_trace_b (
     size_t energy_index,
     const Volume::Pointer ct_vol
 );
+void compute_dose_d (
+    Rt_beam* beam,
+    size_t energy_index,
+    const Volume::Pointer ct_vol
+);
 void compute_dose_ray_desplanques (
     Volume* dose_volume, 
     Volume::Pointer ct_vol, 

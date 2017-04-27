@@ -207,7 +207,7 @@ find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
     xyz[2] = volume->origin[2] + ijk[2]*volume->spacing[2];
 }
 
-double erf_gauss(double x)
+double erf_gauss (double x)
 {
     int sign = 1;
     if (x < 0) {sign = -1;}
@@ -219,7 +219,9 @@ double erf_gauss(double x)
     return sign*y;
 }
 
-double double_gaussian_interpolation(double* gaussian_center, double* pixel_center, double sigma, double* spacing)
+double
+double_gaussian_interpolation (
+    double* gaussian_center, double* pixel_center, double sigma, double* spacing)
 {
     double x1 = pixel_center[0] - 0.5 * spacing[0];
     double x2 = x1 + spacing[0];

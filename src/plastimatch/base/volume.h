@@ -132,6 +132,10 @@ public:
       of the center of the first voxel in the volume.
     */
     void set_origin (const float origin[3]);
+    /*! \brief Get a pointer to the volume dimensions */
+    const plm_long *get_dim (void) {
+        return dim;
+    }
     /*! \brief Get a pointer to the direction cosines.  
       Direction cosines hold the orientation of a volume. 
       They are defined as the unit length direction vectors 

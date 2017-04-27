@@ -411,9 +411,16 @@ void Rpl_volume::set_back_clipping_plane(double back_clip)
 {
     d_ptr->back_clipping_dist = back_clip;
 }
+
 double Rpl_volume::get_back_clipping_plane() const
 {
     return d_ptr->back_clipping_dist;
+}
+
+double
+Rpl_volume::get_step_length () const
+{
+    return d_ptr->proj_vol->get_step_length ();
 }
 
 void 

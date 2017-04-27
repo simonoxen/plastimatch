@@ -346,14 +346,11 @@ Rt_beam::prepare_for_calc (
     d_ptr->ct_psp = ct_psp;
     d_ptr->target = target;
 
-    printf ("Preparing for calc (a).\n");
-    
     if (this->get_aperture()->get_distance() > this->get_source_distance ()) {
         lprintf ("Source distance must be greater than aperture distance");
         return false;
     }
 
-    //Rpl_volume_ray_trace_start rvrts = RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION;
     Rpl_volume_ray_trace_start rvrts = RAY_TRACE_START_AT_CLIPPING_PLANE;
     
     // Create rsp_accum_vol */
@@ -391,24 +388,21 @@ Rt_beam::prepare_for_calc (
     this->hu_samp_vol->compute_rpl_sample (false);
 
     // Prepare, but don't compute the sigma volume yet
-    if (this->get_flavor() == 'f'
+    if (this->get_flavor() == 'd'
+        || this->get_flavor() == 'f'
         || this->get_flavor() == 'g'
         || this->get_flavor() == 'h')
     {
         this->sigma_vol = new Rpl_volume;
         if (!this->sigma_vol) return false;
         this->sigma_vol->clone_geometry (this->rsp_accum_vol);
-        Aperture::Pointer ap_sigma = Aperture::New(this->get_aperture());
-        this->sigma_vol->set_aperture (ap_sigma);
         this->sigma_vol->set_aperture (this->get_aperture());
-        this->sigma_vol->set_ct (this->rsp_accum_vol->get_ct());
-        this->sigma_vol->set_ct_limit (this->rsp_accum_vol->get_ct_limit());
-        /* We don't do everything again, we just copy the 
-           ray_data & clipping planes as all the volumes 
-           are geometrically equal */
-        this->sigma_vol->set_ray(this->rsp_accum_vol->get_Ray_data());
+        this->sigma_vol->set_ct_volume (d_ptr->ct_hu);
+        this->sigma_vol->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
+        this->sigma_vol->compute_ray_data();
         this->sigma_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
         this->sigma_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
+        this->sigma_vol->compute_rpl_void();
     }
 
     // Create target projective volume */
@@ -423,7 +417,8 @@ Rt_beam::prepare_for_calc (
     }
 
     // Create and fill in rpl_dose_volume (actually proj dose)
-    if (this->get_flavor() == 'b')
+    if (this->get_flavor() == 'b'
+        || this->get_flavor() == 'd')
     {
         this->rpl_dose_vol = new Rpl_volume;
         if (!this->rpl_dose_vol) return false;
@@ -448,8 +443,6 @@ Rt_beam::prepare_for_calc (
         this->compute_beam_data_from_spot_map();
         return true;
     }
-
-    printf ("Preparing for calc (b).\n");
 
    /* The priority how to generate dose is:
        1. manual spot map 
@@ -972,7 +965,7 @@ Rt_beam::apply_smearing_to_target (
 }
 
 void
-Rt_beam::update_aperture_and_range_compensator()
+Rt_beam::update_aperture_and_range_compensator ()
 {
     // GCS FIX.  The below logic is no longer valid
 #if defined (commentout)

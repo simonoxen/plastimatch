@@ -212,6 +212,171 @@ compute_dose_ray_trace_b (
 }
 
 void
+compute_dose_d (
+    Rt_beam* beam,
+    size_t energy_index,
+    const Volume::Pointer ct_vol
+)
+{
+    Rpl_volume *wepl_rv = beam->rsp_accum_vol;
+    Volume *wepl_vol = wepl_rv->get_vol();
+    float *wepl_img = wepl_vol->get_raw<float> ();
+
+    Rpl_volume *rpl_dose_vol = beam->rpl_dose_vol;
+    Volume *dose_vol = rpl_dose_vol->get_vol();
+    float *dose_img = dose_vol->get_raw<float> ();
+
+    Rpl_volume *sigma_rv = beam->rsp_accum_vol;
+    Volume *sigma_vol = sigma_rv->get_vol();
+    float *sigma_img = sigma_vol->get_raw<float> ();
+    const plm_long *sigma_dim = sigma_vol->get_dim();
+
+    Rt_mebs::Pointer mebs = beam->get_mebs();
+    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
+    std::vector<float>& num_part = mebs->get_num_particles();
+
+    // Get the variable magnification at each step
+    std::vector <double> lateral_spacing_0 (sigma_dim[2],0);
+    std::vector <double> lateral_spacing_1 (sigma_dim[2],0);
+    double sid = sigma_rv->get_aperture()->get_distance();
+    const double *ap_spacing = sigma_rv->get_aperture()->get_spacing();
+    float clipping_dist = sigma_rv->get_front_clipping_plane();
+    float step_length = sigma_rv->get_step_length ();
+    for (int k = 0; k < sigma_dim[2]; k++) {
+        float mag = (clipping_dist + k * step_length) / sid;
+        lateral_spacing_0[k] = ap_spacing[0] * mag;
+        lateral_spacing_1[k] = ap_spacing[1] * mag;
+    }
+
+    // Compute lateral search distance (2.5 max sigma) for each depth
+    // (Only needed if pulling dose, not needed if pushing)
+    std::vector <int> lateral_step_0 (sigma_dim[2],0);
+    std::vector <int> lateral_step_1 (sigma_dim[2],0);
+    for (int k = 0; k < sigma_dim[2]; k++) {
+        float sigma_max = 0.f;
+        for (int i = 0; i < sigma_dim[0]*sigma_dim[1]; i++) {
+            plm_long idx = k*sigma_dim[0]*sigma_dim[1] + i;
+            if (sigma_img[idx] > sigma_max) {
+                sigma_max = sigma_img[idx];
+            }
+        }
+        lateral_step_0[k] = ceil (2.5 * sigma_max / lateral_spacing_0[k]);
+        lateral_step_1[k] = ceil (2.5 * sigma_max / lateral_spacing_1[k]);
+    }
+
+    // Create central axis dose volume
+    Rpl_volume *cax_dose_rv = new Rpl_volume;
+    if (!cax_dose_rv) return;
+    cax_dose_rv->clone_geometry (wepl_rv);
+    cax_dose_rv->set_ray_trace_start (RAY_TRACE_START_AT_CLIPPING_PLANE);
+    cax_dose_rv->set_aperture (beam->get_aperture());
+    cax_dose_rv->set_ct (wepl_rv->get_ct());
+    cax_dose_rv->set_ct_limit (wepl_rv->get_ct_limit());
+    cax_dose_rv->compute_ray_data();
+    cax_dose_rv->set_front_clipping_plane (wepl_rv->get_front_clipping_plane());
+    cax_dose_rv->set_back_clipping_plane (wepl_rv->get_back_clipping_plane());
+    cax_dose_rv->compute_rpl_void ();
+    Volume *cax_dose_vol = cax_dose_rv->get_vol ();
+    float *cax_dose_img = cax_dose_vol->get_raw<float> ();
+    
+    // Compute central axis dose
+    Aperture::Pointer& ap = beam->get_aperture ();
+    Volume *ap_vol = 0;
+    const uchar *ap_img = 0;
+    if (ap->have_aperture_image()) {
+        ap_vol = ap->get_aperture_vol ();
+        ap_img = ap_vol->get_raw<unsigned char> ();
+    }
+    const int *dim = wepl_rv->get_image_dim();
+    int num_steps = wepl_rv->get_num_steps();
+    plm_long ij[2] = {0,0};
+    for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+        for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+            if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)] == 0) {
+                continue;
+            }
+            size_t np_index = energy_index * dim[0] * dim[1]
+                + ij[1] * dim[0] + ij[0];
+            float np = num_part[np_index];
+            if (np == 0.f) {
+                continue;
+            }
+            for (int s = 0; s < num_steps; s++) {
+                int dose_index = ap_vol->index(ij[0],ij[1],s);
+                float wepl = wepl_img[dose_index];
+                cax_dose_img[dose_index] += np * depth_dose->lookup_energy(wepl);
+            }
+        }
+    }
+    
+    // Smear dose by specified sigma
+    for (int s = 0; s < num_steps; s++) {
+        double pixel_spacing[2] = {
+            lateral_spacing_0[s],
+            lateral_spacing_1[s]
+        };
+        for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+            for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+                plm_long idx = s*sigma_dim[0]*sigma_dim[1] + ij[1]*dim[0] + ij[0];
+                float cax_dose = cax_dose_img[idx];
+                if (cax_dose == 0.f) {
+                    continue;
+                }
+                double sigma = (double) sigma_img[idx];
+                double sigma_x3 = sigma * 2.5;
+                
+                // finding the rpl_volume pixels that are contained in the
+                // the 3 sigma range
+                plm_long ij_min[2], ij_max[2];
+                ij_min[0] = ij[0] - ceil (sigma_x3 / lateral_spacing_0[s]);
+                if (ij_min[0] < 0) ij_min[0] = 0;
+                ij_min[1] = ij[1] - ceil (sigma_x3 / lateral_spacing_1[s]);
+                if (ij_min[1] < 0) ij_min[1] = 0;
+                ij_max[0] = ij[0] + ceil (sigma_x3 / lateral_spacing_0[s]);
+                if (ij_max[0] > dim[0]-1) ij_max[0] = dim[0]-1;
+                ij_max[1] = ij[1] + ceil (sigma_x3 / lateral_spacing_1[s]);
+                if (ij_max[1] > dim[1]-1) ij_max[1] = dim[1]-1;
+
+                float tot_off_axis = 0.f;
+                plm_long ij1[2];
+                for (ij1[1] = ij_min[1]; ij1[1] <= ij_max[1]; ij1[1]++) {
+                    for (ij1[0] = ij_min[0]; ij1[0] <= ij_max[0]; ij1[0]++) {
+                        plm_long idxs = s*sigma_dim[0]*sigma_dim[1]
+                            + ij1[1]*dim[0] + ij1[0];
+                        double gaussian_center[2] = { 0., 0. };
+                        double pixel_center[2] = {
+                            (double) ij1[0]-ij[0],
+                            (double) ij1[1]-ij[1]
+                        };
+                        double off_axis_factor;
+                        if (sigma == 0)
+                        {
+                            off_axis_factor = 1;
+                        }
+                        else
+                        {
+                            off_axis_factor = double_gaussian_interpolation (
+                                gaussian_center, pixel_center,
+                                sigma, pixel_spacing);
+                        }
+
+                        dose_img[idxs] += cax_dose * off_axis_factor;
+#if defined (commentout)
+                        // GCS FIX: The below correction would give the
+                        // option for dose to tissue
+                            / ct_density / STPR;
+#endif
+                        tot_off_axis += off_axis_factor;
+                    }
+                }
+            }
+        }
+    }
+    // Free temporary memory
+    delete cax_dose_rv;
+}
+
+void
 compute_dose_ray_desplanques (
     Volume* dose_volume, 
     Volume::Pointer ct_vol, 

@@ -441,25 +441,46 @@ Rt_plan::compute_dose (Rt_beam *beam)
     printf ("Computing rpl_ct\n");
     beam->hu_samp_vol->compute_rpl_HU ();
 
-    if (beam->sigma_vol) {
+    if (beam->get_flavor() == 'a') {
+        compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
+    }
+    else if (beam->get_flavor() == 'b') {
+
+        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
+           if there is a range compensator */
+        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
+        {
+            add_rcomp_length_to_rpl_volume(beam);
+        }
+
+        // Loop through energies
+        Rt_mebs::Pointer mebs = beam->get_mebs();
+        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
+        for (size_t i = 0; i < depth_dose.size(); i++) {
+            compute_dose_ray_trace_b (beam, i, ct_vol);
+        }
+        dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+    }
+    else if (beam->get_flavor() == 'd') {
+
+        // Loop through energies
+        Rt_mebs::Pointer mebs = beam->get_mebs();
+        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
+        for (size_t i = 0; i < depth_dose.size(); i++) {
+            float sigma_max = 0;
+            compute_sigmas (this, beam, depth_dose[i]->E0,
+                &sigma_max, "small", margins);
+            compute_dose_d (beam, i, ct_vol);
+        }
+        dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+    }
+
+    else {
+        // Obsolete implementations
         float sigma_max = 0;
-
-        printf ("Computing_void_rpl\n");
-
-        // we compute the rglength in the sigma_volume, without the
-        // range compensator as it will be added by a different process
-        beam->sigma_vol->compute_rpl_PrSTRP_no_rgc();
         Rpl_volume* sigma_vol = beam->sigma_vol;
-
         float* sigma_img = (float*) sigma_vol->get_vol()->img;
         UNUSED_VARIABLE (sigma_img);
-
-        if (beam->get_flavor() == 'a'
-            || beam->get_flavor() == 'b'
-            || beam->get_flavor() == 'g')
-        {
-            beam->rpl_dose_vol = new Rpl_volume;
-        }
 
         if (beam->get_flavor() == 'h') {
             beam->rpl_vol_lg = new Rpl_volume;
@@ -470,7 +491,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
         printf ("More setup\n");
 
         std::vector<Rt_depth_dose*> depth_dose = beam->get_mebs()->get_depth_dose();
-
         for (size_t i = 0; i < depth_dose.size(); i++) {
             const Rt_depth_dose *ppp = beam->get_mebs()->get_depth_dose()[i];
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
@@ -535,8 +555,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
                 time_dose_reformat += timer.report ();
             }
-
-            if (beam->get_flavor() == 'h') // Shackleford's algorithm
+            else if (beam->get_flavor() == 'h') // Shackleford's algorithm
             {
                 /* Calculating the pixel-margins of the aperture to take into account the scattering*/
                 margin = (float) 3 * (sigma_max)/(beam->get_aperture()->get_distance()+beam->rsp_accum_vol->get_front_clipping_plane()) * beam->get_aperture()->get_distance()+1;
@@ -595,27 +614,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
             }
             printf("dose computed\n");
         }
-    }
-
-    if (beam->get_flavor() == 'a') {
-        compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
-    }
-    if (beam->get_flavor() == 'b') {
-
-        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
-           if there is a range compensator */
-        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
-        {
-            add_rcomp_length_to_rpl_volume(beam);
-        }
-
-        // Loop through energies
-        Rt_mebs::Pointer mebs = beam->get_mebs();
-        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
-        for (size_t i = 0; i < depth_dose.size(); i++) {
-            compute_dose_ray_trace_b (beam, i, ct_vol);
-        }
-        dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
     }
 
     Plm_image::Pointer dose = Plm_image::New();
