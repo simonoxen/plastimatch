@@ -680,7 +680,7 @@ Rt_beam::compute_beam_modifiers_core (
     /* compute the target min and max distance (not wed!) map in the aperture */
     // GCS FIX: definitely we want wed here.
     // compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
-    printf("Compute target distance limits...\n");
+    printf("Compute target wepl_min_max...\n");
     this->compute_target_wepl_min_max (map_wed_min, map_wed_max);
     
     printf ("Apply lateral smearing to the target...\n");
@@ -778,7 +778,6 @@ Rt_beam::compute_beam_modifiers_core (
     // GCS FIX: To be revisited
     d_ptr->max_wed = total_max_wed;
     d_ptr->min_wed = total_min_wed;
-    return;
 }
 
 void
@@ -786,29 +785,29 @@ Rt_beam::compute_target_wepl_min_max (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
+    printf ("1\n");
     Rpl_volume *wepl_rv = this->rsp_accum_vol;
-    Volume *wepl_vol = wepl_rv->get_vol();
+    Volume *wepl_vol = wepl_rv->get_vol ();
     float *wepl_img = wepl_vol->get_raw<float> ();
+    printf ("2\n");
     Rpl_volume::Pointer target_rv = this->target_rv;
-    Volume *target_vol = target_rv->get_vol();
+    Volume *target_vol = target_rv->get_vol ();
     float *target_img = target_vol->get_raw<float> ();
-
-    Aperture::Pointer& ap = this->get_aperture ();
-    Volume *ap_vol = ap->get_aperture_vol ();
-    const plm_long *dim = ap_vol->dim;
+    const plm_long *target_dim = target_vol->get_dim ();
+    printf ("3\n");
     
-    map_wed_min.resize (dim[0]*dim[1], NLMAX(double));
-    map_wed_max.resize (dim[0]*dim[1], 0.);
+    map_wed_min.resize (target_dim[0]*target_dim[1], NLMAX(double));
+    map_wed_max.resize (target_dim[0]*target_dim[1], 0.);
 
     int ij[2] = {0, 0};
-    int num_steps = this->rsp_accum_vol->get_num_steps();
-    for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
-        for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
-            int map_idx = ij[0] + ij[1] * dim[0];
+    int num_steps = this->target_rv->get_num_steps();
+    for (ij[1] = 0; ij[1] < target_dim[1]; ij[1]++) {
+        for (ij[0] = 0; ij[0] < target_dim[0]; ij[0]++) {
+            int map_idx = ij[0] + ij[1] * target_dim[0];
             for (int s = 0; s < num_steps; s++) {
-                int wepl_index = ap_vol->index (ij[0],ij[1],s);
-                float tgt = target_img[wepl_index];
-                float wepl = wepl_img[wepl_index];
+                int rv_index = target_vol->index (ij[0],ij[1],s);
+                float tgt = target_img[rv_index];
+                float wepl = wepl_img[rv_index];
                 if (tgt < 0.2) {
                     continue;
                 }
@@ -821,6 +820,7 @@ Rt_beam::compute_target_wepl_min_max (
             }
         }
     }
+    printf ("5\n");
 }
 
 void 

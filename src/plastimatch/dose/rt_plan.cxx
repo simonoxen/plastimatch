@@ -438,6 +438,11 @@ Rt_plan::compute_dose (Rt_beam *beam)
     double time_dose_misc = 0.0;
     double time_dose_reformat = 0.0;
 
+    /* Convert from HU to stopping power, if not already done */
+    if (!d_ptr->patient_psp) {
+        this->create_patient_psp ();
+    }
+    
     /* Create rpl images, compute beam modifiers, SOBP etc. according 
        to the teatment strategy */
     if (!beam->prepare_for_calc (d_ptr->patient_hu,
@@ -628,7 +633,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
-    beam->set_dose(dose);
+    beam->set_dose (dose);
     this->normalize_beam_dose (beam);
 
     printf ("Sigma conversion: %f seconds\n", time_sigma_conv);
@@ -661,14 +666,6 @@ Rt_plan::compute_plan ()
     }
     this->set_patient (ct);
 
-    /* Convert from HU to stopping power */
-    this->create_patient_psp ();
-
-    /* Save stopping power image */
-    if (d_ptr->output_psp_fn != "") {
-        d_ptr->patient_psp->save_image (d_ptr->output_psp_fn);
-    }
-    
     /* Display debugging information */
     this->print_verif ();
     
@@ -697,6 +694,11 @@ Rt_plan::compute_plan ()
         }
     }
 
+    /* Save stopping power image */
+    if (d_ptr->output_psp_fn != "") {
+        d_ptr->patient_psp->save_image (d_ptr->output_psp_fn);
+    }
+    
     /* Save dose output */
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
@@ -797,4 +799,5 @@ Rt_plan::print_verif ()
             printf("%lg ** ", d_ptr->beam_storage[i]->get_mebs()->get_weight()[j]);
         }
     }
+    printf ("\n");
 }
