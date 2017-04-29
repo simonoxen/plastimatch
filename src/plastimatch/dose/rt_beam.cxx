@@ -374,7 +374,6 @@ Rt_beam::prepare_for_calc (
         lprintf ("ray_data or clipping planes missing from rpl volume\n");
         return false;
     }
-    // this->rpl_vol->compute_rpl_PrSTRP_no_rgc ();
     this->rsp_accum_vol->compute_rpl_accum (false);
 
     // Create ct projective volume
