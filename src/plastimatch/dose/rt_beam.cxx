@@ -833,34 +833,8 @@ Rt_beam::apply_smearing_to_target (
     // distance in the previous version of the code was to make the
     // smearing code act at the minimum target distance.  This is unnecessary; 
     // it is easier/better to apply at isocenter plane.
-#if defined (commentout)
-    printf ("Apply smearing to the target.\nThe smearing width is defined at the minimum depth of the target.\n");
-    /* Create a structured element of the right size */
-    int strel_half_size[2];
-    int strel_size[2];
 
-    /* Found the min of the target to be sure the smearing (margins) at the minimal depth */
-    double min = DBL_MAX;
-    for (size_t i = 0; i < map_min_distance.size(); i++) {
-        if (map_min_distance[i] > 0 && map_min_distance[i] < min) {
-            min = map_min_distance[i];
-        }
-    }
-    if (min == DBL_MAX)
-    {
-        printf("***ERROR: Target depth min is null for each ray. Smearing not applied\n");
-        return;
-    }
-
-    float min_distance_target = min + d_ptr->aperture->get_distance()
-        + this->rsp_accum_vol->get_front_clipping_plane();
-
-    /* The smearing width is scaled to the aperture */
-    strel_half_size[0] = ROUND_INT(smearing * d_ptr->aperture->get_distance()
-        / (min_distance_target * d_ptr->aperture->get_spacing()[0]));
-    strel_half_size[1] = ROUND_INT(smearing * d_ptr->aperture->get_distance()
-        / (min_distance_target * d_ptr->aperture->get_spacing()[1]));
-#endif
+    // However, the current version smears at the aperture plane.
 
     /* Create a structured element of the right size */
     int strel_half_size[2];
@@ -872,7 +846,6 @@ Rt_beam::apply_smearing_to_target (
     strel_size[1] = 1 + 2 * strel_half_size[1];
 
     // GCS FIX:  Ditto.
-    //float smearing_ap = smearing * d_ptr->aperture->get_distance() / (min + d_ptr->aperture->get_distance() + this->rsp_accum_vol->get_front_clipping_plane());
     float smearing_ap = smearing;
 
     int *strel = new int[strel_size[0]*strel_size[1]];

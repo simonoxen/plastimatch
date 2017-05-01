@@ -68,6 +68,17 @@ Volume_header::Volume_header (
     d_ptr->m_direction_cosines.set (pih->GetDirection());
 }
 
+Volume_header::Volume_header (
+    const Plm_image::Pointer& img)
+{
+    this->d_ptr = new Volume_header_private;
+    Plm_image_header pih (img);
+    pih.get_dim (d_ptr->m_dim);
+    pih.get_origin (d_ptr->m_origin);
+    pih.get_spacing (d_ptr->m_spacing);
+    d_ptr->m_direction_cosines.set (pih.GetDirection());
+}
+
 Volume_header::~Volume_header ()
 {
     delete this->d_ptr;

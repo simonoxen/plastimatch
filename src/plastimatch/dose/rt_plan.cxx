@@ -28,7 +28,9 @@
 #include "rt_study.h"
 #include "volume.h"
 #include "volume_adjust.h"
+#include "volume_header.h"
 #include "volume_macros.h"
+#include "volume_resample.h"
 
 class Rt_plan_private {
 
@@ -165,6 +167,12 @@ Rt_plan::set_target (const std::string& target_fn)
     /* Need float, because compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
+    /* Resample to match CT resolution */
+    /* GCS FIX: This assumes CT is set before target */
+    Volume_header vh (d_ptr->patient_hu);
+    d_ptr->target->set_volume (
+        volume_resample (d_ptr->target->get_volume(), &vh));
+
     this->propagate_target_to_beams ();
 }
 
@@ -176,6 +184,12 @@ Rt_plan::set_target (UCharImageType::Pointer& target_vol)
     /* compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
+    /* Resample to match CT resolution */
+    /* GCS FIX: This assumes CT is set before target */
+    Volume_header vh (d_ptr->patient_hu);
+    d_ptr->target->set_volume (
+        volume_resample (d_ptr->target->get_volume(), &vh));
+
     this->propagate_target_to_beams ();
 }
 
@@ -183,6 +197,15 @@ void
 Rt_plan::set_target (FloatImageType::Pointer& target_vol)
 {
     d_ptr->target->set_itk (target_vol);
+
+    /* compute_segdepth_volume assumes float */
+    d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+
+    /* Resample to match CT resolution */
+    /* GCS FIX: This assumes CT is set before target */
+    Volume_header vh (d_ptr->patient_hu);
+    d_ptr->target->set_volume (
+        volume_resample (d_ptr->target->get_volume(), &vh));
 
     this->propagate_target_to_beams ();
 }

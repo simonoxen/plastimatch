@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include "direction_cosines.h"
+#include "plm_image.h"
 #include "volume.h"
 
 class Bspline_xform;
@@ -24,6 +25,7 @@ public:
         float direction_cosines[9]);
     Volume_header (const Volume::Pointer& vol);
     Volume_header (const Plm_image_header *pih);
+    Volume_header (const Plm_image::Pointer& img);
     ~Volume_header ();
 
 public:
