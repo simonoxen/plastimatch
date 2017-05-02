@@ -167,12 +167,6 @@ Rt_plan::set_target (const std::string& target_fn)
     /* Need float, because compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
-    /* Resample to match CT resolution */
-    /* GCS FIX: This assumes CT is set before target */
-    Volume_header vh (d_ptr->patient_hu);
-    d_ptr->target->set_volume (
-        volume_resample (d_ptr->target->get_volume(), &vh));
-
     this->propagate_target_to_beams ();
 }
 
@@ -184,12 +178,6 @@ Rt_plan::set_target (UCharImageType::Pointer& target_vol)
     /* compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
-    /* Resample to match CT resolution */
-    /* GCS FIX: This assumes CT is set before target */
-    Volume_header vh (d_ptr->patient_hu);
-    d_ptr->target->set_volume (
-        volume_resample (d_ptr->target->get_volume(), &vh));
-
     this->propagate_target_to_beams ();
 }
 
@@ -200,12 +188,6 @@ Rt_plan::set_target (FloatImageType::Pointer& target_vol)
 
     /* compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-
-    /* Resample to match CT resolution */
-    /* GCS FIX: This assumes CT is set before target */
-    Volume_header vh (d_ptr->patient_hu);
-    d_ptr->target->set_volume (
-        volume_resample (d_ptr->target->get_volume(), &vh));
 
     this->propagate_target_to_beams ();
 }
@@ -464,6 +446,14 @@ Rt_plan::compute_dose (Rt_beam *beam)
     /* Convert from HU to stopping power, if not already done */
     if (!d_ptr->patient_psp) {
         this->create_patient_psp ();
+    }
+
+    /* Resample target to match CT resolution, if not already done */
+    if (d_ptr->target) {
+        Volume_header vh (d_ptr->patient_hu);
+        d_ptr->target->set_volume (
+            volume_resample (d_ptr->target->get_volume(), &vh));
+        this->propagate_target_to_beams ();
     }
     
     /* Create rpl images, compute beam modifiers, SOBP etc. according 

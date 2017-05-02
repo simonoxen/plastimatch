@@ -77,14 +77,6 @@ compute_dose_ray_trace_a (
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
                 double dose = 0.0;
 
-                bool debug = false;
-                if (ct_ijk[2] == 98 && ct_ijk[1] == 213 && ct_ijk[0] == 200) {
-                    debug = true;
-                }
-                if (ct_ijk[2] == 98 && ct_ijk[1] == 230 && ct_ijk[0] == 223) {
-                    debug = true;
-                }
-
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->origin[0] + ct_ijk[0] * ct_vol->spacing[0]);
                 ct_xyz[1] = (double) (ct_vol->origin[1] + ct_ijk[1] * ct_vol->spacing[1]);
@@ -94,16 +86,6 @@ compute_dose_ray_trace_a (
                 if (beam->get_intersection_with_aperture(idx_ap, idx_ap_int, rest, ct_xyz) == false)
                 {
                     continue;
-                }
-
-                if (debug) {
-                    printf ("**** DEBUG\n");
-                    printf (" idx_ap = %f, %f\n",
-                        (float) idx_ap[0], (float) idx_ap[1]);
-                    printf (" idx_ap_int = %d, %d\n",
-                        idx_ap_int[0], idx_ap_int[1]);
-                    printf (" rest = %f %f\n", 
-                        rest[0], rest[1]);
                 }
 
                 /* Check that the ray cross the aperture */
@@ -123,35 +105,19 @@ compute_dose_ray_trace_a (
                 rgdepth = beam->rsp_accum_vol->get_rgdepth (ct_xyz);
                 WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_rgdepth(ct_xyz));
 
-                if (debug) {
-                    printf (" rgdepth = %f, WER = %f\n", rgdepth, WER);
-                }
-
                 const Rt_mebs::Pointer& mebs = beam->get_mebs();
-                mebs->set_debug (debug);
                 for (size_t dd_idx = 0; dd_idx < mebs->get_depth_dose().size(); dd_idx++)
                 {
                     particle_number = mebs->get_particle_number_xyz (idx_ap_int, rest, dd_idx, beam->get_aperture()->get_dim());
                     if (particle_number != 0 && rgdepth >=0 && rgdepth < mebs->get_depth_dose()[dd_idx]->dend) 
                     {
                         dose += particle_number * WER * energy_direct (rgdepth, beam, dd_idx);
-                        if (debug) {
-                            printf ("  %d %f %f %f\n", 
-                                (int)dd_idx,
-                                (float) particle_number,
-                                (float) mebs->get_depth_dose()[dd_idx]->dend,
-                                energy_direct (rgdepth, beam, dd_idx));
-                        }
                     }
                 }
-                mebs->set_debug (false);
 
                 /* Insert the dose into the dose volume */
                 idx = volume_index (dose_vol->dim, ct_ijk);
                 dose_img[idx] = dose;
-                if (debug) {
-                    printf (" dose = %f\n", dose);
-                }
             }
         }
     }
@@ -202,10 +168,6 @@ compute_dose_ray_trace_b (
                 int dose_index = ap_vol->index(ij[0],ij[1],s);
                 float wepl = wepl_img[dose_index];
                 dose_img[dose_index] += np * depth_dose->lookup_energy(wepl);
-                if (ij[1] == 26 && (ij[0] == 1 || ij[0] == 0) && np > 0) {
-                    printf ("[%2d] %d %d: %f\n",
-                        energy_index, ij[1], ij[0], dose_img[dose_index]);
-                }
             }
         }
     }
@@ -463,12 +425,6 @@ compute_dose_ray_desplanques (
         ray_bev[0] = vec3_dot (ray_data->ray, vec_prt_tmp);
         ray_bev[1] = vec3_dot (ray_data->ray, vec_pdn_tmp);
         ray_bev[2] = -vec3_dot (ray_data->ray, vec_nrm_tmp); // ray_beam_eye_view is already normalized
-
-        /* printf("prt: %lg %lg %lg\n",vec_prt_tmp[0], vec_prt_tmp[1], vec_prt_tmp[2]);
-           printf("pdn: %lg %lg %lg\n",vec_pdn_tmp[0], vec_pdn_tmp[1], vec_pdn_tmp[2]);
-           printf("nrm: %lg %lg %lg\n",vec_nrm_tmp[0], vec_nrm_tmp[1], vec_nrm_tmp[2]);
-           printf("ray: %lg %lg %lg\n",ray_data->ray[0], ray_data->ray[1], ray_data->ray[2]);
-           printf("bev: %lg %lg %lg\n", ray_bev[0], ray_bev[1], ray_bev[2]); */
 
         /* Calculation of the coordinates of the intersection of the ray with the clipping plane */
         entrance_length = vec3_dist(beam->rsp_accum_vol->get_proj_volume()->get_src(), ray_data->cp);

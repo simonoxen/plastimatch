@@ -14,6 +14,33 @@
 #include "rt_beam.h"
 #include "rt_plan.h"
 
+static void
+save_vector_as_image (
+    const std::vector<double>& v,
+    const int dim2d[2],
+    const std::string& filename)
+{
+    plm_long dim[3] = { dim2d[0], dim2d[1], 1 };
+    float origin[3] = { 0.f, 0.f, 0.f };
+    float spacing[3] = { 1.f, 1.f, 1.f };
+    Volume::Pointer vol = Volume::New (
+        dim, origin, spacing, (float*) 0, PT_FLOAT, 1);
+    float *vol_img = vol->get_raw<float> ();
+
+    for (plm_long i = 0; i < vol->npix; i++)
+    {
+        if (isnan(v[i]) || isinf(v[i]) || v[i] == NLMAX(double)) {
+            vol_img[i] = -1;
+        } else {
+            vol_img[i] = (float) v[i];
+        }
+    }
+
+    Plm_image::Pointer img = Plm_image::New (vol);
+    img->save_image (filename);
+}
+
+
 class Rt_beam_private {
 public:
 
@@ -681,6 +708,17 @@ Rt_beam::compute_beam_modifiers_core (
     // compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
     printf("Compute target wepl_min_max...\n");
     this->compute_target_wepl_min_max (map_wed_min, map_wed_max);
+
+#if defined (commentout)
+    save_vector_as_image (
+        map_wed_min,
+        d_ptr->aperture->get_dim(),
+        "debug-min-a.nrrd");
+    save_vector_as_image (
+        map_wed_max,
+        d_ptr->aperture->get_dim(),
+        "debug-max-a.nrrd");
+#endif
     
     printf ("Apply lateral smearing to the target...\n");
     /* widen the min/max distance maps */
@@ -688,6 +726,17 @@ Rt_beam::compute_beam_modifiers_core (
         this->apply_smearing_to_target (smearing, map_wed_min, map_wed_max);
     }
 
+#if defined (commentout)
+    save_vector_as_image (
+        map_wed_min,
+        d_ptr->aperture->get_dim(),
+        "debug-min-b.nrrd");
+    save_vector_as_image (
+        map_wed_max,
+        d_ptr->aperture->get_dim(),
+        "debug-max-b.nrrd");
+#endif
+    
     printf ("Apply proximal and distal ...\n");
     /* add the margins */
     for (size_t i = 0; i < map_wed_min.size(); i++) {
@@ -700,6 +749,17 @@ Rt_beam::compute_beam_modifiers_core (
         }
     }
 
+#if defined (commentout)
+    save_vector_as_image (
+        map_wed_min,
+        d_ptr->aperture->get_dim(),
+        "debug-min-c.nrrd");
+    save_vector_as_image (
+        map_wed_max,
+        d_ptr->aperture->get_dim(),
+        "debug-max-c.nrrd");
+#endif
+    
     /* Compute max wed, used by range compensator */
     int idx = 0;
     double max_wed = 0;
@@ -828,32 +888,32 @@ Rt_beam::apply_smearing_to_target (
     std::vector <double>& map_min_distance,
     std::vector <double>& map_max_distance)
 {
-
     // GCS FIX.  It appears that the reason for computing geometric
     // distance in the previous version of the code was to make the
     // smearing code act at the minimum target distance.  This is unnecessary; 
     // it is easier/better to apply at isocenter plane.
 
-    // However, the current version smears at the aperture plane.
+    // Convert smearing from isocenter to aperture plane
+    const Aperture::Pointer& ap = d_ptr->aperture;
+    float smearing_ap = smearing
+        * ap->get_distance() / this->get_source_distance();
+    printf ("Smearing = %f, Smearing_ap = %f\n", smearing, smearing_ap);
 
     /* Create a structured element of the right size */
     int strel_half_size[2];
     int strel_size[2];
-    strel_half_size[0] = ROUND_INT (smearing / d_ptr->aperture->get_spacing()[0]);
-    strel_half_size[1] = ROUND_INT (smearing / d_ptr->aperture->get_spacing()[1]);
+    strel_half_size[0] = ROUND_INT (smearing_ap / ap->get_spacing()[0]);
+    strel_half_size[1] = ROUND_INT (smearing_ap / ap->get_spacing()[1]);
     
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];
 
-    // GCS FIX:  Ditto.
-    float smearing_ap = smearing;
-
     int *strel = new int[strel_size[0]*strel_size[1]];
     /* (rf, cf) center of the smearing */
     for (int r = 0; r < strel_size[1]; r++) {
-        float rf = (float) (r - strel_half_size[1]) * d_ptr->aperture->get_spacing()[0];
+        float rf = (float) (r - strel_half_size[1]) * ap->get_spacing()[0];
         for (int c = 0; c < strel_size[0]; c++) {
-            float cf = (float) (c - strel_half_size[0]) * d_ptr->aperture->get_spacing()[1];
+            float cf = (float) (c - strel_half_size[0]) * ap->get_spacing()[1];
 
             int idx = r*strel_size[0] + c;
 

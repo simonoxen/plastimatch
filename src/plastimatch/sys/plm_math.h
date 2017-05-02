@@ -8,6 +8,7 @@
 #include <float.h>
 #include <math.h>
 #include <string.h>
+#include <limits>
 #include "compiler_warnings.h"
 
 #ifndef M_PI
@@ -228,9 +229,18 @@ static inline void mat_mult_mat (
 /* 0 when value is NaN or infinity */
 static inline int is_number (const double x)
 {
+    // nan
     if (!(x == x)) return 0;
 
+    // inf
     if (x > DBL_MAX || x < -DBL_MAX) return 0;
+#if defined (commentout)
+    if (std::numeric_limits<double>::has_infinity &&
+        x == std::numeric_limits<double>::infinity())
+    {
+        return 0;
+    }
+#endif
 
     return 1;
 }

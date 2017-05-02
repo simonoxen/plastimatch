@@ -1311,20 +1311,24 @@ Rt_mebs::get_particle_number_xyz (
     int spot = 0;
     spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
     A = d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
+#if defined (commentout)
     if (d_ptr->debug) {
         printf (" Mebs::GPNXYZ %f %f",
             d_ptr->num_particles[spot],
             d_ptr->num_particles[spot+1]
         );
     }
+#endif
     spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1]+1) + idx[0];
     B =  d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
+#if defined (commentout)
     if (d_ptr->debug) {
         printf (" %f %f\n",
             d_ptr->num_particles[spot],
             d_ptr->num_particles[spot+1]
         );
     }
+#endif
     return A + rest[1] * (B-A);
 }
 
@@ -1617,7 +1621,7 @@ Rt_mebs::get_optimized_peaks (
         return;
     }
 
-    for(int i = i0; i <= imax; i++)
+    for (int i = i0; i <= imax; i++)
     {
         (*weight_tmp)[i] /= (float) (mean_sobp / mean_count);
     }
