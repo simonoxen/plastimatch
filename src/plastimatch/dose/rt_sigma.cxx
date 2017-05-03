@@ -11,7 +11,6 @@
 
 void
 compute_sigmas (
-    Rt_plan* plan,
     const Rt_beam* beam,
     float energy,
     float* sigma_max, 
@@ -43,11 +42,11 @@ compute_sigmas (
 
     /* Now that the volumes were defined, we can compute the sigmas in them and do the quadratic sigmas sum */
     /* sigma^2 patient */
-    compute_sigma_pt (sigma_vol, rgl_vol, ct_vol, plan, beam, energy);
+    compute_sigma_pt (sigma_vol, rgl_vol, ct_vol, beam, energy);
     /* + sigma^2 source */
     if (beam->get_source_size() > 0)
     {            
-        compute_sigma_source (sigma_vol, rgl_vol, plan, beam, energy);
+        compute_sigma_source (sigma_vol, rgl_vol, beam, energy);
     }
     else
     {
@@ -56,7 +55,7 @@ compute_sigmas (
     /* + sigma^2 range compensator */
     if (beam->get_aperture()->have_range_compensator_image() && energy > 1)
     {            
-        compute_sigma_range_compensator(sigma_vol, rgl_vol, plan, beam, energy, margins);
+        compute_sigma_range_compensator(sigma_vol, rgl_vol, beam, energy, margins);
     }
     else
     {
@@ -87,7 +86,6 @@ void compute_sigma_pt (
     Rpl_volume* sigma_vol,
     Rpl_volume* rpl_volume,
     Rpl_volume* ct_vol,
-    Rt_plan* plan,
     const Rt_beam* beam,
     float energy)
 {
@@ -339,7 +337,10 @@ float compute_sigma_pt_hetero (
     return sigma_max;
 }
 
-void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan, const Rt_beam *beam, float energy)
+void
+compute_sigma_source (
+    Rpl_volume* sigma_vol, Rpl_volume* rpl_volume,
+    const Rt_beam *beam, float energy)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
@@ -354,8 +355,8 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
 
     /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
     double nrm[3] = {0,0,0};
-    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
-    vec3_normalize1(nrm);
+    vec3_sub3 (nrm, beam->get_source_position(), beam->get_isocenter_position());
+    vec3_normalize1 (nrm);
 
     plm_long dim[3] = { sigma_vol->get_vol()->dim[0], sigma_vol->get_vol()->dim[1], sigma_vol->get_vol()->dim[2]};
     float range = get_proton_range(energy);
@@ -393,7 +394,7 @@ void compute_sigma_source (Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_pla
 
 void
 compute_sigma_range_compensator (
-    Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, Rt_plan* plan,
+    Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, 
     const Rt_beam *beam, float energy, int* margins)
 {
     /* There are two methods for computing the beam spread due to a range compensator */
@@ -454,7 +455,7 @@ compute_sigma_range_compensator (
     double nrm[3] = {0,0,0};
 		
     /* MD Fix: Why plan->ap->nrm is incorrect at this point??? */
-    vec3_sub3(nrm, beam->get_source_position(), beam->get_isocenter_position());
+    vec3_sub3 (nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 	
     if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != 'h')

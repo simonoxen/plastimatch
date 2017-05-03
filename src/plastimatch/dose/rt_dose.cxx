@@ -21,9 +21,9 @@
 #include "rt_depth_dose.h"
 #include "rt_dose.h"
 #include "rt_lut.h"
-#include "rt_parms.h"
-#include "rt_plan.h"
 #include "rt_mebs.h"
+#include "rt_plan.h"
+#include "rt_sigma.h"
 #include "string_util.h"
 #include "threading.h"
 #include "volume.h"
@@ -194,13 +194,11 @@ compute_dose_d (
     std::vector<float>& num_part = mebs->get_num_particles();
 
     // Compute sigma for this energy
-#if defined (commentout)
+    int margins[2] = {0,0};
     float sigma_max = 0;
-    compute_sigmas (beam, depth_dose[i]->E0,
-        &sigma_max, "small", margins);
-#endif
-    
-    Rpl_volume *sigma_rv = beam->rsp_accum_vol;
+    compute_sigmas (beam, depth_dose->E0, &sigma_max, "small", margins);
+
+    Rpl_volume *sigma_rv = beam->sigma_vol;
     Volume *sigma_vol = sigma_rv->get_vol();
     float *sigma_img = sigma_vol->get_raw<float> ();
     const plm_long *sigma_dim = sigma_vol->get_dim();
@@ -213,13 +211,14 @@ compute_dose_d (
     float clipping_dist = sigma_rv->get_front_clipping_plane();
     float step_length = sigma_rv->get_step_length ();
     for (int k = 0; k < sigma_dim[2]; k++) {
-        float mag = (clipping_dist + k * step_length) / sid;
+        float mag = (sid + clipping_dist + k * step_length) / sid;
         lateral_spacing_0[k] = ap_spacing[0] * mag;
         lateral_spacing_1[k] = ap_spacing[1] * mag;
     }
 
     // Compute lateral search distance (2.5 max sigma) for each depth
     // (Only needed if pulling dose, not needed if pushing)
+    // GCS FIX: This need only be computed once per beam, not once per energy
     std::vector <int> lateral_step_0 (sigma_dim[2],0);
     std::vector <int> lateral_step_1 (sigma_dim[2],0);
     for (int k = 0; k < sigma_dim[2]; k++) {
@@ -279,10 +278,16 @@ compute_dose_d (
         }
     }
 
-    std::string fn = string_format ("debug-d-a/cax-%02d", energy_index);
-    cax_dose_rv->save (fn);
-    fn = string_format ("debug-d-a/sig-%02d", energy_index);
-    sigma_rv->save (fn);
+    /* Save sigma volume */
+    if (beam->get_sigma_out() != "") {
+        std::string fn;
+        fn = string_format ("%s/cax-%02d",
+            beam->get_sigma_out().c_str(), energy_index);
+        cax_dose_rv->save (fn);
+        fn = string_format ("%s/sig-%02d", 
+            beam->get_sigma_out().c_str(), energy_index);
+        sigma_rv->save (fn);
+    }
     
     // Smear dose by specified sigma
     for (int s = 0; s < num_steps; s++) {

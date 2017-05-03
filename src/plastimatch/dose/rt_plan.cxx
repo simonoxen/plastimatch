@@ -495,9 +495,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
         for (size_t i = 0; i < depth_dose.size(); i++) {
-            float sigma_max = 0;
-            compute_sigmas (this, beam, depth_dose[i]->E0,
-                &sigma_max, "small", margins);
             compute_dose_d (beam, i, ct_vol);
         }
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
@@ -524,7 +521,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
             timer.start ();
 
-            compute_sigmas (this, beam, ppp->E0, &sigma_max, "small", margins);
+            compute_sigmas (beam, ppp->E0, &sigma_max, "small", margins);
             time_sigma_conv += timer.report ();
 
             if (beam->get_flavor() == 'f') // Desplanques' algorithm
@@ -633,7 +630,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 beam->sigma_vol_lg->set_back_clipping_plane(beam->rpl_vol_lg->get_back_clipping_plane());
                 beam->sigma_vol_lg->compute_rpl_PrSTRP_no_rgc();
 
-                compute_sigmas (this, beam, ppp->E0, &sigma_max, "large", margins);				
+                compute_sigmas (beam, ppp->E0, &sigma_max, "large", margins);				
                 build_hong_grid (&area, &xy_grid, radius_sample, theta_sample);
                 compute_dose_ray_shackleford (
                     dose_vol, this, beam,

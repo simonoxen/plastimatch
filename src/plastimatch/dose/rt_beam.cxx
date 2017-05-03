@@ -844,16 +844,13 @@ Rt_beam::compute_target_wepl_min_max (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
-    printf ("1\n");
     Rpl_volume *wepl_rv = this->rsp_accum_vol;
     Volume *wepl_vol = wepl_rv->get_vol ();
     float *wepl_img = wepl_vol->get_raw<float> ();
-    printf ("2\n");
     Rpl_volume::Pointer target_rv = this->target_rv;
     Volume *target_vol = target_rv->get_vol ();
     float *target_img = target_vol->get_raw<float> ();
     const plm_long *target_dim = target_vol->get_dim ();
-    printf ("3\n");
     
     map_wed_min.resize (target_dim[0]*target_dim[1], NLMAX(double));
     map_wed_max.resize (target_dim[0]*target_dim[1], 0.);
@@ -879,7 +876,6 @@ Rt_beam::compute_target_wepl_min_max (
             }
         }
     }
-    printf ("5\n");
 }
 
 void 
@@ -1558,14 +1554,6 @@ Rt_beam::save_beam_output ()
         Rpl_volume* proj_dose = this->rpl_dose_vol;
         if (proj_dose) {
             proj_dose->save (this->get_proj_dose_out());
-        }
-    }
-
-    /* Save sigma volume */
-    if (this->get_sigma_out() != "") {
-        Rpl_volume* sigma_img = this->sigma_vol;
-        if (sigma_img) {
-            sigma_img->save (this->get_sigma_out());
         }
     }
 

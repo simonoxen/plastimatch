@@ -98,6 +98,7 @@ public:
     Plm_image::Pointer ct;
     Volume_limit ct_limit;
     Ray_data *ray_data;
+    // Clipping distances are computed from aperture plane, not from source
     double front_clipping_dist;
     double back_clipping_dist;
     Aperture::Pointer aperture;
