@@ -75,6 +75,13 @@ Plm_timer::stop ()
 }
 
 void
+Plm_timer::reset ()
+{
+    this->stop ();
+    d_ptr->acc_time = 0.;
+}
+
+void
 Plm_timer::resume ()
 {
     if (!d_ptr->running) {

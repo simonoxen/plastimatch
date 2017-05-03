@@ -12,6 +12,7 @@
 #include "plm_math.h"
 #include "proj_volume.h"
 #include "rt_beam.h"
+#include "rt_dose_timing.h"
 #include "rt_plan.h"
 
 static void
@@ -70,6 +71,8 @@ public:
     Plm_image::Pointer target;
     Aperture::Pointer aperture;
 
+    Rt_dose_timing::Pointer rt_dose_timing;
+
     std::string aperture_in;
     std::string range_compensator_in;
 
@@ -109,6 +112,7 @@ public:
         this->max_wed = 0.;
 
         aperture = Aperture::New();
+        rt_dose_timing = Rt_dose_timing::New();
 
         this->aperture_in = "";
         this->range_compensator_in = "";
@@ -146,6 +150,9 @@ public:
 
         /* Copy the aperture object */
         aperture = Aperture::New (rtbp->aperture);
+
+        /* Share same timing object */
+        rt_dose_timing = rtbp->rt_dose_timing;
 
         this->aperture_in = rtbp->aperture_in;
         this->range_compensator_in = rtbp->range_compensator_in;
@@ -1070,6 +1077,18 @@ void
 Rt_beam::set_target (Plm_image::Pointer& target)
 {
     d_ptr->target = target;
+}
+
+void 
+Rt_beam::set_rt_dose_timing (Rt_dose_timing::Pointer& rt_dose_timing)
+{
+    d_ptr->rt_dose_timing = rt_dose_timing;
+}
+
+Rt_dose_timing::Pointer& 
+Rt_beam::get_rt_dose_timing ()
+{
+    return d_ptr->rt_dose_timing;
 }
 
 Plm_image::Pointer&

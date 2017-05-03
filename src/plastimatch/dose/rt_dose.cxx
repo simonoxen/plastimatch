@@ -181,6 +181,7 @@ compute_dose_d (
     const Volume::Pointer ct_vol
 )
 {
+    beam->get_rt_dose_timing()->timer_dose_calc.resume ();
     Rpl_volume *wepl_rv = beam->rsp_accum_vol;
     Volume *wepl_vol = wepl_rv->get_vol();
     float *wepl_img = wepl_vol->get_raw<float> ();
@@ -192,12 +193,16 @@ compute_dose_d (
     Rt_mebs::Pointer mebs = beam->get_mebs();
     const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
     std::vector<float>& num_part = mebs->get_num_particles();
+    beam->get_rt_dose_timing()->timer_dose_calc.stop ();
 
     // Compute sigma for this energy
+    beam->get_rt_dose_timing()->timer_sigma.resume ();
     int margins[2] = {0,0};
     float sigma_max = 0;
     compute_sigmas (beam, depth_dose->E0, &sigma_max, "small", margins);
+    beam->get_rt_dose_timing()->timer_sigma.stop ();
 
+    beam->get_rt_dose_timing()->timer_dose_calc.resume ();
     Rpl_volume *sigma_rv = beam->sigma_vol;
     Volume *sigma_vol = sigma_rv->get_vol();
     float *sigma_img = sigma_vol->get_raw<float> ();
@@ -354,6 +359,7 @@ compute_dose_d (
     }
     // Free temporary memory
     delete cax_dose_rv;
+    beam->get_rt_dose_timing()->timer_dose_calc.stop ();
 }
 
 void

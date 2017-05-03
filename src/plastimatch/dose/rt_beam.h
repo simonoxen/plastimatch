@@ -12,6 +12,7 @@
 #include "aperture.h"
 #include "particle_type.h"
 #include "rpl_volume.h"
+#include "rt_dose_timing.h"
 #include "rt_mebs.h"
 #include "smart_pointer.h"
 
@@ -157,6 +158,10 @@ public:
     Plm_image::Pointer& get_target ();
     const Plm_image::Pointer& get_target () const;
     void set_target(Plm_image::Pointer& target);
+
+    /* Set/ Get timer */
+    Rt_dose_timing::Pointer& get_rt_dose_timing ();
+    void set_rt_dose_timing (Rt_dose_timing::Pointer& rt_dose_timing);
 
     /* Set/ Get dose_volume*/
     Plm_image::Pointer& get_dose ();

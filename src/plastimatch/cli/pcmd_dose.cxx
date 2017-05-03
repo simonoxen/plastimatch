@@ -29,5 +29,5 @@ do_command_dose (int argc, char* argv[])
         return;
     }
     plan.compute_plan ();
-    lprintf ("Execution time : %f secondes.\n", timer.report ());
+    lprintf ("Total execution time : %f secondes.\n", timer.report ());
 }

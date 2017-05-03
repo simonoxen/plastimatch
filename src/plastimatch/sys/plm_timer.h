@@ -15,6 +15,7 @@ public:
 
     void start ();
     void stop ();
+    void reset ();
     void resume ();
     double report ();
 private:

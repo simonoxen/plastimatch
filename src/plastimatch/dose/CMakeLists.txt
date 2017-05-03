@@ -14,18 +14,19 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMDOSE_LIBRARY_SRC
-  bragg_curve.cxx
-  dose_volume_functions.cxx
+  bragg_curve.cxx bragg_curve.h
+  dose_volume_functions.cxx dose_volume_functions.h
   particle_type.cxx particle_type.h 
-  rt_beam.cxx
-  rt_depth_dose.cxx
-  rt_dose.cxx
-  rt_lut.cxx
-  rt_mebs.cxx
-  rt_parms.cxx
-  rt_plan.cxx  
-  rt_sigma.cxx
-  wed_parms.cxx
+  rt_beam.cxx rt_beam.h
+  rt_depth_dose.cxx rt_depth_dose.h
+  rt_dose.cxx rt_dose.h
+  rt_dose_timing.h
+  rt_lut.cxx rt_lut.h
+  rt_mebs.cxx rt_mebs.h
+  rt_parms.cxx rt_parms.h
+  rt_plan.cxx rt_plan.h
+  rt_sigma.cxx rt_sigma.h
+  wed_parms.cxx wed_parms.h
   )
 
 set (PLMDOSE_LIBRARY_DEPENDENCIES 

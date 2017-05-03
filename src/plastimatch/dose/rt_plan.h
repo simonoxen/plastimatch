@@ -47,6 +47,7 @@ public:
     void set_target (UCharImageType::Pointer&);
     void set_target (FloatImageType::Pointer&);
     Plm_image::Pointer& get_target ();
+    void load_target ();
 
     /* Set/Get Rt_study */
     void set_rt_study(Rt_study* rt_study);

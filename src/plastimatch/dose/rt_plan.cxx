@@ -20,6 +20,7 @@
 #include "rt_beam.h"
 #include "rt_depth_dose.h"
 #include "rt_dose.h"
+#include "rt_dose_timing.h"
 #include "rt_lut.h"
 #include "rt_parms.h"
 #include "rt_plan.h"
@@ -58,6 +59,8 @@ public:
     Rt_parms::Pointer rt_parms;
     Rt_study* rt_study;
 
+    Rt_dose_timing::Pointer rt_dose_timing;
+
     /* Storage of beams */
     std::vector<Rt_beam*> beam_storage;
 
@@ -79,6 +82,7 @@ public:
         target = Plm_image::New();
         dose = Plm_image::New();
         rt_parms = Rt_parms::New ();
+        rt_dose_timing = Rt_dose_timing::New ();
     }
 
     ~Rt_plan_private ()
@@ -162,12 +166,6 @@ void
 Rt_plan::set_target (const std::string& target_fn)
 {
     d_ptr->target_fn = target_fn;
-    d_ptr->target = Plm_image::New (new Plm_image (target_fn));
-
-    /* Need float, because compute_segdepth_volume assumes float */
-    d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-
-    this->propagate_target_to_beams ();
 }
 
 void
@@ -187,6 +185,20 @@ Rt_plan::set_target (FloatImageType::Pointer& target_vol)
     d_ptr->target->set_itk (target_vol);
 
     /* compute_segdepth_volume assumes float */
+    d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+
+    this->propagate_target_to_beams ();
+}
+
+void
+Rt_plan::load_target ()
+{
+    if (d_ptr->target_fn == "") {
+        return;
+    }
+    d_ptr->target = Plm_image::New (new Plm_image (d_ptr->target_fn));
+
+    /* Need float, because compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
 
     this->propagate_target_to_beams ();
@@ -221,6 +233,7 @@ Rt_plan::append_beam ()
         new_beam = new Rt_beam;
     }
     d_ptr->beam_storage.push_back (new_beam);
+    new_beam->set_rt_dose_timing (d_ptr->rt_dose_timing);
     new_beam->set_target (d_ptr->target);
     return new_beam;
 }
@@ -426,6 +439,7 @@ void
 Rt_plan::compute_dose (Rt_beam *beam)
 {
     printf ("-- compute_dose entry --\n");
+    d_ptr->rt_dose_timing->timer_misc.resume ();
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
 
@@ -437,11 +451,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
     int new_dim[2]={0,0};
     double new_center[2]={0,0};
     double biggest_sigma_ever = 0;
-    Plm_timer timer;
-    double time_sigma_conv = 0.0;
-    double time_dose_calc = 0.0;
-    double time_dose_misc = 0.0;
-    double time_dose_reformat = 0.0;
 
     /* Convert from HU to stopping power, if not already done */
     if (!d_ptr->patient_psp) {
@@ -455,14 +464,17 @@ Rt_plan::compute_dose (Rt_beam *beam)
             volume_resample (d_ptr->target->get_volume(), &vh));
         this->propagate_target_to_beams ();
     }
+    d_ptr->rt_dose_timing->timer_misc.stop ();
     
     /* Create rpl images, compute beam modifiers, SOBP etc. according 
        to the teatment strategy */
+    d_ptr->rt_dose_timing->timer_dose_calc.resume ();
     if (!beam->prepare_for_calc (d_ptr->patient_hu,
             d_ptr->patient_psp, d_ptr->target))
     {
         print_and_exit ("ERROR: Unable to initilize plan.\n");
     }
+    d_ptr->rt_dose_timing->timer_dose_calc.stop ();
 
 #if defined (commentout)
     printf ("Computing rpl_ct\n");
@@ -476,18 +488,22 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
         /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
            if there is a range compensator */
+        d_ptr->rt_dose_timing->timer_dose_calc.resume ();
         if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
         {
             add_rcomp_length_to_rpl_volume(beam);
         }
-
+        
         // Loop through energies
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
         for (size_t i = 0; i < depth_dose.size(); i++) {
             compute_dose_b (beam, i, ct_vol);
         }
+        d_ptr->rt_dose_timing->timer_dose_calc.stop ();
+        d_ptr->rt_dose_timing->timer_reformat.resume ();
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+        d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
     else if (beam->get_flavor() == 'd') {
 
@@ -497,7 +513,9 @@ Rt_plan::compute_dose (Rt_beam *beam)
         for (size_t i = 0; i < depth_dose.size(); i++) {
             compute_dose_d (beam, i, ct_vol);
         }
+        d_ptr->rt_dose_timing->timer_reformat.resume ();
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+        d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
 
     else {
@@ -519,10 +537,8 @@ Rt_plan::compute_dose (Rt_beam *beam)
         for (size_t i = 0; i < depth_dose.size(); i++) {
             const Rt_depth_dose *ppp = beam->get_mebs()->get_depth_dose()[i];
             printf("Building dose matrix for %lg MeV beamlets - \n", ppp->E0);
-            timer.start ();
 
             compute_sigmas (beam, ppp->E0, &sigma_max, "small", margins);
-            time_sigma_conv += timer.report ();
 
             if (beam->get_flavor() == 'f') // Desplanques' algorithm
             {
@@ -532,8 +548,6 @@ Rt_plan::compute_dose (Rt_beam *beam)
             }
             else if (beam->get_flavor() == 'g') // Sharp's algorithm
             {
-                timer.start ();
-
                 if (sigma_max > biggest_sigma_ever)
                 {
                     biggest_sigma_ever = sigma_max;
@@ -570,15 +584,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
                 /* update the dose_vol with the CT values before to calculate the dose */
                 beam->rpl_dose_vol->compute_rpl_void();
-                time_dose_misc += timer.report ();
 
                 /* dose calculation in the rpl_dose_volume */
-                timer.start ();
                 compute_dose_ray_sharp (ct_vol, beam, beam->rpl_dose_vol, i, margins);
-                time_dose_calc += timer.report ();
-                timer.start ();
                 dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
-                time_dose_reformat += timer.report ();
             }
             else if (beam->get_flavor() == 'h') // Shackleford's algorithm
             {
@@ -641,20 +650,19 @@ Rt_plan::compute_dose (Rt_beam *beam)
         }
     }
 
+    d_ptr->rt_dose_timing->timer_misc.resume ();
     Plm_image::Pointer dose = Plm_image::New();
     dose->set_volume (dose_vol);
     beam->set_dose (dose);
     this->normalize_beam_dose (beam);
-
-    printf ("Sigma conversion: %f seconds\n", time_sigma_conv);
-    printf ("Dose calculation: %f seconds\n", time_dose_calc);
-    printf ("Dose reformat: %f seconds\n", time_dose_reformat);
-    printf ("Dose overhead: %f seconds\n", time_dose_misc); fflush(stdout);
+    d_ptr->rt_dose_timing->timer_misc.stop ();
 }
 
 Plm_return_code
 Rt_plan::compute_plan ()
 {
+    d_ptr->rt_dose_timing->reset ();
+    
     if (!d_ptr->rt_parms) {
         print_and_exit ("Error: cannot compute_plan without an Rt_parms\n");
     }
@@ -668,7 +676,8 @@ Rt_plan::compute_plan ()
             "not specified in configuration file!\n");
     }
 
-    /* Load the patient CT image and store into the plan */
+    /* Load the patient CT image */
+    d_ptr->rt_dose_timing->timer_io.resume ();
     Plm_image::Pointer ct = Plm_image::New (d_ptr->patient_fn,
         PLM_IMG_TYPE_ITK_FLOAT);
     if (!ct) {
@@ -676,14 +685,20 @@ Rt_plan::compute_plan ()
     }
     this->set_patient (ct);
 
+    /* Load the patient target structure */
+    this->load_target ();
+    d_ptr->rt_dose_timing->timer_io.stop ();
+
     /* Display debugging information */
+    d_ptr->rt_dose_timing->timer_misc.resume ();
     this->print_verif ();
     
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
     plm_long dim[3] = {dose_vol->dim[0], dose_vol->dim[1], dose_vol->dim[2]};
     float* total_dose_img = (float*) dose_vol->img;
-
+    d_ptr->rt_dose_timing->timer_misc.stop ();
+    
     for (size_t i = 0; i < d_ptr->beam_storage.size(); i++)
     {
         printf ("\nStart dose calculation Beam %d\n", (int) i + 1);
@@ -694,17 +709,22 @@ Rt_plan::compute_plan ()
         this->compute_dose (beam);
 
         /* Save beam data */
+        d_ptr->rt_dose_timing->timer_io.resume ();
         beam->save_beam_output ();
+        d_ptr->rt_dose_timing->timer_io.stop ();
 
         /* Dose cumulation to the plan dose volume */
+        d_ptr->rt_dose_timing->timer_misc.resume ();
         float* beam_dose_img = (float*) d_ptr->beam_storage[i]->get_dose()->get_volume()->img;
         for (int j = 0; j < dim[0] * dim[1] * dim[2]; j++)
         {
             total_dose_img[j] += beam_dose_img[j];
         }
+        d_ptr->rt_dose_timing->timer_misc.stop ();
     }
 
     /* Save stopping power image */
+    d_ptr->rt_dose_timing->timer_io.resume ();
     if (d_ptr->output_psp_fn != "") {
         d_ptr->patient_psp->save_image (d_ptr->output_psp_fn);
     }
@@ -714,7 +734,10 @@ Rt_plan::compute_plan ()
     dose->set_volume (dose_vol);
     this->set_dose(dose);
     this->get_dose()->save_image (d_ptr->output_dose_fn.c_str());
+    d_ptr->rt_dose_timing->timer_io.stop ();
 
+    d_ptr->rt_dose_timing->report ();
+    
     printf ("done.  \n\n");
     return PLM_SUCCESS;
 }
