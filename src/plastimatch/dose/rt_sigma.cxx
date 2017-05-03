@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plmdose_config.h"
 
 #include "ray_data.h"
 #include "rpl_volume.h"
@@ -8,7 +9,8 @@
 #include "rt_lut.h"
 #include "rt_sigma.h"
 
-void compute_sigmas (
+void
+compute_sigmas (
     Rt_plan* plan,
     const Rt_beam* beam,
     float energy,

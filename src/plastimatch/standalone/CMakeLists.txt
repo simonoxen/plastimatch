@@ -83,9 +83,6 @@ set (OPENCL_PROBE_SRC
 if (OPENCL_FOUND)
   plm_add_opencl_file (OPENCL_PROBE_SRC opencl_probe.cl)
 endif ()
-set (PROTON_DOSE_SRC
-  proton_dose_main.cxx 
-  )
 set (RAW_TO_MHA_SRC
   raw_to_mha.c
   )
@@ -350,9 +347,6 @@ plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}"
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
 plm_add_executable (mha_to_raw "${MHA_TO_RAW_SRC}"
   "" ""
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
   ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
   "" "" 

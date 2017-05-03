@@ -4344,8 +4344,8 @@ set_tests_properties (bragg-curve-check PROPERTIES DEPENDS bragg-curve)
 
 plm_add_test (
     "proton-dose-1"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
     )
 plm_add_test (
   "proton-dose-1-stats"
@@ -4366,8 +4366,8 @@ set_tests_properties (proton-dose-1-check
 
 plm_add_test (
     "proton-dose-2"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
     )
 plm_add_test (
   "proton-dose-2-stats"
@@ -4389,8 +4389,8 @@ set_tests_properties (proton-dose-2-check
 
 plm_add_test (
     "proton-dose-3"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
     )
 plm_add_test (
   "proton-dose-3-stats"
@@ -4421,8 +4421,8 @@ set_tests_properties (proton-dose-3-check
 
 plm_add_test (
     "proton-dose-5a"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
     )
 plm_add_test (
   "proton-dose-5a-stats"
@@ -4444,8 +4444,8 @@ set_tests_properties (proton-dose-5a-check
 
 plm_add_test (
     "proton-dose-5g"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-5g.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5g.txt"
     )
 plm_add_test (
   "proton-dose-5g-stats"
@@ -4467,8 +4467,8 @@ set_tests_properties (proton-dose-5g-check
 
 plm_add_test (
     "proton-dose-6a"
-    ${PLM_PLASTIMATCH_PATH}/proton_dose
-    "${PLM_BUILD_TESTING_DIR}/proton-dose-6a.txt"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-6a.txt"
     )
 plm_add_test (
   "proton-dose-6a-stats"

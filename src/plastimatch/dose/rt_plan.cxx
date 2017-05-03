@@ -485,7 +485,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
         for (size_t i = 0; i < depth_dose.size(); i++) {
-            compute_dose_ray_trace_b (beam, i, ct_vol);
+            compute_dose_b (beam, i, ct_vol);
         }
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
     }

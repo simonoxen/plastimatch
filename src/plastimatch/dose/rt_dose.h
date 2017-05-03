@@ -22,7 +22,7 @@ void compute_dose_ray_trace_a (
     Rt_beam* beam, 
     const Volume::Pointer ct_vol
 );
-void compute_dose_ray_trace_b (
+void compute_dose_b (
     Rt_beam* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol

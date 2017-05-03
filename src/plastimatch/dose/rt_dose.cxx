@@ -24,6 +24,7 @@
 #include "rt_parms.h"
 #include "rt_plan.h"
 #include "rt_mebs.h"
+#include "string_util.h"
 #include "threading.h"
 #include "volume.h"
 
@@ -124,7 +125,7 @@ compute_dose_ray_trace_a (
 }
 
 void
-compute_dose_ray_trace_b (
+compute_dose_b (
     Rt_beam* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol
@@ -188,14 +189,21 @@ compute_dose_d (
     Volume *dose_vol = rpl_dose_vol->get_vol();
     float *dose_img = dose_vol->get_raw<float> ();
 
+    Rt_mebs::Pointer mebs = beam->get_mebs();
+    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
+    std::vector<float>& num_part = mebs->get_num_particles();
+
+    // Compute sigma for this energy
+#if defined (commentout)
+    float sigma_max = 0;
+    compute_sigmas (beam, depth_dose[i]->E0,
+        &sigma_max, "small", margins);
+#endif
+    
     Rpl_volume *sigma_rv = beam->rsp_accum_vol;
     Volume *sigma_vol = sigma_rv->get_vol();
     float *sigma_img = sigma_vol->get_raw<float> ();
     const plm_long *sigma_dim = sigma_vol->get_dim();
-
-    Rt_mebs::Pointer mebs = beam->get_mebs();
-    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
-    std::vector<float>& num_part = mebs->get_num_particles();
 
     // Get the variable magnification at each step
     std::vector <double> lateral_spacing_0 (sigma_dim[2],0);
@@ -270,6 +278,11 @@ compute_dose_d (
             }
         }
     }
+
+    std::string fn = string_format ("debug-d-a/cax-%02d", energy_index);
+    cax_dose_rv->save (fn);
+    fn = string_format ("debug-d-a/sig-%02d", energy_index);
+    sigma_rv->save (fn);
     
     // Smear dose by specified sigma
     for (int s = 0; s < num_steps; s++) {
@@ -326,7 +339,7 @@ compute_dose_d (
 #if defined (commentout)
                         // GCS FIX: The below correction would give the
                         // option for dose to tissue
-                            / ct_density / STPR;
+                        / ct_density / STPR;
 #endif
                         tot_off_axis += off_axis_factor;
                     }
