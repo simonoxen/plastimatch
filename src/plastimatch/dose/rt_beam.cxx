@@ -911,6 +911,10 @@ Rt_beam::apply_smearing_to_target (
     strel_size[0] = 1 + 2 * strel_half_size[0];
     strel_size[1] = 1 + 2 * strel_half_size[1];
 
+    printf ("Strel size = (%d,%d), (%d,%d)\n", 
+        strel_half_size[0], strel_half_size[1],
+        strel_size[0], strel_size[1]);
+
     int *strel = new int[strel_size[0]*strel_size[1]];
     /* (rf, cf) center of the smearing */
     for (int r = 0; r < strel_size[1]; r++) {

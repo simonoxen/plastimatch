@@ -357,6 +357,7 @@ compute_dose_d (
             }
         }
     }
+
     // Free temporary memory
     delete cax_dose_rv;
     beam->get_rt_dose_timing()->timer_dose_calc.stop ();

@@ -1459,8 +1459,9 @@ Rpl_volume::compute_volume_aperture(Aperture::Pointer ap)
     }
 }
 
+// In this new version the range compensator is added later in the code depending on the algorithm
 void 
-Rpl_volume::apply_beam_modifiers () // In this new version the range compensator is added later in the code depending on the algorithm
+Rpl_volume::apply_beam_modifiers ()
 {
     Volume::Pointer ap_vol = d_ptr->aperture->get_aperture_volume ();
     unsigned char *ap_img = (unsigned char*) ap_vol->img;
