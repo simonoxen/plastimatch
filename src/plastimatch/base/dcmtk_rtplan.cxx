@@ -203,8 +203,6 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dataset->putAndInsertString (DCM_RTPlanDate, rtplan->rt_plan_date.c_str());
     dataset->putAndInsertString (DCM_RTPlanTime, rtplan->rt_plan_time.c_str());
 
-    /* Fraction scheme module */
-    dataset->putAndInsertString (DCM_FractionGroupDescription, rtplan->fraction_scheme_name.c_str());
 
     if (rsm->get_rtstruct_instance_uid() == "") {
         dataset->putAndInsertString (DCM_RTPlanGeometry, "TREATMENT_DEVICE");
@@ -283,6 +281,11 @@ Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
     dcmtk_put (fgs_item, DCM_NumberOfFractionsPlanned,
         rtplan->number_of_fractions_planned);
     dcmtk_put (fgs_item, DCM_NumberOfBeams, rtplan->beamlist.size());
+    dcmtk_put (fgs_item, DCM_FractionGroupDescription, rtplan->fraction_group_description.c_str());
+    dcmtk_put (fgs_item, DCM_NumberOfFractionPatternDigitsPerDay, 
+	       rtplan->number_of_fraction_pattern_digits_per_day.c_str());
+    dcmtk_put (fgs_item, DCM_RepeatFractionCycleLength, rtplan->repeat_fraction_cycle_length.c_str());
+    dcmtk_put (fgs_item, DCM_FractionPattern, rtplan->fraction_pattern.c_str());
     for (size_t b = 0; b < rtplan->beamlist.size(); b++) {
         DcmItem *rbs_item = 0;
         fgs_item->findOrCreateSequenceItem (

@@ -39,7 +39,10 @@ public:
     std::string rt_plan_name;
     std::string rt_plan_date;
     std::string rt_plan_time;
-    std::string fraction_scheme_name;
+    std::string fraction_group_description;
+    std::string number_of_fraction_pattern_digits_per_day;
+    std::string repeat_fraction_cycle_length;
+    std::string fraction_pattern;
     std::string tolerance_table_label;
     std::string tolerance_gantry_angle;
     std::string tolerance_patient_support_angle;

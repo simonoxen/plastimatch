@@ -49,7 +49,10 @@ Rtplan::clear(void)
     this->rt_plan_name = "";
     this->rt_plan_date = "";
     this->rt_plan_time = "";
-    this->fraction_scheme_name = "";
+    this->fraction_group_description = "";
+    this->number_of_fraction_pattern_digits_per_day = "";
+    this->repeat_fraction_cycle_length = "";
+    this->fraction_pattern = "";
     this->tolerance_table_label = "";
     this->tolerance_gantry_angle = "";
     this->tolerance_patient_support_angle = "";
