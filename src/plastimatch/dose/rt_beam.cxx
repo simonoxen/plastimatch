@@ -30,7 +30,7 @@ save_vector_as_image (
 
     for (plm_long i = 0; i < vol->npix; i++)
     {
-        if (isnan(v[i]) || isinf(v[i]) || v[i] == NLMAX(double)) {
+        if (std::isnan(v[i]) || std::isinf(v[i]) || v[i] == NLMAX(double)) {
             vol_img[i] = -1;
         } else {
             vol_img[i] = (float) v[i];
