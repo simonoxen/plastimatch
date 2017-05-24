@@ -146,7 +146,7 @@ compute_dose_b (
     /* scan through rpl volume */
     Aperture::Pointer& ap = beam->get_aperture ();
     Volume *ap_vol = 0;
-    const uchar *ap_img = 0;
+    const unsigned char *ap_img = 0;
     if (ap->have_aperture_image()) {
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
@@ -256,7 +256,7 @@ compute_dose_d (
     // Compute central axis dose
     Aperture::Pointer& ap = beam->get_aperture ();
     Volume *ap_vol = 0;
-    const uchar *ap_img = 0;
+    const unsigned char *ap_img = 0;
     if (ap->have_aperture_image()) {
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
