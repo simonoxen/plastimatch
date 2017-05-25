@@ -76,6 +76,7 @@ set (PLMREGISTER_LIBRARY_SRC
   registration_parms.cxx registration_parms.h
   registration_resample.cxx registration_resample.h 
   registration_similarity_data.h
+  registration_util.cxx registration_util.h 
   shared_parms.cxx shared_parms.h
   similarity_metric_type.cxx similarity_metric_type.h
   stage_parms.cxx stage_parms.h

@@ -38,6 +38,7 @@
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "registration_data.h"
+#include "registration_util.h"
 #include "shared_parms.h"
 #include "stage_parms.h"
 #include "xform.h"
@@ -146,18 +147,16 @@ Itk_registration_private::compute_num_samples (
         lprintf ("Setting spatial samples to %d\n",
             stage->mi_num_spatial_samples);
         return stage->mi_num_spatial_samples;
-    } else {
-        plm_long dim[3], num_voxels;
-        get_image_header (dim, 0, 0, fixed_ss);
-        num_voxels = dim[0] * dim[1] * dim[2];
-        unsigned int num_samples 
-            = stage->mi_num_spatial_samples_pct * num_voxels;
-        lprintf ("Setting spatial samples to %f x %d = %u\n",
-            stage->mi_num_spatial_samples_pct, (int) num_voxels,
-            (unsigned int) 
-            (stage->mi_num_spatial_samples_pct * num_voxels));
-        return num_samples;
-    } 
+    }
+
+    plm_long num_voxels = count_fixed_voxels (regd, stage, fixed_ss);
+    unsigned int num_samples 
+        = stage->mi_num_spatial_samples_pct * num_voxels;
+    lprintf ("Setting spatial samples to %f x %d = %u\n",
+        stage->mi_num_spatial_samples_pct, (int) num_voxels,
+        (unsigned int) 
+        (stage->mi_num_spatial_samples_pct * num_voxels));
+    return num_samples;
 }
 
 void
