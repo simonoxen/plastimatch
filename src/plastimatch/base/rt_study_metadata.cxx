@@ -116,6 +116,12 @@ Rt_study_metadata::set_ct_series_uid (const char* uid)
     d_ptr->ct_series_uid = uid;
 }
 
+const char*
+Rt_study_metadata::get_ct_series_description () const
+{
+    return this->get_image_metadata (0x0008, 0x103E).c_str();
+}
+
 const std::string&
 Rt_study_metadata::get_dose_instance_uid () const
 {
@@ -151,6 +157,13 @@ const std::string&
 Rt_study_metadata::get_rtstruct_instance_uid () const
 {
     return d_ptr->rtstruct_instance_uid;
+}
+
+void
+Rt_study_metadata::set_rtstruct_instance_uid (const char* rtstruct_instance_uid)
+{
+    if (!rtstruct_instance_uid) return;
+    d_ptr->rtstruct_instance_uid = rtstruct_instance_uid;
 }
 
 const char*
@@ -263,8 +276,10 @@ Rt_study_metadata::get_study_time () const
 void
 Rt_study_metadata::set_study_time (const char* time)
 {
-    if (!time) return;
-    d_ptr->time_string = time;
+    if (!time)
+      d_ptr->time_string.clear();
+    else 
+      d_ptr->time_string = time;
 }
 
 void
@@ -485,7 +500,8 @@ const std::string&
 Rt_study_metadata::get_image_metadata (
     unsigned short key1, 
     unsigned short key2
-) {
+) const
+{
     return d_ptr->image_metadata->get_metadata (key1, key2);
 }
 

@@ -73,6 +73,10 @@ Dcmtk_rt_study::rtss_load (void)
     }
 
     /* FIX: load metadata such as patient name, etc. */
+    if (d_ptr->rt_study_metadata) {
+        d_ptr->rt_study_metadata->set_rtstruct_instance_uid (
+	    ds_rtss->get_cstr (DCM_SOPInstanceUID));
+    }
 
     /* ReferencedFrameOfReferenceSequence */
     DcmSequenceOfItems *seq = 0;

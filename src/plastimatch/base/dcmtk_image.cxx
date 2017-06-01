@@ -116,6 +116,8 @@ Dcmtk_rt_study::image_load ()
             df->get_cstr (DCM_StudyDate));
         d_ptr->rt_study_metadata->set_study_time (
             df->get_cstr (DCM_StudyTime));
+        d_ptr->rt_study_metadata->set_study_id (
+            df->get_cstr (DCM_StudyID));
 
         /* Store remaining metadata */
         Metadata::Pointer& study_metadata = d_ptr->rt_study_metadata->get_study_metadata ();
@@ -129,6 +131,7 @@ Dcmtk_rt_study::image_load ()
         dcmtk_copy_into_metadata (image_metadata, df, DCM_Modality);
         dcmtk_copy_into_metadata (image_metadata, df, DCM_InstanceCreationDate);
         dcmtk_copy_into_metadata (image_metadata, df, DCM_InstanceCreationTime);
+        dcmtk_copy_into_metadata (image_metadata, df, DCM_SeriesDescription);
     }
 
     /* Divine image type */
@@ -478,6 +481,8 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
         modality.c_str());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         rsm->get_ct_series_uid());
+    dataset->putAndInsertString (DCM_SeriesDescription, 
+        rsm->get_ct_series_description());
 
     /* Frame of Reference module */
     Dcmtk_module::set_frame_of_reference (dataset, rsm);

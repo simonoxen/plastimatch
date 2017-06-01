@@ -38,12 +38,14 @@ public:
 public:
     const char* get_ct_series_uid () const;
     void set_ct_series_uid (const char* uid);
+    const char* get_ct_series_description () const;
     const std::string& get_dose_instance_uid () const;
     const char* get_dose_series_uid () const;
     const char* get_frame_of_reference_uid () const;
     void set_frame_of_reference_uid (const char* uid);
     const char* get_plan_instance_uid () const;
     const std::string& get_rtstruct_instance_uid () const;
+    void set_rtstruct_instance_uid (const char* rtstruct_instance_uid);
     const char* get_rtstruct_series_uid () const;
 
     const char* get_position_reference_indicator () const;
@@ -114,7 +116,7 @@ public:
     Metadata::Pointer& get_image_metadata ();
     const Metadata::Pointer& get_image_metadata () const;
     const std::string& get_image_metadata (unsigned short key1, 
-        unsigned short key2);
+        unsigned short key2) const;
     void set_image_metadata (unsigned short key1, unsigned short key2,
         const std::string& val);
     Metadata::Pointer& get_rtstruct_metadata ();
