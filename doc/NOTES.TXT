@@ -1,4 +1,19 @@
 ******************************************************************************
+Beam model, spot map
+
+rt_beam_model: This should be a generic beam model, containing the 
+depth dose per energy, source sigma, spot sigma per energy, 
+
+rt_depth_dose: This should be absorbed into rt_beam_model
+
+rt_mebs: This should contain the weights as a function of beamlet 
+and position.
+
+rt_spot_map: This should contain the set of weights as a function of 
+spot position and energy.
+
+
+******************************************************************************
 Dose calculation LUTs
 
 rpl_volume.cxx

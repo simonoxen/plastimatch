@@ -82,7 +82,7 @@ public:
         
         patient_hu = Plm_image::New();
         patient_psp = Plm_image::Pointer();
-        target = Plm_image::New();
+        target = Plm_image::Pointer();
         dose = Plm_image::New();
         rt_parms = Rt_parms::New ();
         rt_dose_timing = Rt_dose_timing::New ();

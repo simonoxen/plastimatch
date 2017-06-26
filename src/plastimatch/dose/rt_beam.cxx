@@ -542,7 +542,7 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
     /* The spot map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
-    if ((target->get_vol() && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
+    if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
         if (d_ptr->beam_line_type == "active")
         {
