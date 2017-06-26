@@ -462,6 +462,20 @@ Rt_parms::set_key_value (
             }
             rt_beam->get_mebs()->set_photon_energy (photon_energy);
         }
+        else if (key == "spot_spacing") {
+            float eres;
+            if (sscanf (val.c_str(), "%f", &eres) != 1) {
+                goto error_exit;
+            }
+            rt_beam->get_mebs()->set_energy_resolution(eres);
+        }
+        else if (key == "spot_sigma") {
+            float eres;
+            if (sscanf (val.c_str(), "%f", &eres) != 1) {
+                goto error_exit;
+            }
+            rt_beam->get_mebs()->set_energy_resolution(eres);
+        }
         else {
             goto error_exit;
         }

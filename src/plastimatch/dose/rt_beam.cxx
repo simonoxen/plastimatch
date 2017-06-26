@@ -14,6 +14,7 @@
 #include "rt_beam.h"
 #include "rt_dose_timing.h"
 #include "rt_plan.h"
+#include "rt_spot_map.h"
 
 static void
 save_vector_as_image (
@@ -55,6 +56,7 @@ public:
 
     float beamWeight;
 
+    Rt_spot_map::Pointer spot_map;
     Rt_mebs::Pointer mebs;
     std::string debug_dir;
 

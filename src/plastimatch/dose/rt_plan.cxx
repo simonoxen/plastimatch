@@ -18,6 +18,7 @@
 #include "ray_data.h"
 #include "rpl_volume.h"
 #include "rt_beam.h"
+#include "rt_beam_model.h"
 #include "rt_depth_dose.h"
 #include "rt_dose.h"
 #include "rt_dose_timing.h"
@@ -60,6 +61,8 @@ public:
     Rt_study* rt_study;
 
     Rt_dose_timing::Pointer rt_dose_timing;
+
+    Rt_beam_model::Pointer beam_model;
 
     /* Storage of beams */
     std::vector<Rt_beam*> beam_storage;
