@@ -462,19 +462,13 @@ Rt_parms::set_key_value (
             }
             rt_beam->get_mebs()->set_photon_energy (photon_energy);
         }
-        else if (key == "spot_spacing") {
-            float eres;
-            if (sscanf (val.c_str(), "%f", &eres) != 1) {
+        else if (key == "spot") {
+            float xpos, ypos, energy, sigma, weight;
+            if (sscanf (val.c_str(), "%f,%f,%f,%f,%f", 
+                    &xpos, &ypos, &energy, &sigma, &weight) != 1) {
                 goto error_exit;
             }
-            rt_beam->get_mebs()->set_energy_resolution(eres);
-        }
-        else if (key == "spot_sigma") {
-            float eres;
-            if (sscanf (val.c_str(), "%f", &eres) != 1) {
-                goto error_exit;
-            }
-            rt_beam->get_mebs()->set_energy_resolution(eres);
+            rt_beam->add_spot (xpos, ypos, energy, sigma, weight);
         }
         else {
             goto error_exit;

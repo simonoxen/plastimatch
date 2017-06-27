@@ -370,6 +370,17 @@ Rt_beam::dump (const std::string& dir)
     this->dump (dir.c_str());
 }
 
+void 
+Rt_beam::add_spot (
+    float xpos,
+    float ypos,
+    float energy,
+    float sigma,
+    float weight)
+{
+    d_ptr->spot_map->add_spot (xpos, ypos, energy, sigma, weight);
+}
+
 bool
 Rt_beam::prepare_for_calc (
     Plm_image::Pointer& ct_hu,
@@ -469,26 +480,32 @@ Rt_beam::prepare_for_calc (
     }
 
     /* Next, depending on what the user asked for, we may create apertures, 
-       range compensators, use pre-defined apertures or spot maps, etc. */
+       range compensators, use pre-defined apertures or beamlet maps, etc. */
     if (d_ptr->mebs->get_have_particle_number_map() == true
         && d_ptr->beam_line_type == "passive")
     {
-        printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
+        printf("***WARNING*** Passively scattered beam line with beamlet map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
         printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_spot_map();
+        this->compute_beam_data_from_beamlet_map();
         return true;
     }
 
    /* The priority how to generate dose is:
-       1. manual spot map 
-       2. manual peaks 
-       3. dose prescription 
-       4. target 
-       5. 100 MeV sample beam */
+       1. manual beamlet map 
+       2. manual spot map
+       3. manual peaks 
+       4. dose prescription 
+       5. target 
+       6. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
-        printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_spot_map();
+        printf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        this->compute_beam_data_from_beamlet_map();
+        return true;
+    }
+    if (d_ptr->spot_map->num_spots() > 0)
+    {
+        printf ("Beam specified by spot map\n");
         return true;
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
@@ -518,7 +535,7 @@ Rt_beam::prepare_for_calc (
 
     /* If we arrive to this point, it is because no beam was defined
        Creation of a default beam: 100 MeV */
-    printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
+    printf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
     printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
     this->compute_default_beam();
 
@@ -526,7 +543,7 @@ Rt_beam::prepare_for_calc (
 }
 
 void
-Rt_beam::compute_beam_data_from_spot_map()
+Rt_beam::compute_beam_data_from_beamlet_map()
 {
     this->get_mebs()->clear_depth_dose();
     this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
@@ -539,7 +556,7 @@ Rt_beam::compute_beam_data_from_spot_map()
 void
 Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 {
-    /* The spot map will be identical for passive or scanning beam lines */
+    /* The beamlet map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
@@ -567,7 +584,7 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 void
 Rt_beam::compute_beam_data_from_manual_peaks()
 {
-    /* The spot map will be identical for passive or scanning beam lines */
+    /* The beamlet map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     /* the automatic aperture and range compensator are erased and the 
@@ -578,7 +595,7 @@ Rt_beam::compute_beam_data_from_manual_peaks()
 void
 Rt_beam::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 {
-    /* The spot map will be identical for passive or scanning beam lines */
+    /* The beamlet map will be identical for passive or scanning beam lines */
     /* Identic to compute from manual peaks, with a preliminary optimization */
     d_ptr->mebs->optimize_sobp();
     this->compute_beam_data_from_manual_peaks(target);
@@ -1598,9 +1615,9 @@ Rt_beam::save_beam_output ()
         }
     }
 
-    /* Save the spot map */
+    /* Save the beamlet map */
     if (this->get_mebs()->get_particle_number_out() != "") {
-        this->get_mebs()->export_spot_map_as_txt (this->get_aperture());
+        this->get_mebs()->export_as_txt (this->get_aperture());
     }
 
     /* Dump beam information */

@@ -96,6 +96,10 @@ public:
     void dump (const char* dir);
     void dump (const std::string& dir);
 
+    /* Spot scanning */
+    void add_spot (
+        float xpos, float ypos, float energy, float sigma, float weight);
+
     /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
     bool prepare_for_calc (
         Plm_image::Pointer& ct_hu,
@@ -103,6 +107,7 @@ public:
         Plm_image::Pointer& target);
 
     /* Different strategies preparation */
+    void compute_beam_data_from_beamlet_map();
     void compute_beam_data_from_spot_map();
     void compute_beam_data_from_manual_peaks();
     void compute_beam_data_from_manual_peaks(Plm_image::Pointer& target);

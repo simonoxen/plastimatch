@@ -1308,24 +1308,24 @@ Rt_mebs::get_particle_number_xyz (
        the test on the aperture. Practically, idx = dim -1 is not possible */
     double A = 0;
     double B = 0;
-    int spot = 0;
-    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
-    A = d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
+    int beamlet = 0;
+    beamlet = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
+    A = d_ptr->num_particles[beamlet] + rest[0] * ( d_ptr->num_particles[beamlet+1] -  d_ptr->num_particles[beamlet]);
 #if defined (commentout)
     if (d_ptr->debug) {
         printf (" Mebs::GPNXYZ %f %f",
-            d_ptr->num_particles[spot],
-            d_ptr->num_particles[spot+1]
+            d_ptr->num_particles[beamlet],
+            d_ptr->num_particles[beamlet+1]
         );
     }
 #endif
-    spot = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1]+1) + idx[0];
-    B =  d_ptr->num_particles[spot] + rest[0] * ( d_ptr->num_particles[spot+1] -  d_ptr->num_particles[spot]);
+    beamlet = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1]+1) + idx[0];
+    B =  d_ptr->num_particles[beamlet] + rest[0] * ( d_ptr->num_particles[beamlet+1] -  d_ptr->num_particles[beamlet]);
 #if defined (commentout)
     if (d_ptr->debug) {
         printf (" %f %f\n",
-            d_ptr->num_particles[spot],
-            d_ptr->num_particles[spot+1]
+            d_ptr->num_particles[beamlet],
+            d_ptr->num_particles[beamlet+1]
         );
     }
 #endif
@@ -1338,7 +1338,7 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
     /* Confirm file can be read */
     if (!file_exists (d_ptr->particle_number_in)) {
         printf ("Error reading config file: %s\n", d_ptr->particle_number_in.c_str());
-        printf("Particle number map set to 0 for each dose spot \n");
+        printf("Particle number map set to 0 for each dose beamlet \n");
         return;
     }
 
@@ -1359,7 +1359,7 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
     char sep[] = " ";
     char* token;
 
-    int spot_number = 0;
+    int beamlet_number = 0;
     int line_number = 0;
     int energy_number = 0;
     int idx = 0;
@@ -1373,11 +1373,11 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
         if (buf == "") continue;
         if (buf[0] == '#') continue;
 
-        /* Check the dim for the last spot map */
+        /* Check the dim for the last beamlet map */
         if (buf.find ("[Energy]") != std::string::npos && energy_number != 0 && line_number != ap->get_dim(1))
         {
-            printf("***WARNING*** the number of spot line doesn't correspond to the aperture size\n");
-            printf("spot line number expected: %d, spot line detected: %d.\n", ap->get_dim(1), line_number);
+            printf("***WARNING*** the number of beamlet line doesn't correspond to the aperture size\n");
+            printf("beamlet line number expected: %d, beamlet line detected: %d.\n", ap->get_dim(1), line_number);
         }
 
         if (buf.find ("[Energy]") != std::string::npos)
@@ -1386,7 +1386,7 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
             val = buf.c_str();
             val = strtok(&val[0], "[Energy]");
             energy = strtod(val.c_str(),0);
-            spot_number = 0;
+            beamlet_number = 0;
             line_number = 0;
 
             if (energy > 0)
@@ -1406,38 +1406,38 @@ Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
             continue;
         }
 
-        /* If we arrive here, it means that we read a spot map */
+        /* If we arrive here, it means that we read a beamlet map */
         val ="";
         val = buf.c_str();
         val = string_trim (val);
 					
         token = strtok(&val[0], sep);
-        spot_number = 0;
+        beamlet_number = 0;
 
         while (token != NULL)
         {
             part_number = strtod(token,0);
-            if (spot_number < ap->get_dim(0))
+            if (beamlet_number < ap->get_dim(0))
             {
-                idx = (energy_number-1) * ap->get_dim(0) * ap->get_dim(1) + line_number * ap->get_dim(0) + spot_number;
+                idx = (energy_number-1) * ap->get_dim(0) * ap->get_dim(1) + line_number * ap->get_dim(0) + beamlet_number;
                 d_ptr->num_particles[idx] = part_number;
-                spot_number++;
+                beamlet_number++;
             }
             token = strtok(NULL, sep);
         }
-        if (spot_number != ap->get_dim(0))
+        if (beamlet_number != ap->get_dim(0))
         {
-            printf("***WARNING*** the number of spots doesn't correspond to the aperture size\n");
-            printf("line %d: spot number expected: %d, spot number detected: %d.\n", line_number, ap->get_dim(0), spot_number);
+            printf("***WARNING*** the number of beamlets doesn't correspond to the aperture size\n");
+            printf("line %d: beamlet number expected: %d, beamlet number detected: %d.\n", line_number, ap->get_dim(0), beamlet_number);
         }
         line_number++;
     }
 
-    /* Check the dim for the last spot map */
+    /* Check the dim for the last beamlet map */
     if (energy_number != 0 && line_number != ap->get_dim(1))
     {
-        printf("***WARNING*** the number of spot line doesn't correspond to the aperture size\n");
-        printf("spot line number expected: %d, spot line detected: %d.\n", ap->get_dim(1), line_number);
+        printf("***WARNING*** the number of beamlet line doesn't correspond to the aperture size\n");
+        printf("beamlet line number expected: %d, beamlet line detected: %d.\n", ap->get_dim(1), line_number);
     }
 }
 
@@ -1628,16 +1628,16 @@ Rt_mebs::get_optimized_peaks (
 }
 
 void 
-Rt_mebs::export_spot_map_as_txt(Aperture::Pointer ap)
+Rt_mebs::export_as_txt(Aperture::Pointer ap)
 {
     make_parent_directories (d_ptr->particle_number_out.c_str());
 	
-    printf("Trying to write spot maps in %s\n", d_ptr->particle_number_out.c_str());
+    printf("Trying to write mebs in %s\n", d_ptr->particle_number_out.c_str());
 
     std::ofstream fichier(d_ptr->particle_number_out.c_str());
 
     if ( !fichier ){
-        std::cerr << "Erreur de creation du fichier spot_map" << std::endl;
+        std::cerr << "Erreur de creation du fichier beamlet_map" << std::endl;
         return;
     }
 

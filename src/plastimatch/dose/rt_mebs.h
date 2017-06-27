@@ -2,8 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* -----------------------------------------------------------------------
-   rt_mebs (for mono-energetic_beam_set) is a class that creates beams of different energies,
-   including SOBP (Spread Out Bragg Peak) or any multi-energy beam configuration. 
+   rt_mebs (for mono-energetic beamlet set) is a class that creates beams 
+   of different energies, including SOBP (Spread Out Bragg Peak) 
+   or any multi-energy beam configuration. 
    ----------------------------------------------------------------------- */
 #ifndef _rt_mebs_h_
 #define _rt_mebs_h_
@@ -152,7 +153,7 @@ public:
         std::vector <double>& wepl_min,
         std::vector <double>& wepl_max);
 
-    void export_spot_map_as_txt(Aperture::Pointer ap);
+    void export_as_txt(Aperture::Pointer ap);
 
     /* Debugging */
     void set_debug (bool);
