@@ -134,26 +134,34 @@ public:
     void optimize_sobp ();
 
     /* Weight optimizer */
-    void optimizer (std::vector<float>* weight_tmp, std::vector<float>* energy_tmp);
+    void optimizer (std::vector<float>* weight_tmp, 
+        std::vector<float>* energy_tmp);
+    void get_optimized_peaks (float dmin, float dmax, 
+        std::vector<float>* weight_tmp, 
+        std::vector<Rt_depth_dose*>* depth_dose);
+    void initialize_energy_weight_and_depth_dose_vectors (
+        std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, 
+        std::vector<Rt_depth_dose*>* depth_dose_tmp);
 
-    void get_optimized_peaks(float dmin, float dmax, std::vector<float>* weight_tmp, std::vector<Rt_depth_dose*>* depth_dose);
-    void initialize_energy_weight_and_depth_dose_vectors(std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, std::vector<Rt_depth_dose*>* depth_dose_tmp);
+    void scale_num_part (double A, int* ap_dim);
+    double get_particle_number_xyz (int* idx, double* rest, 
+        int idx_beam, const int* ap_dim);
 
-    void scale_num_part(double A, int* ap_dim);
-    double get_particle_number_xyz(int* idx, double* rest, int idx_beam, const int* ap_dim);
-
-
-    void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
+    // returns also the wed max and min maps
+    void compute_beam_modifiers_active_scanning (
+        Volume *seg_vol, float smearing, 
+        float proximal_margin, float distal_margin, 
+        std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     
     /* This computes the E_min and E_max map from a target for all pencil beam*/
     void generate_part_num_from_weight(int* ap_dim);
-    void extract_particle_number_map_from_txt(Aperture::Pointer& ap);
     void compute_particle_number_matrix_from_target_active (
         Rpl_volume* rpl_vol,
         std::vector <double>& wepl_min,
         std::vector <double>& wepl_max);
 
-    void export_as_txt(Aperture::Pointer ap);
+    void load_beamlet_map (Aperture::Pointer& ap);
+    void export_as_txt (Aperture::Pointer ap);
 
     /* Debugging */
     void set_debug (bool);

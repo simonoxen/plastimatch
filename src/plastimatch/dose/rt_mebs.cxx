@@ -316,7 +316,6 @@ public:
             num_particles.pop_back();
         }
     }
-	
 };
 
 Rt_mebs::Rt_mebs ()
@@ -364,8 +363,7 @@ Rt_mebs::add_depth_dose (Rt_depth_dose* depth_dose)
     d_ptr->energies.push_back(depth_dose->E0);
 
     /* update the mebs depth dose length if this one is longer */
-    if (depth_dose->num_samples > d_ptr->num_samples)
-    {
+    if (depth_dose->num_samples > d_ptr->num_samples) {
         d_ptr->num_samples = depth_dose->num_samples;
     }
 }
@@ -397,8 +395,7 @@ Rt_mebs::add_peak (double E0, double spread, double weight)
         d_ptr->energies.push_back(E0);
 
         /* update the mebs depth dose length if this one is longer */
-        if (depth_dose->num_samples > d_ptr->num_samples)
-        {
+        if (depth_dose->num_samples > d_ptr->num_samples) {
             d_ptr->num_samples = depth_dose->num_samples;
         }
     }
@@ -477,7 +474,7 @@ Rt_mebs::lookup_energy (
             * ((d_ptr->e_lut[i+1] - d_ptr->e_lut[i]) 
                 / (d_ptr->d_lut[i+1] - d_ptr->d_lut[i]));
     } else {
-        // we wen't past the end of the lookup table
+        // we went past the end of the lookup table
         energy = 0.0f;
     }
     return energy;
@@ -1282,11 +1279,9 @@ void
 Rt_mebs::generate_part_num_from_weight (int* ap_dim)
 {
     //int idx = 0;
-    for (int i = 0; i < d_ptr->energy_number; i++)
-    {
-        for (int j = 0; j < ap_dim[0] * ap_dim[1]; j++)
-        {
-            d_ptr->num_particles.push_back(d_ptr->depth_dose_weight[i]);
+    for (int i = 0; i < d_ptr->energy_number; i++) {
+        for (int j = 0; j < ap_dim[0] * ap_dim[1]; j++) {
+            d_ptr->num_particles.push_back (d_ptr->depth_dose_weight[i]);
         }
     }
 }
@@ -1333,7 +1328,7 @@ Rt_mebs::get_particle_number_xyz (
 }
 
 void 
-Rt_mebs::extract_particle_number_map_from_txt(Aperture::Pointer& ap)
+Rt_mebs::load_beamlet_map (Aperture::Pointer& ap)
 {
     /* Confirm file can be read */
     if (!file_exists (d_ptr->particle_number_in)) {

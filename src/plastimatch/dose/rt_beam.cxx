@@ -104,6 +104,7 @@ public:
         this->homo_approx = 'n';
 
         this->beamWeight = 1.f;
+        this->spot_map = Rt_spot_map::New();
         this->mebs = Rt_mebs::New();
         this->debug_dir = "";
         this->smearing = 0.f;
@@ -140,9 +141,11 @@ public:
         this->flavor = rtbp->flavor;
         this->homo_approx = rtbp->homo_approx;
 
-        /* Copy the mebs object */
         this->beamWeight = rtbp->beamWeight;
-        this->mebs = Rt_mebs::New (rtbp->mebs);
+        // Clear the spot map
+        this->spot_map = Rt_spot_map::New();
+        // Copy the mebs object
+        this->mebs = Rt_mebs::New(rtbp->mebs);
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
         this->source_size = rtbp->source_size;
@@ -500,28 +503,29 @@ Rt_beam::prepare_for_calc (
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
         printf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_beamlet_map();
+        this->compute_beam_data_from_beamlet_map ();
         return true;
     }
     if (d_ptr->spot_map->num_spots() > 0)
     {
         printf ("Beam specified by spot map\n");
+        this->compute_beam_data_from_spot_map ();
         return true;
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
     {
         printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
-        this->get_mebs()->set_have_manual_peaks(true);
-        this->compute_beam_data_from_manual_peaks(target);
+        this->get_mebs()->set_have_manual_peaks (true);
+        this->compute_beam_data_from_manual_peaks (target);
         return true;
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
-        printf("Prescription depths detected. Any target depth will not be considered.\n");
+        printf ("Prescription depths detected. Any target depth will not be considered.\n");
         this->get_mebs()->set_have_prescription(true);
         /* Apply margins */
-        this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
-        this->compute_beam_data_from_prescription(target);
+        this->get_mebs()->set_target_depths (d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
+        this->compute_beam_data_from_prescription (target);
         return true;
     }
     if (target->get_vol())
@@ -537,7 +541,7 @@ Rt_beam::prepare_for_calc (
        Creation of a default beam: 100 MeV */
     printf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
     printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
-    this->compute_default_beam();
+    this->compute_default_beam ();
 
     return true;
 }
@@ -545,16 +549,21 @@ Rt_beam::prepare_for_calc (
 void
 Rt_beam::compute_beam_data_from_beamlet_map()
 {
-    this->get_mebs()->clear_depth_dose();
-    this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
+    this->get_mebs()->clear_depth_dose ();
+    this->get_mebs()->load_beamlet_map (this->get_aperture());
 
     /* the automatic aperture and range compensator are erased and the 
        ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator();
+    this->update_aperture_and_range_compensator ();
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
+Rt_beam::compute_beam_data_from_spot_map()
+{
+}
+
+void
+Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
     int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
@@ -632,8 +641,8 @@ void
 Rt_beam::compute_default_beam()
 {
     /* Computes a default 100 MeV peak */
-    this->get_mebs()->add_peak(100, 1, 1);
-    this->compute_beam_data_from_manual_peaks();
+    this->get_mebs()->add_peak (100, 1, 1);
+    this->compute_beam_data_from_manual_peaks ();
 }
 
 void 
@@ -728,10 +737,6 @@ Rt_beam::compute_beam_modifiers_core (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
-
-    /* compute the target min and max distance (not wed!) map in the aperture */
-    // GCS FIX: definitely we want wed here.
-    // compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
     printf("Compute target wepl_min_max...\n");
     this->compute_target_wepl_min_max (map_wed_min, map_wed_max);
 

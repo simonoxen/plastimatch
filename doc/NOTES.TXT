@@ -13,14 +13,29 @@ rt_spot_map: This contains a list of spots, each spot containing
 spot position, energy, sigma, weight.
 
 ******************************************************************************
-Calc methodology
+Calc methodology 
 
 1. manual beamlet map
+     compute_beam_data_from_beamlet_map
+       mebs()->clear_depth_dose
+       mebs()->load_beamlet_map
+       update_aperture_and_range_compensator
+         (not implemented)
 2. manual spot map
 3. manual peaks
+     compute_beam_data_from_manual_peaks
+       mebs()->generate_part_num_from_weight
+       compute_beam_modifiers_active_scanning
+       compute_beam_modifiers_passive_scattering
 4. dose prescription
+     mebs()->set_target_depths
+     compute_beam_data_from_prescription
 5. target
+     compute_beam_data_from_target
 6. 100 MeV sample beam
+     compute_default_beam
+       mebs()->add_peak
+       compute_beam_data_from_manual_peaks
 
 ******************************************************************************
 Dose calculation LUTs
