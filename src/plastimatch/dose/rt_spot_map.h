@@ -34,6 +34,8 @@ public:
     void add_spot (
         float xpos, float ypos, float energy, float sigma, float weight);
     size_t num_spots () const;
+    const std::list<Rt_spot>& get_spot_list () const;
+
     void load_spot_map (const std::string& fn);
     void save_spot_map (const std::string& fn) const;
 };

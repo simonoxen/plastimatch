@@ -12,6 +12,36 @@ energy and position.
 rt_spot_map: This contains a list of spots, each spot containing 
 spot position, energy, sigma, weight.
 
+rt_dij: This contains a sparse dose grid.  Ideally it should use the 
+same data structure as pcmd_warp_dij.  However, that structure 
+uses ushort.  Need to consider how to mitigate truncation and overflow.
+
+Active scanning:
+
+A beam contains a dij.
+A beam contains a spot map.
+A beam contains a mebs.
+There is a map from mebs to spots.
+
+There is a dij for each meb.
+There is a dij for each spot.
+
+The pre-optimizer calculates dij for each spot.
+For each beamlet:
+  Calculate dij
+  Increment involved spots by dij
+
+An optimizer will take a set of dij, and will create spot weights.
+
+The final calculations sums the weighted dij.
+
+Passive scattering:
+
+A beam contains a mebs.
+The 
+
+
+
 ******************************************************************************
 Calc methodology 
 

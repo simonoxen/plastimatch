@@ -229,6 +229,7 @@ public:
 
         this->debug = false;
     }
+public:
     ~Rt_mebs_private ()
     {
         if (d_lut) delete[] d_lut;
@@ -1325,6 +1326,15 @@ Rt_mebs::get_particle_number_xyz (
     }
 #endif
     return A + rest[1] * (B-A);
+}
+
+void 
+Rt_mebs::set_from_spot_map (const Rt_spot_map::Pointer& rsm)
+{
+    this->clear_depth_dose ();
+
+    const std::list<Rt_spot>& spot_list = rsm->get_spot_list();
+
 }
 
 void 

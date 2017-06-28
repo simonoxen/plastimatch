@@ -61,13 +61,14 @@ public:
     Volume* get_vol ();
     const Volume* get_vol () const;
     Proj_volume* get_proj_volume ();
+    const Proj_volume* get_proj_volume () const;
 
     const int *get_image_dim ();
     int get_num_steps ();
 
-    double get_rgdepth (int ap_ij[2], double dist);
-    double get_rgdepth (double ap_ij[2], double dist);
-    double get_rgdepth (const double *xyz);
+    double get_rgdepth (int ap_ij[2], double dist) const;
+    double get_rgdepth (double ap_ij[2], double dist) const;
+    double get_rgdepth (const double *xyz) const;
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();

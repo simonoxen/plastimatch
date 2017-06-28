@@ -144,7 +144,7 @@ public:
         this->beamWeight = rtbp->beamWeight;
         // Clear the spot map
         this->spot_map = Rt_spot_map::New();
-        // Copy the mebs object
+        // Copy the mebs object (?)
         this->mebs = Rt_mebs::New(rtbp->mebs);
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
@@ -424,7 +424,9 @@ Rt_beam::prepare_for_calc (
         lprintf ("ray_data or clipping planes missing from rpl volume\n");
         return false;
     }
+    printf ("rsp_accum_vol->compute_rpl_accum (false)\n");
     this->rsp_accum_vol->compute_rpl_accum (false);
+    printf ("rsp_accum_vol->compute_rpl_accum (false) - done\n");
 
     // Create ct projective volume
     // GCS FIX: The old code re-used the ray data.  Is that really faster?
@@ -467,6 +469,7 @@ Rt_beam::prepare_for_calc (
 
     // Create and fill in rpl_dose_volume (actually proj dose)
     if (this->get_flavor() == 'b'
+        || this->get_flavor() == 'c'
         || this->get_flavor() == 'd')
     {
         this->rpl_dose_vol = new Rpl_volume;
@@ -509,6 +512,8 @@ Rt_beam::prepare_for_calc (
     if (d_ptr->spot_map->num_spots() > 0)
     {
         printf ("Beam specified by spot map\n");
+        this->get_mebs()->set_have_manual_peaks(false);
+        this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_spot_map ();
         return true;
     }
@@ -528,7 +533,7 @@ Rt_beam::prepare_for_calc (
         this->compute_beam_data_from_prescription (target);
         return true;
     }
-    if (target->get_vol())
+    if (target && target->get_vol())
     {
         printf("Target detected.\n");
         this->get_mebs()->set_have_manual_peaks(false);
@@ -560,6 +565,7 @@ Rt_beam::compute_beam_data_from_beamlet_map()
 void
 Rt_beam::compute_beam_data_from_spot_map()
 {
+    this->get_mebs()->set_from_spot_map (d_ptr->spot_map);
 }
 
 void

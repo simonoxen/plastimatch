@@ -241,7 +241,7 @@ Proj_volume::get_clipping_dist ()
 }
 
 double
-Proj_volume::get_step_length ()
+Proj_volume::get_step_length () const
 {
     return d_ptr->step_length;
 }

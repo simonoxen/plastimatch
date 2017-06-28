@@ -47,7 +47,7 @@ public:
     const double* get_src ();
     const double* get_iso ();
     const double* get_clipping_dist();
-    double get_step_length ();
+    double get_step_length () const;
     const double* get_ul_room ();
     Volume *get_vol ();
     const Volume *get_vol () const;

@@ -22,7 +22,7 @@ PLMBASE_C_API void li_clamp_3d (
     plm_long mijk_r[3],
     float li_frac_1[3],
     float li_frac_2[3],
-    Volume *moving
+    const Volume *moving
 );
 PLMBASE_C_API float li_value (
     float fx1, float fx2,

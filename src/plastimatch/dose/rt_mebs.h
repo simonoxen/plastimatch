@@ -19,6 +19,7 @@
 #include "plm_config.h"
 #include "rpl_volume.h"
 #include "rt_lut.h"
+#include "rt_spot_map.h"
 #include "smart_pointer.h"
 
 class Rt_depth_dose;
@@ -159,6 +160,8 @@ public:
         Rpl_volume* rpl_vol,
         std::vector <double>& wepl_min,
         std::vector <double>& wepl_max);
+
+    void set_from_spot_map (const Rt_spot_map::Pointer& rsm);
 
     void load_beamlet_map (Aperture::Pointer& ap);
     void export_as_txt (Aperture::Pointer ap);

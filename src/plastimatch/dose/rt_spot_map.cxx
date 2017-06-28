@@ -38,6 +38,12 @@ Rt_spot_map::num_spots () const
     return d_ptr->spot_list.size ();
 }
 
+const std::list<Rt_spot>&
+Rt_spot_map::get_spot_list () const
+{
+    return d_ptr->spot_list;
+}
+
 void
 Rt_spot_map::load_spot_map (const std::string& fn)
 {
@@ -47,4 +53,3 @@ void
 Rt_spot_map::save_spot_map (const std::string& fn) const
 {
 }
-

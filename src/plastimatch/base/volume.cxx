@@ -774,7 +774,7 @@ Volume::clone (Volume_pixel_type new_type) const
 #endif
 
 float
-Volume::get_ijk_value (const float ijk[3])
+Volume::get_ijk_value (const float ijk[3]) const
 {
     plm_long ijk_f[3];
     plm_long ijk_r[3];

@@ -19,6 +19,7 @@
 #include "rpl_volume.h"
 #include "rt_beam.h"
 #include "rt_depth_dose.h"
+#include "rt_dij.h"
 #include "rt_dose.h"
 #include "rt_lut.h"
 #include "rt_mebs.h"
@@ -46,7 +47,7 @@ energy_direct (
 }
 
 void
-compute_dose_ray_trace_a (
+compute_dose_a (
     Volume::Pointer dose_vol, 
     Rt_beam* beam, 
     const Volume::Pointer ct_vol
@@ -169,6 +170,72 @@ compute_dose_b (
                 int dose_index = ap_vol->index(ij[0],ij[1],s);
                 float wepl = wepl_img[dose_index];
                 dose_img[dose_index] += np * depth_dose->lookup_energy(wepl);
+            }
+        }
+    }
+}
+
+void
+compute_dose_c (
+    Rt_beam* beam,
+    size_t energy_index,
+    const Volume::Pointer ct_vol,
+    Volume::Pointer& dose_vol
+)
+{
+    Rpl_volume *wepl_rv = beam->rsp_accum_vol;
+    Volume *wepl_vol = wepl_rv->get_vol();
+    float *wepl_img = wepl_vol->get_raw<float> ();
+
+    Rpl_volume *rpl_dose_volume = beam->rpl_dose_vol;
+    Volume *rpl_dose_vol = rpl_dose_volume->get_vol();
+    float *dose_img = dose_vol->get_raw<float> ();
+
+    Rt_mebs::Pointer mebs = beam->get_mebs();
+    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
+    std::vector<float>& num_part = mebs->get_num_particles();
+
+    /* Create the beamlet dij matrix */
+    Rt_dij rt_dij;
+
+    /* scan through rpl volume */
+    Aperture::Pointer& ap = beam->get_aperture ();
+    Volume *ap_vol = 0;
+    const unsigned char *ap_img = 0;
+    if (ap->have_aperture_image()) {
+        ap_vol = ap->get_aperture_vol ();
+        ap_img = ap_vol->get_raw<unsigned char> ();
+    }
+    const int *dim = wepl_rv->get_image_dim();
+    int num_steps = wepl_rv->get_num_steps();
+    plm_long ij[2] = {0,0};
+    for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
+        for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {
+            if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)] == 0) {
+                continue;
+            }
+            size_t np_index = energy_index * dim[0] * dim[1]
+                + ij[1] * dim[0] + ij[0];
+            float np = num_part[np_index];
+            if (np == 0.f) {
+                continue;
+            }
+            // Fill in dose
+            for (int s = 0; s < num_steps; s++) {
+                int dose_index = ap_vol->index(ij[0],ij[1],s);
+                float wepl = wepl_img[dose_index];
+                dose_img[dose_index] = np * depth_dose->lookup_energy(wepl);
+            }
+
+            // Create beamlet dij
+            rt_dij.set_from_rpl_dose (
+                ij, energy_index, rpl_dose_volume, dose_vol);
+
+            // Write beamlet dij
+            // Zero out again
+            for (int s = 0; s < num_steps; s++) {
+                int dose_index = ap_vol->index(ij[0],ij[1],s);
+                dose_img[dose_index] = 0.f;
             }
         }
     }

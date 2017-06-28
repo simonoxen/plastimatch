@@ -485,13 +485,13 @@ Rt_plan::compute_dose (Rt_beam *beam)
 #endif
     
     if (beam->get_flavor() == 'a') {
-        compute_dose_ray_trace_a (dose_vol, beam, ct_vol);
+        compute_dose_a (dose_vol, beam, ct_vol);
     }
     else if (beam->get_flavor() == 'b') {
 
-        /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
-           if there is a range compensator */
         d_ptr->rt_dose_timing->timer_dose_calc.resume ();
+
+        // Add range compensator to rpl volume
         if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
         {
             add_rcomp_length_to_rpl_volume(beam);
@@ -502,6 +502,29 @@ Rt_plan::compute_dose (Rt_beam *beam)
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
         for (size_t i = 0; i < depth_dose.size(); i++) {
             compute_dose_b (beam, i, ct_vol);
+        }
+        d_ptr->rt_dose_timing->timer_dose_calc.stop ();
+        d_ptr->rt_dose_timing->timer_reformat.resume ();
+        dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
+        d_ptr->rt_dose_timing->timer_reformat.stop ();
+    }
+    else if (beam->get_flavor() == 'c') {
+        /* This is the same as alg 'b', except that it computes 
+           and exports Dij matrices */
+
+        d_ptr->rt_dose_timing->timer_dose_calc.resume ();
+
+        // Add range compensator to rpl volume
+        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
+        {
+            add_rcomp_length_to_rpl_volume(beam);
+        }
+        
+        // Loop through energies
+        Rt_mebs::Pointer mebs = beam->get_mebs();
+        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
+        for (size_t i = 0; i < depth_dose.size(); i++) {
+            compute_dose_c (beam, i, ct_vol, dose_vol);
         }
         d_ptr->rt_dose_timing->timer_dose_calc.stop ();
         d_ptr->rt_dose_timing->timer_reformat.resume ();

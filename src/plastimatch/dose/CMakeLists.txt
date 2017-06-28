@@ -20,6 +20,7 @@ set (PLMDOSE_LIBRARY_SRC
   rt_beam.cxx rt_beam.h
   rt_beam_model.cxx rt_beam_model.h
   rt_depth_dose.cxx rt_depth_dose.h
+  rt_dij.cxx rt_dij.h
   rt_dose.cxx rt_dose.h
   rt_dose_timing.h
   rt_lut.cxx rt_lut.h

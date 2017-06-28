@@ -227,13 +227,13 @@ double
 Rpl_volume::get_rgdepth (
     int ap_ij[2],       /* I: aperture index */
     double dist         /* I: distance from aperture in mm */
-)
+) const
 {
     plm_long idx1, idx2;
     plm_long ijk[3];
     double rg1, rg2, rgdepth, frac;
-    Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_vol();
+    const Proj_volume *proj_vol = this->get_proj_volume ();
+    const Volume *vol = this->get_vol();
     float* d_img = (float*) vol->img;
 
     if (dist < 0) {
@@ -276,10 +276,10 @@ double
 Rpl_volume::get_rgdepth (
     double ap_ij[2],    /* I: aperture index */
     double dist         /* I: distance from aperture in mm */
-)
+) const
 {
-    Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_vol();
+    const Proj_volume *proj_vol = this->get_proj_volume ();
+    const Volume *vol = this->get_vol();
 
     if (dist < 0) {
         return 0.0;
@@ -298,7 +298,7 @@ Rpl_volume::get_rgdepth (
 double
 Rpl_volume::get_rgdepth (
     const double* ct_xyz         /* I: location of voxel in world space */
-)
+) const
 {
     int ap_ij[2], ap_idx;
     double ap_xy[3];
@@ -1508,6 +1508,12 @@ Rpl_volume::get_vol () const
 
 Proj_volume* 
 Rpl_volume::get_proj_volume ()
+{
+    return d_ptr->proj_vol;
+}
+
+const Proj_volume* 
+Rpl_volume::get_proj_volume () const
 {
     return d_ptr->proj_vol;
 }
