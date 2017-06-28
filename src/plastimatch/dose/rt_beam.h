@@ -61,9 +61,9 @@ public:
     double get_source_distance () const;
     
     /*! \brief Get "flavor" parameter of dose calculation algorithm */
-    char get_flavor () const;
+    const std::string& get_flavor () const;
     /*! \brief Set "flavor" parameter of dose calculation algorithm */
-    void set_flavor (char flavor);
+    void set_flavor (const std::string& flavor);
 
     /*! \brief Get "homo_approx" parameter of dose calculation algorithm */
     char get_homo_approx () const;
@@ -218,6 +218,9 @@ public:
 
     void set_beam_dump_out(std::string str);
     std::string get_beam_dump_out();
+
+    void set_dij_out (const std::string& str);
+    const std::string& get_dij_out();
 
     void set_wed_out(std::string str);
     std::string get_wed_out();

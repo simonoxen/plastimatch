@@ -51,7 +51,7 @@ public:
 
     double source[3];
     double isocenter[3];
-    char flavor;
+    std::string flavor;
     char homo_approx;
 
     float beamWeight;
@@ -86,6 +86,7 @@ public:
     std::string sigma_out;
     std::string wed_out;
     std::string beam_dump_out;
+    std::string dij_out;
     
     std::string beam_line_type;
 
@@ -100,7 +101,7 @@ public:
         this->isocenter[0] = 0.f;
         this->isocenter[1] = 0.f;
         this->isocenter[2] = 0.f;
-        this->flavor = 'a';
+        this->flavor = "a";
         this->homo_approx = 'n';
 
         this->beamWeight = 1.f;
@@ -289,14 +290,14 @@ Rt_beam::get_source_distance () const
     return vec3_dist (d_ptr->isocenter, d_ptr->source);
 }
 
-char
+const std::string&
 Rt_beam::get_flavor (void) const
 {
     return d_ptr->flavor;
 }
 
 void
-Rt_beam::set_flavor (char flavor)
+Rt_beam::set_flavor (const std::string& flavor)
 {
     d_ptr->flavor = flavor;
 }
@@ -439,10 +440,10 @@ Rt_beam::prepare_for_calc (
     this->hu_samp_vol->compute_rpl_sample (false);
 
     // Prepare, but don't compute the sigma volume yet
-    if (this->get_flavor() == 'd'
-        || this->get_flavor() == 'f'
-        || this->get_flavor() == 'g'
-        || this->get_flavor() == 'h')
+    if (this->get_flavor() == "d"
+        || this->get_flavor() == "f"
+        || this->get_flavor() == "g"
+        || this->get_flavor() == "h")
     {
         this->sigma_vol = new Rpl_volume;
         if (!this->sigma_vol) return false;
@@ -468,9 +469,9 @@ Rt_beam::prepare_for_calc (
     }
 
     // Create and fill in rpl_dose_volume (actually proj dose)
-    if (this->get_flavor() == 'b'
-        || this->get_flavor() == 'c'
-        || this->get_flavor() == 'd')
+    if (this->get_flavor() == "b"
+        || this->get_flavor() == "c"
+        || this->get_flavor() == "d")
     {
         this->rpl_dose_vol = new Rpl_volume;
         if (!this->rpl_dose_vol) return false;
@@ -1327,6 +1328,18 @@ std::string
 Rt_beam::get_beam_dump_out()
 {
     return d_ptr->beam_dump_out;
+}
+
+void 
+Rt_beam::set_dij_out (const std::string& str)
+{
+    d_ptr->dij_out = str;
+}
+
+const std::string&
+Rt_beam::get_dij_out()
+{
+    return d_ptr->dij_out;
 }
 
 void 

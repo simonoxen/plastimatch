@@ -259,7 +259,7 @@ Rt_parms::set_key_value (
 
         if (key == "flavor") {
             if (val.length() >= 1) {
-                rt_beam->set_flavor (val[0]);
+                rt_beam->set_flavor (val);
             } else {
                 goto error_exit;
             } 
@@ -307,6 +307,9 @@ Rt_parms::set_key_value (
         }
         else if (key == "beam_dump_out") {
             rt_beam->set_beam_dump_out (val);
+        }
+        else if (key == "dij_out") {
+            rt_beam->set_dij_out (val);
         }
         else if (key == "beam_type") {
             Particle_type part = particle_type_parse (val);

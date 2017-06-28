@@ -458,7 +458,7 @@ compute_sigma_range_compensator (
     vec3_sub3 (nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 	
-    if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != 'h')
+    if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != "h")
     {
         for (int i = 0; i < dim[0] * dim[1]; i++)
         {

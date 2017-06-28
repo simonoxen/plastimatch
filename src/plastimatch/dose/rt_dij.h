@@ -42,6 +42,7 @@ public:
         size_t energy_index,
         const Rpl_volume *rpl_dose, 
         Volume::Pointer& dose_vol);
+    void dump (const std::string& dir) const;
 };
 
 #endif

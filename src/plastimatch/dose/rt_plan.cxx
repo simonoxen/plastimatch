@@ -484,10 +484,10 @@ Rt_plan::compute_dose (Rt_beam *beam)
     beam->hu_samp_vol->compute_rpl_HU ();
 #endif
     
-    if (beam->get_flavor() == 'a') {
+    if (beam->get_flavor() == "a") {
         compute_dose_a (dose_vol, beam, ct_vol);
     }
-    else if (beam->get_flavor() == 'b') {
+    else if (beam->get_flavor() == "b") {
 
         d_ptr->rt_dose_timing->timer_dose_calc.resume ();
 
@@ -508,7 +508,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
         d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
-    else if (beam->get_flavor() == 'c') {
+    else if (beam->get_flavor() == "c") {
         /* This is the same as alg 'b', except that it computes 
            and exports Dij matrices */
 
@@ -531,7 +531,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
         d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
-    else if (beam->get_flavor() == 'd') {
+    else if (beam->get_flavor() == "d") {
 
         // Loop through energies
         Rt_mebs::Pointer mebs = beam->get_mebs();
@@ -551,7 +551,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         float* sigma_img = (float*) sigma_vol->get_vol()->img;
         UNUSED_VARIABLE (sigma_img);
 
-        if (beam->get_flavor() == 'h') {
+        if (beam->get_flavor() == "h") {
             beam->rpl_vol_lg = new Rpl_volume;
             beam->rpl_vol_samp_lg = new Rpl_volume;
             beam->sigma_vol_lg = new Rpl_volume;
@@ -566,13 +566,13 @@ Rt_plan::compute_dose (Rt_beam *beam)
 
             compute_sigmas (beam, ppp->E0, &sigma_max, "small", margins);
 
-            if (beam->get_flavor() == 'f') // Desplanques' algorithm
+            if (beam->get_flavor() == "f") // Desplanques' algorithm
             {
                 range = 10 * get_proton_range(ppp->E0); // range in mm
                 dose_volume_create(dose_volume_tmp, &sigma_max, beam->rsp_accum_vol, range);
                 compute_dose_ray_desplanques(dose_volume_tmp, ct_vol, beam, dose_vol, i);
             }
-            else if (beam->get_flavor() == 'g') // Sharp's algorithm
+            else if (beam->get_flavor() == "g") // Sharp's algorithm
             {
                 if (sigma_max > biggest_sigma_ever)
                 {
@@ -615,7 +615,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
                 compute_dose_ray_sharp (ct_vol, beam, beam->rpl_dose_vol, i, margins);
                 dose_volume_reconstruction(beam->rpl_dose_vol, dose_vol);
             }
-            else if (beam->get_flavor() == 'h') // Shackleford's algorithm
+            else if (beam->get_flavor() == "h") // Shackleford's algorithm
             {
                 /* Calculating the pixel-margins of the aperture to take into account the scattering*/
                 margin = (float) 3 * (sigma_max)/(beam->get_aperture()->get_distance()+beam->rsp_accum_vol->get_front_clipping_plane()) * beam->get_aperture()->get_distance()+1;
@@ -810,7 +810,7 @@ Rt_plan::print_verif ()
 
     printf("\n \n [SETTINGS]");
     int num_beams = d_ptr->beam_storage.size();
-    printf("\n flavor: "); for (int i = 0; i < num_beams; i++) {printf("%c ** ", d_ptr->beam_storage[i]->get_flavor());}
+    printf("\n flavor: "); for (int i = 0; i < num_beams; i++) {printf("%s ** ", d_ptr->beam_storage[i]->get_flavor().c_str());}
     printf("\n homo_approx: "); for (int i = 0; i < num_beams; i++) {printf("%c ** ", d_ptr->beam_storage[i]->get_homo_approx());}
     printf("\n ray_step: "); for (int i = 0; i < num_beams; i++) {printf("%lg ** ", d_ptr->beam_storage[i]->get_step_length());}
     printf("\n aperture_out: "); for (int i = 0; i < num_beams; i++) {printf("%s ** ", d_ptr->beam_storage[i]->get_aperture_out().c_str());}

@@ -303,7 +303,7 @@ Rpl_volume::get_rgdepth (
     int ap_ij[2], ap_idx;
     double ap_xy[3];
     double dist, rgdepth = 0.;
-    int debug = 0;
+    bool debug = false;
 
     /* A couple of abbreviations */
     const int *ires = d_ptr->proj_vol->get_image_dim();

@@ -187,9 +187,9 @@ compute_dose_c (
     Volume *wepl_vol = wepl_rv->get_vol();
     float *wepl_img = wepl_vol->get_raw<float> ();
 
-    Rpl_volume *rpl_dose_volume = beam->rpl_dose_vol;
-    Volume *rpl_dose_vol = rpl_dose_volume->get_vol();
-    float *dose_img = dose_vol->get_raw<float> ();
+    Rpl_volume *rpl_dose_rv = beam->rpl_dose_vol;
+    Volume *rpl_dose_vol = rpl_dose_rv->get_vol();
+    float *rpl_dose_img = rpl_dose_vol->get_raw<float> ();
 
     Rt_mebs::Pointer mebs = beam->get_mebs();
     const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
@@ -221,24 +221,41 @@ compute_dose_c (
                 continue;
             }
             // Fill in dose
+            printf ("[ij] = %d %d\n", ij[1], ij[0]);
             for (int s = 0; s < num_steps; s++) {
                 int dose_index = ap_vol->index(ij[0],ij[1],s);
                 float wepl = wepl_img[dose_index];
-                dose_img[dose_index] = np * depth_dose->lookup_energy(wepl);
+                rpl_dose_img[dose_index] = np * depth_dose->lookup_energy(wepl);
+//                printf ("  %f %f %f\n", wepl, np, depth_dose->lookup_energy(wepl));
             }
+
+            // debug
+            plm_long nzdv = 0;
+            for (plm_long i = 0; i < rpl_dose_vol->npix; i++) {
+                if (rpl_dose_img[i] > 0.f) {
+                    nzdv ++;
+                }
+            }
+            printf ("nzdv = %d\n", nzdv);
 
             // Create beamlet dij
             rt_dij.set_from_rpl_dose (
-                ij, energy_index, rpl_dose_volume, dose_vol);
+                ij, energy_index, rpl_dose_rv, dose_vol);
 
             // Write beamlet dij
             // Zero out again
             for (int s = 0; s < num_steps; s++) {
                 int dose_index = ap_vol->index(ij[0],ij[1],s);
-                dose_img[dose_index] = 0.f;
+                rpl_dose_img[dose_index] = 0.f;
             }
         }
     }
+
+    printf ("Dumping...\n");
+    if (beam->get_dij_out() != "") {
+        rt_dij.dump (beam->get_dij_out());
+    }
+    printf ("End dumping.\n");
 }
 
 void
