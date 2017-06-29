@@ -440,10 +440,7 @@ Rt_beam::prepare_for_calc (
     this->hu_samp_vol->compute_rpl_sample (false);
 
     // Prepare, but don't compute the sigma volume yet
-    if (this->get_flavor() == "d"
-        || this->get_flavor() == "f"
-        || this->get_flavor() == "g"
-        || this->get_flavor() == "h")
+    if (this->get_flavor() == "d")
     {
         this->sigma_vol = new Rpl_volume;
         if (!this->sigma_vol) return false;

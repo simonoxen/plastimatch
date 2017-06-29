@@ -458,10 +458,8 @@ compute_sigma_range_compensator (
     vec3_sub3 (nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 	
-    if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != "h")
-    {
-        for (int i = 0; i < dim[0] * dim[1]; i++)
-        {
+    if (margins[0] == 0 && margins[1] == 0) {
+        for (int i = 0; i < dim[0] * dim[1]; i++) {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
             if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
             {
