@@ -470,7 +470,8 @@ Rt_beam::prepare_for_calc (
 
     // Create and fill in rpl_dose_volume (actually proj dose)
     if (this->get_flavor() == "b"
-        || this->get_flavor() == "c"
+        || this->get_flavor() == "ray_trace_dij_a"
+        || this->get_flavor() == "ray_trace_dij_b"
         || this->get_flavor() == "d")
     {
         this->rpl_dose_vol = new Rpl_volume;
@@ -484,17 +485,6 @@ Rt_beam::prepare_for_calc (
         this->rpl_dose_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
         this->rpl_dose_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
         this->rpl_dose_vol->compute_rpl_void();
-    }
-
-    /* Next, depending on what the user asked for, we may create apertures, 
-       range compensators, use pre-defined apertures or beamlet maps, etc. */
-    if (d_ptr->mebs->get_have_particle_number_map() == true
-        && d_ptr->beam_line_type == "passive")
-    {
-        printf("***WARNING*** Passively scattered beam line with beamlet map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
-        printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_beamlet_map();
-        return true;
     }
 
    /* The priority how to generate dose is:
@@ -573,10 +563,11 @@ void
 Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
-    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    const int* ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
+        printf ("  BEAM MODIFIERS BEING BUILT.\n");
         if (d_ptr->beam_line_type == "active")
         {
             this->compute_beam_modifiers_active_scanning (
@@ -1500,7 +1491,7 @@ Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, 
 }
 
 bool 
-Rt_beam::is_ray_in_the_aperture(int* idx, unsigned char* ap_img)
+Rt_beam::is_ray_in_the_aperture(int* idx, const unsigned char* ap_img)
 {
     if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
     if (idx[0] + 1 < this->get_aperture()->get_dim(0))

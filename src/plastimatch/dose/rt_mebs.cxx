@@ -1277,7 +1277,7 @@ Rt_mebs::initialize_energy_weight_and_depth_dose_vectors (
 }
 
 void 
-Rt_mebs::generate_part_num_from_weight (int* ap_dim)
+Rt_mebs::generate_part_num_from_weight (const int* ap_dim)
 {
     //int idx = 0;
     for (int i = 0; i < d_ptr->energy_number; i++) {

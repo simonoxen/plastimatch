@@ -232,7 +232,7 @@ public:
     std::string get_beam_line_type();
 
     bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
-    bool is_ray_in_the_aperture(int* idx, unsigned char* ap_img);
+    bool is_ray_in_the_aperture(int* idx, const unsigned char* ap_img);
 
     /* computes the minimal geometric distance of the target for this beam
        -- used for smearing */

@@ -62,6 +62,12 @@ Calc methodology
      compute_beam_data_from_prescription
 5. target
      compute_beam_data_from_target
+       if passive
+         compute_beam_modifiers
+         compute_beam_data_from_prescription
+       if active
+         compute_beam_modifiers_active_scanning
+         compute_particle_number_matrix_from_target_active
 6. 100 MeV sample beam
      compute_default_beam
        mebs()->add_peak

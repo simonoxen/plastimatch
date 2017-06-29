@@ -155,7 +155,7 @@ public:
         std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     
     /* This computes the E_min and E_max map from a target for all pencil beam*/
-    void generate_part_num_from_weight(int* ap_dim);
+    void generate_part_num_from_weight (const int* ap_dim);
     void compute_particle_number_matrix_from_target_active (
         Rpl_volume* rpl_vol,
         std::vector <double>& wepl_min,

@@ -508,7 +508,21 @@ Rt_plan::compute_dose (Rt_beam *beam)
         dose_volume_reconstruction (beam->rpl_dose_vol, dose_vol);
         d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
-    else if (beam->get_flavor() == "c") {
+    else if (beam->get_flavor() == "ray_trace_dij_a")
+    {
+        /* This is the same as alg 'a', except that it computes 
+           and exports Dij matrices */
+        d_ptr->rt_dose_timing->timer_dose_calc.resume ();
+        // Loop through energies
+        Rt_mebs::Pointer mebs = beam->get_mebs();
+        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
+        for (size_t i = 0; i < depth_dose.size(); i++) {
+            compute_dose_ray_trace_dij_a (beam, i, ct_vol, dose_vol);
+        }
+        d_ptr->rt_dose_timing->timer_dose_calc.resume ();
+    }
+    else if (beam->get_flavor() == "ray_trace_dij_b")
+    {
         /* This is the same as alg 'b', except that it computes 
            and exports Dij matrices */
 
@@ -524,7 +538,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
         for (size_t i = 0; i < depth_dose.size(); i++) {
-            compute_dose_c (beam, i, ct_vol, dose_vol);
+            compute_dose_ray_trace_dij_b (beam, i, ct_vol, dose_vol);
         }
         d_ptr->rt_dose_timing->timer_dose_calc.stop ();
         d_ptr->rt_dose_timing->timer_reformat.resume ();
