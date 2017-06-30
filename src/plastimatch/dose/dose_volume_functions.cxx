@@ -105,7 +105,7 @@ calculate_rpl_coordinates_xyz (
 
 void 
 dose_volume_reconstruction (
-    Rpl_volume* rpl_dose_vol, 
+    Rpl_volume* dose_rv, 
     Volume::Pointer dose_vol
 )
 {
@@ -116,7 +116,7 @@ dose_volume_reconstruction (
     double dose = 0;
 
     float* dose_img = (float*) dose_vol->img;
-
+    bool first = true;
     for (ct_ijk[2] = 0; ct_ijk[2] < dose_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < dose_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < dose_vol->dim[0]; ct_ijk[0]++) {
@@ -128,7 +128,7 @@ dose_volume_reconstruction (
                 ct_xyz[2] = (double) (dose_vol->origin[2] + ct_ijk[2] * dose_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
                 idx = volume_index (dose_vol->dim, ct_ijk);
-                dose = rpl_dose_vol->get_rgdepth(ct_xyz);
+                dose = dose_rv->get_rgdepth(ct_xyz);
 
                 if (dose <= 0) {
                     continue;

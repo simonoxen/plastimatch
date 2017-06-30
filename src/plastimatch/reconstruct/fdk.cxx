@@ -567,7 +567,7 @@ project_volume_onto_image_reference (
 		double ip[3];        /* ip = image position */
 		double s;            /* s = projection of vp onto s axis */
 		vp[0] = (double) (vol->origin[0] + i * vol->spacing[0]);
-		mat43_mult_vec3 (ip, pmat->matrix, vp);  /* ip = matrix * vp */
+		mat43_mult_vec4 (ip, pmat->matrix, vp);  /* ip = matrix * vp */
 		ip[0] = pmat->ic[0] + ip[0] / ip[2];
 		ip[1] = pmat->ic[1] + ip[1] / ip[2];
 		/* Distance on cenral axis from voxel center to source */

@@ -184,7 +184,7 @@ Rt_beam::Rt_beam ()
     this->rpl_vol_lg = 0;
     this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
-    this->rpl_dose_vol = 0;
+    this->dose_rv = 0;
 }
 
 Rt_beam::Rt_beam (const Rt_beam* rt_beam)
@@ -200,7 +200,7 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     this->rpl_vol_lg = 0;
     this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
-    this->rpl_dose_vol = 0;
+    this->dose_rv = 0;
 }
 
 Rt_beam::~Rt_beam ()
@@ -425,9 +425,7 @@ Rt_beam::prepare_for_calc (
         lprintf ("ray_data or clipping planes missing from rpl volume\n");
         return false;
     }
-    printf ("rsp_accum_vol->compute_rpl_accum (false)\n");
     this->rsp_accum_vol->compute_rpl_accum (false);
-    printf ("rsp_accum_vol->compute_rpl_accum (false) - done\n");
 
     // Create ct projective volume
     // GCS FIX: The old code re-used the ray data.  Is that really faster?
@@ -471,17 +469,17 @@ Rt_beam::prepare_for_calc (
         || this->get_flavor() == "ray_trace_dij_b"
         || this->get_flavor() == "d")
     {
-        this->rpl_dose_vol = new Rpl_volume;
-        if (!this->rpl_dose_vol) return false;
-        this->rpl_dose_vol->clone_geometry (this->rsp_accum_vol);
-        this->rpl_dose_vol->set_ray_trace_start (rvrts);
-        this->rpl_dose_vol->set_aperture (this->get_aperture());
-        this->rpl_dose_vol->set_ct_volume (d_ptr->ct_hu);
-        this->rpl_dose_vol->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
-        this->rpl_dose_vol->compute_ray_data();
-        this->rpl_dose_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
-        this->rpl_dose_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
-        this->rpl_dose_vol->compute_rpl_void();
+        this->dose_rv = new Rpl_volume;
+        if (!this->dose_rv) return false;
+        this->dose_rv->clone_geometry (this->rsp_accum_vol);
+        this->dose_rv->set_ray_trace_start (rvrts);
+        this->dose_rv->set_aperture (this->get_aperture());
+        this->dose_rv->set_ct_volume (d_ptr->ct_hu);
+        this->dose_rv->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
+        this->dose_rv->compute_ray_data();
+        this->dose_rv->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
+        this->dose_rv->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
+        this->dose_rv->compute_rpl_void();
     }
 
    /* The priority how to generate dose is:
@@ -493,13 +491,13 @@ Rt_beam::prepare_for_calc (
        6. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
-        printf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        lprintf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
         this->compute_beam_data_from_beamlet_map ();
         return true;
     }
     if (d_ptr->spot_map->num_spots() > 0)
     {
-        printf ("Beam specified by spot map\n");
+        lprintf ("Beam specified by spot map\n");
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_spot_map ();
@@ -507,14 +505,14 @@ Rt_beam::prepare_for_calc (
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
     {
-        printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
+        lprintf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
         this->get_mebs()->set_have_manual_peaks (true);
         this->compute_beam_data_from_manual_peaks (target);
         return true;
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
-        printf ("Prescription depths detected. Any target depth will not be considered.\n");
+        lprintf ("Prescription depths detected. Any target depth will not be considered.\n");
         this->get_mebs()->set_have_prescription(true);
         /* Apply margins */
         this->get_mebs()->set_target_depths (d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
@@ -523,7 +521,7 @@ Rt_beam::prepare_for_calc (
     }
     if (target && target->get_vol())
     {
-        printf("Target detected.\n");
+        lprintf("Target detected.\n");
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_target(target);
@@ -532,8 +530,8 @@ Rt_beam::prepare_for_calc (
 
     /* If we arrive to this point, it is because no beam was defined
        Creation of a default beam: 100 MeV */
-    printf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
-    printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
+    lprintf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
+    lprintf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
     this->compute_default_beam ();
 
     return true;
@@ -564,7 +562,6 @@ Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
-        printf ("  BEAM MODIFIERS BEING BUILT.\n");
         if (d_ptr->beam_line_type == "active")
         {
             this->compute_beam_modifiers_active_scanning (
@@ -1605,9 +1602,9 @@ Rt_beam::save_beam_output ()
 
     /* Save projected dose volume */
     if (this->get_proj_dose_out() != "") {
-        Rpl_volume* proj_dose = this->rpl_dose_vol;
-        if (proj_dose) {
-            proj_dose->save (this->get_proj_dose_out());
+        Rpl_volume* dose_rv = this->dose_rv;
+        if (dose_rv) {
+            dose_rv->save (this->get_proj_dose_out());
         }
     }
 

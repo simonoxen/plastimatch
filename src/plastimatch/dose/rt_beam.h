@@ -268,8 +268,8 @@ public:
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* rpl_vol_samp_lg;
     Rpl_volume* sigma_vol_lg;
-    Rpl_volume* rpl_dose_vol;
-    
+    Rpl_volume* dose_rv;
+
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);

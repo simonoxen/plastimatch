@@ -265,6 +265,18 @@ Proj_volume::get_vol () const
 }
 
 void
+Proj_volume::project_h (double* ij, const double* xyz)
+{
+    d_ptr->pmat->project_h (ij, xyz);
+}
+
+void
+Proj_volume::project (double* ij, const double* xyz)
+{
+    d_ptr->pmat->project (ij, xyz);
+}
+
+void
 Proj_volume::save_img (const char *filename)
 {
     Plm_image(d_ptr->vol).save_image(filename);

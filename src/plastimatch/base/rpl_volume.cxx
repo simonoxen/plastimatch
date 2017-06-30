@@ -314,9 +314,12 @@ Rpl_volume::get_rgdepth (
     }
 
     /* Back project the voxel to the aperture plane */
-    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+#if defined (commentout)
+    mat43_mult_vec4 (ap_xy, pmat->matrix, ct_xyz);
     ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
     ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
+#endif
+    d_ptr->proj_vol->project (ap_xy, ct_xyz);
 
     /* Make sure value is not inf or NaN */
     if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {

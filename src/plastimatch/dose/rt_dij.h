@@ -37,11 +37,11 @@ class PLMDOSE_API Rt_dij {
 public:
     std::list<Rt_dij_row> rows;
 public:
-    void set_from_rpl_dose (
+    void set_from_dose_rv (
         const plm_long ij[2],
         size_t energy_index,
-        const Rpl_volume *rpl_dose, 
-        Volume::Pointer& dose_vol);
+        const Rpl_volume *dose_rv, 
+        const Volume::Pointer& dose_vol);
     void dump (const std::string& dir) const;
 };
 

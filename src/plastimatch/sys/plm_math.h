@@ -201,7 +201,7 @@ static inline void vec_outer (double* v1, const double* v2, const double* v3, co
 #define m_idx(m1,c,i,j) m1[i*c+j]
 
 /* v1 = m2 * v3 */
-static inline void mat43_mult_vec3 (double* v1, const double* m2, const double* v3) {
+static inline void mat43_mult_vec4 (double* v1, const double* m2, const double* v3) {
     v1[0] = vec4_dot(&m2[0], v3);
     v1[1] = vec4_dot(&m2[4], v3);
     v1[2] = vec4_dot(&m2[8], v3);

@@ -11,11 +11,11 @@
 #include "volume_macros.h"
 
 void 
-Rt_dij::set_from_rpl_dose (
+Rt_dij::set_from_dose_rv (
     const plm_long ij[2],
     size_t energy_index,
-    const Rpl_volume *rpl_dose, 
-    Volume::Pointer& dose_vol)
+    const Rpl_volume *dose_rv, 
+    const Volume::Pointer& dose_vol)
 {
     this->rows.push_back (Rt_dij_row (
             float (ij[0]), float (ij[1]), float (energy_index)));
@@ -28,14 +28,9 @@ Rt_dij::set_from_rpl_dose (
         LOOP_Y (ijk, xyz, dose) {
             LOOP_X (ijk, xyz, dose) {
                 plm_long idx = dose->index (ijk);
-                float val = rpl_dose->get_rgdepth (xyz);
-                if (ijk[0] == 0 && ijk[1] == 3 && ijk[2] == 2)
-                {
-                    printf ("  xyz = %f, %f, %f\n", xyz[2], xyz[1], xyz[0]);
-                }
+                float val = dose_rv->get_rgdepth (xyz);
                 if (val > 0.f) {
-                    //rt_dij_row.dose.push_back (Rt_dij_dose (idx, val));
-                    printf ("  %d -> %f\n", idx, val);
+                    rt_dij_row.dose.push_back (Rt_dij_dose (idx, val));
                 }
             }
         }

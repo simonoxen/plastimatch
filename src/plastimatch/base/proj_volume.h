@@ -67,6 +67,17 @@ public:
     void load_projv (const char* filename);
     void load_projv (const std::string& filename);
 
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are homogenous, 
+       not cartesian. */
+    void project_h (double* ij, const double* xyz);
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are cartesian, 
+       not homogenous. */
+    void project (double* ij, const double* xyz);
+
     void debug ();
 };
 
