@@ -265,13 +265,13 @@ Proj_volume::get_vol () const
 }
 
 void
-Proj_volume::project_h (double* ij, const double* xyz)
+Proj_volume::project_h (double* ij, const double* xyz) const
 {
     d_ptr->pmat->project_h (ij, xyz);
 }
 
 void
-Proj_volume::project (double* ij, const double* xyz)
+Proj_volume::project (double* ij, const double* xyz) const
 {
     d_ptr->pmat->project (ij, xyz);
 }

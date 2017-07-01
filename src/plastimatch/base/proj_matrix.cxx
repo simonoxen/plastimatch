@@ -251,13 +251,13 @@ Proj_matrix::get_prt (
 }
 
 void
-Proj_matrix::project_h (double* ij, const double* xyz)
+Proj_matrix::project_h (double* ij, const double* xyz) const
 {
     mat43_mult_vec4 (ij, this->matrix, xyz);
 }
 
 void
-Proj_matrix::project (double* ij, const double* xyz)
+Proj_matrix::project (double* ij, const double* xyz) const
 {
     ij[0] = vec3_dot(&this->matrix[0], xyz) + this->matrix[3];
     ij[1] = vec3_dot(&this->matrix[4], xyz) + this->matrix[7];

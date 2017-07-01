@@ -535,12 +535,9 @@ Rt_plan::compute_dose (Rt_beam *beam)
         }
         
         // Loop through energies
-        Rt_mebs::Pointer mebs = beam->get_mebs();
-        std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
-        for (size_t i = 0; i < depth_dose.size(); i++) {
-            compute_dose_ray_trace_dij_b (beam, i, ct_vol, dose_vol);
-        }
+        compute_dose_ray_trace_dij_b (beam, ct_vol, dose_vol);
         d_ptr->rt_dose_timing->timer_dose_calc.stop ();
+
         d_ptr->rt_dose_timing->timer_reformat.resume ();
         dose_volume_reconstruction (beam->dose_rv, dose_vol);
         d_ptr->rt_dose_timing->timer_reformat.stop ();

@@ -71,12 +71,12 @@ public:
        into 2D coordinate ij coordinate on projection plane.  
        In this version, the inputs and outputs are homogenous, 
        not cartesian. */
-    void project_h (double* ij, const double* xyz);
+    void project_h (double* ij, const double* xyz) const;
     /* Project 3D coordinate xyz of cartesian space 
        into 2D coordinate ij coordinate on projection plane.  
        In this version, the inputs and outputs are cartesian, 
        not homogenous. */
-    void project (double* ij, const double* xyz);
+    void project (double* ij, const double* xyz) const;
 
     void debug ();
 };

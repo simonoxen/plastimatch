@@ -35,7 +35,6 @@ void compute_dose_ray_trace_dij_a (
 );
 void compute_dose_ray_trace_dij_b (
     Rt_beam* beam,
-    size_t energy_index,
     const Volume::Pointer ct_vol,
     Volume::Pointer& dose_vol
 );

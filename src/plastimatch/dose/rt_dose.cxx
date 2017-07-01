@@ -17,6 +17,7 @@
 #include "ray_data.h"
 #include "ray_trace.h"
 #include "rpl_volume.h"
+#include "rpl_volume_lut.h"
 #include "rt_beam.h"
 #include "rt_depth_dose.h"
 #include "rt_dij.h"
@@ -264,7 +265,6 @@ compute_dose_ray_trace_dij_a (
 void
 compute_dose_ray_trace_dij_b (
     Rt_beam* beam,
-    size_t energy_index,
     const Volume::Pointer ct_vol,
     Volume::Pointer& dose_vol
 )
@@ -278,11 +278,15 @@ compute_dose_ray_trace_dij_b (
     float *dose_rv_img = dose_rv_vol->get_raw<float> ();
 
     Rt_mebs::Pointer mebs = beam->get_mebs();
-    const Rt_depth_dose *depth_dose = mebs->get_depth_dose()[energy_index];
+    const std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
     std::vector<float>& num_part = mebs->get_num_particles();
 
     /* Create the beamlet dij matrix */
     Rt_dij rt_dij;
+
+    /* Create geometry map from volume to rpl_volume */
+    Rpl_volume_lut rpl_volume_lut;
+    rpl_volume_lut.build_lut (dose_rv, dose_vol.get());
 
     /* scan through rpl volume */
     Aperture::Pointer& ap = beam->get_aperture ();
@@ -300,43 +304,40 @@ compute_dose_ray_trace_dij_b (
             if (ap_img && ap_img[ap_vol->index(ij[0],ij[1],0)] == 0) {
                 continue;
             }
-            size_t np_index = energy_index * dim[0] * dim[1]
-                + ij[1] * dim[0] + ij[0];
-            float np = num_part[np_index];
-            if (np == 0.f) {
-                continue;
-            }
-            // Fill in dose
-            for (int s = 0; s < num_steps; s++) {
-                int dose_index = ap_vol->index(ij[0],ij[1],s);
-                float wepl = wepl_img[dose_index];
-                dose_rv_img[dose_index] = np * depth_dose->lookup_energy(wepl);
-            }
-
-            // debug
-#if defined (commentout)
-            plm_long nzdv = 0;
-            for (plm_long i = 0; i < dose_rv_vol->npix; i++) {
-                if (dose_rv_img[i] > 0.f) {
-                    nzdv ++;
+            for (size_t energy_index = 0; 
+                 energy_index < depth_dose.size(); 
+                 energy_index++)
+            {
+                // Get beamlet weight
+                size_t np_index = energy_index * dim[0] * dim[1]
+                    + ij[1] * dim[0] + ij[0];
+                float np = num_part[np_index];
+                if (np == 0.f) {
+                    continue;
                 }
-            }
-            printf ("nzdv = %d\n", nzdv);
-#endif
 
-            // Create beamlet dij
-            rt_dij.set_from_dose_rv (
-                ij, energy_index, dose_rv, ct_vol);
+                // Fill in dose
+                const Rt_depth_dose *dd = depth_dose[energy_index];
+                for (int s = 0; s < num_steps; s++) {
+                    int dose_index = ap_vol->index(ij[0],ij[1],s);
+                    float wepl = wepl_img[dose_index];
+                    dose_rv_img[dose_index] = np * dd->lookup_energy(wepl);
+                }
 
-            // Write beamlet dij
-            // Zero out again
-            for (int s = 0; s < num_steps; s++) {
-                int dose_index = ap_vol->index(ij[0],ij[1],s);
-                dose_rv_img[dose_index] = 0.f;
+                // Create beamlet dij
+                rt_dij.set_from_dose_rv (
+                    ij, energy_index, dose_rv, ct_vol);
+
+                // Zero out again
+                for (int s = 0; s < num_steps; s++) {
+                    int dose_index = ap_vol->index(ij[0],ij[1],s);
+                    dose_rv_img[dose_index] = 0.f;
+                }
             }
         }
     }
 
+    // Write beamlet dij
     if (beam->get_dij_out() != "") {
         rt_dij.dump (beam->get_dij_out());
     }
