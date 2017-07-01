@@ -80,7 +80,7 @@ calculate_rpl_coordinates_xyz (
         for (int j = 0; j < rpl_volume->get_vol()->dim[1];j++){
         
             idx2d = j * dim[0] + i;
-            Ray_data* ray_data = &rpl_volume->get_Ray_data()[idx2d];
+            Ray_data* ray_data = &rpl_volume->get_ray_data()[idx2d];
 
             vec3_cross(vec_antibug_prt, rpl_volume->get_aperture()->pdn, rpl_volume->get_proj_volume()->get_nrm());
             ray_bev[0] = vec3_dot(ray_data->ray, vec_antibug_prt);

@@ -104,8 +104,13 @@ static inline void vec4_copy (double* v1, const double* v2) {
     v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2]; v1[3] = v2[3];
 }
 
-template<class T> static inline double 
+template<class T> static inline T
 vec3_dot (const T* v1, const T* v2) {
+    return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
+}
+
+template<class T, class U> static inline float
+vec3_dot (const T* v1, const U* v2) {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
 }
 
@@ -126,8 +131,15 @@ static inline void vec3_sub2 (double* v1, const double* v2) {
     v1[0] -= v2[0]; v1[1] -= v2[1]; v1[2] -= v2[2];
 }
 
+#if defined (commentout)
 template<class T> static inline void 
 vec3_sub3 (T* v1, const T* v2, const T* v3) {
+    v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
+}
+#endif
+
+template<class T, class U, class V> static inline void 
+vec3_sub3 (T* v1, const U* v2, const V* v3) {
     v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
 }
 

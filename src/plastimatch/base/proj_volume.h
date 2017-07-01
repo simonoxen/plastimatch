@@ -45,7 +45,7 @@ public:
     const double* get_incr_r ();
     Proj_matrix *get_proj_matrix ();
     const double* get_nrm ();
-    const double* get_src ();
+    const double* get_src () const;
     const double* get_iso ();
     const double* get_clipping_dist();
     double get_step_length () const;

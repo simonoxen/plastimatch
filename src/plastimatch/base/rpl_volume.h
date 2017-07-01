@@ -57,10 +57,11 @@ public:
     const Aperture::Pointer& get_aperture () const;
     void set_aperture (Aperture::Pointer& ap);
 
-    void set_ct_volume (Plm_image::Pointer& ct_volume);
     Volume* get_vol ();
     const Volume* get_vol () const;
     Proj_volume* get_proj_volume ();
+    void set_ct_volume (Plm_image::Pointer& ct_volume);
+
     const Proj_volume* get_proj_volume () const;
 
     const plm_long *get_image_dim ();
@@ -72,10 +73,14 @@ public:
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
+
     void set_ct_limit(Volume_limit* ct_limit);
     Volume_limit* get_ct_limit();
-    void set_ray(Ray_data *ray);
-    Ray_data* get_Ray_data();
+
+    Ray_data* get_ray_data();
+    const Ray_data* get_ray_data() const;
+    void set_ray_data (Ray_data *ray);
+
     void set_front_clipping_plane(double front_clip);
     double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);

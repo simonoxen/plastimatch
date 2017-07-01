@@ -285,8 +285,8 @@ compute_dose_ray_trace_dij_b (
     Rt_dij rt_dij;
 
     /* Create geometry map from volume to rpl_volume */
-    Rpl_volume_lut rpl_volume_lut;
-    rpl_volume_lut.build_lut (dose_rv, dose_vol.get());
+    Rpl_volume_lut rpl_volume_lut (dose_rv, dose_vol.get());
+    rpl_volume_lut.build_lut ();
 
     /* scan through rpl volume */
     Aperture::Pointer& ap = beam->get_aperture ();

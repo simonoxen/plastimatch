@@ -386,12 +386,12 @@ Volume_limit* Rpl_volume::get_ct_limit()
     return &d_ptr->ct_limit;
 }
 
-void Rpl_volume::set_ray(Ray_data *ray)
+void Rpl_volume::set_ray_data (Ray_data *ray)
 {
     d_ptr->ray_data = ray;
 }
 
-Ray_data* Rpl_volume::get_Ray_data()
+Ray_data* Rpl_volume::get_ray_data()
 {
     return d_ptr->ray_data;
 }
@@ -976,7 +976,7 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
 
     for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {
-        Ray_data* ray_data = (Ray_data*) &this->get_Ray_data()[apert_idx];
+        Ray_data* ray_data = (Ray_data*) &this->get_ray_data()[apert_idx];
         for (int s = 0; s < dim[2]; s++)
         {
             idx = s * dim[0] * dim[1] + apert_idx;

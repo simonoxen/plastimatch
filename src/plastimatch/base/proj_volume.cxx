@@ -222,7 +222,7 @@ Proj_volume::get_proj_matrix ()
 }
 
 const double*
-Proj_volume::get_src ()
+Proj_volume::get_src () const
 {
     return d_ptr->src;
 }

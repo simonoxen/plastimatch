@@ -14,7 +14,6 @@ public:
     ~Wed_Parms ();
 
     bool parse_args (int argc, char** argv);
-    //void parse_group (int argc, char** argv, int line);
 
 private:
     void parse_config (const char* config_fn);
@@ -41,9 +40,6 @@ public:
     std::string output_ct_fn;        /* output: ct in world coordinates */
     std::string output_dew_ct_fn;    /* output: ct in world coordinates */
     std::string output_dew_dose_fn;  /* output: dose in world coordinates */
-
-//    std::string output_ap_fn;        /* output: aperture volume */
-//    std::string output_depth_fn;     /* output: depth volume */
 
     /* [BEAM] */
     bool have_ray_step;
