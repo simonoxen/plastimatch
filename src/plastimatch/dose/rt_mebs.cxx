@@ -1277,7 +1277,7 @@ Rt_mebs::initialize_energy_weight_and_depth_dose_vectors (
 }
 
 void 
-Rt_mebs::generate_part_num_from_weight (const int* ap_dim)
+Rt_mebs::generate_part_num_from_weight (const plm_long* ap_dim)
 {
     //int idx = 0;
     for (int i = 0; i < d_ptr->energy_number; i++) {
@@ -1298,7 +1298,7 @@ Rt_mebs::scale_num_part(double A, int* ap_dim)
 
 double 
 Rt_mebs::get_particle_number_xyz (
-    int* idx, double* rest, int dd_idx, const int* ap_dim)
+    plm_long* idx, double* rest, int dd_idx, const plm_long* ap_dim)
 {
     /* The boundaries possible errors like idx = dim are already excluded by 
        the test on the aperture. Practically, idx = dim -1 is not possible */

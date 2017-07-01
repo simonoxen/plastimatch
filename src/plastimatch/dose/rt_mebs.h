@@ -145,8 +145,8 @@ public:
         std::vector<Rt_depth_dose*>* depth_dose_tmp);
 
     void scale_num_part (double A, int* ap_dim);
-    double get_particle_number_xyz (int* idx, double* rest, 
-        int idx_beam, const int* ap_dim);
+    double get_particle_number_xyz (plm_long* idx, double* rest, 
+        int idx_beam, const plm_long* ap_dim);
 
     // returns also the wed max and min maps
     void compute_beam_modifiers_active_scanning (
@@ -155,7 +155,7 @@ public:
         std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     
     /* This computes the E_min and E_max map from a target for all pencil beam*/
-    void generate_part_num_from_weight (const int* ap_dim);
+    void generate_part_num_from_weight (const plm_long* ap_dim);
     void compute_particle_number_matrix_from_target_active (
         Rpl_volume* rpl_vol,
         std::vector <double>& wepl_min,

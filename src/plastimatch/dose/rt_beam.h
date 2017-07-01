@@ -183,7 +183,7 @@ public:
     void set_aperture_vup (const float[]);
     void set_aperture_distance (float);
     void set_aperture_origin (const float[]);
-    void set_aperture_resolution (const int[]);
+    void set_aperture_resolution (const plm_long[]);
     void set_aperture_spacing (const float[]);
 
     void set_step_length(float step);
@@ -231,8 +231,10 @@ public:
     void set_beam_line_type(std::string str);
     std::string get_beam_line_type();
 
-    bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
-    bool is_ray_in_the_aperture(int* idx, const unsigned char* ap_img);
+    bool get_intersection_with_aperture (
+        double* idx_ap, plm_long* idx, double* rest, double* ct_xyz);
+    bool is_ray_in_the_aperture (
+        const plm_long* idx, const unsigned char* ap_img);
 
     /* computes the minimal geometric distance of the target for this beam
        -- used for smearing */

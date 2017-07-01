@@ -34,8 +34,7 @@ public:
         const double* vup, 
         double sid, 
         const double* ic, 
-        const double* ps, 
-        const int* ires
+        const double* ps
     );
     void set (const std::string& s);
 

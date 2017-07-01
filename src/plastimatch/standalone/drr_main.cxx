@@ -119,8 +119,8 @@ create_matrix_and_drr (
 		     options->image_center[1] };
 
     /* Set image resolution */
-    int ires[2] = { options->image_resolution[0],
-		    options->image_resolution[1] };
+    plm_long ires[2] = { options->image_resolution[0],
+                         options->image_resolution[1] };
 
     /* Set physical size of imager in mm */
     float isize[2];
@@ -133,7 +133,7 @@ create_matrix_and_drr (
 
     /* Create projection matrix */
     sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
-    pmat->set (cam, tgt, vup, sid, ic, ps, ires);
+    pmat->set (cam, tgt, vup, sid, ic, ps);
 
     if (options->output_format == OUTPUT_FORMAT_PFM) {
 	sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);

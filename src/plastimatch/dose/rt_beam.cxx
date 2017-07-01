@@ -558,7 +558,7 @@ void
 Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
-    const int* ap_dim = this->get_aperture()->get_dim();
+    const plm_long* ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
@@ -586,7 +586,7 @@ void
 Rt_beam::compute_beam_data_from_manual_peaks()
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
-    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    const plm_long *ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     /* the automatic aperture and range compensator are erased and the 
        ones defined in the input file are considered */
@@ -1184,7 +1184,7 @@ Rt_beam::set_aperture_origin (const float ap_origin[])
 }
 
 void
-Rt_beam::set_aperture_resolution (const int ap_resolution[])
+Rt_beam::set_aperture_resolution (const plm_long ap_resolution[])
 {
     this->get_aperture()->set_dim (ap_resolution);
 }
@@ -1456,7 +1456,8 @@ Rt_beam::load_txt (const char* fn)
 }
 
 bool
-Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz)
+Rt_beam::get_intersection_with_aperture (
+    double* idx_ap, plm_long* idx, double* rest, double* ct_xyz)
 {
     double ray[3] = {0,0,0};
     double length_on_normal_axis = 0;
@@ -1485,7 +1486,8 @@ Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, 
 }
 
 bool 
-Rt_beam::is_ray_in_the_aperture(int* idx, const unsigned char* ap_img)
+Rt_beam::is_ray_in_the_aperture (
+    const plm_long* idx, const unsigned char* ap_img)
 {
     if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
     if (idx[0] + 1 < this->get_aperture()->get_dim(0))

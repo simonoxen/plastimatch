@@ -140,8 +140,7 @@ Proj_matrix::set (
     const double* vup, 
     double sid, 
     const double* ic, 
-    const double* ps, 
-    const int* ires
+    const double* ps
 )
 {
     const int cols = 4;

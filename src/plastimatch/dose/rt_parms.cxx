@@ -390,11 +390,12 @@ Rt_parms::set_key_value (
             rt_beam->set_aperture_origin (ap_origin);
         }
         else if (key == "aperture_resolution") {
-            int ap_dim[2];
-            int rc = sscanf (val.c_str(), "%i %i", &ap_dim[0], &ap_dim[1]);
+            int a, b;
+            int rc = sscanf (val.c_str(), "%i %i", &a, &b);
             if (rc != 2) {
                 goto error_exit;
             }
+            plm_long ap_dim[2] = { a, b };
             rt_beam->set_aperture_resolution (ap_dim);
         }
         else if (key == "aperture_spacing") {

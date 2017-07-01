@@ -6,6 +6,7 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include "plm_int.h"
 
 class PLMDOSE_API Wed_Parms {
 public:
@@ -53,7 +54,7 @@ public:
 
     /* [APERTURE] */
     float vup[3];
-    int ires[2];
+    plm_long ires[2];
     bool have_ic;
     bool have_ires;
     float ic[2];

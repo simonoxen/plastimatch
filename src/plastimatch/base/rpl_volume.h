@@ -44,7 +44,7 @@ public:
         const double iso[3],           // position of isocenter (mm)
         const double vup[3],           // dir to "top" of projection plane
         double sid,                    // dist from proj plane to source (mm)
-        const int image_dim[2],        // resolution of image
+        const plm_long image_dim[2],   // resolution of image
         const double image_center[2],  // image center (pixels)
         const double image_spacing[2], // pixel size (mm)
         const double step_length       // spacing between planes
@@ -63,10 +63,10 @@ public:
     Proj_volume* get_proj_volume ();
     const Proj_volume* get_proj_volume () const;
 
-    const int *get_image_dim ();
-    int get_num_steps ();
+    const plm_long *get_image_dim ();
+    plm_long get_num_steps ();
 
-    double get_value (int ap_ij[2], double dist) const;
+    double get_value (plm_long ap_ij[2], double dist) const;
     double get_value (double ap_ij[2], double dist) const;
     double get_value (const double *xyz) const;
 

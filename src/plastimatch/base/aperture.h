@@ -24,11 +24,11 @@ public:
     ///@{
 
     /*! \brief Get the aperture dimension, in pixels */
-    const int* get_dim () const;
+    const plm_long* get_dim () const;
     /*! \brief Get the i or j aperture dimension, in pixels */
-    int get_dim (int dim) const;
+    plm_long get_dim (int dim) const;
     /*! \brief Set the aperture dimension, in pixels */
-    void set_dim (const int* dim);
+    void set_dim (const plm_long* dim);
 
     /*! \brief Get the aperture center, in pixels */
     const double* get_center () const;

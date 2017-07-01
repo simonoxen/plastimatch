@@ -75,7 +75,7 @@ compute_dose_a (
     double ct_xyz[4];
     plm_long idx = 0;
     double idx_ap[2] = {0,0};
-    int idx_ap_int[2] = {0,0};
+    plm_long idx_ap_int[2] = {0,0};
     double rest[2] = {0,0};
     double particle_number = 0;
     float WER = 0;
@@ -159,7 +159,7 @@ compute_dose_b (
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
     }
-    const int *dim = wepl_rv->get_image_dim();
+    const plm_long *dim = wepl_rv->get_image_dim();
     int num_steps = wepl_rv->get_num_steps();
     plm_long ij[2] = {0,0};
     for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
@@ -204,7 +204,7 @@ compute_dose_ray_trace_dij_a (
     double ct_xyz[4];
     plm_long idx = 0;
     double idx_ap[2] = {0,0};
-    int idx_ap_int[2] = {0,0};
+    plm_long idx_ap_int[2] = {0,0};
     double rest[2] = {0,0};
     unsigned char* ap_img = (unsigned char*) beam->get_aperture()->get_aperture_volume()->img;
     double particle_number = 0;
@@ -222,7 +222,7 @@ compute_dose_ray_trace_dij_a (
                 ct_xyz[2] = (double) (ct_vol->origin[2] + ct_ijk[2] * ct_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
 
-                if (beam->get_intersection_with_aperture(idx_ap, idx_ap_int, rest, ct_xyz) == false)
+                if (beam->get_intersection_with_aperture (idx_ap, idx_ap_int, rest, ct_xyz) == false)
                 {
                     continue;
                 }
@@ -235,7 +235,7 @@ compute_dose_ray_trace_dij_a (
                 }
 
                 /* Check that the ray cross the active part of the aperture */
-                if (beam->get_aperture()->have_aperture_image() && beam->is_ray_in_the_aperture(idx_ap_int, ap_img) == false)
+                if (beam->get_aperture()->have_aperture_image() && beam->is_ray_in_the_aperture (idx_ap_int, ap_img) == false)
                 {
                     continue;
                 }
@@ -296,7 +296,7 @@ compute_dose_ray_trace_dij_b (
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
     }
-    const int *dim = wepl_rv->get_image_dim();
+    const plm_long *dim = wepl_rv->get_image_dim();
     int num_steps = wepl_rv->get_num_steps();
     plm_long ij[2] = {0,0};
     for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
@@ -430,8 +430,8 @@ compute_dose_d (
         ap_vol = ap->get_aperture_vol ();
         ap_img = ap_vol->get_raw<unsigned char> ();
     }
-    const int *dim = wepl_rv->get_image_dim();
-    int num_steps = wepl_rv->get_num_steps();
+    const plm_long *dim = wepl_rv->get_image_dim();
+    plm_long num_steps = wepl_rv->get_num_steps();
     plm_long ij[2] = {0,0};
     for (ij[1] = 0; ij[1] < dim[1]; ij[1]++) {
         for (ij[0] = 0; ij[0] < dim[0]; ij[0]++) {

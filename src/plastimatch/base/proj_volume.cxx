@@ -40,9 +40,9 @@ public:
 public:
     Volume::Pointer vol;
     Proj_matrix *pmat;
-    int num_steps;
+    plm_long num_steps;
     double step_length;
-    int image_dim[2];
+    plm_long image_dim[2];
     double image_spacing[2];
     double clipping_dist[2];
     double nrm[3];
@@ -78,7 +78,7 @@ Proj_volume::set_geometry (
     const double iso[3],           // position of isocenter (mm)
     const double vup[3],           // dir to "top" of projection plane
     double sid,                    // dist from proj plane to source (mm)
-    const int image_dim[2],        // resolution of image
+    const plm_long image_dim[2],   // resolution of image
     const double image_center[2],  // image center (pixels)
     const double image_spacing[2], // pixel size (mm)
     const double clipping_dist[2], // dist from src to clipping planes (mm)
@@ -107,8 +107,7 @@ Proj_volume::set_geometry (
         vup, 
         sid, 
         image_center,
-        image_spacing,
-        image_dim
+        image_spacing
     );
 
     /* populate aperture orientation unit vectors */
@@ -161,7 +160,7 @@ Proj_volume::set_clipping_dist (const double clipping_dist[2])
 {
     d_ptr->clipping_dist[0] = clipping_dist[0];
     d_ptr->clipping_dist[1] = clipping_dist[1];
-    d_ptr->num_steps = (int) ceil (
+    d_ptr->num_steps = (plm_long) ceil (
         (clipping_dist[1] - clipping_dist[0]) / d_ptr->step_length);
 }
 
@@ -179,19 +178,19 @@ Proj_volume::allocate ()
         direction_cosines, PT_FLOAT, 1);
 }
 
-const int*
+const plm_long*
 Proj_volume::get_image_dim ()
 {
     return d_ptr->image_dim;
 }
 
-int
+plm_long
 Proj_volume::get_image_dim (int dim)
 {
     return d_ptr->image_dim [dim];
 }
 
-int
+plm_long
 Proj_volume::get_num_steps ()
 {
     return d_ptr->num_steps;
@@ -378,18 +377,19 @@ Proj_volume::load_header (const char* filename)
             break;
         }
 
+        int a, b;
+        float f, g;
         int rc;
-        rc = sscanf (line.c_str(), "num_steps = %d\n", &d_ptr->num_steps);
+        rc = sscanf (line.c_str(), "num_steps = %d\n", &a);
+        d_ptr->num_steps = a;
         if (rc == 1) continue;
 
-        float f, g;
         rc = sscanf (line.c_str(), "step_length = %f\n", &f);
         if (rc == 1) {
             d_ptr->step_length = f;
             continue;
         }
 
-        int a, b;
         rc = sscanf (line.c_str(), "image_dim = %d %d\n", &a, &b);
         if (rc == 3) {
             d_ptr->image_dim[0] = a;
