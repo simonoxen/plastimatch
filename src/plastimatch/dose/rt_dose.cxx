@@ -314,6 +314,7 @@ compute_dose_ray_trace_dij_b (
             }
 
             // debug
+#if defined (commentout)
             plm_long nzdv = 0;
             for (plm_long i = 0; i < dose_rv_vol->npix; i++) {
                 if (dose_rv_img[i] > 0.f) {
@@ -321,6 +322,7 @@ compute_dose_ray_trace_dij_b (
                 }
             }
             printf ("nzdv = %d\n", nzdv);
+#endif
 
             // Create beamlet dij
             rt_dij.set_from_dose_rv (
@@ -328,12 +330,10 @@ compute_dose_ray_trace_dij_b (
 
             // Write beamlet dij
             // Zero out again
-#if defined (commentout)
             for (int s = 0; s < num_steps; s++) {
                 int dose_index = ap_vol->index(ij[0],ij[1],s);
                 dose_rv_img[dose_index] = 0.f;
             }
-#endif
         }
     }
 
