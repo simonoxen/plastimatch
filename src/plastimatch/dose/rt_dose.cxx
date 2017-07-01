@@ -110,8 +110,8 @@ compute_dose_a (
                 }
 
                 dose = 0;
-                rgdepth = beam->rsp_accum_vol->get_rgdepth (ct_xyz);
-                WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_rgdepth(ct_xyz));
+                rgdepth = beam->rsp_accum_vol->get_value (ct_xyz);
+                WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_value(ct_xyz));
 
                 const Rt_mebs::Pointer& mebs = beam->get_mebs();
                 for (size_t dd_idx = 0; dd_idx < mebs->get_depth_dose().size(); dd_idx++)
@@ -240,8 +240,8 @@ compute_dose_ray_trace_dij_a (
                 }
 
                 dose = 0;
-                rgdepth = beam->rsp_accum_vol->get_rgdepth (ct_xyz);
-                WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_rgdepth(ct_xyz));
+                rgdepth = beam->rsp_accum_vol->get_value (ct_xyz);
+                WER = compute_PrWER_from_HU (beam->hu_samp_vol->get_value(ct_xyz));
 
                 const Rt_mebs::Pointer& mebs = beam->get_mebs();
                 for (size_t dd_idx = 0; dd_idx < mebs->get_depth_dose().size(); dd_idx++)

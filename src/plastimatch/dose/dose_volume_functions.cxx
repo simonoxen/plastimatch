@@ -128,7 +128,7 @@ dose_volume_reconstruction (
                 ct_xyz[2] = (double) (dose_vol->origin[2] + ct_ijk[2] * dose_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
                 idx = volume_index (dose_vol->dim, ct_ijk);
-                dose = dose_rv->get_rgdepth(ct_xyz);
+                dose = dose_rv->get_value(ct_xyz);
 
                 if (dose <= 0) {
                     continue;

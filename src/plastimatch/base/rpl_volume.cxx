@@ -224,7 +224,7 @@ Rpl_volume::get_num_steps ()
 
 /* 1D interpolation */
 double
-Rpl_volume::get_rgdepth (
+Rpl_volume::get_value (
     int ap_ij[2],       /* I: aperture index */
     double dist         /* I: distance from aperture in mm */
 ) const
@@ -273,7 +273,7 @@ Rpl_volume::get_rgdepth (
 
 /* 3D interpolation */
 double
-Rpl_volume::get_rgdepth (
+Rpl_volume::get_value (
     double ap_ij[2],    /* I: aperture index */
     double dist         /* I: distance from aperture in mm */
 ) const
@@ -296,7 +296,7 @@ Rpl_volume::get_rgdepth (
 
 /* Lookup radiological path length to a voxel in world space */
 double
-Rpl_volume::get_rgdepth (
+Rpl_volume::get_value (
     const double* ct_xyz         /* I: location of voxel in world space */
 ) const
 {
@@ -314,11 +314,6 @@ Rpl_volume::get_rgdepth (
     }
 
     /* Back project the voxel to the aperture plane */
-#if defined (commentout)
-    mat43_mult_vec4 (ap_xy, pmat->matrix, ct_xyz);
-    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
-    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
-#endif
     d_ptr->proj_vol->project (ap_xy, ct_xyz);
 
     /* Make sure value is not inf or NaN */
@@ -361,7 +356,7 @@ Rpl_volume::get_rgdepth (
     }
 
     /* Retrieve the radiographic depth */
-    rgdepth = this->get_rgdepth (ap_xy, dist);
+    rgdepth = this->get_value (ap_xy, dist);
 
     return rgdepth;
 }
@@ -1050,7 +1045,7 @@ Rpl_volume::compute_proj_wed_volume (
     Ray_data *ray_data;
     double ray_ap[3]; //vector from src to ray intersection with ap plane
     double ray_ap_length; //length of vector from src to ray intersection with ap plane
-    double rglength; //length that we insert into get_rgdepth for each ray
+    double rglength; //length that we insert into get_value for each ray
 
     for (ap_ij[1] = 0; ap_ij[1] < ires[1]; ap_ij[1]++) {
         for (ap_ij[0] = 0; ap_ij[0] < ires[0]; ap_ij[0]++) {
@@ -1069,7 +1064,7 @@ Rpl_volume::compute_proj_wed_volume (
 
             rglength = base_rg_dist*(ray_ap_length/base_dist);
 
-            proj_wed_vol_img[ap_idx] = (float) (this->get_rgdepth(ap_ij,rglength));
+            proj_wed_vol_img[ap_idx] = (float) (this->get_value(ap_ij,rglength));
       
         }
     }
@@ -1375,9 +1370,9 @@ Rpl_volume::compute_dew_volume (
                     ap_ij[1] = (int) ray_lookup[i][1];
                     /* GCS FIX: I think the ray_lookup stuff is 
                        3D interpolation, should reduce this code to 
-                       use the 3D interpolated version of get_rgdepth() */
+                       use the 3D interpolated version of get_value() */
 
-                    ray_rad_len[i] = this->get_rgdepth (
+                    ray_rad_len[i] = this->get_value (
                         ap_ij, rad_depth_input);
 
                     //Set each corner to background.

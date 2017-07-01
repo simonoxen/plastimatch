@@ -28,7 +28,7 @@ Rt_dij::set_from_dose_rv (
         LOOP_Y (ijk, xyz, dose) {
             LOOP_X (ijk, xyz, dose) {
                 plm_long idx = dose->index (ijk);
-                float val = dose_rv->get_rgdepth (xyz);
+                float val = dose_rv->get_value (xyz);
                 if (val > 0.f) {
                     rt_dij_row.dose.push_back (Rt_dij_dose (idx, val));
                 }
