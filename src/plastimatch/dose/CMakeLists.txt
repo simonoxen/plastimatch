@@ -18,10 +18,13 @@ set (PLMDOSE_LIBRARY_SRC
   dose_volume_functions.cxx dose_volume_functions.h
   particle_type.cxx particle_type.h 
   rt_beam.cxx rt_beam.h
+  rt_beam_model.cxx rt_beam_model.h
   rt_depth_dose.cxx rt_depth_dose.h
+  rt_dij.cxx rt_dij.h
   rt_dose.cxx rt_dose.h
   rt_dose_timing.h
   rt_lut.cxx rt_lut.h
+  rt_spot_map.cxx rt_spot_map.h 
   rt_mebs.cxx rt_mebs.h
   rt_parms.cxx rt_parms.h
   rt_plan.cxx rt_plan.h

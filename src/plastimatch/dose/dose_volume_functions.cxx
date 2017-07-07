@@ -80,7 +80,7 @@ calculate_rpl_coordinates_xyz (
         for (int j = 0; j < rpl_volume->get_vol()->dim[1];j++){
         
             idx2d = j * dim[0] + i;
-            Ray_data* ray_data = &rpl_volume->get_Ray_data()[idx2d];
+            Ray_data* ray_data = &rpl_volume->get_ray_data()[idx2d];
 
             vec3_cross(vec_antibug_prt, rpl_volume->get_aperture()->pdn, rpl_volume->get_proj_volume()->get_nrm());
             ray_bev[0] = vec3_dot(ray_data->ray, vec_antibug_prt);
@@ -105,7 +105,7 @@ calculate_rpl_coordinates_xyz (
 
 void 
 dose_volume_reconstruction (
-    Rpl_volume* rpl_dose_vol, 
+    Rpl_volume* dose_rv, 
     Volume::Pointer dose_vol
 )
 {
@@ -116,7 +116,7 @@ dose_volume_reconstruction (
     double dose = 0;
 
     float* dose_img = (float*) dose_vol->img;
-
+    bool first = true;
     for (ct_ijk[2] = 0; ct_ijk[2] < dose_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < dose_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < dose_vol->dim[0]; ct_ijk[0]++) {
@@ -128,7 +128,7 @@ dose_volume_reconstruction (
                 ct_xyz[2] = (double) (dose_vol->origin[2] + ct_ijk[2] * dose_vol->spacing[2]);
                 ct_xyz[3] = (double) 1.0;
                 idx = volume_index (dose_vol->dim, ct_ijk);
-                dose = rpl_dose_vol->get_rgdepth(ct_xyz);
+                dose = dose_rv->get_value(ct_xyz);
 
                 if (dose <= 0) {
                     continue;

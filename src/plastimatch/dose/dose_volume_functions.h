@@ -11,7 +11,7 @@
 void dose_volume_create(Volume* dose_volume, float* sigma_max, Rpl_volume* volume, double range);
 
 void calculate_rpl_coordinates_xyz(std::vector<std::vector<double> >* xyz_coordinates_volume, Rpl_volume* rpl_volume);
-void dose_volume_reconstruction(Rpl_volume* rpl_dose_vol, Volume::Pointer dose_vol);
+void dose_volume_reconstruction(Rpl_volume* dose_rv, Volume::Pointer dose_vol);
 
 void build_hong_grid(std::vector<double>* area, std::vector<double>* xy_grid, int radius_sample, int theta_sample);
 

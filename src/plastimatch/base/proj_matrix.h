@@ -34,10 +34,20 @@ public:
         const double* vup, 
         double sid, 
         const double* ic, 
-        const double* ps, 
-        const int* ires
+        const double* ps
     );
     void set (const std::string& s);
+
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are homogenous, 
+       not cartesian. */
+    void project_h (double* ij, const double* xyz) const;
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are cartesian, 
+       not homogenous. */
+    void project (double* ij, const double* xyz) const;
 
     void save (const char *fn);
     void debug ();

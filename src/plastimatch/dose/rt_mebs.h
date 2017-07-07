@@ -2,8 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* -----------------------------------------------------------------------
-   rt_mebs (for mono-energetic_beam_set) is a class that creates beams of different energies,
-   including SOBP (Spread Out Bragg Peak) or any multi-energy beam configuration. 
+   rt_mebs (for mono-energetic beamlet set) is a class that creates beams 
+   of different energies, including SOBP (Spread Out Bragg Peak) 
+   or any multi-energy beam configuration. 
    ----------------------------------------------------------------------- */
 #ifndef _rt_mebs_h_
 #define _rt_mebs_h_
@@ -18,6 +19,7 @@
 #include "plm_config.h"
 #include "rpl_volume.h"
 #include "rt_lut.h"
+#include "rt_spot_map.h"
 #include "smart_pointer.h"
 
 class Rt_depth_dose;
@@ -133,26 +135,36 @@ public:
     void optimize_sobp ();
 
     /* Weight optimizer */
-    void optimizer (std::vector<float>* weight_tmp, std::vector<float>* energy_tmp);
+    void optimizer (std::vector<float>* weight_tmp, 
+        std::vector<float>* energy_tmp);
+    void get_optimized_peaks (float dmin, float dmax, 
+        std::vector<float>* weight_tmp, 
+        std::vector<Rt_depth_dose*>* depth_dose);
+    void initialize_energy_weight_and_depth_dose_vectors (
+        std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, 
+        std::vector<Rt_depth_dose*>* depth_dose_tmp);
 
-    void get_optimized_peaks(float dmin, float dmax, std::vector<float>* weight_tmp, std::vector<Rt_depth_dose*>* depth_dose);
-    void initialize_energy_weight_and_depth_dose_vectors(std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, std::vector<Rt_depth_dose*>* depth_dose_tmp);
+    void scale_num_part (double A, int* ap_dim);
+    double get_particle_number_xyz (plm_long* idx, double* rest, 
+        int idx_beam, const plm_long* ap_dim);
 
-    void scale_num_part(double A, int* ap_dim);
-    double get_particle_number_xyz(int* idx, double* rest, int idx_beam, const int* ap_dim);
-
-
-    void compute_beam_modifiers_active_scanning (Volume *seg_vol, float smearing, float proximal_margin, float distal_margin, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max); // returns also the wed max and min maps
+    // returns also the wed max and min maps
+    void compute_beam_modifiers_active_scanning (
+        Volume *seg_vol, float smearing, 
+        float proximal_margin, float distal_margin, 
+        std::vector<double>& map_wed_min, std::vector<double>& map_wed_max);
     
     /* This computes the E_min and E_max map from a target for all pencil beam*/
-    void generate_part_num_from_weight(int* ap_dim);
-    void extract_particle_number_map_from_txt(Aperture::Pointer& ap);
+    void generate_part_num_from_weight (const plm_long* ap_dim);
     void compute_particle_number_matrix_from_target_active (
         Rpl_volume* rpl_vol,
         std::vector <double>& wepl_min,
         std::vector <double>& wepl_max);
 
-    void export_spot_map_as_txt(Aperture::Pointer ap);
+    void set_from_spot_map (const Rt_spot_map::Pointer& rsm);
+
+    void load_beamlet_map (Aperture::Pointer& ap);
+    void export_as_txt (Aperture::Pointer ap);
 
     /* Debugging */
     void set_debug (bool);

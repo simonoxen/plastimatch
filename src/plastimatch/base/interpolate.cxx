@@ -40,6 +40,50 @@ li_clamp (
     *fa1 = 1.0f - *fa2;
 }
 
+/* Clipping is done by setting fractional values to 0.f */
+static void
+li_noclamp (
+    plm_long* f,   /* Output: x, y, or z coord of "floor" pixel */
+    float* fa1,	   /* Output: Fraction of interpolant for lower index voxel */
+    float* fa2,    /* Output: Fraction of interpolant for upper index voxel */
+    float idx,     /* Input:  (Unrounded) pixel coordinate (in vox) */
+    plm_long dmax  /* Input:  Maximum coordinate in this dimension */
+)
+{
+    *f = FLOOR_PLM_LONG (idx);
+    *fa2 = idx - *f;
+    *fa1 = 1.0f - *fa2;
+    if (*f < 0) {
+        *fa1 = 0.f;
+        if (*f < -1) {
+            *fa2 = 0.f;
+            return;
+        }
+    }
+    if (*f > dmax - 2) {
+        *fa2 = 0.f;
+        if (*f > dmax - 1) {
+            *fa1 = 0.f;
+            return;
+        }
+    }
+}
+
+/* Simple li, with no processing */
+static void
+li (
+    plm_long* f,   /* Output: x, y, or z coord of "floor" pixel */
+    float* fa1,	   /* Output: Fraction of interpolant for lower index voxel */
+    float* fa2,    /* Output: Fraction of interpolant for upper index voxel */
+    float idx,     /* Input:  (Unrounded) pixel coordinate (in vox) */
+    plm_long dmax  /* Input:  Maximum coordinate in this dimension */
+)
+{
+    *f = FLOOR_PLM_LONG (idx);
+    *fa2 = idx - *f;
+    *fa1 = 1.0f - *fa2;
+}
+
 void
 li_clamp_3d (
     const float mijk[3],  /* Input:  Unrounded pixel coordinates in vox */
@@ -47,7 +91,7 @@ li_clamp_3d (
     plm_long mijk_r[3],   /* Ouptut: "round" pixel in moving img in vox*/
     float li_frac_1[3],   /* Output: Fraction for upper index voxel */
     float li_frac_2[3],   /* Output: Fraction for lower index voxel */
-    Volume *moving        /* Input:  Volume (for dims) */
+    const Volume *moving  /* Input:  Volume (for dims) */
 )
 {
     li_clamp (mijk[0], moving->dim[0]-1, &mijk_f[0], 
@@ -56,6 +100,36 @@ li_clamp_3d (
 	&mijk_r[1], &li_frac_1[1], &li_frac_2[1]);
     li_clamp (mijk[2], moving->dim[2]-1, &mijk_f[2], 
 	&mijk_r[2], &li_frac_1[2], &li_frac_2[2]);
+}
+
+void
+li_noclamp_3d (
+    plm_long ijk_f[3],
+    float li_frac_1[3],
+    float li_frac_2[3],
+    const float ijk[3],
+    const plm_long dim[3]
+)
+{
+    li_noclamp (&ijk_f[0], &li_frac_1[0], &li_frac_2[0], 
+        ijk[0], dim[0]);
+    li_noclamp (&ijk_f[1], &li_frac_1[1], &li_frac_2[1], 
+        ijk[1], dim[1]);
+    li_noclamp (&ijk_f[2], &li_frac_1[2], &li_frac_2[2], 
+        ijk[2], dim[2]);
+}
+
+void
+li_2d (
+    plm_long *ijk_f,
+    float *li_frac_1,
+    float *li_frac_2,
+    const float *ijk,
+    const plm_long *dim
+)
+{
+    li (&ijk_f[0], &li_frac_1[0], &li_frac_2[0], ijk[0], dim[0]);
+    li (&ijk_f[1], &li_frac_1[1], &li_frac_2[1], ijk[1], dim[1]);
 }
 
 float

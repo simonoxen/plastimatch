@@ -80,11 +80,11 @@ public:
     ~Volume ();
 public:
     /*! \brief Return a linear index to a voxel */
-    plm_long index (plm_long i, plm_long j, plm_long k) {
+    plm_long index (plm_long i, plm_long j, plm_long k) const {
         return volume_index (this->dim, i, j, k);
     }
     /*! \brief Return a linear index to a voxel */
-    plm_long index (plm_long ijk[3]) {
+    plm_long index (plm_long ijk[3]) const {
         return volume_index (this->dim, ijk);
     }
     /*! \brief Return a world coordinates of a voxel */
@@ -182,7 +182,7 @@ public:
     /*! \brief Get the value at a voxel coordinate, clamped and 
       tri-linearly interpolated.  Only applies to float volumes.
     */
-    float get_ijk_value (const float xyz[3]);
+    float get_ijk_value (const float xyz[3]) const;
     void get_xyz_from_ijk (double xyz[3], const int ijk[3]);
 
     void get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in);

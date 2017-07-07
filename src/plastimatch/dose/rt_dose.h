@@ -17,7 +17,7 @@ energy_direct (
 	int beam_idx
 );
 
-void compute_dose_ray_trace_a (
+void compute_dose_a (
     Volume::Pointer dose_vol, 
     Rt_beam* beam, 
     const Volume::Pointer ct_vol
@@ -26,6 +26,17 @@ void compute_dose_b (
     Rt_beam* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol
+);
+void compute_dose_ray_trace_dij_a (
+    Rt_beam* beam,
+    size_t energy_index,
+    const Volume::Pointer ct_vol,
+    Volume::Pointer& dose_vol
+);
+void compute_dose_ray_trace_dij_b (
+    Rt_beam* beam,
+    const Volume::Pointer ct_vol,
+    Volume::Pointer& dose_vol
 );
 void compute_dose_d (
     Rt_beam* beam,

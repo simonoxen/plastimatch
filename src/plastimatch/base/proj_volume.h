@@ -6,6 +6,7 @@
 
 #include "plmbase_config.h"
 #include <string>
+#include "plm_int.h"
 
 class Proj_matrix;
 class Proj_volume_private;
@@ -30,24 +31,24 @@ public:
         const double iso[3],           // position of isocenter (mm)
         const double vup[3],           // dir to "top" of projection plane
         double sid,                    // dist from proj plane to source (mm)
-        const int image_dim[2],        // resolution of image
+        const plm_long image_dim[2],   // resolution of image
         const double image_center[2],  // image center (pixels)
         const double image_spacing[2], // pixel size (mm)
         const double clipping_dist[2], // dist from src to clipping planes (mm)
         const double step_length       // spacing between planes
     );
     void set_clipping_dist (const double clipping_dist[2]);
-    const int* get_image_dim ();
-    int get_image_dim (int dim);
-    int get_num_steps ();
+    const plm_long* get_image_dim ();
+    plm_long get_image_dim (int dim);
+    plm_long get_num_steps ();
     const double* get_incr_c ();
     const double* get_incr_r ();
     Proj_matrix *get_proj_matrix ();
     const double* get_nrm ();
-    const double* get_src ();
+    const double* get_src () const;
     const double* get_iso ();
     const double* get_clipping_dist();
-    double get_step_length ();
+    double get_step_length () const;
     const double* get_ul_room ();
     Volume *get_vol ();
     const Volume *get_vol () const;
@@ -66,6 +67,17 @@ public:
     void load_header (const std::string& filename);
     void load_projv (const char* filename);
     void load_projv (const std::string& filename);
+
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are homogenous, 
+       not cartesian. */
+    void project_h (double* ij, const double* xyz) const;
+    /* Project 3D coordinate xyz of cartesian space 
+       into 2D coordinate ij coordinate on projection plane.  
+       In this version, the inputs and outputs are cartesian, 
+       not homogenous. */
+    void project (double* ij, const double* xyz) const;
 
     void debug ();
 };

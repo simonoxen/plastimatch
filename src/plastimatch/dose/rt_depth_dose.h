@@ -30,15 +30,15 @@ private:
     bool load_txt (const char* fn);
 
 public:
-    float* d_lut;                   /* depth array (mm) */
-    float* e_lut;                   /* energy array (MeV) */
-    float* f_lut;					/* integrated energy array (MeV) */
+    float* d_lut;                  /* depth array (mm) */
+    float* e_lut;                  /* energy array (MeV) */
+    float* f_lut;                  /* integrated energy array (MeV) */
 
     float E0;                      /* initial ion energy (MeV) */
-    double spread;                  /* beam energy sigma (MeV) */
-    double dres;                    /* spatial resolution of bragg curve (mm)*/
-    double dend;                    /* maximum w.e.d. (mm) */
-    int num_samples;                /* # of discrete bragg curve samples */
+    double spread;                 /* beam energy sigma (MeV) */
+    double dres;                   /* spatial resolution of bragg curve (mm)*/
+    double dend;                   /* maximum w.e.d. (mm) */
+    int num_samples;               /* # of discrete bragg curve samples */
 
     int index_of_dose_max;
 };

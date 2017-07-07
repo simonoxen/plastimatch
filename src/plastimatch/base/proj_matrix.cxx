@@ -140,8 +140,7 @@ Proj_matrix::set (
     const double* vup, 
     double sid, 
     const double* ic, 
-    const double* ps, 
-    const int* ires
+    const double* ps
 )
 {
     const int cols = 4;
@@ -248,4 +247,20 @@ Proj_matrix::get_prt (
 )
 {
     vec3_copy (prt, &this->extrinsic[0]);
+}
+
+void
+Proj_matrix::project_h (double* ij, const double* xyz) const
+{
+    mat43_mult_vec4 (ij, this->matrix, xyz);
+}
+
+void
+Proj_matrix::project (double* ij, const double* xyz) const
+{
+    ij[0] = vec3_dot(&this->matrix[0], xyz) + this->matrix[3];
+    ij[1] = vec3_dot(&this->matrix[4], xyz) + this->matrix[7];
+    double h = vec3_dot(&this->matrix[8], xyz) + this->matrix[11];
+    ij[0] = this->ic[0] + ij[0] / h;
+    ij[1] = this->ic[1] + ij[1] / h;
 }

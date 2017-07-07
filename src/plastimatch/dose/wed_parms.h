@@ -6,6 +6,7 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include "plm_int.h"
 
 class PLMDOSE_API Wed_Parms {
 public:
@@ -13,7 +14,6 @@ public:
     ~Wed_Parms ();
 
     bool parse_args (int argc, char** argv);
-    //void parse_group (int argc, char** argv, int line);
 
 private:
     void parse_config (const char* config_fn);
@@ -41,9 +41,6 @@ public:
     std::string output_dew_ct_fn;    /* output: ct in world coordinates */
     std::string output_dew_dose_fn;  /* output: dose in world coordinates */
 
-//    std::string output_ap_fn;        /* output: aperture volume */
-//    std::string output_depth_fn;     /* output: depth volume */
-
     /* [BEAM] */
     bool have_ray_step;
     float ray_step;                  /* Uniform ray step size (mm) */
@@ -53,7 +50,7 @@ public:
 
     /* [APERTURE] */
     float vup[3];
-    int ires[2];
+    plm_long ires[2];
     bool have_ic;
     bool have_ires;
     float ic[2];

@@ -14,6 +14,7 @@
 #include "rt_beam.h"
 #include "rt_dose_timing.h"
 #include "rt_plan.h"
+#include "rt_spot_map.h"
 
 static void
 save_vector_as_image (
@@ -50,11 +51,12 @@ public:
 
     double source[3];
     double isocenter[3];
-    char flavor;
+    std::string flavor;
     char homo_approx;
 
     float beamWeight;
 
+    Rt_spot_map::Pointer spot_map;
     Rt_mebs::Pointer mebs;
     std::string debug_dir;
 
@@ -84,6 +86,7 @@ public:
     std::string sigma_out;
     std::string wed_out;
     std::string beam_dump_out;
+    std::string dij_out;
     
     std::string beam_line_type;
 
@@ -98,10 +101,11 @@ public:
         this->isocenter[0] = 0.f;
         this->isocenter[1] = 0.f;
         this->isocenter[2] = 0.f;
-        this->flavor = 'a';
+        this->flavor = "a";
         this->homo_approx = 'n';
 
         this->beamWeight = 1.f;
+        this->spot_map = Rt_spot_map::New();
         this->mebs = Rt_mebs::New();
         this->debug_dir = "";
         this->smearing = 0.f;
@@ -138,9 +142,11 @@ public:
         this->flavor = rtbp->flavor;
         this->homo_approx = rtbp->homo_approx;
 
-        /* Copy the mebs object */
         this->beamWeight = rtbp->beamWeight;
-        this->mebs = Rt_mebs::New (rtbp->mebs);
+        // Clear the spot map
+        this->spot_map = Rt_spot_map::New();
+        // Copy the mebs object (?)
+        this->mebs = Rt_mebs::New(rtbp->mebs);
         this->debug_dir = rtbp->debug_dir;
         this->smearing = rtbp->smearing;
         this->source_size = rtbp->source_size;
@@ -178,7 +184,7 @@ Rt_beam::Rt_beam ()
     this->rpl_vol_lg = 0;
     this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
-    this->rpl_dose_vol = 0;
+    this->dose_rv = 0;
 }
 
 Rt_beam::Rt_beam (const Rt_beam* rt_beam)
@@ -194,7 +200,7 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     this->rpl_vol_lg = 0;
     this->rpl_vol_samp_lg = 0;
     this->sigma_vol_lg = 0;
-    this->rpl_dose_vol = 0;
+    this->dose_rv = 0;
 }
 
 Rt_beam::~Rt_beam ()
@@ -284,14 +290,14 @@ Rt_beam::get_source_distance () const
     return vec3_dist (d_ptr->isocenter, d_ptr->source);
 }
 
-char
+const std::string&
 Rt_beam::get_flavor (void) const
 {
     return d_ptr->flavor;
 }
 
 void
-Rt_beam::set_flavor (char flavor)
+Rt_beam::set_flavor (const std::string& flavor)
 {
     d_ptr->flavor = flavor;
 }
@@ -368,6 +374,17 @@ Rt_beam::dump (const std::string& dir)
     this->dump (dir.c_str());
 }
 
+void 
+Rt_beam::add_spot (
+    float xpos,
+    float ypos,
+    float energy,
+    float sigma,
+    float weight)
+{
+    d_ptr->spot_map->add_spot (xpos, ypos, energy, sigma, weight);
+}
+
 bool
 Rt_beam::prepare_for_calc (
     Plm_image::Pointer& ct_hu,
@@ -421,10 +438,7 @@ Rt_beam::prepare_for_calc (
     this->hu_samp_vol->compute_rpl_sample (false);
 
     // Prepare, but don't compute the sigma volume yet
-    if (this->get_flavor() == 'd'
-        || this->get_flavor() == 'f'
-        || this->get_flavor() == 'g'
-        || this->get_flavor() == 'h')
+    if (this->get_flavor() == "d")
     {
         this->sigma_vol = new Rpl_volume;
         if (!this->sigma_vol) return false;
@@ -450,64 +464,64 @@ Rt_beam::prepare_for_calc (
     }
 
     // Create and fill in rpl_dose_volume (actually proj dose)
-    if (this->get_flavor() == 'b'
-        || this->get_flavor() == 'd')
+    if (this->get_flavor() == "b"
+        || this->get_flavor() == "ray_trace_dij_a"
+        || this->get_flavor() == "ray_trace_dij_b"
+        || this->get_flavor() == "d")
     {
-        this->rpl_dose_vol = new Rpl_volume;
-        if (!this->rpl_dose_vol) return false;
-        this->rpl_dose_vol->clone_geometry (this->rsp_accum_vol);
-        this->rpl_dose_vol->set_ray_trace_start (rvrts);
-        this->rpl_dose_vol->set_aperture (this->get_aperture());
-        this->rpl_dose_vol->set_ct_volume (d_ptr->ct_hu);
-        this->rpl_dose_vol->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
-        this->rpl_dose_vol->compute_ray_data();
-        this->rpl_dose_vol->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
-        this->rpl_dose_vol->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
-        this->rpl_dose_vol->compute_rpl_void();
-    }
-
-    /* Next, depending on what the user asked for, we may create apertures, 
-       range compensators, use pre-defined apertures or spot maps, etc. */
-    if (d_ptr->mebs->get_have_particle_number_map() == true
-        && d_ptr->beam_line_type == "passive")
-    {
-        printf("***WARNING*** Passively scattered beam line with spot map file detected: %s.\nBeam line set to active scanning.\n", d_ptr->mebs->get_particle_number_in().c_str());
-        printf("Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_spot_map();
-        return true;
+        this->dose_rv = new Rpl_volume;
+        if (!this->dose_rv) return false;
+        this->dose_rv->clone_geometry (this->rsp_accum_vol);
+        this->dose_rv->set_ray_trace_start (rvrts);
+        this->dose_rv->set_aperture (this->get_aperture());
+        this->dose_rv->set_ct_volume (d_ptr->ct_hu);
+        this->dose_rv->set_ct_limit(this->rsp_accum_vol->get_ct_limit());
+        this->dose_rv->compute_ray_data();
+        this->dose_rv->set_front_clipping_plane(this->rsp_accum_vol->get_front_clipping_plane());
+        this->dose_rv->set_back_clipping_plane(this->rsp_accum_vol->get_back_clipping_plane());
+        this->dose_rv->compute_rpl_void();
     }
 
    /* The priority how to generate dose is:
-       1. manual spot map 
-       2. manual peaks 
-       3. dose prescription 
-       4. target 
-       5. 100 MeV sample beam */
+       1. manual beamlet map 
+       2. manual spot map
+       3. manual peaks 
+       4. dose prescription 
+       5. target 
+       6. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
-        printf("Spot map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
-        this->compute_beam_data_from_spot_map();
+        lprintf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        this->compute_beam_data_from_beamlet_map ();
+        return true;
+    }
+    if (d_ptr->spot_map->num_spots() > 0)
+    {
+        lprintf ("Beam specified by spot map\n");
+        this->get_mebs()->set_have_manual_peaks(false);
+        this->get_mebs()->set_have_prescription(false);
+        this->compute_beam_data_from_spot_map ();
         return true;
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
     {
-        printf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
-        this->get_mebs()->set_have_manual_peaks(true);
-        this->compute_beam_data_from_manual_peaks(target);
+        lprintf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
+        this->get_mebs()->set_have_manual_peaks (true);
+        this->compute_beam_data_from_manual_peaks (target);
         return true;
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
-        printf("Prescription depths detected. Any target depth will not be considered.\n");
+        lprintf ("Prescription depths detected. Any target depth will not be considered.\n");
         this->get_mebs()->set_have_prescription(true);
         /* Apply margins */
-        this->get_mebs()->set_target_depths(d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
-        this->compute_beam_data_from_prescription(target);
+        this->get_mebs()->set_target_depths (d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
+        this->compute_beam_data_from_prescription (target);
         return true;
     }
-    if (target->get_vol())
+    if (target && target->get_vol())
     {
-        printf("Target detected.\n");
+        lprintf("Target detected.\n");
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_target(target);
@@ -516,31 +530,37 @@ Rt_beam::prepare_for_calc (
 
     /* If we arrive to this point, it is because no beam was defined
        Creation of a default beam: 100 MeV */
-    printf("***WARNING*** No spot map, manual peaks, depth prescription or target detected.\n");
-    printf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
-    this->compute_default_beam();
+    lprintf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
+    lprintf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
+    this->compute_default_beam ();
 
     return true;
 }
 
 void
-Rt_beam::compute_beam_data_from_spot_map()
+Rt_beam::compute_beam_data_from_beamlet_map()
 {
-    this->get_mebs()->clear_depth_dose();
-    this->get_mebs()->extract_particle_number_map_from_txt(this->get_aperture());
+    this->get_mebs()->clear_depth_dose ();
+    this->get_mebs()->load_beamlet_map (this->get_aperture());
 
     /* the automatic aperture and range compensator are erased and the 
        ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator();
+    this->update_aperture_and_range_compensator ();
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
+Rt_beam::compute_beam_data_from_spot_map()
 {
-    /* The spot map will be identical for passive or scanning beam lines */
-    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    this->get_mebs()->set_from_spot_map (d_ptr->spot_map);
+}
+
+void
+Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
+{
+    /* The beamlet map will be identical for passive or scanning beam lines */
+    const plm_long* ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
-    if ((target->get_vol() && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
+    if ((target && (d_ptr->aperture_in =="" || d_ptr->range_compensator_in =="")) && (d_ptr->mebs->get_have_manual_peaks() == true || d_ptr->mebs->get_have_prescription() == true)) // we build the associate range compensator and aperture
     {
         if (d_ptr->beam_line_type == "active")
         {
@@ -565,8 +585,8 @@ Rt_beam::compute_beam_data_from_manual_peaks(Plm_image::Pointer& target)
 void
 Rt_beam::compute_beam_data_from_manual_peaks()
 {
-    /* The spot map will be identical for passive or scanning beam lines */
-    int ap_dim[2] = {this->get_aperture()->get_dim()[0], this->get_aperture()->get_dim()[1]};
+    /* The beamlet map will be identical for passive or scanning beam lines */
+    const plm_long *ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
     /* the automatic aperture and range compensator are erased and the 
        ones defined in the input file are considered */
@@ -576,7 +596,7 @@ Rt_beam::compute_beam_data_from_manual_peaks()
 void
 Rt_beam::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 {
-    /* The spot map will be identical for passive or scanning beam lines */
+    /* The beamlet map will be identical for passive or scanning beam lines */
     /* Identic to compute from manual peaks, with a preliminary optimization */
     d_ptr->mebs->optimize_sobp();
     this->compute_beam_data_from_manual_peaks(target);
@@ -613,8 +633,8 @@ void
 Rt_beam::compute_default_beam()
 {
     /* Computes a default 100 MeV peak */
-    this->get_mebs()->add_peak(100, 1, 1);
-    this->compute_beam_data_from_manual_peaks();
+    this->get_mebs()->add_peak (100, 1, 1);
+    this->compute_beam_data_from_manual_peaks ();
 }
 
 void 
@@ -709,10 +729,6 @@ Rt_beam::compute_beam_modifiers_core (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
-
-    /* compute the target min and max distance (not wed!) map in the aperture */
-    // GCS FIX: definitely we want wed here.
-    // compute_target_distance_limits (seg_vol, map_wed_min, map_wed_max);
     printf("Compute target wepl_min_max...\n");
     this->compute_target_wepl_min_max (map_wed_min, map_wed_max);
 
@@ -1168,7 +1184,7 @@ Rt_beam::set_aperture_origin (const float ap_origin[])
 }
 
 void
-Rt_beam::set_aperture_resolution (const int ap_resolution[])
+Rt_beam::set_aperture_resolution (const plm_long ap_resolution[])
 {
     this->get_aperture()->set_dim (ap_resolution);
 }
@@ -1300,6 +1316,18 @@ Rt_beam::get_beam_dump_out()
 }
 
 void 
+Rt_beam::set_dij_out (const std::string& str)
+{
+    d_ptr->dij_out = str;
+}
+
+const std::string&
+Rt_beam::get_dij_out()
+{
+    return d_ptr->dij_out;
+}
+
+void 
 Rt_beam::set_wed_out(std::string str)
 {
     d_ptr->wed_out = str;
@@ -1428,7 +1456,8 @@ Rt_beam::load_txt (const char* fn)
 }
 
 bool
-Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz)
+Rt_beam::get_intersection_with_aperture (
+    double* idx_ap, plm_long* idx, double* rest, double* ct_xyz)
 {
     double ray[3] = {0,0,0};
     double length_on_normal_axis = 0;
@@ -1457,7 +1486,8 @@ Rt_beam::get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, 
 }
 
 bool 
-Rt_beam::is_ray_in_the_aperture(int* idx, unsigned char* ap_img)
+Rt_beam::is_ray_in_the_aperture (
+    const plm_long* idx, const unsigned char* ap_img)
 {
     if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
     if (idx[0] + 1 < this->get_aperture()->get_dim(0))
@@ -1574,9 +1604,9 @@ Rt_beam::save_beam_output ()
 
     /* Save projected dose volume */
     if (this->get_proj_dose_out() != "") {
-        Rpl_volume* proj_dose = this->rpl_dose_vol;
-        if (proj_dose) {
-            proj_dose->save (this->get_proj_dose_out());
+        Rpl_volume* dose_rv = this->dose_rv;
+        if (dose_rv) {
+            dose_rv->save (this->get_proj_dose_out());
         }
     }
 
@@ -1596,9 +1626,9 @@ Rt_beam::save_beam_output ()
         }
     }
 
-    /* Save the spot map */
+    /* Save the beamlet map */
     if (this->get_mebs()->get_particle_number_out() != "") {
-        this->get_mebs()->export_spot_map_as_txt (this->get_aperture());
+        this->get_mebs()->export_as_txt (this->get_aperture());
     }
 
     /* Dump beam information */

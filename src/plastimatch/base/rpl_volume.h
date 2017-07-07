@@ -44,7 +44,7 @@ public:
         const double iso[3],           // position of isocenter (mm)
         const double vup[3],           // dir to "top" of projection plane
         double sid,                    // dist from proj plane to source (mm)
-        const int image_dim[2],        // resolution of image
+        const plm_long image_dim[2],   // resolution of image
         const double image_center[2],  // image center (pixels)
         const double image_spacing[2], // pixel size (mm)
         const double step_length       // spacing between planes
@@ -57,24 +57,30 @@ public:
     const Aperture::Pointer& get_aperture () const;
     void set_aperture (Aperture::Pointer& ap);
 
-    void set_ct_volume (Plm_image::Pointer& ct_volume);
     Volume* get_vol ();
     const Volume* get_vol () const;
     Proj_volume* get_proj_volume ();
+    void set_ct_volume (Plm_image::Pointer& ct_volume);
 
-    const int *get_image_dim ();
-    int get_num_steps ();
+    const Proj_volume* get_proj_volume () const;
 
-    double get_rgdepth (int ap_ij[2], double dist);
-    double get_rgdepth (double ap_ij[2], double dist);
-    double get_rgdepth (const double *xyz);
+    const plm_long *get_image_dim ();
+    plm_long get_num_steps ();
+
+    double get_value (plm_long ap_ij[2], double dist) const;
+    double get_value (double ap_ij[2], double dist) const;
+    double get_value (const double *xyz) const;
 
     void set_ct (const Plm_image::Pointer& ct_volume);
     Plm_image::Pointer get_ct();
+
     void set_ct_limit(Volume_limit* ct_limit);
     Volume_limit* get_ct_limit();
-    void set_ray(Ray_data *ray);
-    Ray_data* get_Ray_data();
+
+    Ray_data* get_ray_data();
+    const Ray_data* get_ray_data() const;
+    void set_ray_data (Ray_data *ray);
+
     void set_front_clipping_plane(double front_clip);
     double get_front_clipping_plane () const;
     void set_back_clipping_plane(double back_clip);

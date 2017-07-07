@@ -16,14 +16,35 @@ PLMBASE_C_API void li_clamp (
     plm_long* mar, 
     float* fa1, float* fa2
 );
+
 PLMBASE_C_API void li_clamp_3d (
     const float mijk[3],
     plm_long mijk_f[3],
     plm_long mijk_r[3],
     float li_frac_1[3],
     float li_frac_2[3],
-    Volume *moving
+    const Volume *moving
 );
+
+/* Compute only fractional components, do not solve for value.  
+   Clamping is not done; instead, fractions are set to 0.f if xyz 
+   lies outside limits of dim. */
+PLMBASE_C_API void li_noclamp_3d (
+    plm_long ijk_f[3],
+    float li_frac_1[3],
+    float li_frac_2[3],
+    const float ijk[3],
+    const plm_long dim[3]
+);
+
+PLMBASE_C_API void li_2d (
+    plm_long *ijk_f,
+    float *li_frac_1,
+    float *li_frac_2,
+    const float *ijk,
+    const plm_long *dim
+);
+
 PLMBASE_C_API float li_value (
     float fx1, float fx2,
     float fy1, float fy2, 

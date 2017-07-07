@@ -103,6 +103,7 @@ set (PLMBASE_LIBRARY_SRC
   ray_trace_probe.h
   ray_trace_uniform.cxx
   rpl_volume.cxx rpl_volume.h
+  rpl_volume_lut.cxx rpl_volume_lut.h
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
   rt_study.cxx rt_study.h 

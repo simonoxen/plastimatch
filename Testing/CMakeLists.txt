@@ -73,10 +73,9 @@ set (CONFIG_FILE_LIST
   "plm-reg-autores-b.txt"
   "proton-dose-1.txt"
   "proton-dose-2.txt"
-  "proton-dose-3.txt"
   "proton-dose-4.txt"
   "proton-dose-5a.txt"
-  "proton-dose-5g.txt"
+  "proton-dose-5d.txt"
   "proton-dose-6a.txt"
   "speedtest-a.txt"
   "wed-a.txt"
@@ -4323,13 +4322,8 @@ set_tests_properties (vf-invert-trans-1-check
 ## -------------------------------------------------------------------------
 ## bragg-curve
 ## proton-dose-1    Flavor a, sobp
-## proton-dose-2    Flavor f, single bragg peak, target, autom. rgcomp
-## proton-dose-3    Flavor g, multiple beam
-## proton-dose-4    Flavor h, load range comp file
 ## proton-dose-5a   Flavor a, sobp target with aperture and rgc
-## proton-dose-5f   Flavor f, sobp target with aperture and rgc
-## proton-dose-5g   Flavor g, sobp target with aperture and rgc
-## proton-dose-5h   Flavor h, sobp target with aperture and rgc
+## proton-dose-5d   Flavor d, sobp target with aperture and rgc
 ## proton-dose-6a   Flavor a, target geometry differs from CT geometry
 ## -------------------------------------------------------------------------
 plm_add_test (
@@ -4365,61 +4359,6 @@ set_tests_properties (proton-dose-1-check
     PROPERTIES DEPENDS proton-dose-1-stats)
 
 plm_add_test (
-    "proton-dose-2"
-    ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-2.txt"
-    )
-plm_add_test (
-  "proton-dose-2-stats"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-2.mha"
-  )
-plmtest_check_interval ("proton-dose-2-check"
-  "${PLM_BUILD_TESTING_DIR}/proton-dose-2-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "0.10"
-  "0.12"
-  )
-set_tests_properties (proton-dose-2 PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-2 PROPERTIES DEPENDS ptv-1)
-set_tests_properties (proton-dose-2-stats
-    PROPERTIES DEPENDS proton-dose-2)
-set_tests_properties (proton-dose-2-check
-    PROPERTIES DEPENDS proton-dose-2-stats)
-
-plm_add_test (
-    "proton-dose-3"
-    ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-3.txt"
-    )
-plm_add_test (
-  "proton-dose-3-stats"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-3.mha"
-  )
-plmtest_check_interval ("proton-dose-3-check"
-  "${PLM_BUILD_TESTING_DIR}/proton-dose-3-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "0.21"
-  "0.22"
-  )
-set_tests_properties (proton-dose-3 PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-3 PROPERTIES DEPENDS ptv-1)
-set_tests_properties (proton-dose-3-stats
-    PROPERTIES DEPENDS proton-dose-3)
-set_tests_properties (proton-dose-3-check
-    PROPERTIES DEPENDS proton-dose-3-stats)
-
-## This seems to not work, gives zero dose.
-#plm_add_test (
-#    "proton-dose-4"
-#    ${PLM_PLASTIMATCH_PATH}/proton_dose
-#    "${PLM_BUILD_TESTING_DIR}/proton-dose-4.txt"
-#    )
-#set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rect-18)
-#set_tests_properties (proton-dose-4 PROPERTIES DEPENDS rgc-1)
-
-plm_add_test (
     "proton-dose-5a"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
     "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
@@ -4443,27 +4382,27 @@ set_tests_properties (proton-dose-5a-check
     PROPERTIES DEPENDS proton-dose-5a-stats)
 
 plm_add_test (
-    "proton-dose-5g"
+    "proton-dose-5d"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5g.txt"
+    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5d.txt"
     )
 plm_add_test (
-  "proton-dose-5g-stats"
+  "proton-dose-5d-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-5g.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-5d.mha"
   )
-plmtest_check_interval ("proton-dose-5g-check"
-  "${PLM_BUILD_TESTING_DIR}/proton-dose-5g-stats.stdout.txt"
+plmtest_check_interval ("proton-dose-5d-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-5d-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "0.365"
-  "0.375"
+  "0.38"
+  "0.39"
   )
-set_tests_properties (proton-dose-5g PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-5g PROPERTIES DEPENDS ptv-1)
-set_tests_properties (proton-dose-5g-stats
-    PROPERTIES DEPENDS proton-dose-5g)
-set_tests_properties (proton-dose-5g-check
-    PROPERTIES DEPENDS proton-dose-5g-stats)
+set_tests_properties (proton-dose-5d PROPERTIES DEPENDS rect-17)
+set_tests_properties (proton-dose-5d PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-5d-stats
+    PROPERTIES DEPENDS proton-dose-5d)
+set_tests_properties (proton-dose-5d-check
+    PROPERTIES DEPENDS proton-dose-5d-stats)
 
 plm_add_test (
     "proton-dose-6a"

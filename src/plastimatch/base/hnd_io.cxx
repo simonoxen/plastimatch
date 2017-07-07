@@ -85,7 +85,7 @@ hnd_set_proj_matrix (
     vec3_copy (cam, tgt);
     vec3_sub2 (cam, tmp);
 
-    pmat->set (cam, tgt, vup, sid, pmat->ic, ps, proj->dim);
+    pmat->set (cam, tgt, vup, sid, pmat->ic, ps);
 }
 
 /* -----------------------------------------------------------------------

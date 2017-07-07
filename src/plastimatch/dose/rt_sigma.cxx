@@ -365,7 +365,7 @@ compute_sigma_source (
     {
         if (ap_img[i] > 0)
         {
-            Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
+            Ray_data* ray_data = &sigma_vol->get_ray_data()[i];
             proj = -vec3_dot(ray_data->ray, nrm);
             dist_cp = vec3_dist(ray_data->cp,beam->get_source_position());
 
@@ -458,14 +458,12 @@ compute_sigma_range_compensator (
     vec3_sub3 (nrm, beam->get_source_position(), beam->get_isocenter_position());
     vec3_normalize1(nrm);
 	
-    if ((margins[0] == 0 && margins[1] == 0) || beam->get_flavor() != 'h')
-    {
-        for (int i = 0; i < dim[0] * dim[1]; i++)
-        {
+    if (margins[0] == 0 && margins[1] == 0) {
+        for (int i = 0; i < dim[0] * dim[1]; i++) {
             /* calculation of sigma_srm, see graph A3 from the Hong's paper */
             if (!rpl_volume->get_aperture()->have_aperture_image() || (ap_img && ap_img[i] > 0))
             {
-                Ray_data* ray_data = &sigma_vol->get_Ray_data()[i];
+                Ray_data* ray_data = &sigma_vol->get_ray_data()[i];
 	        
                 proj = -vec3_dot(ray_data->ray, nrm);
                 if (proj == 0) 
@@ -540,7 +538,7 @@ compute_sigma_range_compensator (
                 /* calculation of sigma_srm, see graph A3 from the Hong's paper */
                 if (!rpl_volume->get_aperture()->have_aperture_image() || (rpl_volume->get_aperture()->have_aperture_image() && ap_img[idx2d_sm] > 0))
                 {
-                    Ray_data* ray_data = &sigma_vol->get_Ray_data()[idx2d_lg];
+                    Ray_data* ray_data = &sigma_vol->get_ray_data()[idx2d_lg];
 	        
                     proj = -vec3_dot(ray_data->ray, nrm);
 

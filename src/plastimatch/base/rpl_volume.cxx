@@ -136,7 +136,7 @@ Rpl_volume::set_geometry (
     const double iso[3],           // position of isocenter (mm)
     const double vup[3],           // dir to "top" of projection plane
     double sid,                    // dist from proj plane to source (mm)
-    const int image_dim[2],        // resolution of image
+    const plm_long image_dim[2],   // resolution of image
     const double image_center[2],  // image center (pixels)
     const double image_spacing[2], // pixel size (mm)
     const double step_length       // spacing between planes
@@ -210,13 +210,13 @@ Rpl_volume::set_aperture (Aperture::Pointer& ap)
     d_ptr->aperture = ap;
 }
 
-const int*
+const plm_long*
 Rpl_volume::get_image_dim ()
 {
     return d_ptr->proj_vol->get_image_dim();
 }
 
-int
+plm_long
 Rpl_volume::get_num_steps ()
 {
     return d_ptr->proj_vol->get_num_steps();
@@ -224,16 +224,16 @@ Rpl_volume::get_num_steps ()
 
 /* 1D interpolation */
 double
-Rpl_volume::get_rgdepth (
-    int ap_ij[2],       /* I: aperture index */
-    double dist         /* I: distance from aperture in mm */
-)
+Rpl_volume::get_value (
+    plm_long ap_ij[2],       /* I: aperture index */
+    double dist              /* I: distance from aperture in mm */
+) const
 {
     plm_long idx1, idx2;
     plm_long ijk[3];
     double rg1, rg2, rgdepth, frac;
-    Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_vol();
+    const Proj_volume *proj_vol = this->get_proj_volume ();
+    const Volume *vol = this->get_vol();
     float* d_img = (float*) vol->img;
 
     if (dist < 0) {
@@ -273,13 +273,13 @@ Rpl_volume::get_rgdepth (
 
 /* 3D interpolation */
 double
-Rpl_volume::get_rgdepth (
+Rpl_volume::get_value (
     double ap_ij[2],    /* I: aperture index */
     double dist         /* I: distance from aperture in mm */
-)
+) const
 {
-    Proj_volume *proj_vol = this->get_proj_volume ();
-    Volume *vol = this->get_vol();
+    const Proj_volume *proj_vol = this->get_proj_volume ();
+    const Volume *vol = this->get_vol();
 
     if (dist < 0) {
         return 0.0;
@@ -296,17 +296,17 @@ Rpl_volume::get_rgdepth (
 
 /* Lookup radiological path length to a voxel in world space */
 double
-Rpl_volume::get_rgdepth (
+Rpl_volume::get_value (
     const double* ct_xyz         /* I: location of voxel in world space */
-)
+) const
 {
     int ap_ij[2], ap_idx;
     double ap_xy[3];
     double dist, rgdepth = 0.;
-    int debug = 0;
+    bool debug = false;
 
     /* A couple of abbreviations */
-    const int *ires = d_ptr->proj_vol->get_image_dim();
+    const plm_long *ires = d_ptr->proj_vol->get_image_dim();
     Proj_matrix *pmat = d_ptr->proj_vol->get_proj_matrix();
 
     if (debug) {
@@ -314,9 +314,7 @@ Rpl_volume::get_rgdepth (
     }
 
     /* Back project the voxel to the aperture plane */
-    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
-    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
-    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
+    d_ptr->proj_vol->project (ap_xy, ct_xyz);
 
     /* Make sure value is not inf or NaN */
     if (!is_number (ap_xy[0]) || !is_number (ap_xy[1])) {
@@ -358,7 +356,7 @@ Rpl_volume::get_rgdepth (
     }
 
     /* Retrieve the radiographic depth */
-    rgdepth = this->get_rgdepth (ap_xy, dist);
+    rgdepth = this->get_value (ap_xy, dist);
 
     return rgdepth;
 }
@@ -388,12 +386,12 @@ Volume_limit* Rpl_volume::get_ct_limit()
     return &d_ptr->ct_limit;
 }
 
-void Rpl_volume::set_ray(Ray_data *ray)
+void Rpl_volume::set_ray_data (Ray_data *ray)
 {
     d_ptr->ray_data = ray;
 }
 
-Ray_data* Rpl_volume::get_Ray_data()
+Ray_data* Rpl_volume::get_ray_data()
 {
     return d_ptr->ray_data;
 }
@@ -431,7 +429,7 @@ Rpl_volume::compute_ray_data ()
     Proj_volume *proj_vol = d_ptr->proj_vol;
     const double *src = proj_vol->get_src();
     const double *nrm = proj_vol->get_nrm();
-    const int *ires = d_ptr->proj_vol->get_image_dim();
+    const plm_long *ires = d_ptr->proj_vol->get_image_dim();
     Volume *ct_vol = d_ptr->ct->get_vol();
 
     /* Allocate data for each ray */
@@ -978,7 +976,7 @@ double Rpl_volume::compute_farthest_penetrating_ray_on_nrm(float range)
 
     for (int apert_idx = 0; apert_idx < dim[0] * dim[1]; apert_idx++)
     {
-        Ray_data* ray_data = (Ray_data*) &this->get_Ray_data()[apert_idx];
+        Ray_data* ray_data = (Ray_data*) &this->get_ray_data()[apert_idx];
         for (int s = 0; s < dim[2]; s++)
         {
             idx = s * dim[0] * dim[1] + apert_idx;
@@ -1040,14 +1038,14 @@ Rpl_volume::compute_proj_wed_volume (
     //each geometric distance should increase, due to divergence.
     const double base_dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
   
-    const int *ires = proj_vol->get_image_dim();
+    const plm_long *ires = proj_vol->get_image_dim();
 
-    int ap_ij[2]; //ray index of rvol
+    plm_long ap_ij[2]; //ray index of rvol
     plm_long ap_idx = 0;  //ray number
     Ray_data *ray_data;
     double ray_ap[3]; //vector from src to ray intersection with ap plane
     double ray_ap_length; //length of vector from src to ray intersection with ap plane
-    double rglength; //length that we insert into get_rgdepth for each ray
+    double rglength; //length that we insert into get_value for each ray
 
     for (ap_ij[1] = 0; ap_ij[1] < ires[1]; ap_ij[1]++) {
         for (ap_ij[0] = 0; ap_ij[0] < ires[0]; ap_ij[0]++) {
@@ -1066,7 +1064,7 @@ Rpl_volume::compute_proj_wed_volume (
 
             rglength = base_rg_dist*(ray_ap_length/base_dist);
 
-            proj_wed_vol_img[ap_idx] = (float) (this->get_rgdepth(ap_ij,rglength));
+            proj_wed_vol_img[ap_idx] = (float) (this->get_value(ap_ij,rglength));
       
         }
     }
@@ -1083,7 +1081,7 @@ Rpl_volume::compute_wed_volume (
     float *rvol_img = (float*) rvol->img;
     float *in_vol_img = (float*) in_vol->img;
     float *wed_vol_img = (float*) wed_vol->img;
-    const int *ires = proj_vol->get_image_dim();
+    const plm_long *ires = proj_vol->get_image_dim();
 
     plm_long wijk[3];  /* Index within wed_volume */
 
@@ -1211,7 +1209,7 @@ Rpl_volume::compute_dew_volume (
     const plm_long *dew_dim = dew_vol->dim; 
   
     //Get some parameters from the proj volume
-    const int *ires = proj_vol->get_image_dim();
+    const plm_long *ires = proj_vol->get_image_dim();
     const double *src = proj_vol->get_src();
     const double dist = proj_vol->get_proj_matrix()->sid; //distance from source to aperture
     double src_iso_vec[3];   //vector from source to isocenter
@@ -1247,7 +1245,7 @@ Rpl_volume::compute_dew_volume (
     double ray_end[3];
 
     plm_long wijk[3]; //index within wed_volume
-    int ap_ij[2]; //ray indox of rvol
+    plm_long ap_ij[2]; //ray indox of rvol
     plm_long dijk[3]; //Index within dew_volume
     plm_long didx; //image index within dew_volume
 
@@ -1368,14 +1366,13 @@ Rpl_volume::compute_dew_volume (
 
                     //Now look up the radiation length, using the provided function,
                     //knowing the ray and the length along it.
-                    ap_ij[0] = (int) ray_lookup[i][0];
-                    ap_ij[1] = (int) ray_lookup[i][1];
+                    ap_ij[0] = ray_lookup[i][0];
+                    ap_ij[1] = ray_lookup[i][1];
                     /* GCS FIX: I think the ray_lookup stuff is 
                        3D interpolation, should reduce this code to 
-                       use the 3D interpolated version of get_rgdepth() */
+                       use the 3D interpolated version of get_value() */
 
-                    ray_rad_len[i] = this->get_rgdepth (
-                        ap_ij, rad_depth_input);
+                    ray_rad_len[i] = this->get_value (ap_ij, rad_depth_input);
 
                     //Set each corner to background.
                     master_square[i/2][i%2] = background;
@@ -1469,7 +1466,7 @@ Rpl_volume::apply_beam_modifiers ()
     float *proj_img = (float*) proj_vol->img;
 
     /* For each ray in aperture */
-    const int *ires = d_ptr->proj_vol->get_image_dim();
+    const plm_long *ires = d_ptr->proj_vol->get_image_dim();
 
     printf ("ires = %d %d\n", ires[0], ires[1]);
     printf ("proj_vol dim = %d %d %d\n", (int) proj_vol->dim[0], 
@@ -1512,6 +1509,12 @@ Rpl_volume::get_proj_volume ()
     return d_ptr->proj_vol;
 }
 
+const Proj_volume* 
+Rpl_volume::get_proj_volume () const
+{
+    return d_ptr->proj_vol;
+}
+
 void
 Rpl_volume::save (const char *filename)
 {
@@ -1526,7 +1529,7 @@ Rpl_volume::save (const char *filename)
     if (d_ptr->ray_data) {
         std::string raydata_fn = fn_base + ".raydata";
         FILE *fp = plm_fopen (raydata_fn, "wb");
-        const int *ires = d_ptr->proj_vol->get_image_dim();
+        const plm_long *ires = d_ptr->proj_vol->get_image_dim();
         for (int r = 0; r < ires[1]; r++) {
             for (int c = 0; c < ires[0]; c++) {
                 int ap_idx = r * ires[0] + c;

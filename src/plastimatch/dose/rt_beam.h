@@ -61,9 +61,9 @@ public:
     double get_source_distance () const;
     
     /*! \brief Get "flavor" parameter of dose calculation algorithm */
-    char get_flavor () const;
+    const std::string& get_flavor () const;
     /*! \brief Set "flavor" parameter of dose calculation algorithm */
-    void set_flavor (char flavor);
+    void set_flavor (const std::string& flavor);
 
     /*! \brief Get "homo_approx" parameter of dose calculation algorithm */
     char get_homo_approx () const;
@@ -96,6 +96,10 @@ public:
     void dump (const char* dir);
     void dump (const std::string& dir);
 
+    /* Spot scanning */
+    void add_spot (
+        float xpos, float ypos, float energy, float sigma, float weight);
+
     /* Compute beam modifiers, SOBP etc. according to the teatment strategy */
     bool prepare_for_calc (
         Plm_image::Pointer& ct_hu,
@@ -103,6 +107,7 @@ public:
         Plm_image::Pointer& target);
 
     /* Different strategies preparation */
+    void compute_beam_data_from_beamlet_map();
     void compute_beam_data_from_spot_map();
     void compute_beam_data_from_manual_peaks();
     void compute_beam_data_from_manual_peaks(Plm_image::Pointer& target);
@@ -178,7 +183,7 @@ public:
     void set_aperture_vup (const float[]);
     void set_aperture_distance (float);
     void set_aperture_origin (const float[]);
-    void set_aperture_resolution (const int[]);
+    void set_aperture_resolution (const plm_long[]);
     void set_aperture_spacing (const float[]);
 
     void set_step_length(float step);
@@ -214,6 +219,9 @@ public:
     void set_beam_dump_out(std::string str);
     std::string get_beam_dump_out();
 
+    void set_dij_out (const std::string& str);
+    const std::string& get_dij_out();
+
     void set_wed_out(std::string str);
     std::string get_wed_out();
 
@@ -223,8 +231,10 @@ public:
     void set_beam_line_type(std::string str);
     std::string get_beam_line_type();
 
-    bool get_intersection_with_aperture(double* idx_ap, int* idx, double* rest, double* ct_xyz);
-    bool is_ray_in_the_aperture(int* idx, unsigned char* ap_img);
+    bool get_intersection_with_aperture (
+        double* idx_ap, plm_long* idx, double* rest, double* ct_xyz);
+    bool is_ray_in_the_aperture (
+        const plm_long* idx, const unsigned char* ap_img);
 
     /* computes the minimal geometric distance of the target for this beam
        -- used for smearing */
@@ -260,8 +270,8 @@ public:
     Rpl_volume* rpl_vol_lg;
     Rpl_volume* rpl_vol_samp_lg;
     Rpl_volume* sigma_vol_lg;
-    Rpl_volume* rpl_dose_vol;
-    
+    Rpl_volume* dose_rv;
+
 private:
     bool load_xio (const char* fn);
     bool load_txt (const char* fn);

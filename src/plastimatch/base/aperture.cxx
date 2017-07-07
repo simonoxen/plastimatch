@@ -36,7 +36,7 @@ public:
     Plm_image::Pointer range_compensator_image;
 
     double distance;
-    int dim[2];
+    plm_long dim[2];
     double center[2];
     double spacing[2];
 };
@@ -115,20 +115,20 @@ Aperture::set_distance (double distance)
     d_ptr->distance = distance;
 }
 
-const int*
+const plm_long*
 Aperture::get_dim () const
 {
     return d_ptr->dim;
 }
 
-int
+plm_long
 Aperture::get_dim (int dim) const
 {
     return d_ptr->dim[dim];
 }
 
 void
-Aperture::set_dim (const int* dim)
+Aperture::set_dim (const plm_long* dim)
 {
     d_ptr->dim[0] = dim[0];
     d_ptr->dim[1] = dim[1];
@@ -360,9 +360,9 @@ Aperture::apply_smearing_to_aperture (float smearing, float reference_depth)
     Volume::Pointer ap_vol_new = ap_vol->clone ();
     unsigned char* ap_img_new = (unsigned char*) ap_vol_new->img;
 
-    for (int ar = 0; ar < d_ptr->dim[1]; ar++) {
-        for (int ac = 0; ac < d_ptr->dim[0]; ac++) {
-            int aidx = ar * d_ptr->dim[0] + ac;
+    for (plm_long ar = 0; ar < d_ptr->dim[1]; ar++) {
+        for (plm_long ac = 0; ac < d_ptr->dim[0]; ac++) {
+            plm_long aidx = ar * d_ptr->dim[0] + ac;
             unsigned char ap_acc = 0;
             for (int sr = 0; sr < strel_size[1]; sr++) {
                 int pr = ar + sr - strel_half_size[1];
@@ -438,9 +438,9 @@ Aperture::apply_smearing_to_range_compensator (float smearing, float reference_d
     Volume::Pointer rc_vol_new = rc_vol->clone ();
     float* rc_img_new = (float*) rc_vol_new->img;
 
-    for (int ar = 0; ar < d_ptr->dim[1]; ar++) {
-        for (int ac = 0; ac < d_ptr->dim[0]; ac++) {
-            int aidx = ar * d_ptr->dim[0] + ac;
+    for (plm_long ar = 0; ar < d_ptr->dim[1]; ar++) {
+        for (plm_long ac = 0; ac < d_ptr->dim[0]; ac++) {
+            plm_long aidx = ar * d_ptr->dim[0] + ac;
             float rc_acc = FLT_MAX;
             for (int sr = 0; sr < strel_size[1]; sr++) {
                 int pr = ar + sr - strel_half_size[1];

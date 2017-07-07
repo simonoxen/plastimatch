@@ -259,7 +259,7 @@ Rt_parms::set_key_value (
 
         if (key == "flavor") {
             if (val.length() >= 1) {
-                rt_beam->set_flavor (val[0]);
+                rt_beam->set_flavor (val);
             } else {
                 goto error_exit;
             } 
@@ -307,6 +307,9 @@ Rt_parms::set_key_value (
         }
         else if (key == "beam_dump_out") {
             rt_beam->set_beam_dump_out (val);
+        }
+        else if (key == "dij_out") {
+            rt_beam->set_dij_out (val);
         }
         else if (key == "beam_type") {
             Particle_type part = particle_type_parse (val);
@@ -387,11 +390,12 @@ Rt_parms::set_key_value (
             rt_beam->set_aperture_origin (ap_origin);
         }
         else if (key == "aperture_resolution") {
-            int ap_dim[2];
-            int rc = sscanf (val.c_str(), "%i %i", &ap_dim[0], &ap_dim[1]);
+            int a, b;
+            int rc = sscanf (val.c_str(), "%i %i", &a, &b);
             if (rc != 2) {
                 goto error_exit;
             }
+            plm_long ap_dim[2] = { a, b };
             rt_beam->set_aperture_resolution (ap_dim);
         }
         else if (key == "aperture_spacing") {
@@ -461,6 +465,14 @@ Rt_parms::set_key_value (
                 goto error_exit;
             }
             rt_beam->get_mebs()->set_photon_energy (photon_energy);
+        }
+        else if (key == "spot") {
+            float xpos, ypos, energy, sigma, weight;
+            if (sscanf (val.c_str(), "%f,%f,%f,%f,%f", 
+                    &xpos, &ypos, &energy, &sigma, &weight) != 1) {
+                goto error_exit;
+            }
+            rt_beam->add_spot (xpos, ypos, energy, sigma, weight);
         }
         else {
             goto error_exit;
