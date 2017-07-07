@@ -23,8 +23,9 @@ set (PLASTIMATCH_SRC
   pcmd_adjust.cxx 
   pcmd_autolabel_train.cxx 
   pcmd_autolabel.cxx 
+  pcmd_bbox.cxx pcmd_bbox.h
   pcmd_benchmark.cxx 
-  pcmd_boundary.cxx 
+  pcmd_boundary.cxx pcmd_boundary.h
   pcmd_compare.cxx 
   pcmd_compose.cxx 
   pcmd_crop.cxx 

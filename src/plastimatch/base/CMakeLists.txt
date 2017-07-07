@@ -38,6 +38,7 @@ set (PLMBASE_LIBRARY_SRC
   interpolate_macros.h
   itkAndConstantToImageFilter.h
   itkClampCastImageFilter.txx itkClampCastImageFilter.h
+  itk_bbox.cxx itk_bbox.h
   itk_dicom_load.cxx itk_dicom_load.h
   itk_dicom_save.cxx itk_dicom_save.h
   itk_directions.cxx itk_directions.h

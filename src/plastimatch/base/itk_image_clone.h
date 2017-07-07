@@ -11,4 +11,6 @@
    Function prototypes
    ----------------------------------------------------------------------- */
 template<class T> PLMBASE_API T itk_image_clone (T image);
+template<class T> PLMBASE_API T itk_image_clone_empty (T image);
+
 #endif
