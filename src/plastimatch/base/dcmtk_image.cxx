@@ -552,6 +552,10 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
         dataset->putAndInsertString (
             DCM_SOPClassUID, UID_NuclearMedicineImageStorage);
     }
+    else if (modality == "US") {
+        dataset->putAndInsertString (
+            DCM_SOPClassUID, UID_UltrasoundImageStorage);
+    }
     else {
         dataset->putAndInsertString (
             DCM_SOPClassUID, UID_CTImageStorage);
