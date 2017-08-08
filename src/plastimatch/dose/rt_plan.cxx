@@ -174,7 +174,7 @@ Rt_plan::set_target (const std::string& target_fn)
 void
 Rt_plan::set_target (UCharImageType::Pointer& target_vol)
 {
-    d_ptr->target->set_itk (target_vol);
+    d_ptr->target = Plm_image::New (target_vol);
 
     /* compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
@@ -185,7 +185,7 @@ Rt_plan::set_target (UCharImageType::Pointer& target_vol)
 void
 Rt_plan::set_target (FloatImageType::Pointer& target_vol)
 {
-    d_ptr->target->set_itk (target_vol);
+    d_ptr->target = Plm_image::New (target_vol);
 
     /* compute_segdepth_volume assumes float */
     d_ptr->target->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
