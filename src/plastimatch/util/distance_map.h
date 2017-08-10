@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include "itk_image_type.h"
 #include "plm_image.h"
+#include "volume_boundary_behavior.h"
 
 class Distance_map_private;
 class Plm_image;
@@ -47,6 +48,9 @@ public:
     void set_algorithm (const std::string& algorithm);
     /*! \brief Set maximum distance */
     void set_maximum_distance (float max_distance);
+    /*! \brief Set the volume boundary behavior, either 
+      ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
+    void set_volume_boundary_behavior (Volume_boundary_behavior vbb);
     ///@}
 
     /*! \name Execution */

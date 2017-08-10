@@ -13,17 +13,17 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "volume.h"
+#include "volume_boundary_behavior.h"
 
 class Image_boundary_private {
 public:
     Image_boundary_private () {
-        vbb = Image_boundary::EDGE_PADDING;
-//        vbb = Image_boundary::ZERO_PADDING;
+        vbb = ADAPTIVE_PADDING;
     }
 public:
     UCharImageType::Pointer input_image;
     UCharImageType::Pointer output_image;
-    Image_boundary::Volume_boundary_behavior vbb;
+    Volume_boundary_behavior vbb;
 public:
     void run ();
 protected:
@@ -75,6 +75,28 @@ protected:
         /* If not inside volume, then not on boundary */
         if (!img_in[v]) {
             return 0;
+        }
+
+        return 0;
+    }
+
+    unsigned char classify_ap (
+        const Volume::Pointer& vol_in,
+        const unsigned char *img_in,
+        plm_long i, plm_long j, plm_long k, plm_long v)
+    {
+        /* If not inside volume, then not on boundary */
+        if (!img_in[v]) {
+            return 0;
+        }
+
+        /* Check for non-zero edge pixels; these are boundary if 
+           dimension > 1 */
+        if (vol_in->dim[2] > 1 && (k == 0 || k == vol_in->dim[2]-1)
+            || vol_in->dim[1] > 1 && (j == 0 || j == vol_in->dim[1]-1)
+            || vol_in->dim[0] > 1 && (i == 0 || i == vol_in->dim[0]-1))
+        {
+            return 1;
         }
 
         /* Look for neighboring zero voxel in six-neighborhood,
@@ -130,10 +152,17 @@ Image_boundary_private::run ()
     for (plm_long k = 0, v = 0; k < vol_in->dim[2]; k++) {
         for (plm_long j = 0; j < vol_in->dim[1]; j++) {
             for (plm_long i = 0; i < vol_in->dim[0]; i++, v++) {
-                if (this->vbb == Image_boundary::ZERO_PADDING) {
+                switch (this->vbb) {
+                case ZERO_PADDING:
                     img_out[v] = classify_zp (vol_in, img_in, i, j, k, v);
-                } else {
+                    break;
+                case EDGE_PADDING:
                     img_out[v] = classify_ep (vol_in, img_in, i, j, k, v);
+                    break;
+                case ADAPTIVE_PADDING:
+                default:
+                    img_out[v] = classify_ap (vol_in, img_in, i, j, k, v);
+                    break;
                 }
             }
         }
@@ -164,6 +193,12 @@ Image_boundary::set_input_image (
     const UCharImageType::Pointer image)
 {
     d_ptr->input_image = image;
+}
+
+void
+Image_boundary::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
+{
+    d_ptr->vbb = vbb;
 }
 
 void 

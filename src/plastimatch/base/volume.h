@@ -87,10 +87,6 @@ public:
     plm_long index (plm_long ijk[3]) const {
         return volume_index (this->dim, ijk);
     }
-    /*! \brief Return a world coordinates of a voxel */
-    void position (float xyz[3], const plm_long ijk[3]) {
-        POSITION_FROM_COORDS (xyz, ijk, this->origin, this->step);
-    }
     /*! \brief Initialize and allocate memory for the image */
     void create (
         const plm_long new_dim[3], 
@@ -178,6 +174,16 @@ public:
       to voxel coordinates.
     */
     const float* get_proj (void) const;
+
+    /*! \brief Return a world coordinates of a voxel */
+    void position (float xyz[3], const plm_long ijk[3]) {
+        POSITION_FROM_COORDS (xyz, ijk, this->origin, this->step);
+    }
+
+    /*! \brief Return coordinates from index */
+    void coordinates (plm_long ijk[3], plm_long idx) {
+        COORDS_FROM_INDEX(ijk, idx, this->dim);
+    }
 
     /*! \brief Get the value at a voxel coordinate, clamped and 
       tri-linearly interpolated.  Only applies to float volumes.

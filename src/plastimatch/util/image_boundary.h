@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 #include "itk_image.h"
+#include "volume_boundary_behavior.h"
 
 class Plm_image;
 class Image_boundary_private;
@@ -25,18 +26,6 @@ public:
     Image_boundary_private *d_ptr;
 
 public:
-    /*! \brief This enum is used to control the algorithm behavior 
-      for voxels at the edge of the volume.  If ZERO_PADDING is 
-      specified, all non-zero voxels at the edge of the volume 
-      will be treated as boundary voxels.  If EDGE_PADDING is 
-      specified, non-zero voxels at the edge of the volume are 
-      only treated as boundary voxels if they neighbor 
-      a zero voxel. */
-    enum Volume_boundary_behavior {
-        ZERO_PADDING,
-        EDGE_PADDING
-    };
-public:
 
     /*! \name Inputs */
     ///@{
@@ -46,7 +35,7 @@ public:
     /*! \brief Set the input image as an ITK image. */
     void set_input_image (const UCharImageType::Pointer image);
     /*! \brief Set the volume boundary behavior, either 
-      ZERO_PADDING or EDGE_PADDING */
+      ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
     void set_volume_boundary_behavior (Volume_boundary_behavior vbb);
     ///@}
 

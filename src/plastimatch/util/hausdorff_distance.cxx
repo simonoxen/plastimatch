@@ -13,6 +13,7 @@
 #include "hausdorff_distance.h"
 #include "image_boundary.h"
 #include "itk_image_load.h"
+#include "itk_image_save.h"
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image.h"
@@ -25,6 +26,7 @@ public:
         pct_hausdorff_distance_fraction = 0.95;
         dmap_alg = "";
         maximum_distance = FLT_MAX;
+        vbb = ADAPTIVE_PADDING;
         this->clear_statistics ();
     }
 public:
@@ -51,6 +53,7 @@ public:
 
     std::string dmap_alg;
     float maximum_distance;
+    Volume_boundary_behavior vbb;
 
     UCharImageType::Pointer ref_image;
     UCharImageType::Pointer cmp_image;
@@ -111,6 +114,12 @@ Hausdorff_distance::set_maximum_distance (float maximum_distance)
     d_ptr->maximum_distance = maximum_distance;
 }
 
+void
+Hausdorff_distance::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
+{
+    d_ptr->vbb = vbb;
+}
+
 void 
 Hausdorff_distance::run_internal (
     UCharImageType::Pointer image1,
@@ -124,6 +133,7 @@ Hausdorff_distance::run_internal (
     dmap_filter.set_inside_is_positive (false);
     dmap_filter.set_use_squared_distance (false);
     dmap_filter.set_maximum_distance (d_ptr->maximum_distance);
+    dmap_filter.set_volume_boundary_behavior (d_ptr->vbb);
     dmap_filter.run ();
     FloatImageType::Pointer dmap = dmap_filter.get_output_image ();
 
@@ -137,10 +147,11 @@ Hausdorff_distance::run_internal (
 
     /* Find boundary pixels */
     Image_boundary ib;
+    ib.set_volume_boundary_behavior (d_ptr->vbb);
     ib.set_input_image (image1);
     ib.run ();
     UCharImageType::Pointer itk_ib = ib.get_output_image ();
-
+    
     /* Convert to plm_image */
     Plm_image pli_ib (itk_ib);
     Volume::Pointer vol_ib = pli_ib.get_volume_uchar ();

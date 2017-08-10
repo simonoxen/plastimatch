@@ -6,6 +6,7 @@
 
 #include "plmutil_config.h"
 #include "itk_image.h"
+#include "volume_boundary_behavior.h"
 
 class Plm_image;
 class Hausdorff_distance_private;
@@ -120,6 +121,9 @@ public:
     /*! \brief Choose the maximum distance that is returned when 
       computing the distance map */
     void set_maximum_distance (float maximum_distance);
+    /*! \brief Set the volume boundary behavior, either 
+      ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
+    void set_volume_boundary_behavior (Volume_boundary_behavior vbb);
     ///@}
 
     /*! \name Execution */

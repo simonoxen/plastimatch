@@ -23,12 +23,15 @@ public:
         use_squared_distance = false;
         maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
+        vbb = ADAPTIVE_PADDING;
     }
 public:
     Distance_map::Algorithm algorithm;
     bool inside_is_positive;
     bool use_squared_distance;
     float maximum_distance;
+    Volume_boundary_behavior vbb;
+
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
 public:
@@ -221,7 +224,12 @@ Distance_map_private::run_native_danielsson ()
 {
     /* Compute boundary of image
        vb = volume of boundary, imgb = img of boundary */
-    Plm_image pib (do_image_boundary (this->input));
+    Image_boundary ib;
+    ib.set_volume_boundary_behavior (vbb);
+    ib.set_input_image (this->input);
+    ib.run ();
+    UCharImageType::Pointer itk_ib = ib.get_output_image ();
+    Plm_image pib (itk_ib);
     Volume::Pointer vb = pib.get_volume_uchar();
     unsigned char *imgb = (unsigned char*) vb->img;
 
@@ -250,9 +258,6 @@ Distance_map_private::run_native_danielsson ()
         vb->spacing[1] * vb->spacing[1],
         vb->spacing[2] * vb->spacing[2]
     };
-
-    /* GCS FIX -- This is only implemented as distance to set, 
-       not distance to boundary. */
 
     /* GCS FIX -- I'm not entirely sure if it is required to scan 
        both forward and backward for j direction.  Need to test. */
@@ -420,6 +425,12 @@ void
 Distance_map::set_maximum_distance (float maximum_distance)
 {
     d_ptr->maximum_distance = maximum_distance;
+}
+
+void
+Distance_map::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
+{
+    d_ptr->vbb = vbb;
 }
 
 void 
