@@ -501,7 +501,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
     }
 
     /* Image Plane module */
-    tmp = string_format ("%f\\%f", dsd->vol->spacing[0], dsd->vol->spacing[1]);
+    tmp = string_format ("%f\\%f", dsd->vol->spacing[1], dsd->vol->spacing[0]);
     dataset->putAndInsertString (DCM_PixelSpacing, tmp.c_str());
     dataset->putAndInsertString (DCM_ImageOrientationPatient, dsd->iop.c_str());
     dataset->putAndInsertString (DCM_ImagePositionPatient, dsd->ipp.c_str());

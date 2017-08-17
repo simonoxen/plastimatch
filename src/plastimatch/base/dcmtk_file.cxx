@@ -246,10 +246,12 @@ Dcmtk_file::load_header (const char *fn) {
     /* PixelSpacing */
     ofrc = dset->findAndGetString (DCM_PixelSpacing, c);
     if (ofrc.good() && c) {
-	float spacing[3];
-	int rc = parse_dicom_float2 (spacing, c);
+	float dcm_spacing[2];
+	int rc = parse_dicom_float2 (dcm_spacing, c);
 	if (!rc) {
-	    spacing[2] = 0.0;
+            float spacing[3] = {
+                dcm_spacing[1], dcm_spacing[0], 0.0
+            };
 	    d_ptr->m_vh.set_spacing (spacing);
 	}
     }
