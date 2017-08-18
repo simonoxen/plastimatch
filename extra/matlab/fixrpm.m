@@ -24,7 +24,7 @@ for i=1:length(interp_idx)
     %% Add interpolated value
     rpm_out.amp(this_idx+i) = ...
         (rpm.amp(this_idx) + rpm.amp(this_idx+1)) / 2;
-    if (rpm.phase(this_idx+i) < rpm.phase(this_idx))
+    if (rpm.phase(this_idx+1) < rpm.phase(this_idx))
         %% Should do mod 2 pi interpolation here, but this may be enough
         rpm_out.phase(this_idx+i) = 0;
     else
