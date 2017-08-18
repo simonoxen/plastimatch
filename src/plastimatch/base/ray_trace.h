@@ -15,9 +15,13 @@ class Volume_limit;
 #define DRR_PLANE_RAY_TOLERANCE 1e-8
 #define DRR_STRIDE_TOLERANCE 1e-10
 #define DRR_HUGE_DOUBLE 1e10
-#define DRR_LEN_TOLERANCE 1e-6
 #define DRR_TOPLANE_TOLERANCE 1e-7
 #define DRR_BOUNDARY_TOLERANCE 1e-6
+
+/* GCS FIX: This tolerance is not necessary.  Instead it would be best 
+   to compare against 
+//#define DRR_LEN_TOLERANCE 1e-6
+#define DRR_LEN_TOLERANCE 2e-5
 
 #define DRR_MSD_NUM_BINS 60
 
