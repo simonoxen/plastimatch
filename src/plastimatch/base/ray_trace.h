@@ -18,8 +18,9 @@ class Volume_limit;
 #define DRR_TOPLANE_TOLERANCE 1e-7
 #define DRR_BOUNDARY_TOLERANCE 1e-6
 
-/* GCS FIX: This tolerance is not necessary.  Instead it would be best 
-   to compare against 
+/* GCS FIX: "Temporary" fix against overshooting image boundary 
+   when ray tracing.  This fix should be replaced with something 
+   more robust, such as an explicit bounds check. */
 //#define DRR_LEN_TOLERANCE 1e-6
 #define DRR_LEN_TOLERANCE 2e-5
 
