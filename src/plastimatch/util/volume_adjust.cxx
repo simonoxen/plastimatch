@@ -9,6 +9,7 @@
 #include "print_and_exit.h"
 #include "pwlut.h"
 #include "volume.h"
+#include "volume_adjust.h"
 
 Volume::Pointer
 volume_adjust (const Volume::Pointer& image_in, const Float_pair_list& al)
