@@ -10,6 +10,6 @@
 PLMUTIL_API Volume::Pointer
 volume_adjust (const Volume::Pointer& image_in, const Float_pair_list& al);
 PLMUTIL_API Volume::Pointer
-volume_adjust (const Volume::Pointer image_in, const std::string& adj_string);
+volume_adjust (const Volume::Pointer& image_in, const std::string& adj_string);
 
 #endif

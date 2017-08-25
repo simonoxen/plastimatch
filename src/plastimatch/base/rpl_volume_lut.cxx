@@ -41,6 +41,11 @@ public:
     Lut_entry *lut;
 };
 
+Rpl_volume_lut::Rpl_volume_lut ()
+{
+    d_ptr = new Rpl_volume_lut_private (0, 0);
+}
+
 Rpl_volume_lut::Rpl_volume_lut (Rpl_volume *rv, Volume *vol)
 {
     d_ptr = new Rpl_volume_lut_private (rv, vol);
