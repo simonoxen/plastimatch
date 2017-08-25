@@ -34,6 +34,7 @@ set (PLMDOSE_LIBRARY_SRC
 
 set (PLMDOSE_LIBRARY_DEPENDENCIES 
   plmbase
+  plmutil
   plmsys
   )
 
