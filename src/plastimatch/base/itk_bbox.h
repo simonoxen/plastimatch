@@ -7,7 +7,7 @@
 #include "plmbase_config.h"
 #include "itk_image_type.h"
 
-void
+PLMBASE_API void
 itk_bbox (const UCharImageType::Pointer img, float *bbox);
 
 #endif
