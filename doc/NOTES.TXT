@@ -1,4 +1,36 @@
 ******************************************************************************
+Good ideas
+
+Elastix:
+A good set of random sampling options
+Schedule of grid spacing allows multiple sub-stages
+Parameter file overwrites
+Rigidity penalty
+
+
+
+******************************************************************************
+Groupwise registration
+
+Current form:
+fixed=foo.mha
+moving=foo.mha
+
+Future form:
+group=dir/
+
+[GROUP]
+iterations=3
+convergence=XX
+
+(or)
+
+group=dir/
+group_iterations=3
+group_convergence=XX
+
+
+******************************************************************************
 Beam model, spot map
 
 rt_beam_model: TBD.
