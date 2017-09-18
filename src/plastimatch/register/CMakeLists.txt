@@ -49,6 +49,7 @@ set (PLMREGISTER_LIBRARY_SRC
   demons_opencl_p.h
   demons_state.cxx demons_state.h
   gpuit_demons.cxx gpuit_demons.h
+  groupwise_parms.cxx groupwise_parms.h
   histogram.cxx histogram.h
   itk_align_center.cxx itk_align_center.h 
   itk_demons.cxx itk_demons.h

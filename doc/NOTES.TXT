@@ -7,8 +7,6 @@ Schedule of grid spacing allows multiple sub-stages
 Parameter file overwrites
 Rigidity penalty
 
-
-
 ******************************************************************************
 Groupwise registration
 

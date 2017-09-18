@@ -15,6 +15,7 @@
 #include "smart_pointer.h"
 #include "threading.h"
 
+class Groupwise_parms;
 class Plm_image;
 class Registration_parms_private;
 class Shared_parms;
@@ -46,6 +47,9 @@ public:
     std::string img_out_dir;
     std::string vf_out_dir;
 
+    /* for groupwise registration */
+    std::string group_dir;
+
 public:
     Registration_parms();
     ~Registration_parms();
@@ -64,6 +68,7 @@ public:
     std::list<Stage_parms*>& get_stages ();
     Stage_parms* append_stage ();
     Stage_parms* append_process_stage ();
+    Groupwise_parms* get_groupwise_parms ();
 };
 
 #endif

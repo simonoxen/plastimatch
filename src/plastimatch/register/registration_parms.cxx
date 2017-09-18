@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "groupwise_parms.h"
 #include "logfile.h"
 #include "parameter_parser.h"
 #include "plm_return_code.h"
@@ -24,14 +25,17 @@ class Registration_parms_private
 public:
     std::list<Stage_parms*> stages;
     Shared_parms *shared;
+    Groupwise_parms *gw_parms;
 
 public:
     Registration_parms_private () {
         shared = new Shared_parms;
+        gw_parms = 0;
     }
     ~Registration_parms_private () {
         delete_all_stages ();
         delete shared;
+        delete gw_parms;
     }
     void delete_all_stages () {
         std::list<Stage_parms*>::iterator it;
@@ -153,6 +157,10 @@ Registration_parms::set_key_value (
     else if (key == "log" || key == "logfile") {
         if (!section_global) goto key_only_allowed_in_section_global;
         this->log_fn = val;
+    }
+    else if (key == "group_dir") {
+        if (!section_global) goto key_only_allowed_in_section_global;
+        this->group_dir = val;
     }
 
     /* The following keywords are allowed either globally or in stages */

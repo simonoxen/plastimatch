@@ -71,6 +71,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-trans-mi-a.txt"
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
+  "plm-reg-gw-a.txt"
   "proton-dose-1.txt"
   "proton-dose-2.txt"
   "proton-dose-4.txt"
@@ -244,6 +245,9 @@ add_custom_target (speedtest
 ##   gauss-ushort-2    Off-center gauss, ushort
 ##   lung-1            Synthetic lung, tumor position 0
 ##   lung-2            Synthetic lung, tumor position -5
+##   gw-lung-a         Synthetic lung, tumor position -5, in gw dir
+##   gw-lung-b         Synthetic lung, tumor position 0, in gw dir
+##   gw-lung-c         Synthetic lung, tumor position +5, in gw dir
 ##   ptv-1             rect PTV target for dose calculation
 ##   ptv-2             rect PTV target for dose calculation, smaller geometry
 ##   rect-1            Inverted rect, centered
@@ -362,6 +366,21 @@ plm_add_test (
   "lung-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-2-dicom;--pattern;lung;--lung-tumor-pos;-5"
+  )
+plm_add_test (
+  "gw-lung-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gw/lung-a.mha;--pattern;lung;--lung-tumor-pos;-5"
+  )
+plm_add_test (
+  "gw-lung-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gw/lung-b.mha;--pattern;lung;--lung-tumor-pos;0"
+  )
+plm_add_test (
+  "gw-lung-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/gw/lung-c.mha;--pattern;lung;--lung-tumor-pos;5"
   )
 plm_add_test (
   "ptv-1"
@@ -3567,6 +3586,16 @@ set_tests_properties (plm-reg-autores-b-stats PROPERTIES
   DEPENDS plm-reg-autores-b)
 set_tests_properties (plm-reg-autores-b-check PROPERTIES 
   DEPENDS plm-reg-autores-b-stats)
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 12)
+##   plm-reg-gw-a         Groupwise registration
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-gw-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-gw-a.txt"
+  )
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
