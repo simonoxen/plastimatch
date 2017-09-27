@@ -110,28 +110,20 @@ bool Acquire_4030e_parent::initialize (QString& strEXE_Path)
     {
         printf("Cannot open log output file");
     }
+    m_logFout << "hello world" << std::endl;
 
     /* Start up main window */	
     this->window = new Acquire_4030e_window();  //GUI-linked window	
 
-    QString strSVNDate = QString(SVN_DATE);
-    QString strSVNVer = QString(SVN_VERSION);
-
-    strSVNDate.remove(QChar('$'));
-
-    QStringList dateList = strSVNDate.split(" ");//space bar
-    QString newStrDate = dateList.at(1);
-
-    strSVNVer.remove(QChar('$'));
-    QStringList verList = strSVNVer.split(" ");//space bar
-    QString newStrVer = verList.at(1);
-
-    this->window->setWindowTitle(QString("Acquire 4030e v%1 (%2)").arg(newStrVer).arg(newStrDate));	
+    QString newStrVer = "1.6.3.X";
+    QString newStrDate = "2017-09-27";
+    this->window->setWindowTitle(QString("Acquire 4030e v%1 (%2)").arg(newStrVer).arg(newStrDate));
 
     this->window->UpdateLabel(0, NOT_OPENNED);
     this->window->UpdateLabel(1, NOT_OPENNED);
 	
-    this->window->show ();
+    m_logFout << "trying to show window" << std::endl;
+    this->window->show();
 
     /* Look for advantech device, spawn advantech thread */
     this->advantech = new Advantech;
