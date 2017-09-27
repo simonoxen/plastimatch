@@ -26,49 +26,49 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #define TIMEOUT_MAINLOOP 50
 
 Acquire_4030e_child::Acquire_4030e_child (int argc, char* argv[])
-: QApplication (argc, argv)
+    : QApplication (argc, argv)
 {
-	if (argc != 3) //1: exe path, 2: -- child 3: idx
-		exit(-1);		
-	
-	m_iProcNum = atoi(argv[2]);
+    if (argc != 3) //1: exe path, 2: -- child 3: idx
+        exit(-1);
 
-	dp = NULL;
-	vp = NULL;
+    m_iProcNum = atoi(argv[2]);
 
-	m_bAcquisitionOK = false;
+    dp = NULL;
+    vp = NULL;
 
-	m_enPanelStatus = NOT_OPENNED;
-	
-	m_pDarkImage = NULL;
-	m_pGainImage = NULL;
-	m_pCurrImage = NULL;
+    m_bAcquisitionOK = false;
 
-	m_pCurrImageRaw = NULL;
-	m_pCurrImageDarkCorrected = NULL;
-	
-	m_TimerMainLoop = new QTimer(this);
+    m_enPanelStatus = NOT_OPENNED;
 
-	connect(m_TimerMainLoop, SIGNAL(timeout()), this, SLOT(TimerMainLoop_event()));
+    m_pDarkImage = NULL;
+    m_pGainImage = NULL;
+    m_pCurrImage = NULL;
 
-	m_dlgControl = new Acquire_4030e_DlgControl();
-	m_dlgControl->setWindowTitle(QString("Panel Controller %1").arg(this->m_iProcNum));
+    m_pCurrImageRaw = NULL;
+    m_pCurrImageDarkCorrected = NULL;
 
-	m_dlgProgBar = new QProgressDialog("Operation in progress.", "Cancel", 0, 100);
-	m_dlgProgBar->setWindowModality(Qt::WindowModal);
+    m_TimerMainLoop = new QTimer(this);
 
-	m_timeOutCnt = 0;
-	m_iNumOfFramesRequested = 1;
+    connect(m_TimerMainLoop, SIGNAL(timeout()), this, SLOT(TimerMainLoop_event()));
 
-	m_pCrntStatus = NULL;
-	m_pModeInfo = NULL;	
+    m_dlgControl = new Acquire_4030e_DlgControl();
+    m_dlgControl->setWindowTitle(QString("Panel Controller %1").arg(this->m_iProcNum));
 
-	m_pClient = new QLocalSocket(this);
-	connect(m_pClient, SIGNAL(readyRead()), this, SLOT(SOCKET_ReadMessageFromParent()));
-	connect(m_pClient, SIGNAL(error(QLocalSocket::LocalSocketError)), this, SLOT(SOCKET_PrintError(QLocalSocket::LocalSocketError)));
-	connect(m_pClient, SIGNAL(disconnected()),m_pClient, SLOT(deleteLater()));
+    m_dlgProgBar = new QProgressDialog("Operation in progress.", "Cancel", 0, 100);
+    m_dlgProgBar->setWindowModality(Qt::WindowModal);
 
-	m_bFirstBoot_OpenSuccess = false;	
+    m_timeOutCnt = 0;
+    m_iNumOfFramesRequested = 1;
+
+    m_pCrntStatus = NULL;
+    m_pModeInfo = NULL;
+
+    m_pClient = new QLocalSocket(this);
+    connect(m_pClient, SIGNAL(readyRead()), this, SLOT(SOCKET_ReadMessageFromParent()));
+    connect(m_pClient, SIGNAL(error(QLocalSocket::LocalSocketError)), this, SLOT(SOCKET_PrintError(QLocalSocket::LocalSocketError)));
+    connect(m_pClient, SIGNAL(disconnected()),m_pClient, SLOT(deleteLater()));
+
+    m_bFirstBoot_OpenSuccess = false;
 }
 
 void Acquire_4030e_child::SOCKET_PrintError(QLocalSocket::LocalSocketError e)
@@ -78,72 +78,72 @@ void Acquire_4030e_child::SOCKET_PrintError(QLocalSocket::LocalSocketError e)
 
 Acquire_4030e_child::~Acquire_4030e_child ()
 {
-	vip_close_link();
+    vip_close_link();
 
-	printf("Panel link is being closed..\n");    
+    printf("Panel link is being closed..\n");
 
-	if (this->dp != NULL) {
-		delete this->dp;
-	}
-	if (this->vp != NULL) {
-		delete this->vp;
-	}
+    if (this->dp != NULL) {
+        delete this->dp;
+    }
+    if (this->vp != NULL) {
+        delete this->vp;
+    }
 
-	ReleaseMemory();
+    ReleaseMemory();
 
-	if (m_dlgControl != NULL)
-	{
-		delete m_dlgControl;
-		m_dlgControl = NULL;
-	}
+    if (m_dlgControl != NULL)
+    {
+        delete m_dlgControl;
+        m_dlgControl = NULL;
+    }
 
-	m_pClient->disconnectFromServer();
-	delete m_pClient;
+    m_pClient->disconnectFromServer();
+    delete m_pClient;
 }
 
 void Acquire_4030e_child::ReleaseMemory() //Dark or Gain Image buffer for correction
-{	
-	if (m_pCurrImage!= NULL)
-	{		
-		delete m_pCurrImage; //include Release Buffer 	
-		m_pCurrImage = NULL;
-	}
-	if (!m_pDarkImage!= NULL)
-	{	
-		delete m_pDarkImage;	
-		m_pDarkImage = NULL;
-	}
-	if (!m_pGainImage != NULL)
-	{	
-		delete m_pGainImage;	
-		m_pGainImage = NULL;
-	}
-	if (!m_pCurrImageRaw!= NULL)
-	{	
-		delete m_pCurrImageRaw;	
-		m_pCurrImageRaw = NULL;
-	}
-	if (!m_pCurrImageDarkCorrected!= NULL)
-	{	
-		delete m_pCurrImageDarkCorrected;	
-		m_pCurrImageDarkCorrected = NULL;
-	}	
+{
+    if (m_pCurrImage!= NULL)
+    {
+        delete m_pCurrImage; //include Release Buffer
+        m_pCurrImage = NULL;
+    }
+    if (!m_pDarkImage!= NULL)
+    {
+        delete m_pDarkImage;
+        m_pDarkImage = NULL;
+    }
+    if (!m_pGainImage != NULL)
+    {
+        delete m_pGainImage;
+        m_pGainImage = NULL;
+    }
+    if (!m_pCurrImageRaw!= NULL)
+    {
+        delete m_pCurrImageRaw;
+        m_pCurrImageRaw = NULL;
+    }
+    if (!m_pCurrImageDarkCorrected!= NULL)
+    {
+        delete m_pCurrImageDarkCorrected;
+        m_pCurrImageDarkCorrected = NULL;
+    }
 
-	if (m_pCrntStatus != NULL)
-	{	
-		delete m_pCrntStatus;; //currentStatus    
-		m_pCrntStatus = NULL;
+    if (m_pCrntStatus != NULL)
+    {
+        delete m_pCrntStatus;; //currentStatus
+        m_pCrntStatus = NULL;
 
-	}
-	if (m_pModeInfo == NULL)
-	{	
-		delete m_pModeInfo;	
-		m_pModeInfo = NULL;
-	}
-	
-	//delete m_pSysSemaphore;
+    }
+    if (m_pModeInfo == NULL)
+    {
+        delete m_pModeInfo;
+        m_pModeInfo = NULL;
+    }
 
-	return;
+    //delete m_pSysSemaphore;
+
+    return;
 }
 
 //this func is called by main first, then by parent->RestartChild.
@@ -151,476 +151,476 @@ void Acquire_4030e_child::ReleaseMemory() //Dark or Gain Image buffer for correc
 //But, restart of parent will forcely shut down the process without calling destructor
 //Destructor is important because of the closing panel
 bool Acquire_4030e_child::init(int panelIdx) //procNum = panelIdx
-{  	
-	m_bFirstBoot_OpenSuccess = false;
-	
-	if (m_iProcNum != panelIdx)
-	{
-		aqprintf("Panel index is not correct_Init!\n");
-		return false;
-	}
+{
+    m_bFirstBoot_OpenSuccess = false;
 
-	if (m_iProcNum != 0 && m_iProcNum != 1)
-	{
-		aqprintf("Panel index is not correct!\n");
-		return false;
-	}
-	this->idx = m_iProcNum;		
-	
-	m_OptionSettingChild.CheckAndLoadOptions_Child(m_iProcNum);
-	QString strRecepterPath = m_OptionSettingChild.m_strDriverFolder[m_iProcNum];
+    if (m_iProcNum != panelIdx)
+    {
+        aqprintf("Panel index is not correct_Init!\n");
+        return false;
+    }
 
-	if (strRecepterPath.length() < 2)
-	{
-		aqprintf("Panel folder is not selected!\n");
-		return false;
-	}
+    if (m_iProcNum != 0 && m_iProcNum != 1)
+    {
+        aqprintf("Panel index is not correct!\n");
+        return false;
+    }
+    this->idx = m_iProcNum;
 
-	// Connect to Server for communicating
-	QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);	
-	SOCKET_ConnectToServer(strServerName);	
+    m_OptionSettingChild.CheckAndLoadOptions_Child(m_iProcNum);
+    QString strRecepterPath = m_OptionSettingChild.m_strDriverFolder[m_iProcNum];
+
+    if (strRecepterPath.length() < 2)
+    {
+        aqprintf("Panel folder is not selected!\n");
+        return false;
+    }
+
+    // Connect to Server for communicating
+    QString strServerName = QString("SOCKET_MSG_TO_CHILD_%1").arg(idx);
+    SOCKET_ConnectToServer(strServerName);
 
 
-	if (vp != NULL)
-		vip_close_link(); //for sure, is it working??
-	
-	if (this->vp != NULL) {
-		delete this->vp;
-		vp = NULL;
-	}	
-	m_iCurWinMidVal = DEFAULT_WINLEVEL_MID;
-	m_iCurWinWidthVal= DEFAULT_WINLEVEL_WIDTH;
-	
-	ReleaseMemory(); // for m_pDarkImage and pGain	
+    if (vp != NULL)
+        vip_close_link(); //for sure, is it working??
 
-	//START optionSetting
+    if (this->vp != NULL) {
+        delete this->vp;
+        vp = NULL;
+    }
+    m_iCurWinMidVal = DEFAULT_WINLEVEL_MID;
+    m_iCurWinWidthVal= DEFAULT_WINLEVEL_WIDTH;
 
-	m_pCrntStatus = new UQueryProgInfo; //currentStatus    		
-	m_pModeInfo = new SModeInfo;		
+    ReleaseMemory(); // for m_pDarkImage and pGain
 
-	m_pDarkImage = new YK16GrayImage(); //offset image buffer
-	m_pGainImage = new YK16GrayImage(); //Gain (flood or flat) image buffer
-	m_pCurrImage = new YK16GrayImage();
+    //START optionSetting
 
-	m_pCurrImageDarkCorrected = new YK16GrayImage();
-	m_pCurrImageRaw = new YK16GrayImage();
+    m_pCrntStatus = new UQueryProgInfo; //currentStatus
+    m_pModeInfo = new SModeInfo;
 
-	aqprintf ("DRIVER_PATH_OF_PANEL_%d: %s\n", m_iProcNum, strRecepterPath.toLocal8Bit().constData());	
-	
-	//Only do it once at first init.
-	if (dp == NULL)
-	{
-		this->dp = new Dips_panel;
-		dp->open_panel (this->idx, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH); //if failed, exit(1) -->very rare.    
-		aqprintf ("DIPS shared memory created.\n");    
-	}
+    m_pDarkImage = new YK16GrayImage(); //offset image buffer
+    m_pGainImage = new YK16GrayImage(); //Gain (flood or flat) image buffer
+    m_pCurrImage = new YK16GrayImage();
 
-	int result = open_receptor (strRecepterPath.toLocal8Bit().constData());	
+    m_pCurrImageDarkCorrected = new YK16GrayImage();
+    m_pCurrImageRaw = new YK16GrayImage();
 
-	if (result == RESTART_NEEDED)
-	{	
-		aqprintf("RESTART_PROCESS\n"); //this will make parent to restart this process
-		Sleep(2000);	
+    aqprintf ("DRIVER_PATH_OF_PANEL_%d: %s\n", m_iProcNum, strRecepterPath.toLocal8Bit().constData());
 
-		return false; //if it is false, main will quit the process..
-	}
+    //Only do it once at first init.
+    if (dp == NULL)
+    {
+        this->dp = new Dips_panel;
+        dp->open_panel (this->idx, HIRES_IMAGE_HEIGHT, HIRES_IMAGE_WIDTH); //if failed, exit(1) -->very rare.
+        aqprintf ("DIPS shared memory created.\n");
+    }
 
-	Sleep(100);
-	vp->get_mode_info (*m_pModeInfo, vp->current_mode);
+    int result = open_receptor (strRecepterPath.toLocal8Bit().constData());
 
-	//make image buffer
-	if (vp->m_iSizeX*vp->m_iSizeY == 0)
-	{
-		aqprintf("YK Critical error! image size is not valid\n");
-		return false;
-	}		
-	m_pCurrImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
-	m_pDarkImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
-	m_pGainImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
+    if (result == RESTART_NEEDED)
+    {
+        aqprintf("RESTART_PROCESS\n"); //this will make parent to restart this process
+        Sleep(2000);
 
-	m_pCurrImageRaw->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
-	m_pCurrImageDarkCorrected->CreateImage(vp->m_iSizeX , vp->m_iSizeY,100);		
+        return false; //if it is false, main will quit the process..
+    }
 
-	m_bLockInPanelStandby = true;
-	m_bCancelAcqRequest = false;
+    Sleep(100);
+    vp->get_mode_info (*m_pModeInfo, vp->current_mode);
 
-	aqprintf("5 s Delay Before Timer Start \n"); //Message for sequencial starting program	
-	Sleep(5000); //to give the panel some time after initialization
+    //make image buffer
+    if (vp->m_iSizeX*vp->m_iSizeY == 0)
+    {
+        aqprintf("YK Critical error! image size is not valid\n");
+        return false;
+    }
+    m_pCurrImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
+    m_pDarkImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
+    m_pGainImage->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
 
-	m_TimerMainLoop->start(100);
-	ChangePanelStatus(IMAGE_ACQUSITION_DONE);	
-	m_dlgControl->UpdateGUIFromSetting_Child();	//include reload dark/flood images
-	
-	//Update GUI mode info
-	m_dlgControl->EditModeNum->setText(QString("%1").arg(m_pModeInfo->ModeNum));
-	m_dlgControl->EditModeDescription->setText(QString("%1").arg(m_pModeInfo->ModeDescription));
+    m_pCurrImageRaw->CreateImage(vp->m_iSizeX , vp->m_iSizeY,0);
+    m_pCurrImageDarkCorrected->CreateImage(vp->m_iSizeX , vp->m_iSizeY,100);
 
-	//Delete Old Image Files Saved in Current Img Folders
-	if (m_dlgControl->ChkDeleteImgAfter->isChecked())
-		DeleteOldImageFiles();
+    m_bLockInPanelStandby = true;
+    m_bCancelAcqRequest = false;
 
-	
-	return true;
+    aqprintf("5 s Delay Before Timer Start \n"); //Message for sequencial starting program
+    Sleep(5000); //to give the panel some time after initialization
+
+    m_TimerMainLoop->start(100);
+    ChangePanelStatus(IMAGE_ACQUSITION_DONE);
+    m_dlgControl->UpdateGUIFromSetting_Child();	//include reload dark/flood images
+
+    //Update GUI mode info
+    m_dlgControl->EditModeNum->setText(QString("%1").arg(m_pModeInfo->ModeNum));
+    m_dlgControl->EditModeDescription->setText(QString("%1").arg(m_pModeInfo->ModeDescription));
+
+    //Delete Old Image Files Saved in Current Img Folders
+    if (m_dlgControl->ChkDeleteImgAfter->isChecked())
+        DeleteOldImageFiles();
+
+
+    return true;
 }
 
 void Acquire_4030e_child::SOCKET_ConnectToServer(QString& strServerName)
 {
-	m_pClient->abort();
-	m_pClient->connectToServer(strServerName);	
+    m_pClient->abort();
+    m_pClient->connectToServer(strServerName);
 }
 
 void Acquire_4030e_child::SOCKET_ReadMessageFromParent() //when msg comes to client
 {
-	while(m_pClient->bytesAvailable()<(int)sizeof(quint32))
-	{
-		m_pClient->waitForReadyRead();
-	}	
+    while(m_pClient->bytesAvailable()<(int)sizeof(quint32))
+    {
+        m_pClient->waitForReadyRead();
+    }
 
-	QDataStream in(m_pClient);
-	in.setVersion(QDataStream::Qt_4_0);
-	if (m_pClient->bytesAvailable() < (int)sizeof(quint16))
-	{
-		return;
-	}
-	QString message;
-	in >> message;
-	
-	m_strFromParent = message;
+    QDataStream in(m_pClient);
+    in.setVersion(QDataStream::Qt_4_0);
+    if (m_pClient->bytesAvailable() < (int)sizeof(quint16))
+    {
+        return;
+    }
+    QString message;
+    in >> message;
 
-	InterpretAndFollow();
+    m_strFromParent = message;
+
+    InterpretAndFollow();
 }
 
 bool Acquire_4030e_child::close_receptor () //almost destructor...
 {
-	if (vp != NULL)
-	{
-		vip_io_enable(HS_STANDBY);
-		vip_close_link(); //for sure, is it working??			
-	}
+    if (vp != NULL)
+    {
+        vip_io_enable(HS_STANDBY);
+        vip_close_link(); //for sure, is it working??
+    }
 
-	if (this->vp != NULL) {
-		delete this->vp;
-		vp = NULL;
-	}	
-	ReleaseMemory();	
+    if (this->vp != NULL) {
+        delete this->vp;
+        vp = NULL;
+    }
+    ReleaseMemory();
 
-	return true;
-}   
+    return true;
+}
 
 int Acquire_4030e_child::open_receptor (const char* path)
-{	
-	QString tmpPath = path;
-	if (tmpPath.length() < 1)
-		return -1;
-	
-	//if there is no path exist, return false;    
-	int result;
-	
-	this->vp = new Varian_4030e (this->idx, this); //for each child vp will be assigned
+{
+    QString tmpPath = path;
+    if (tmpPath.length() < 1)
+        return -1;
 
-	result = vp->open_link (idx, path); // idx of current child process
+    //if there is no path exist, return false;
+    int result;
 
-	
+    this->vp = new Varian_4030e (this->idx, this); //for each child vp will be assigned
 
-	if (result == 47)
-		aqprintf("vip_open_receptor successfully called. No correction file exist(Default). (code = %d) \n", result);
-	else
-		aqprintf("vip_open_receptor successfully called. Some unnecessary correction files are in IMAGERs folder (code = %d).\n", result);
+    result = vp->open_link (idx, path); // idx of current child process
 
-	//HCP_NO_ERR – all requested corrections are available  = 0
-	//HCP_OFST_ERR,		// 47						// no corrections are available 
-	//HCP_GAIN_ERR,		// 48						// of requested corrections only offset is available  
-	//HCP_DFCT_ERR,		// 49						// of requested corrections only offset and gain are available	
 
-	//47 is desirable. If it is the case other than 47, remove all the file in C:\IMAGERs\(ModeFolder)
 
-	result = vip_hw_reset();
-	aqprintf("vip_hw_reset result = %d\n", result);
+    if (result == 47)
+        aqprintf("vip_open_receptor successfully called. No correction file exist(Default). (code = %d) \n", result);
+    else
+        aqprintf("vip_open_receptor successfully called. Some unnecessary correction files are in IMAGERs folder (code = %d).\n", result);
 
-	vip_reset_state();
-	aqprintf("vip_reset_state result = %d\n", result);
-	
-	result = vp->disable_missing_corrections (result); //auto error correction precedure? 
-	if (result != HCP_NO_ERR) {
-		aqprintf ("vp.open_receptor_link returns error (%d): %s\n", result, Varian_4030e::error_string(result));	
+    //HCP_NO_ERR – all requested corrections are available  = 0
+    //HCP_OFST_ERR,		// 47						// no corrections are available
+    //HCP_GAIN_ERR,		// 48						// of requested corrections only offset is available
+    //HCP_DFCT_ERR,		// 49						// of requested corrections only offset and gain are available
 
-		result = RESTART_NEEDED;		
+    //47 is desirable. If it is the case other than 47, remove all the file in C:\IMAGERs\(ModeFolder)
 
-		delete vp;
-		vp = NULL;
-		return result;        
-	}
-	Sleep(3000);//YK: after Open Receptor, give enough time (only once after running)   
+    result = vip_hw_reset();
+    aqprintf("vip_hw_reset result = %d\n", result);
 
-	result = vp->check_link (MAX_CHECK_LINK_RETRY); //link checking, maximum 3 trials then re open the port
+    vip_reset_state();
+    aqprintf("vip_reset_state result = %d\n", result);
 
-	if (result == RESTART_NEEDED) //-111
-	{
-		aqprintf("Check_link failed.. process will be restarted!\n");	
-		return result;
-	}
-	if (result != HCP_NO_ERR) {
-		aqprintf ("vp.check_link returns error %d\n", result);
-		vip_close_link();
+    result = vp->disable_missing_corrections (result); //auto error correction precedure?
+    if (result != HCP_NO_ERR) {
+        aqprintf ("vp.open_receptor_link returns error (%d): %s\n", result, Varian_4030e::error_string(result));
 
-		delete vp;
-		vp = NULL;
-		return result;        
-	}
+        result = RESTART_NEEDED;
 
-	vp->print_sys_info ();
-	
-	result = vip_select_mode (vp->current_mode);	
-	vp->print_mode_info ();	
+        delete vp;
+        vp = NULL;
+        return result;
+    }
+    Sleep(3000);//YK: after Open Receptor, give enough time (only once after running)
 
-	if (result != HCP_NO_ERR) {
-		aqprintf ("vip_select_mode(%d) returns error %d\n",vp->current_mode, result);	
+    result = vp->check_link (MAX_CHECK_LINK_RETRY); //link checking, maximum 3 trials then re open the port
 
-		vp->close_link ();
+    if (result == RESTART_NEEDED) //-111
+    {
+        aqprintf("Check_link failed.. process will be restarted!\n");
+        return result;
+    }
+    if (result != HCP_NO_ERR) {
+        aqprintf ("vp.check_link returns error %d\n", result);
+        vip_close_link();
 
-		delete vp;
-		vp = NULL;
+        delete vp;
+        vp = NULL;
+        return result;
+    }
 
-		return result;
-	}	
+    vp->print_sys_info ();
 
-	return result;
+    result = vip_select_mode (vp->current_mode);
+    vp->print_mode_info ();
+
+    if (result != HCP_NO_ERR) {
+        aqprintf ("vip_select_mode(%d) returns error %d\n",vp->current_mode, result);
+
+        vp->close_link ();
+
+        delete vp;
+        vp = NULL;
+
+        return result;
+    }
+
+    return result;
 }
 
 //Acquire N frames and average them to make a one raw image file and to memory
 bool Acquire_4030e_child::PerformDarkFieldCalibration(UQueryProgInfo& crntStatus, int avgFrameCnt)
-{  
+{
 
-	if (avgFrameCnt<1 ||avgFrameCnt > 30)
-	{
-		aqprintf("Invalid frame number for averaging. Should be < 9 and > 0\n");
-		return false;
-	}
+    if (avgFrameCnt<1 ||avgFrameCnt > 30)
+    {
+        aqprintf("Invalid frame number for averaging. Should be < 9 and > 0\n");
+        return false;
+    }
 
-	int result;
-	int i = 0;	
+    int result;
+    int i = 0;
 
-	int iWidth= vp->m_iSizeX;
-	int iHeight= vp->m_iSizeY;
-	int imgSize = iWidth*iHeight;
+    int iWidth= vp->m_iSizeX;
+    int iHeight= vp->m_iSizeY;
+    int imgSize = iWidth*iHeight;
 
-	if (imgSize == 0)
-		return false;
+    if (imgSize == 0)
+        return false;
 
-	long* tmpImageSumBuf = NULL;
-	tmpImageSumBuf = new long [imgSize];
+    long* tmpImageSumBuf = NULL;
+    tmpImageSumBuf = new long [imgSize];
 
-	for (int j = 0 ; j<imgSize; j++)
-	{
-		tmpImageSumBuf[j] = 0;
-	}
-	int SumSuccessCnt = 0;	
+    for (int j = 0 ; j<imgSize; j++)
+    {
+        tmpImageSumBuf[j] = 0;
+    }
+    int SumSuccessCnt = 0;
 
-	m_dlgProgBar->setValue(10);	
+    m_dlgProgBar->setValue(10);
 
-	//Repeat below procedure //MultiFrame
-	for (i = 0 ; i< avgFrameCnt ; i++)	
-	{		
-		result = HCP_NO_ERR;
-		m_timeOutCnt = 0;
+    //Repeat below procedure //MultiFrame
+    for (i = 0 ; i< avgFrameCnt ; i++)
+    {
+        result = HCP_NO_ERR;
+        m_timeOutCnt = 0;
 
-		//result = vip_reset_state(); //Mandatory!!! or reopen the panel
+        //result = vip_reset_state(); //Mandatory!!! or reopen the panel
 
-		aqprintf("Acquiring image number %d of total %d...\n", i+1, avgFrameCnt);
+        aqprintf("Acquiring image number %d of total %d...\n", i+1, avgFrameCnt);
 
-		result = vip_enable_sw_handshaking(TRUE);
-		//1] START ACQUISITION
-		if (result == HCP_NO_ERR)
-		{
-			result = vip_sw_handshaking(VIP_SW_PREPARE, TRUE);
-			if (result == HCP_NO_ERR)
-			{
-				result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);
-				if (result == HCP_NO_ERR)
-				{					
-					crntStatus.qpi.Complete = FALSE; //YK: seems this is Important skill!!!
-					crntStatus.qpi.ReadyForPulse = FALSE; //YK: not sure..
+        result = vip_enable_sw_handshaking(TRUE);
+        //1] START ACQUISITION
+        if (result == HCP_NO_ERR)
+        {
+            result = vip_sw_handshaking(VIP_SW_PREPARE, TRUE);
+            if (result == HCP_NO_ERR)
+            {
+                result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);
+                if (result == HCP_NO_ERR)
+                {
+                    crntStatus.qpi.Complete = FALSE; //YK: seems this is Important skill!!!
+                    crntStatus.qpi.ReadyForPulse = FALSE; //YK: not sure..
 
-					result = vp->query_prog_info(crntStatus);
-										
-					while(result == HCP_NO_ERR && crntStatus.qpi.ReadyForPulse == FALSE)
-					{
-						result = vp->query_prog_info (crntStatus);
-						Sleep(100);
+                    result = vp->query_prog_info(crntStatus);
 
-						m_timeOutCnt += TIMEOUT_MAINLOOP;
+                    while(result == HCP_NO_ERR && crntStatus.qpi.ReadyForPulse == FALSE)
+                    {
+                        result = vp->query_prog_info (crntStatus);
+                        Sleep(100);
 
-						if (m_timeOutCnt > 3000)
-						{
-							aqprintf("*** TIMEOUT ***Stuck in waiting for ReadyForPulse signal. Image acquisition failed!\n");							
-							result = HCP_TIMEOUT;
-							break;
-						}			
-					}
-					Sleep(1000); //original:500
-				}
-			}
-		}		
-		aqprintf("Receptor is enabled for acquisition\n");
+                        m_timeOutCnt += TIMEOUT_MAINLOOP;
 
-		//2] WAIT AC
-		m_timeOutCnt = 0;
+                        if (m_timeOutCnt > 3000)
+                        {
+                            aqprintf("*** TIMEOUT ***Stuck in waiting for ReadyForPulse signal. Image acquisition failed!\n");
+                            result = HCP_TIMEOUT;
+                            break;
+                        }
+                    }
+                    Sleep(1000); //original:500
+                }
+            }
+        }
+        aqprintf("Receptor is enabled for acquisition\n");
 
-		if (result == HCP_NO_ERR)
-		{	    
-			aqprintf("Wait for complete\n");
-			result = vp->query_prog_info (crntStatus);
-			Sleep(100);
+        //2] WAIT AC
+        m_timeOutCnt = 0;
 
-			if (result == HCP_NO_ERR)
-			{	
-				
-				while (crntStatus.qpi.Complete != 1 && result == HCP_NO_ERR) //YK TEMP: stuck here!!!!!!!!!!!!!!!!
-				{
-					result = vp->query_prog_info (crntStatus);
-					Sleep(100);
-					m_timeOutCnt += TIMEOUT_MAINLOOP;
-					if (m_timeOutCnt > 3000)
-					{
-						aqprintf("*** TIMEOUT ***Stuck in waiting for complete signal. Image acquisition failed!\n");							
-						result = HCP_TIMEOUT;
-						break;
-					}					
-				}
-			}
-		}		
+        if (result == HCP_NO_ERR)
+        {
+            aqprintf("Wait for complete\n");
+            result = vp->query_prog_info (crntStatus);
+            Sleep(100);
 
-		if (result == HCP_NO_ERR)
-		{	    				
-			int mode_num = vp->current_mode;
-			
+            if (result == HCP_NO_ERR)
+            {
 
-			USHORT *image_ptr = (USHORT *)malloc(imgSize * sizeof(USHORT));
+                while (crntStatus.qpi.Complete != 1 && result == HCP_NO_ERR) //YK TEMP: stuck here!!!!!!!!!!!!!!!!
+                {
+                    result = vp->query_prog_info (crntStatus);
+                    Sleep(100);
+                    m_timeOutCnt += TIMEOUT_MAINLOOP;
+                    if (m_timeOutCnt > 3000)
+                    {
+                        aqprintf("*** TIMEOUT ***Stuck in waiting for complete signal. Image acquisition failed!\n");
+                        result = HCP_TIMEOUT;
+                        break;
+                    }
+                }
+            }
+        }
 
-			result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, iWidth, iHeight, image_ptr);						
-			
-			if(result != HCP_NO_ERR)
-			{
-				aqprintf("*** vip_get_image returned error %d\n", result);
-			}
-			else
-			{
-				if (AuditImage(iWidth, iHeight, image_ptr))
-				{
-					SumSuccessCnt++;
-					for (int j = 0 ; j < imgSize; j++)
-					{
-						tmpImageSumBuf[j] = tmpImageSumBuf[j] + (long)image_ptr[j];
-					}
-				}
-			}
-			free(image_ptr);
-		}
+        if (result == HCP_NO_ERR)
+        {
+            int mode_num = vp->current_mode;
 
-		if (result == HCP_NO_ERR)
-		{			
-			result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE);
-			if (result != HCP_NO_ERR)
-			{
-				aqprintf("vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE) returns %d\n", result);
-			}
-			result = vip_sw_handshaking(VIP_SW_PREPARE, FALSE);
-			if (result != HCP_NO_ERR)
-				aqprintf("vip_sw_handshaking(VIP_SW_PREPARE, FALSE) returns %d\n", result);
 
-			if (i != avgFrameCnt-1) // in last term, don't do the hardware handshaking on --> will be done in OPENNED
-			{
-				result = vip_enable_sw_handshaking(FALSE);// YK0411
-				if (result != HCP_NO_ERR)
-					aqprintf("vip_enable_sw_handshaking(FALSE) returns %d\n", result);
-			}			
-		}
-		//Repeat above procedure //MultiFrame
+            USHORT *image_ptr = (USHORT *)malloc(imgSize * sizeof(USHORT));
 
-		int tmpVal = (int)(80.0 / (double)(avgFrameCnt) * (i+1)); // 10 + 80 + 10
-		m_dlgProgBar->setValue(tmpVal);
-		
-	} //end of for loop
+            result = vip_get_image(mode_num, VIP_CURRENT_IMAGE, iWidth, iHeight, image_ptr);
 
-	//in DualRadTest, this code is not existing
+            if(result != HCP_NO_ERR)
+            {
+                aqprintf("*** vip_get_image returned error %d\n", result);
+            }
+            else
+            {
+                if (AuditImage(iWidth, iHeight, image_ptr))
+                {
+                    SumSuccessCnt++;
+                    for (int j = 0 ; j < imgSize; j++)
+                    {
+                        tmpImageSumBuf[j] = tmpImageSumBuf[j] + (long)image_ptr[j];
+                    }
+                }
+            }
+            free(image_ptr);
+        }
 
-	//Save in memory
-	if (!m_pDarkImage->IsEmpty())
-	{
-		for (int j = 0 ; j<imgSize ; j++)
-		{
-			m_pDarkImage->m_pData[j] = (USHORT)(tmpImageSumBuf[j]/(double)SumSuccessCnt);
-		}
-		aqprintf("%d frames were added to dark field for averaging. Dark image buffer is ready.\n", SumSuccessCnt);	
-	}
-	else
-	{
-		aqprintf("YK Critical error! Dark image buffer is not ready.\n");
-	}
-	delete [] tmpImageSumBuf;
+        if (result == HCP_NO_ERR)
+        {
+            result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE);
+            if (result != HCP_NO_ERR)
+            {
+                aqprintf("vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE) returns %d\n", result);
+            }
+            result = vip_sw_handshaking(VIP_SW_PREPARE, FALSE);
+            if (result != HCP_NO_ERR)
+                aqprintf("vip_sw_handshaking(VIP_SW_PREPARE, FALSE) returns %d\n", result);
 
-	m_dlgProgBar->setValue(95);
-	int idx = this->m_iProcNum;
-	
-	QString strFolderName = m_OptionSettingChild.m_strDarkImageSavingFolder[idx];
-	QString strFileName = QString("\\%1_Dark_Avg%2").arg(idx).arg(SumSuccessCnt);
+            if (i != avgFrameCnt-1) // in last term, don't do the hardware handshaking on --> will be done in OPENNED
+            {
+                result = vip_enable_sw_handshaking(FALSE);// YK0411
+                if (result != HCP_NO_ERR)
+                    aqprintf("vip_enable_sw_handshaking(FALSE) returns %d\n", result);
+            }
+        }
+        //Repeat above procedure //MultiFrame
 
-	QDate date = QDate::currentDate();	
-	QString strDate = date.toString("_yyyy_MM_dd");
+        int tmpVal = (int)(80.0 / (double)(avgFrameCnt) * (i+1)); // 10 + 80 + 10
+        m_dlgProgBar->setValue(tmpVal);
 
-	QTime time = QTime::currentTime();    
-	QString strTime = time.toString("_hh_mm_ss");
-	strFileName.append(strDate);
-	strFileName.append(strTime);
-	strFileName.append(".raw");
+    } //end of for loop
 
-	strFileName.prepend(strFolderName);
+    //in DualRadTest, this code is not existing
 
-	//Dark image no need to send to dips
-	
-	if (!m_pDarkImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData()))
-	{
-		aqprintf("Cannot export to raw file\n");
-	}
+    //Save in memory
+    if (!m_pDarkImage->IsEmpty())
+    {
+        for (int j = 0 ; j<imgSize ; j++)
+        {
+            m_pDarkImage->m_pData[j] = (USHORT)(tmpImageSumBuf[j]/(double)SumSuccessCnt);
+        }
+        aqprintf("%d frames were added to dark field for averaging. Dark image buffer is ready.\n", SumSuccessCnt);
+    }
+    else
+    {
+        aqprintf("YK Critical error! Dark image buffer is not ready.\n");
+    }
+    delete [] tmpImageSumBuf;
 
-	//UpdateDarkImagePath
-	m_dlgControl->lineEditDarkPath->setText(strFileName);
-	
-	if (!m_pDarkImage->FillPixMap(1500, 3000)) //0 - 3000 is enough
-		aqprintf("Error on FillPixMap\n");
+    m_dlgProgBar->setValue(95);
+    int idx = this->m_iProcNum;
 
-	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap 
-		aqprintf("Error on drawing");
+    QString strFolderName = m_OptionSettingChild.m_strDarkImageSavingFolder[idx];
+    QString strFileName = QString("\\%1_Dark_Avg%2").arg(idx).arg(SumSuccessCnt);
 
-	m_dlgProgBar->setValue(100);	
+    QDate date = QDate::currentDate();
+    QString strDate = date.toString("_yyyy_MM_dd");
 
-	if (result != HCP_NO_ERR)
-		return false;   
+    QTime time = QTime::currentTime();
+    QString strTime = time.toString("_hh_mm_ss");
+    strFileName.append(strDate);
+    strFileName.append(strTime);
+    strFileName.append(".raw");
 
-	return true;
+    strFileName.prepend(strFolderName);
+
+    //Dark image no need to send to dips
+
+    if (!m_pDarkImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData()))
+    {
+        aqprintf("Cannot export to raw file\n");
+    }
+
+    //UpdateDarkImagePath
+    m_dlgControl->lineEditDarkPath->setText(strFileName);
+
+    if (!m_pDarkImage->FillPixMap(1500, 3000)) //0 - 3000 is enough
+        aqprintf("Error on FillPixMap\n");
+
+    if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap
+        aqprintf("Error on drawing");
+
+    m_dlgProgBar->setValue(100);
+
+    if (result != HCP_NO_ERR)
+        return false;
+
+    return true;
 }
 
 
 bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
-{ 		
+{
 
     int result = HCP_NO_ERR;
     //in DualRadTest, this code is not existing
-    result = vip_reset_state(); //Mandatory!!! or reopen the panel.    
-	
+    result = vip_reset_state(); //Mandatory!!! or reopen the panel.
+
     m_timeOutCnt = 0;
 
-    int maxCnt = 0;    
+    int maxCnt = 0;
     result = vip_enable_sw_handshaking(TRUE);
-	
+
     //1] START ACQUISITION
     if (result == HCP_NO_ERR)
     {
-        result = vip_sw_handshaking(VIP_SW_PREPARE, TRUE);		
+        result = vip_sw_handshaking(VIP_SW_PREPARE, TRUE);
 
         if (result == HCP_NO_ERR)
         {
-            result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);			
+            result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, TRUE);
             if (result == HCP_NO_ERR)
             {
                 //aqprintf("YK3\n");
@@ -629,12 +629,12 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 
                 result = vp->query_prog_info(crntStatus); //single trial --> OK 0 0 0 1
 
-                Sleep(100);				
+                Sleep(100);
 
                 m_dlgProgBar->setValue(25);
 
                 while(result == HCP_NO_ERR && crntStatus.qpi.ReadyForPulse == FALSE)
-                {				
+                {
 
                     result = vp->query_prog_info (crntStatus);
                     Sleep(100);
@@ -645,9 +645,9 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
                         aqprintf("*** TIMEOUT ***Stuck in waiting ReadyForPulse. Image acquisition failed!\n");
                         m_timeOutCnt = 0;
                         return false;
-                    }					
+                    }
                 }
-				
+
                 Sleep(1000);
                 m_dlgProgBar->setValue(50);
             }
@@ -659,13 +659,13 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
     m_timeOutCnt = 0;
 
     if (result == HCP_NO_ERR)
-    {		
+    {
         result = vp->query_prog_info (crntStatus); // 1 0 1 1
 
-        Sleep(100);		
+        Sleep(100);
 
         if (result == HCP_NO_ERR)
-        {	
+        {
             while (crntStatus.qpi.Complete != 1 && result == HCP_NO_ERR)
             {
                 result = vp->query_prog_info (crntStatus); //1 1 1 0
@@ -677,19 +677,19 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
                     aqprintf("*** TIMEOUT ***Stuck in waiting for Complete signal. Image acquisition failed!\n");
                     m_timeOutCnt = 0;
                     return false;
-                }				
-            }	    
+                }
+            }
         }
     }
     m_dlgProgBar->setValue(75);
-    //3] GET IMAGE	
-	
+    //3] GET IMAGE
+
     if (result == HCP_NO_ERR)
-    {		
+    {
         result = vp->get_image_to_buf(vp->m_iSizeX, vp->m_iSizeY); //fill Curr Image
 
         vp->CopyFromBufAndSendToDips(dp);
-			
+
 
         //Display on the screen
         m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
@@ -698,28 +698,28 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
         //Save as raw file
         if (m_dlgControl->ChkAutoSave->isChecked())
         {
-            QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();			
+            QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();
 
             if (folderPath.length() < 2)
                 folderPath = "C:";
 
             QString strFileName = QString("%1_CurImg").arg(this->idx); //panel number display
             QDate date = QDate::currentDate();
-            QTime time = QTime::currentTime();    
+            QTime time = QTime::currentTime();
             QString strDate = date.toString("_yyyy_MM_dd");
-            QString strTime = time.toString("_hh_mm_ss");        
+            QString strTime = time.toString("_hh_mm_ss");
             strFileName.append(strDate);
             strFileName.append(strTime);
             strFileName.append(".raw");
 
             strFileName.prepend("\\");
             strFileName.prepend(folderPath);
-            m_pCurrImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData());	
+            m_pCurrImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData());
 
         }
     }
     if (result == HCP_NO_ERR)
-    {		
+    {
         aqprintf("VIP_SW_VALID_XRAYS\n");
 
         result = vip_sw_handshaking(VIP_SW_VALID_XRAYS, FALSE);
@@ -734,12 +734,12 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
     }
 
     m_dlgProgBar->setValue(100);
-		
+
     Sleep(500);
-	
+
     if (result != HCP_NO_ERR)
-        return false;	
-	
+        return false;
+
 
     return true;
 }
@@ -747,14 +747,14 @@ bool Acquire_4030e_child::SWSingleAcquisition(UQueryProgInfo& crntStatus)
 //To avoid aquiring dark field image during proton-beam or X-ray on
 //Judge the validity of dark field by using histogram or mean value or SD
 bool Acquire_4030e_child::AuditImage(int sizeX, int sizeY, USHORT* pImg)
-{  
+{
 	int nTotal;
 	long minPixel, maxPixel;
 	int i;
 	double pixel, sumPixel;
 
 	int npixels = sizeX*sizeY;
-	nTotal = 0;	
+	nTotal = 0;
 	minPixel = 65535;
 	maxPixel = 0;
 	sumPixel = 0.0;
@@ -770,7 +770,7 @@ bool Acquire_4030e_child::AuditImage(int sizeX, int sizeY, USHORT* pImg)
 		nTotal++;
 	}
 
-	double meanPixelval = sumPixel / (double)nTotal;    
+	double meanPixelval = sumPixel / (double)nTotal;
 
 	double sqrSum = 0.0;
 	for (i = 0; i < npixels; i++)
@@ -788,17 +788,17 @@ bool Acquire_4030e_child::AuditImage(int sizeX, int sizeY, USHORT* pImg)
 	double SDLower = 0;
 	//YKTEMP: should be implemented
 
-	if (meanPixelval > MeanUpper || meanPixelval < MeanLower || 
+	if (meanPixelval > MeanUpper || meanPixelval < MeanLower ||
 		SD > SDUpper || SD < SDLower)
 	{
 		aqprintf("This image is not proper for Dark Image.MeanVal:%3.5f, SD:%3.5f \n", meanPixelval, SD);
-		return false;	
+		return false;
 	}
 	return true;
 }
 
 void Acquire_4030e_child::InterpretAndFollow ()
-{	
+{
 	if (m_strFromParent.length() < 1)
 	{
 		// do nothing
@@ -811,16 +811,16 @@ void Acquire_4030e_child::InterpretAndFollow ()
 	}
 
 	if (m_strFromParent.contains("SHOWDLG"))
-	{		
+	{
 		if (m_dlgControl != NULL)
 			m_dlgControl->show();
 
 		Sleep(DELAY_FOR_CHILD_RESPONSE);
-		aqprintf("PRESPP_SHOWDLG\n");		
+		aqprintf("PRESPP_SHOWDLG\n");
 	}
 	else if (m_strFromParent.contains("KILL"))//m_enPanelStatus to NoT openned
-	{	
-		m_TimerMainLoop->stop(); //if running		
+	{
+		m_TimerMainLoop->stop(); //if running
 
 		close_receptor(); //Like Destructor
 		m_pClient->disconnectFromServer();
@@ -830,21 +830,21 @@ void Acquire_4030e_child::InterpretAndFollow ()
 			dp = NULL;
 		}
 		ChangePanelStatus(NOT_OPENNED);
-		
+
 		aqprintf("PRESPP_KILL\n");
-	}	
+	}
 	else if (m_strFromParent.contains("UNLOCKFORPREPARE"))//msg is sent from parent's main loop related to advantech
-	{		
+	{
 		aqprintf("PRESPP_UNLOCKFORPREPARE\n");
-		
+
 		m_bLockInPanelStandby = false;
 		m_bCancelAcqRequest = false; //initialization
-	}	
+	}
 	else if (m_strFromParent.contains("CANCELACQ"))//msg is sent from parent's main loop related to advantech
-	{			
-		m_bCancelAcqRequest = true;//Skip ReadyForPulse when the other panel is selected		
+	{
+		m_bCancelAcqRequest = true;//Skip ReadyForPulse when the other panel is selected
 		aqprintf("PRESPP_CANCELACQ\n");
-	}	
+	}
 	m_strFromParent="";
 	return;
 }
@@ -854,7 +854,7 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 	if (!m_bAcquisitionOK)
 		return;
 	//stop main loop to go into the sub loop
-	//At the end of the sub-loop code, resume the main loop	
+	//At the end of the sub-loop code, resume the main loop
 	int result = HCP_NO_ERR;
 	QString errorStr;
 
@@ -867,89 +867,89 @@ void Acquire_4030e_child::TimerMainLoop_event() //called every 50 ms
 		PC_ReOpenPanel();
 		m_bAcquisitionOK = true;
 		//m_TimerMainLoop->start(TIMEOUT_MAINLOOP)  //should be 100 ms
-		break;		
+		break;
 
-	case OPENNED:	
+	case OPENNED:
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_ActivatePanel();
-		m_bAcquisitionOK = true; //BUSY flag		
+		m_bAcquisitionOK = true; //BUSY flag
 		break;
 
-	case PANEL_ACTIVE: 		
+	case PANEL_ACTIVE:
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_WaitForPanelReady(); //will be repeated several times unitl the status change.
-		m_bAcquisitionOK = true; //BUSY flag		
-		
+		m_bAcquisitionOK = true; //BUSY flag
+
 		break;
 
-	case READY_FOR_PULSE: //Stand-by status			
+	case READY_FOR_PULSE: //Stand-by status
 
 		if (m_bCancelAcqRequest)//Skip ReadyForPulse when the other panel is selected
 		{
 			aqprintf("Status changed to IMAGE_ACQUSITION_DONE\n");
-			ChangePanelStatus(IMAGE_ACQUSITION_DONE);			
+			ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 			m_bCancelAcqRequest = false;
 		}
 		else
 		{
-			m_bAcquisitionOK = false; //BUSY flag		
-			PC_WaitForPulse();			
+			m_bAcquisitionOK = false; //BUSY flag
+			PC_WaitForPulse();
 			m_bAcquisitionOK = true; //BUSY flag
-		}				
+		}
 		break;
 
 	case PULSE_CHANGE_DETECTED:
-		m_bAcquisitionOK = false; //BUSY flag		
+		m_bAcquisitionOK = false; //BUSY flag
 		PC_WaitForComplete(); //inside here image acquisition
 		m_bAcquisitionOK = true; //BUSY flag
-		break;            	    	
+		break;
 
-	case COMPLETE_SIGNAL_DETECTED: // Go back to first step  PC_ReStandbyPanel	
-		m_bAcquisitionOK = false; //BUSY flag				
-		PC_GetImageHardware(); //called once		
+	case COMPLETE_SIGNAL_DETECTED: // Go back to first step  PC_ReStandbyPanel
+		m_bAcquisitionOK = false; //BUSY flag
+		PC_GetImageHardware(); //called once
 		m_bAcquisitionOK = true; //BUSY flag
-		break;	
+		break;
 
 	case IMAGE_ACQUSITION_DONE: //once called
-		m_bAcquisitionOK = false; //BUSY flag	
+		m_bAcquisitionOK = false; //BUSY flag
 
 		this->PC_CallForStanby();
 		m_bLockInPanelStandby = true;
 		m_bCancelAcqRequest = false;
 
-		m_bAcquisitionOK = true; //BUSY flag	
+		m_bAcquisitionOK = true; //BUSY flag
 
-		break;          
+		break;
 
 	case STANDBY_CALLED:
 		m_bAcquisitionOK = false; //BUSY flag
 		PC_WaitForStanby(); //inside here image acquisition
-		m_bAcquisitionOK = true; //BUSY flag		
+		m_bAcquisitionOK = true; //BUSY flag
 		break;
 
 	case STANDBY_SIGNAL_DETECTED:
 		//m_bAcquisitionOK = false; //Just hold the timer
 
-		if (!m_bFirstBoot_OpenSuccess) 
+		if (!m_bFirstBoot_OpenSuccess)
 		{
 			m_bFirstBoot_OpenSuccess= true;
 			aqprintf("PANEL_OPEN_SUCCESS\n"); //Message for sequencial starting program
 		}
 
 		if (!m_bLockInPanelStandby)
-		{			
+		{
 			ChangePanelStatus(OPENNED);
 		}
 		break;
 
 	case ACQUIRING_DARK_IMAGE:
 		m_bAcquisitionOK = false;
-		iAvgFrames = m_dlgControl->SpinDarkAvgFrames->value();	
+		iAvgFrames = m_dlgControl->SpinDarkAvgFrames->value();
 		this->PC_DarkFieldAcquisition_SingleShot(iAvgFrames);
-		ChangePanelStatus(OPENNED);	
+		ChangePanelStatus(OPENNED);
 		m_bAcquisitionOK = true;
 		break;
-	case DUMMY:		
+	case DUMMY:
 		break;
 	} //end of switch
 }
@@ -965,15 +965,15 @@ bool Acquire_4030e_child::PC_ReOpenPanel()
 	}
 
 	aqprintf ("PSTAT0: NOT_OPENNED\n");
-	
+
 	if (!init(m_iProcNum))
-	{			
+	{
 		aqprintf ("Cannot Open the panel! Loop will be stopped.\n");
-		m_bAcquisitionOK = false;		
+		m_bAcquisitionOK = false;
 	}
 	else
 	{
-		ChangePanelStatus(OPENNED);		
+		ChangePanelStatus(OPENNED);
 	}
 
 	return true;
@@ -987,40 +987,40 @@ bool Acquire_4030e_child::PC_ActivatePanel()
 		aqprintf ("PC_ActivatePanel Error: panel status is not proper\n");
 		return false;
 	}
-	
 
-	int result = HCP_NO_ERR; 
 
-	result = vip_enable_sw_handshaking (FALSE); //mandatory code	
+	int result = HCP_NO_ERR;
+
+	result = vip_enable_sw_handshaking (FALSE); //mandatory code
 
 	if (result != HCP_NO_ERR)
 	{
-		aqprintf ("**** vip_enable_sw_handshaking returns error %d\n",result);		
-		
+		aqprintf ("**** vip_enable_sw_handshaking returns error %d\n",result);
+
 		if (result == 2)//state error needs to RESTART
-		{				
+		{
 			aqprintf("RESTART_PROCESS\n"); //this will make parent to restart this process
-			Sleep(2000);	
+			Sleep(2000);
 		}
 		else
 		{
-			close_receptor();			
+			close_receptor();
 			m_enPanelStatus = NOT_OPENNED;
 			this->m_timeOutCnt = 0;
 			Sleep(300);
 		}
 		return false;
-	}				
-		
-	result = vip_io_enable (HS_ACTIVE); // Frame | Complete | NumPulse | PanelReady		
+	}
 
-	if (result != HCP_NO_ERR) {	
-		aqprintf("**** returns error %d - Panel Activation Error\n", result);		
+	result = vip_io_enable (HS_ACTIVE); // Frame | Complete | NumPulse | PanelReady
+
+	if (result != HCP_NO_ERR) {
+		aqprintf("**** returns error %d - Panel Activation Error\n", result);
 	}
 
 	ChangePanelStatus(PANEL_ACTIVE);
 
-	m_timeOutCnt = 0;	
+	m_timeOutCnt = 0;
 	return true;
 }
 
@@ -1035,26 +1035,26 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 	}
 
 	m_pCrntStatus->qpi.ReadyForPulse = FALSE;
-	
-	int result = vp->query_prog_info (*m_pCrntStatus); // 0 0 0 0 --> 1 1 0 0	
+
+	int result = vp->query_prog_info (*m_pCrntStatus); // 0 0 0 0 --> 1 1 0 0
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
 
 	if (result != HCP_NO_ERR)
 	{
-		aqprintf("Error on querying_in PC_WaitForPanelReady with an error code of %d\n", result);			
-		
+		aqprintf("Error on querying_in PC_WaitForPanelReady with an error code of %d\n", result);
+
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 	}
 	else if (m_timeOutCnt > 5000) //Time_out //5000 is fixed! Optimized value
 	{
 		aqprintf("*** TIMEOUT ***_wait_on_ready_for_pulse\n"); //just retry
-		
+
 		aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
 				m_pCrntStatus->qpi.NumFrames,
 				m_pCrntStatus->qpi.Complete,
 				m_pCrntStatus->qpi.NumPulses,
-				m_pCrntStatus->qpi.ReadyForPulse);	
+				m_pCrntStatus->qpi.ReadyForPulse);
 
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 		return false;
@@ -1075,7 +1075,7 @@ bool Acquire_4030e_child::PC_WaitForPanelReady()
 
 
 // PC means Panel Control functions group
-bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses 
+bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 {
 	if (m_enPanelStatus != READY_FOR_PULSE)
 	{
@@ -1083,8 +1083,8 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 		return false;
 	}
 
-	int prevNumPulses = m_pCrntStatus->qpi.NumPulses;	
-	int result = vp->query_prog_info (*m_pCrntStatus);	
+	int prevNumPulses = m_pCrntStatus->qpi.NumPulses;
+	int result = vp->query_prog_info (*m_pCrntStatus);
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
 
@@ -1104,10 +1104,10 @@ bool Acquire_4030e_child::PC_WaitForPulse() //vp->wait_on_num_pulses
 	}
 	else
 	{
-		if (m_pCrntStatus->qpi.NumPulses != prevNumPulses) //if thiere is any change				
+		if (m_pCrntStatus->qpi.NumPulses != prevNumPulses) //if thiere is any change
 			ChangePanelStatus(PULSE_CHANGE_DETECTED);
-			
-			
+
+
 	}
 	return true;
 }
@@ -1119,50 +1119,51 @@ bool Acquire_4030e_child::PC_WaitForComplete()//vp->wait_on_complete
         aqprintf ("PC_WaitForComplete Error: panel status is not proper\n");
         m_enPanelStatus = OPENNED;
         return false;
-    }	
+    }
 
     QString errorStr;
     int result = HCP_NO_ERR;
     m_pCrntStatus->qpi.Complete = FALSE;
 
     m_timeOutCnt += TIMEOUT_MAINLOOP;
-	
-    result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8	
+
+    result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
 
     if (result != HCP_NO_ERR) //Not that serious in this step
-    {	
-        errorStr = QString ("Error in wait_on_complete. Error code is %1. Now, retrying...\n").arg(result);		
+    {
+        errorStr = QString ("Error in wait_on_complete. Error code is %1. Now, retrying...\n").arg(result);
         aqprintf(errorStr.toLocal8Bit().constData());
 
         ChangePanelStatus(IMAGE_ACQUSITION_DONE);
-		
+
         return false;
     }
     else if (m_timeOutCnt > 10000) //Time_out
     {
         aqprintf("*** TIMEOUT ***Completion failed! \n"); //just retry
         ChangePanelStatus(IMAGE_ACQUSITION_DONE);
-		
+
         return false;
     }
     else
-    {	
+    {
         if(m_pCrntStatus->qpi.Complete == TRUE)
-        {			
+        {
             aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
                 m_pCrntStatus->qpi.NumFrames,
                 m_pCrntStatus->qpi.Complete,
                 m_pCrntStatus->qpi.NumPulses,
-                m_pCrntStatus->qpi.ReadyForPulse);	
+                m_pCrntStatus->qpi.ReadyForPulse);
 
             ChangePanelStatus(COMPLETE_SIGNAL_DETECTED);
-			
-        }		
+
+        }
     }
     return true;
 }
 
-bool Acquire_4030e_child::PC_GetImageHardware()
+bool
+Acquire_4030e_child::PC_GetImageHardware()
 {
     if (m_enPanelStatus != COMPLETE_SIGNAL_DETECTED)
     {
@@ -1174,20 +1175,24 @@ bool Acquire_4030e_child::PC_GetImageHardware()
     QString errorStr;
     m_timeOutCnt += TIMEOUT_MAINLOOP;
 
-    if(m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested)			
-    {	
-        result = vp->get_image_to_buf(m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame); //fill m_pCurrImage					
+    if (m_pCrntStatus->qpi.NumFrames >= m_iNumOfFramesRequested)
+    {
+        result = vp->get_image_to_buf (
+            m_pModeInfo->ColsPerFrame,m_pModeInfo->LinesPerFrame);
 
         if (m_dlgControl->ChkAutoSendToDIPS && result != HCP_SAME_IMAGE_ERROR)
-            vp->CopyFromBufAndSendToDips(dp);		
+            vp->CopyFromBufAndSendToDips(dp);
 
-        if (result == HCP_SAME_IMAGE_ERROR) //even IMAGE dumplication case, procedure except Dips should continue
+        // In IMAGE dumplication case, communication procedure
+        // should continue; but without sending the image to DIPS
+        if (result == HCP_SAME_IMAGE_ERROR) {
             result = HCP_NO_ERR;
+        }
 
-        if (result != HCP_NO_ERR){
+        if (result != HCP_NO_ERR) {
             errorStr = QString ("Error in sending image to currentImageBuffer. Error code is %1..Anyway, going to next step\n").arg(result);
             aqprintf(errorStr.toLocal8Bit().constData());
-        }			
+        }
         else
         {
             //Display on the screen
@@ -1197,19 +1202,19 @@ bool Acquire_4030e_child::PC_GetImageHardware()
             //Save as raw file
             if (m_dlgControl->ChkAutoSave->isChecked())
             {
-                QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();				
+                QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();
 
-                if (folderPath.length() < 2)
+                if (folderPath.length() < 2) {
                     folderPath = "C:";
+                }
 
                 QString strFileName = QString("%1_CurImg").arg(this->idx); //panel number display
-                QDate Date = QDate::currentDate();    
-                QTime time = QTime::currentTime();    
+                QDate Date = QDate::currentDate();
+                QTime time = QTime::currentTime();
 
                 QString strDate = Date.toString("_yyyy_MM_dd");
-                QString strTime = time.toString("_hh_mm_ss");        
-				
-                // = str; 
+                QString strTime = time.toString("_hh_mm_ss");
+
                 strFileName.append(strDate);
                 strFileName.append(strTime);
                 strFileName.prepend("\\");
@@ -1217,12 +1222,12 @@ bool Acquire_4030e_child::PC_GetImageHardware()
 
                 QString strGroupCommonName = strFileName;//before extension
 
-                //Corrected IMage
+                // Fully corrected Image
                 strFileName.append(".raw");
-                m_pCurrImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData());
+                m_pCurrImage->SaveDataAsRaw (
+                    strFileName.toLocal8Bit().constData());
 
-
-                //Dark Corrected image
+                // Dark Corrected image
                 if (m_dlgControl->ChkDarkCorrectedSave->isChecked())
                 {
                     if (!m_pCurrImageDarkCorrected->IsEmpty())
@@ -1231,9 +1236,10 @@ bool Acquire_4030e_child::PC_GetImageHardware()
                         tmpDarkCorrImgPath.append("_DARKCORR");
                         tmpDarkCorrImgPath.append(".raw");
                         m_pCurrImageDarkCorrected->SaveDataAsRaw(tmpDarkCorrImgPath.toLocal8Bit().constData());
-                    }					
+                    }
                 }
-                //Gain Corrected image
+
+                // Uncorrected image (?)
                 if (m_dlgControl->ChkRawSave->isChecked())
                 {
                     if (!m_pCurrImageRaw->IsEmpty())
@@ -1245,10 +1251,10 @@ bool Acquire_4030e_child::PC_GetImageHardware()
                     }
                 }
             }
-        }		
+        }
 
-        ChangePanelStatus(IMAGE_ACQUSITION_DONE);		
-    }	
+        ChangePanelStatus(IMAGE_ACQUSITION_DONE);
+    }
     return true;
 }
 
@@ -1272,40 +1278,40 @@ bool Acquire_4030e_child::PC_WaitForStanby() //also can be used for SW acquisiti
 	int result = HCP_NO_ERR;
 
 	m_timeOutCnt += TIMEOUT_MAINLOOP;
-	
-	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8	
+
+	result = vp->query_prog_info (*m_pCrntStatus); // YK: Everytime, No data error 8
 
 	if (result != HCP_NO_ERR) //Not that serious in this step
-	{	
-		errorStr = QString ("Error in WaitForStanby. Error code is %1. Now, retrying...\n").arg(result);		
+	{
+		errorStr = QString ("Error in WaitForStanby. Error code is %1. Now, retrying...\n").arg(result);
 		aqprintf(errorStr.toLocal8Bit().constData());
 
 		//--> sometimes error = 30 occurs (time-out) --> should be reActive and reStand-by
-		if (result == 30) //query_prog_info time-out //sometimes it occurrs.					
-			ChangePanelStatus(STANDBY_SIGNAL_DETECTED); //just pass though it!. It will be resolved in next "ACTIVE" state					
+		if (result == 30) //query_prog_info time-out //sometimes it occurrs.
+			ChangePanelStatus(STANDBY_SIGNAL_DETECTED); //just pass though it!. It will be resolved in next "ACTIVE" state
 		else //though it will not happen..
 			ChangePanelStatus(IMAGE_ACQUSITION_DONE);
-		
+
 		return false;
 	}
 	else if (m_timeOutCnt > 5000) //Time_out  --> Impossible! should restart the panel
 	{
-		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry		
+		aqprintf("*** TIMEOUT ***Restanby failed! \n"); //just retry
 		ChangePanelStatus(IMAGE_ACQUSITION_DONE);
 		return false;
 	}
 	else
-	{	
+	{
 		if(m_pCrntStatus->qpi.NumFrames == 0 && m_pCrntStatus->qpi.ReadyForPulse == 0) //0 0 0 0
-		{			
+		{
 			aqprintf("frames=%d complete=%d pulses=%d ready=%d\n",
 				m_pCrntStatus->qpi.NumFrames,
 				m_pCrntStatus->qpi.Complete,
 				m_pCrntStatus->qpi.NumPulses,
-				m_pCrntStatus->qpi.ReadyForPulse);			
+				m_pCrntStatus->qpi.ReadyForPulse);
 
-			ChangePanelStatus(STANDBY_SIGNAL_DETECTED);						
-		}		
+			ChangePanelStatus(STANDBY_SIGNAL_DETECTED);
+		}
 	}
 	return true;
 }
@@ -1320,22 +1326,22 @@ bool Acquire_4030e_child::PC_SoftwareAcquisition_SingleShot() //should be done a
 	}
 
 	QMessageBox msgBox;
-	msgBox.setText("Software handshaking image acquisition failed! Try once again.");		
+	msgBox.setText("Software handshaking image acquisition failed! Try once again.");
 
 	m_timeOutCnt = 0;
-	m_dlgProgBar->setValue(0);	
+	m_dlgProgBar->setValue(0);
 	m_dlgProgBar->show();
 
 	if (!SWSingleAcquisition(*m_pCrntStatus))
 	{
 		//m_dlgProgBar->close();
 		msgBox.exec();
-	}	
+	}
 	else
 	{
-		aqprintf("SWSingleAcquisition Success\n");	
+		aqprintf("SWSingleAcquisition Success\n");
 	}
-	
+
 	return true;
 }
 
@@ -1353,15 +1359,15 @@ bool Acquire_4030e_child::PC_DarkFieldAcquisition_SingleShot(int avgFrames) //sh
 	m_dlgProgBar->setValue(0);
 
 	if (!PerformDarkFieldCalibration(*m_pCrntStatus, avgFrames))
-	{	
+	{
 		m_dlgProgBar->setValue(100);
-		aqprintf("Error in dark field acquisition\n");		
+		aqprintf("Error in dark field acquisition\n");
 	}
 	else
-	{	
+	{
 		aqprintf("DARKFIELD_ACQUSITION_COMPLETE\n");
 	}
-	
+
 	return true;
 }
 
@@ -1372,17 +1378,17 @@ bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 
 	if (!fileInfo.exists())
 		return false;
-	
+
 	int width = vp->m_iSizeX;
 	int height = vp->m_iSizeY;
 
 	if (width < 1 || height <1)
-		return false;	
+		return false;
 
 	if (!m_pDarkImage->LoadRawImage(filePath.toLocal8Bit().constData(),width, height)) //Release Buffer is inside this func.
 		aqprintf("Error on LoadRawImage\n");
 
-	
+
 	double Mean = 0.0;
 	double SD = 0.0;
 	double MIN = 0.0;
@@ -1393,7 +1399,7 @@ bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 	if (!m_pDarkImage->FillPixMap((int)Mean,(int)(10*SD)))
 		aqprintf("Error on FillPixMap\n");
 
-	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap 
+	if (!m_pDarkImage->DrawToLabel(this->m_dlgControl->lbDarkField)) //SetPixMap
 		aqprintf("Error on drawing");
 
 	return true;
@@ -1403,348 +1409,342 @@ bool Acquire_4030e_child::LoadDarkImage(QString& filePath)
 
 bool Acquire_4030e_child::LoadGainImage(QString& filePath)
 {
-	QFileInfo fileInfo = QFileInfo(filePath);
+    QFileInfo fileInfo = QFileInfo(filePath);
 
-	if (!fileInfo.exists())
-		return false;
-	
-	int width = vp->m_iSizeX;
-	int height = vp->m_iSizeY;
+    if (!fileInfo.exists())
+        return false;
 
-	if (width < 1 || height <1)
-		return false;	
+    int width = vp->m_iSizeX;
+    int height = vp->m_iSizeY;
 
-	if (!m_pGainImage->LoadRawImage(filePath.toLocal8Bit().constData(),width, height)) //Release Buffer is inside this func.
-		aqprintf("Error on Load Gain Image\n");
+    if (width < 1 || height <1)
+        return false;
 
-	double Mean = 0.0;
-	double SD = 0.0;
-	double MIN = 0.0;
-	double MAX = 0.0;
-	m_pGainImage->CalcImageInfo(Mean, SD, MIN, MAX);
+    if (!m_pGainImage->LoadRawImage(filePath.toLocal8Bit().constData(),width, height)) //Release Buffer is inside this func.
+        aqprintf("Error on Load Gain Image\n");
+
+    double Mean = 0.0;
+    double SD = 0.0;
+    double MIN = 0.0;
+    double MAX = 0.0;
+    m_pGainImage->CalcImageInfo(Mean, SD, MIN, MAX);
 
 
-	if (!m_pGainImage->FillPixMap((int)Mean,(int)(10*SD)))
-		aqprintf("Error on FillPixMap\n");
+    if (!m_pGainImage->FillPixMap((int)Mean,(int)(10*SD)))
+        aqprintf("Error on FillPixMap\n");
 
-	if (!m_pGainImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap 
-		aqprintf("Error on drawing");
+    if (!m_pGainImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap
+        aqprintf("Error on drawing");
 
-	return true;
+    return true;
 }
 
-
-
-bool Acquire_4030e_child::LoadBadPixelMap( const char* filePath )
+bool
+Acquire_4030e_child::LoadBadPixelMap( const char* filePath )
 {
+    QString tmpPath = filePath;
 
-	QString tmpPath = filePath;
+    QFileInfo fileInfo = QFileInfo(tmpPath);
 
-	QFileInfo fileInfo = QFileInfo(tmpPath);
+    if (!fileInfo.exists())
+        return false;
 
-	if (!fileInfo.exists())
-		return false;
+    m_vBadPixelMap.clear();
 
-	m_vBadPixelMap.clear();
+    ifstream fin;
+    fin.open(filePath);
 
-	ifstream fin;
-	fin.open(filePath);
+    if (fin.fail())
+        return false;
 
-	if (fin.fail())
-		return false;
+    char str[MAX_LINE_LENGTH];
 
-	char str[MAX_LINE_LENGTH];	
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+        QString tmpStr = QString(str);
 
-	while (!fin.eof())
-	{
-		memset(str, 0, MAX_LINE_LENGTH);
-		fin.getline(str, MAX_LINE_LENGTH);
-		QString tmpStr = QString(str);
+        if (tmpStr.contains("#ORIGINAL_X"))
+            break;
+    }
 
-		if (tmpStr.contains("#ORIGINAL_X"))
-			break;
-	}
+    while (!fin.eof())
+    {
+        memset(str, 0, MAX_LINE_LENGTH);
+        fin.getline(str, MAX_LINE_LENGTH);
+        QString tmpStr = QString(str);
 
-	while (!fin.eof())
-	{
-		memset(str, 0, MAX_LINE_LENGTH);
-		fin.getline(str, MAX_LINE_LENGTH);
-		QString tmpStr = QString(str);
+        QStringList strList = tmpStr.split("	"); //tab
 
-		QStringList strList = tmpStr.split("	"); //tab
+        if (strList.size() == 4)
+        {
+            BADPIXELMAP tmpData;
+            tmpData.BadPixX = strList.at(0).toInt();
+            tmpData.BadPixY = strList.at(1).toInt();
+            tmpData.ReplPixX = strList.at(2).toInt();
+            tmpData.ReplPixY = strList.at(3).toInt();
+            m_vBadPixelMap.push_back(tmpData);
+        }
+    }
 
-		if (strList.size() == 4)
-		{
-			BADPIXELMAP tmpData;
-			tmpData.BadPixX = strList.at(0).toInt();
-			tmpData.BadPixY = strList.at(1).toInt();
-			tmpData.ReplPixX = strList.at(2).toInt();
-			tmpData.ReplPixY = strList.at(3).toInt();
-			m_vBadPixelMap.push_back(tmpData);
-		}	
-	}
+    fin.close();
 
-	fin.close();
+    if (m_vBadPixelMap.size() < 1)
+        return false;
 
-	if (m_vBadPixelMap.size() < 1)
-		return false;
-
-	return true;
+    return true;
 }
 
-
-void Acquire_4030e_child::ReDraw(int lowerWinVal, int upperWinVal)//current image only
+void Acquire_4030e_child::ReDraw (int lowerWinVal, int upperWinVal)//current image only
 {
-	//only CurrentImg Redraw for time saving
-	int midVal = (upperWinVal + lowerWinVal)/2.0;
-	
-	if (midVal < 0 || midVal > 65535)
-		midVal = DEFAULT_WINLEVEL_MID;
+    //only CurrentImg Redraw for time saving
+    int midVal = (upperWinVal + lowerWinVal)/2.0;
 
-	int widthVal = upperWinVal - lowerWinVal;
-	
-	if (widthVal < 0 || widthVal > 65535)
-		widthVal = DEFAULT_WINLEVEL_WIDTH;
+    if (midVal < 0 || midVal > 65535)
+        midVal = DEFAULT_WINLEVEL_MID;
+
+    int widthVal = upperWinVal - lowerWinVal;
+
+    if (widthVal < 0 || widthVal > 65535)
+        widthVal = DEFAULT_WINLEVEL_WIDTH;
 
 
-	m_iCurWinMidVal = midVal;
-	m_iCurWinWidthVal = widthVal;	
-	
-	if (!m_pCurrImage->FillPixMap(midVal, widthVal))
-		aqprintf("Error on FillPixMap\n");
+    m_iCurWinMidVal = midVal;
+    m_iCurWinWidthVal = widthVal;
 
-	if (!m_pCurrImage->DrawToLabel(this->m_dlgControl->lbCurrentImage)) //SetPixMap 
-		aqprintf("Error on drawing");
+    if (!m_pCurrImage->FillPixMap(midVal, widthVal))
+        aqprintf("Error on FillPixMap\n");
+
+    if (!m_pCurrImage->DrawToLabel(this->m_dlgControl->lbCurrentImage)) //SetPixMap
+        aqprintf("Error on drawing");
 
 }
-
-
 
 bool Acquire_4030e_child::GetGainImageFromCurrent()
-{	
-	if (m_pCurrImage->IsEmpty())
-	{		
-		return false;
-	}
+{
+    if (m_pCurrImage->IsEmpty())
+    {
+        return false;
+    }
 
-	m_pGainImage->CopyFromBuffer(m_pCurrImage->m_pData,
-		m_pCurrImage->m_iWidth, m_pCurrImage->m_iHeight);
+    m_pGainImage->CopyFromBuffer(m_pCurrImage->m_pData,
+        m_pCurrImage->m_iWidth, m_pCurrImage->m_iHeight);
 
 
-	int idx = this->m_iProcNum;
-	
-	QString strFolderName = m_OptionSettingChild.m_strGainImageSavingFolder[idx];
+    int idx = this->m_iProcNum;
 
-	double tmpMean = 0.0;
-	double tmpSD = 0.0;
-	double tmpMAX = 0.0;
-	double tmpMIN = 0.0;
+    QString strFolderName = m_OptionSettingChild.m_strGainImageSavingFolder[idx];
 
-	m_pGainImage->CalcImageInfo(tmpMean, tmpSD, tmpMIN, tmpMAX);
-	QString strMeanVal = QString("%1").arg((int)tmpMean);	
+    double tmpMean = 0.0;
+    double tmpSD = 0.0;
+    double tmpMAX = 0.0;
+    double tmpMIN = 0.0;
 
-	QString strFileName = QString("\\%1_Gain").arg(idx);
+    m_pGainImage->CalcImageInfo(tmpMean, tmpSD, tmpMIN, tmpMAX);
+    QString strMeanVal = QString("%1").arg((int)tmpMean);
 
-	QDate date = QDate::currentDate();
-	QTime time = QTime::currentTime();
-	QString strDate = date.toString("_yyyy_MM_dd");
-	QString strTime = time.toString("_hh_mm_ss_");
-	strFileName.append(strDate);
-	strFileName.append(strTime);
-	
-	strFileName.append(QString("M%1").arg(strMeanVal));
-	strFileName.append(".raw");
+    QString strFileName = QString("\\%1_Gain").arg(idx);
 
-	strFileName.prepend(strFolderName);
-	
-	if (!m_pGainImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData()))
-	{
-		aqprintf("Cannot export to raw file\n");
-	}
+    QDate date = QDate::currentDate();
+    QTime time = QTime::currentTime();
+    QString strDate = date.toString("_yyyy_MM_dd");
+    QString strTime = time.toString("_hh_mm_ss_");
+    strFileName.append(strDate);
+    strFileName.append(strTime);
 
-	//UpdateDarkImagePath
-	m_dlgControl->lineEditGainPath->setText(strFileName);
-	
-	if (!m_pGainImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //0 - 3000 is enough
-		aqprintf("Error on FillPixMap\n");
+    strFileName.append(QString("M%1").arg(strMeanVal));
+    strFileName.append(".raw");
 
-	if (!m_pGainImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap 
-		aqprintf("Error on drawing");
+    strFileName.prepend(strFolderName);
 
-	return true;	
+    if (!m_pGainImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData()))
+    {
+        aqprintf("Cannot export to raw file\n");
+    }
+
+    //UpdateDarkImagePath
+    m_dlgControl->lineEditGainPath->setText(strFileName);
+
+    if (!m_pGainImage->FillPixMap(DEFAULT_WINLEVEL_MID, DEFAULT_WINLEVEL_WIDTH)) //0 - 3000 is enough
+        aqprintf("Error on FillPixMap\n");
+
+    if (!m_pGainImage->DrawToLabel(this->m_dlgControl->lbGainField)) //SetPixMap
+        aqprintf("Error on drawing");
+
+    return true;
 }
 
 void Acquire_4030e_child::ChangePanelStatus(PSTAT enStatus)
 {
-	m_bAcquisitionOK = true;
+    m_bAcquisitionOK = true;
 
-	m_timeOutCnt = 0;
-	m_enPanelStatus = enStatus;
+    m_timeOutCnt = 0;
+    m_enPanelStatus = enStatus;
 
-	switch (enStatus)
-	{
-	case NOT_OPENNED:
-		aqprintf ("PSTAT0: NOT_OPENNED\n");	
-		break;
-	case OPENNED:
-		aqprintf ("PSTAT1: OPENNED\n");
-		break;
-	case PANEL_ACTIVE:
-		aqprintf ("PSTAT2: PANEL_ACTIVE\n");
-		break;
-	case READY_FOR_PULSE:
-		aqprintf ("PSTAT3: READY_FOR_PULSE\n");		
-		aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");		
-		break;
-	case PULSE_CHANGE_DETECTED:
-		aqprintf ("PSTAT4: PULSE_CHANGE_DETECTED\n");		
-		break;
-	case COMPLETE_SIGNAL_DETECTED:
-		aqprintf ("PSTAT5: COMPLETE_SIGNAL_DETECTED\n");		
-		break;
-	case IMAGE_ACQUSITION_DONE:
-		aqprintf ("PSTAT6: IMAGE_ACQUSITION_DONE\n");		
-		break;
+    switch (enStatus)
+    {
+    case NOT_OPENNED:
+        aqprintf ("PSTAT0: NOT_OPENNED\n");
+        break;
+    case OPENNED:
+        aqprintf ("PSTAT1: OPENNED\n");
+        break;
+    case PANEL_ACTIVE:
+        aqprintf ("PSTAT2: PANEL_ACTIVE\n");
+        break;
+    case READY_FOR_PULSE:
+        aqprintf ("PSTAT3: READY_FOR_PULSE\n");
+        aqprintf("READY FOR X-RAYS - EXPOSE AT ANY TIME\n");
+        break;
+    case PULSE_CHANGE_DETECTED:
+        aqprintf ("PSTAT4: PULSE_CHANGE_DETECTED\n");
+        break;
+    case COMPLETE_SIGNAL_DETECTED:
+        aqprintf ("PSTAT5: COMPLETE_SIGNAL_DETECTED\n");
+        break;
+    case IMAGE_ACQUSITION_DONE:
+        aqprintf ("PSTAT6: IMAGE_ACQUSITION_DONE\n");
+        break;
 
-	case STANDBY_CALLED:
-		aqprintf ("PSTAT7: STANDBY_CALLED\n");		
-		break;
-	case STANDBY_SIGNAL_DETECTED:
-		aqprintf ("PSTAT8: STANBY_SIGNAL_DETECTED\n");			
-		break;
-	case ACQUIRING_DARK_IMAGE:
-		aqprintf ("PSTAT9: ACQUIRING_DARK_IMAGE\n");			
-		break;
-	}
+    case STANDBY_CALLED:
+        aqprintf ("PSTAT7: STANDBY_CALLED\n");
+        break;
+    case STANDBY_SIGNAL_DETECTED:
+        aqprintf ("PSTAT8: STANBY_SIGNAL_DETECTED\n");
+        break;
+    case ACQUIRING_DARK_IMAGE:
+        aqprintf ("PSTAT9: ACQUIRING_DARK_IMAGE\n");
+        break;
+    }
 }
 
 void Acquire_4030e_child::DeleteOldImageFiles()
 {
-	int deleteCnt = 0;
-	aqprintf("Now, deleting old image files\n");
+    int deleteCnt = 0;
+    aqprintf("Now, deleting old image files\n");
 
-	QDateTime crntDateTime = QDateTime::currentDateTime();
+    QDateTime crntDateTime = QDateTime::currentDateTime();
 
-	QString savingFolder = m_dlgControl->lineEditCurImageSaveFolder->text();
-	//aqprintf("str Len = %d\n",savingFolder.length());
+    QString savingFolder = m_dlgControl->lineEditCurImageSaveFolder->text();
+    //aqprintf("str Len = %d\n",savingFolder.length());
 
-	int daysLimitOfStorage = m_dlgControl->lineEditDeleteAfterDays->text().toInt();
+    int daysLimitOfStorage = m_dlgControl->lineEditDeleteAfterDays->text().toInt();
 
-	if (daysLimitOfStorage <=0)		
-	{
-		aqprintf("Storing day-limit is too short! Deletion canceled. \n");
-		return;
-	}
+    if (daysLimitOfStorage <=0)
+    {
+        aqprintf("Storing day-limit is too short! Deletion canceled. \n");
+        return;
+    }
 
-	//aqprintf("before Corr: %s\n",savingFolder.toLocal8Bit().constData());
-	//savingFolder.replace('\\','/');
-	//aqprintf("after Corr: %s\n",savingFolder.toLocal8Bit().constData());
+    //aqprintf("before Corr: %s\n",savingFolder.toLocal8Bit().constData());
+    //savingFolder.replace('\\','/');
+    //aqprintf("after Corr: %s\n",savingFolder.toLocal8Bit().constData());
 
-	QDir imgDir(savingFolder);
-	
-	//imgDir.entryInfoList("*.raw"); --> Not working
-	QStringList filters;
-	filters << "*.raw" << "*.viv";
-	imgDir.setNameFilters(filters);
-	
-	QFileInfoList fileInfoList = imgDir.entryInfoList();
+    QDir imgDir(savingFolder);
 
-	int iFilesCnt = fileInfoList.size();
-	//aqprintf("found files = %d\n",iFilesCnt);	
+    //imgDir.entryInfoList("*.raw"); --> Not working
+    QStringList filters;
+    filters << "*.raw" << "*.viv";
+    imgDir.setNameFilters(filters);
 
-	/*for (int i = 0 ; i<iFilesCnt ; i++)
-	{
-		aqprintf("%s\n",fileInfoList.at(i).absoluteFilePath().toLocal8Bit().constData());
-	}*/
+    QFileInfoList fileInfoList = imgDir.entryInfoList();
 
-	QDateTime fileCreatedTime;
-	QString curFilePath;
+    int iFilesCnt = fileInfoList.size();
+    //aqprintf("found files = %d\n",iFilesCnt);
 
-	for (int i = 0 ; i<iFilesCnt ; i++)
-	{		
-		fileCreatedTime = fileInfoList.at(i).created();
-		curFilePath = fileInfoList.at(i).absoluteFilePath();
+    /*for (int i = 0 ; i<iFilesCnt ; i++)
+      {
+      aqprintf("%s\n",fileInfoList.at(i).absoluteFilePath().toLocal8Bit().constData());
+      }*/
 
-		if (fileCreatedTime.daysTo(crntDateTime) > daysLimitOfStorage)
-		{
-			QFile::remove(curFilePath);
-			deleteCnt++;
-		}
-	}
+    QDateTime fileCreatedTime;
+    QString curFilePath;
 
-	aqprintf("%d old image files were deleted\n", deleteCnt);	
+    for (int i = 0 ; i<iFilesCnt ; i++)
+    {
+        fileCreatedTime = fileInfoList.at(i).created();
+        curFilePath = fileInfoList.at(i).absoluteFilePath();
+
+        if (fileCreatedTime.daysTo(crntDateTime) > daysLimitOfStorage)
+        {
+            QFile::remove(curFilePath);
+            deleteCnt++;
+        }
+    }
+
+    aqprintf("%d old image files were deleted\n", deleteCnt);
 }
 
 
 bool Acquire_4030e_child::Debug_GetImageFromFile(QString& filePath)
 {
-	int width = m_pModeInfo->ColsPerFrame;
-	int height = m_pModeInfo->LinesPerFrame;
+    int width = m_pModeInfo->ColsPerFrame;
+    int height = m_pModeInfo->LinesPerFrame;
 
-	YK16GrayImage* pImage = new YK16GrayImage(width, height);
-	pImage->LoadRawImage(filePath.toLocal8Bit().constData(), width, height);
+    YK16GrayImage* pImage = new YK16GrayImage(width, height);
+    pImage->LoadRawImage(filePath.toLocal8Bit().constData(), width, height);
+
+    vp->DBG_get_image_to_buf(pImage->m_pData, width, height); //fill m_pCurrImage
+
+    if (m_dlgControl->ChkAutoSendToDIPS)
+        vp->CopyFromBufAndSendToDips(dp);
+
+    //Display on the screen
+    m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
+    m_pCurrImage->DrawToLabel(m_dlgControl->lbCurrentImage);
+
+    //Save as raw file
+    if (m_dlgControl->ChkAutoSave->isChecked())
+    {
+        QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();
+
+        if (folderPath.length() < 2)
+            folderPath = "C:";
+
+        QString strFileName = QString("%1_DBG_CorrImg").arg(this->idx); //panel number display
+        QDate Date = QDate::currentDate();
+        QTime time = QTime::currentTime();
+
+        QString strDate = Date.toString("_yyyy_MM_dd");
+        QString strTime = time.toString("_hh_mm_ss");
+
+        // = str;
+        strFileName.append(strDate);
+        strFileName.append(strTime);
+        strFileName.prepend("\\");
+        strFileName.prepend(folderPath);
+
+        QString strGroupCommonName = strFileName;//before extension
+
+        //Corrected IMage
+        strFileName.append(".raw");
+        m_pCurrImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData());
 
 
-	vp->DBG_get_image_to_buf(pImage->m_pData, width, height); //fill m_pCurrImage					
+        //Dark Corrected image
+        if (m_dlgControl->ChkDarkCorrectedSave->isChecked())
+        {
+            if (!m_pCurrImageDarkCorrected->IsEmpty())
+            {
+                QString tmpDarkCorrImgPath = strGroupCommonName;
+                tmpDarkCorrImgPath.append("_DARKCORR_DBG");
+                tmpDarkCorrImgPath.append(".raw");
+                m_pCurrImageDarkCorrected->SaveDataAsRaw(tmpDarkCorrImgPath.toLocal8Bit().constData());
+            }
+        }
+        //Gain Corrected image
+        if (m_dlgControl->ChkRawSave->isChecked())
+        {
+            if (!m_pCurrImageRaw->IsEmpty())
+            {
+                QString tmpRawImgPath = strGroupCommonName;
+                tmpRawImgPath.append("_RAW_DBG");
+                tmpRawImgPath.append(".raw");
+                m_pCurrImageRaw->SaveDataAsRaw(tmpRawImgPath.toLocal8Bit().constData());
+            }
+        }
+    }
 
-	if (m_dlgControl->ChkAutoSendToDIPS)
-		vp->CopyFromBufAndSendToDips(dp);		
-
-	//Display on the screen
-	m_pCurrImage->FillPixMap(m_iCurWinMidVal, m_iCurWinWidthVal);
-	m_pCurrImage->DrawToLabel(m_dlgControl->lbCurrentImage);
-
-	//Save as raw file
-	if (m_dlgControl->ChkAutoSave->isChecked())
-	{
-		QString folderPath = m_dlgControl->lineEditCurImageSaveFolder->text();				
-
-		if (folderPath.length() < 2)
-			folderPath = "C:";
-
-		QString strFileName = QString("%1_DBG_CorrImg").arg(this->idx); //panel number display
-		QDate Date = QDate::currentDate();    
-		QTime time = QTime::currentTime();    
-
-		QString strDate = Date.toString("_yyyy_MM_dd");
-		QString strTime = time.toString("_hh_mm_ss");        
-
-		// = str; 
-		strFileName.append(strDate);
-		strFileName.append(strTime);
-		strFileName.prepend("\\");
-		strFileName.prepend(folderPath);
-
-		QString strGroupCommonName = strFileName;//before extension
-
-		//Corrected IMage
-		strFileName.append(".raw");
-		m_pCurrImage->SaveDataAsRaw(strFileName.toLocal8Bit().constData());
-
-
-		//Dark Corrected image
-		if (m_dlgControl->ChkDarkCorrectedSave->isChecked())
-		{
-			if (!m_pCurrImageDarkCorrected->IsEmpty())
-			{
-				QString tmpDarkCorrImgPath = strGroupCommonName;
-				tmpDarkCorrImgPath.append("_DARKCORR_DBG");
-				tmpDarkCorrImgPath.append(".raw");
-				m_pCurrImageDarkCorrected->SaveDataAsRaw(tmpDarkCorrImgPath.toLocal8Bit().constData());
-			}					
-		}
-		//Gain Corrected image
-		if (m_dlgControl->ChkRawSave->isChecked())
-		{
-			if (!m_pCurrImageRaw->IsEmpty())
-			{
-				QString tmpRawImgPath = strGroupCommonName;
-				tmpRawImgPath.append("_RAW_DBG");
-				tmpRawImgPath.append(".raw");
-				m_pCurrImageRaw->SaveDataAsRaw(tmpRawImgPath.toLocal8Bit().constData());
-			}
-		}		
-	}
-
-	return true;
+    return true;
 }

@@ -18,11 +18,11 @@ class Dips_panel;
 
 struct IMGINFO
 {
-	double meanVal;
+    double meanVal;
     double SD;
-	double minVal;
-	double maxVal;
-	quint16 chkSum;
+    double minVal;
+    double maxVal;
+    quint16 chkSum;
 };
 
 class Varian_4030e {
@@ -62,6 +62,6 @@ public:
     int m_iSizeY;    
 
     std::vector<IMGINFO> m_vImageInfo; //to audit image duplication based on MEAN and SD
-
 };
+
 #endif

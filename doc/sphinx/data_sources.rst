@@ -38,6 +38,11 @@ OASIS
 
   Cross-sectional and longitudinal brain MRI images (demented, non-demented)
 
+IXI
+  http://brain-development.org/ixi-dataset/
+
+  600 MR imgaes of normal brain
+
 RIRE
   http://www.insight-journal.org/rire/
 

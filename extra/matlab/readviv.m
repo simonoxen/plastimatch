@@ -22,7 +22,10 @@ else
 end
 
 hires = 0;
-if (dd.bytes >= 2048*1536*2)
+if (dd.bytes >= 2304*3200*2)
+  xres = 2304;
+  yres = 3200;
+elseif (dd.bytes >= 2048*1536*2)
   xres = 2048;
   yres = 1536;
 else
@@ -30,7 +33,11 @@ else
   yres = 768;
 end
 
-hdr_size = dd.bytes - xres*yres*2;
+if (isviv)
+    hdr_size = dd.bytes - xres*yres*2;
+else
+    hdr_size = 0;
+end
 
 fseek(fp,hdr_size,'bof');
 [A,count] = fread(fp,[xres,yres],'*uint16');

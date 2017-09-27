@@ -12,32 +12,23 @@ find_package (MIL)
 find_package (Paxscan)
 
 ##-----------------------------------------------------------------------------
-##  Include directories
-##-----------------------------------------------------------------------------
-include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (BEFORE ${CMAKE_BINARY_DIR})
-include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/../fatm)
-
-##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
-if (QT4_FOUND AND ADVANTECH_FOUND)
+if (QT_FOUND AND ITK_FOUND)
+  set (BUILD_BADPIXELDETECTOR TRUE)
+else ()
+  set (BUILD_BADPIXELDETECTOR FALSE)
+endif ()
+if (PAXSCAN_FOUND AND ADVANTECH_FOUND AND QT_FOUND)
   set (BUILD_ACQUIRE_4030E TRUE)
 else ()
-  set (BUILD_ACQUIRE_4030E TRUE)
+  set (BUILD_ACQUIRE_4030E FALSE)
 endif ()
 if (QT4_FOUND AND QT_QTSQL_FOUND)
-  #if (VTK_FOUND AND VTK_USE_QT)
   set (BUILD_ISE_QT TRUE)
 else ()
   set (BUILD_ISE_QT FALSE)
 endif ()
-
-if (${QT_QTNETWORK_FOUND})
-  include_directories (${QT_QTNETWORK_INCLUDE_DIR})
-endif ()
-
 
 ##-----------------------------------------------------------------------------
 ##  Source files
@@ -79,32 +70,32 @@ set (ISE_SRC
 
 set (ACQUIRE_4030E_SRC
   acquire_4030e_main.cxx
-  acquire_4030e_child.cxx acquire_4030e_child.h 
+  acquire_4030e_child.cxx acquire_4030e_child.h
   acquire_4030e_parent.cxx acquire_4030e_parent.h
   acquire_4030e_window.cxx acquire_4030e_window.h
   Acquire_4030e_DlgControl.cxx Acquire_4030e_DlgControl.h
   advantech.cxx advantech.h
-  aqprintf.cxx aqprintf.h 
+  aqprintf.cxx aqprintf.h
   dips_panel.cxx dips_panel.h
-  YK16GrayImage.cxx YK16GrayImage.h  
+  YK16GrayImage.cxx YK16GrayImage.h
   dips_if.h
   kill.cxx kill.h
-  varian_4030e.cxx varian_4030e.h 
+  varian_4030e.cxx varian_4030e.h
   YKOptionSetting.cxx YKOptionSetting.h
   acquire_4030e_define.h
   )
 if (BUILD_ACQUIRE_4030E)
-  qt4_wrap_cpp (ACQUIRE_4030E_SRC 
+  qt4_wrap_cpp (ACQUIRE_4030E_SRC
     acquire_4030e_child.h
     acquire_4030e_parent.h
     acquire_4030e_window.h
     acquire_4030e_DlgControl.h
     )
-  qt4_wrap_ui (ACQUIRE_4030E_SRC 
+  qt4_wrap_ui (ACQUIRE_4030E_SRC
     acquire_4030e_window.ui
     acquire_4030e_panel.ui
     )
-  qt4_add_resources (ACQUIRE_4030E_SRC 
+  qt4_add_resources (ACQUIRE_4030E_SRC
     acquire_4030e.qrc
     )
 endif ()
@@ -118,27 +109,44 @@ set (ISE_QT_SRC
   his_io.cxx
   iqt_application.cxx
   iqt_main.cxx
-  iqt_main_window.cxx 
+  iqt_main_window.cxx
   iqt_synth_settings.cxx
   iqt_tracker.cxx
   iqt_video_widget.cxx
-  synthetic_source.cxx 
+  synthetic_source.cxx
   synthetic_source_thread.cxx
   tracker_thread.cxx
   )
 if (BUILD_ISE_QT)
-  qt4_wrap_cpp (ISE_QT_SRC 
+  qt4_wrap_cpp (ISE_QT_SRC
     iqt_application.h
-    iqt_main_window.h 
+    iqt_main_window.h
     tracker_thread.h
     iqt_video_widget.h
     iqt_synth_settings.h
     synthetic_source_thread.h
     )
-  qt4_wrap_ui (ISE_QT_SRC 
+  qt4_wrap_ui (ISE_QT_SRC
     iqt_main_window.ui
     iqt_synth_settings.ui
     )
+endif ()
+
+set (BADPIXELDETECTOR_SRC
+  badpixeldetector_main.cpp
+  badpixeldetector.cpp
+  YK16GrayImage.cxx
+  qyklabel.cpp
+  )
+
+if (BUILD_BADPIXELDETECTOR)
+  qt4_wrap_cpp (BADPIXELDETECTOR_SRC
+    badpixeldetector.h
+    YK16GrayImage.h
+    qyklabel.h
+    )
+  qt4_wrap_ui (BADPIXELDETECTOR_SRC
+    badpixeldetector.ui)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -152,6 +160,8 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/ise_config.h.in
 ##-----------------------------------------------------------------------------
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_BINARY_DIR})
+include_directories (AFTER "${CMAKE_SOURCE_DIR}/src/fatm")
 if (MIL_FOUND)
   include_directories (AFTER ${MIL_INCLUDE_DIR})
 endif ()
@@ -164,8 +174,10 @@ endif ()
 if (ADVANTECH_FOUND)
   include_directories (AFTER ${ADVANTECH_INCLUDE_DIR})
 endif ()
+if (${QT_QTNETWORK_FOUND})
+  include_directories (AFTER ${QT_QTNETWORK_INCLUDE_DIR})
+endif ()
 
-include_directories (AFTER "${CMAKE_SOURCE_DIR}/src/fatm/include")
 
 ##-----------------------------------------------------------------------------
 ##  Linking
@@ -180,14 +192,10 @@ if (BITFLOW_FOUND)
   link_directories (${BITFLOW_ROOT_DIR}/lib)
 endif ()
 
-set (ACQUIRE_4030E_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
- # Set compiler options.
-set(variables
-    CMAKE_C_FLAGS_DEBUG      
-    CMAKE_C_FLAGS_RELEASE      
-    CMAKE_CXX_FLAGS_DEBUG      
-    CMAKE_CXX_FLAGS_RELEASE      
-    )
+if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  set (ACQUIRE_4030E_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
+  set (BADPIXELDETECTOR_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
+endif ()
 
 link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
 
@@ -221,35 +229,61 @@ if (BUILD_ISE_QT)
   if (PAXSCAN_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${PAXSCAN_LIBRARIES})
   endif ()
-  if (NOT PLM_CONFIG_DISABLE_FATM)
-    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} fatm)
-    if (FFTW_FOUND)
-      set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${FFTW_LIBRARIES})
-    endif ()
+  set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} fatm)
+  if (FFTW_FOUND)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${FFTW_LIBRARIES})
   endif ()
-  plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 
+  plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 set (ACQUIRE_4030E_LIBRARIES
   ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES})
 
-if (PAXSCAN_FOUND AND ADVANTECH_FOUND AND QT_FOUND)
+if (BUILD_ACQUIRE_4030E)
+  # Set compiler options.
+  set (variables
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_RELEASE
+    )
+  foreach(variable ${variables})
+    if(${variable} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
+    endif()
+  endforeach()
 
-	foreach(variable ${variables})
-        if(${variable} MATCHES "/MD")
-          string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
-        endif()
-    endforeach()
-    
-  plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}" 
+  plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}"
     "${ACQUIRE_4030E_LIBRARIES}" "${ACQUIRE_4030E_LDFLAGS}"
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
+if (BUILD_BADPIXELDETECTOR)
+  # Set compiler options.
+  set (variables
+    CMAKE_C_FLAGS_DEBUG
+    CMAKE_C_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_DEBUG
+    CMAKE_CXX_FLAGS_RELEASE
+    )
+  foreach(variable ${variables})
+    if(${variable} MATCHES "/MD")
+      string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
+    endif()
+  endforeach()
+
+  set (BADPIXELDETECTOR_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES}
+    ${ITK_LIBRARIES})
+  
+  plm_add_executable (bad_pixel_detector "${BADPIXELDETECTOR_SRC}"
+    "${BADPIXELDETECTOR_LIBRARIES}" "${BADPIXELDETECTOR_LDFLAGS}"
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+endif ()
+
 if (WIN32)
-  set (DIPS_TEST_SRC 
-    aqprintf.cxx aqprintf.h 
+  set (DIPS_TEST_SRC
+    aqprintf.cxx aqprintf.h
     dips_test.cxx
     dips_panel.cxx dips_panel.h)
   plm_add_executable (dips_test "${DIPS_TEST_SRC}" "" ""
@@ -257,20 +291,20 @@ if (WIN32)
 endif ()
 
 if (ADVANTECH_FOUND)
-  set (ADVANTECH_TEST_SRC 
-    advantech.cxx advantech.h 
+  set (ADVANTECH_TEST_SRC
+    advantech.cxx advantech.h
     advantech_test.cxx)
-  plm_add_executable (advantech_test "${ADVANTECH_TEST_SRC}" 
+  plm_add_executable (advantech_test "${ADVANTECH_TEST_SRC}"
     "${ADVANTECH_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 if (BITFLOW_FOUND)
-  set (BITFLOW_TEST_SRC 
+  set (BITFLOW_TEST_SRC
     bitflow.c bitflow.h
     bitflow_test.cxx
-    debug.cXX debug.h)
-  plm_add_executable (bitflow_test "${BITFLOW_TEST_SRC}" 
+    debug.cxx debug.h)
+  plm_add_executable (bitflow_test "${BITFLOW_TEST_SRC}"
     "${BITFLOW_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
