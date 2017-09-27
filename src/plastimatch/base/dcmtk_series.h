@@ -21,7 +21,7 @@ class Plm_image;
 
 typedef std::list<Dcmtk_file::Pointer> Dcmtk_file_list;
 
-class Dcmtk_series 
+class PLMBASE_API Dcmtk_series 
 {
 public:
     Dcmtk_series ();

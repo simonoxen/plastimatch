@@ -15,7 +15,7 @@ endif ()
 FIND_PATH (PAXSCAN_INCLUDE_DIR "HcpFuncDefs.h"
   "C:/Program Files/Varian/PaxscanL04/DeveloperFiles/Includes"
   )
-FIND_LIBRARY (PAXSCAN_LIBRARIES VirtCp 
+FIND_LIBRARY (PAXSCAN_LIBRARIES "VirtCp.lib" 
   "C:/Program Files/Varian/PaxscanL04/DeveloperFiles/VirtCpRel")
 
 INCLUDE (FindPackageHandleStandardArgs)

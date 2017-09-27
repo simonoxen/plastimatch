@@ -238,21 +238,22 @@ if (BUILD_ISE_QT)
 endif ()
 
 set (ACQUIRE_4030E_LIBRARIES
-  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES})
+  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES}
+  ${QT_QTNETWORK_LIBRARIES})
 
 if (BUILD_ACQUIRE_4030E)
   # Set compiler options.
-  set (variables
-    CMAKE_C_FLAGS_DEBUG
-    CMAKE_C_FLAGS_RELEASE
-    CMAKE_CXX_FLAGS_DEBUG
-    CMAKE_CXX_FLAGS_RELEASE
-    )
-  foreach(variable ${variables})
-    if(${variable} MATCHES "/MD")
-      string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
-    endif()
-  endforeach()
+  # set (variables
+  #   CMAKE_C_FLAGS_DEBUG
+  #   CMAKE_C_FLAGS_RELEASE
+  #   CMAKE_CXX_FLAGS_DEBUG
+  #   CMAKE_CXX_FLAGS_RELEASE
+  #   )
+  # foreach(variable ${variables})
+  #   if(${variable} MATCHES "/MD")
+  #     string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
+  #   endif()
+  # endforeach()
 
   plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}"
     "${ACQUIRE_4030E_LIBRARIES}" "${ACQUIRE_4030E_LDFLAGS}"
@@ -260,19 +261,6 @@ if (BUILD_ACQUIRE_4030E)
 endif ()
 
 if (BUILD_BADPIXELDETECTOR)
-  # Set compiler options.
-  set (variables
-    CMAKE_C_FLAGS_DEBUG
-    CMAKE_C_FLAGS_RELEASE
-    CMAKE_CXX_FLAGS_DEBUG
-    CMAKE_CXX_FLAGS_RELEASE
-    )
-  foreach(variable ${variables})
-    if(${variable} MATCHES "/MD")
-      string(REGEX REPLACE "/MD" "/MT" ${variable} "${${variable}}")
-    endif()
-  endforeach()
-
   set (BADPIXELDETECTOR_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES}
     ${ITK_LIBRARIES})
   
@@ -293,7 +281,9 @@ endif ()
 if (ADVANTECH_FOUND)
   set (ADVANTECH_TEST_SRC
     advantech.cxx advantech.h
-    advantech_test.cxx)
+    advantech_test.cxx
+    aqprintf.cxx aqprintf.h
+    )
   plm_add_executable (advantech_test "${ADVANTECH_TEST_SRC}"
     "${ADVANTECH_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
