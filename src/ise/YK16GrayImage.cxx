@@ -275,47 +275,46 @@ bool YK16GrayImage::DrawToLabel( QLabel* lbDisplay ) //using pixmap
 
 bool YK16GrayImage::CalcImageInfo (double& meanVal, double& STDV, double& minVal, double& maxVal)
 {
-	if (m_pData == NULL)
-		return false;
+    if (m_pData == NULL)
+        return false;
 
-	int nTotal;
-	long minPixel, maxPixel;
-	int i;
-	double pixel, sumPixel;
+    int nTotal;
+    long minPixel, maxPixel;
+    int i;
+    double pixel, sumPixel;
 
-	int npixels = m_iWidth*m_iHeight;
-	nTotal = 0;
-	//minPixel = 4095;
-	minPixel = 65535;
-	maxPixel = 0;
-	sumPixel = 0.0;
+    int npixels = m_iWidth * m_iHeight;
+    nTotal = 0;
+    minPixel = 65535;
+    maxPixel = 0;
+    sumPixel = 0.0;
 
-	for (i = 0; i < npixels; i++)
-	{
-		pixel = (double) m_pData[i];
-		sumPixel += pixel;
-		if (m_pData[i] > maxPixel)
-			maxPixel = m_pData[i];
-		if (m_pData[i] < minPixel)
-			minPixel = m_pData[i];
-		nTotal++;
-	}
+    for (i = 0; i < npixels; i++)
+    {
+        pixel = (double) m_pData[i];
+        sumPixel += pixel;
+        if (m_pData[i] > maxPixel)
+            maxPixel = m_pData[i];
+        if (m_pData[i] < minPixel)
+            minPixel = m_pData[i];
+        nTotal++;
+    }
 
-	double meanPixelval = sumPixel / (double)nTotal;    
+    double meanPixelval = sumPixel / (double)nTotal;    
 
-	double sqrSum = 0.0;
-	for (i = 0; i < npixels; i++)
-	{
-		sqrSum = sqrSum + pow(((double)m_pData[i] - meanPixelval),2.0);
-	}
-	double SD = sqrt(sqrSum/(double)nTotal);
+    double sqrSum = 0.0;
+    for (i = 0; i < npixels; i++)
+    {
+        sqrSum = sqrSum + pow(((double)m_pData[i] - meanPixelval),2.0);
+    }
+    double SD = sqrt(sqrSum/(double)nTotal);
 
-	meanVal = meanPixelval;
-	STDV = SD;
-	minVal = minPixel;
-	maxVal = maxPixel;
+    meanVal = meanPixelval;
+    STDV = SD;
+    minVal = minPixel;
+    maxVal = maxPixel;
 
-	return true;
+    return true;
 }
 
 double YK16GrayImage::CalcAveragePixelDiff(YK16GrayImage& other)
