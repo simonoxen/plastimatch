@@ -420,16 +420,17 @@ the --output-ss-list option. ::
 
 In the previous example, the geometry of the output file wasn't specified.
 When the geometry of a DICOM RT structure set isn't specified, it is 
-assumed to match the geometry of the DICOM CT image associated with the 
-contours.  If the associated DICOM CT image is in the same directory as 
+assumed to match the geometry of the DICOM (CT, MR, etc)
+image associated with the 
+contours.  If the associated DICOM image is in the same directory as 
 the structure set file, it will be found automatically.  Otherwise, we 
-have to tell plastimatch where it is located with the --dicom-dir option. ::
+have to tell plastimatch where it is located with the --referenced-ct option. ::
 
   plastimatch convert \
     --input structures.dcm \
     --output-ss-img outfile.nrrd \
     --output-ss-list outfile.txt \
-    --dicom-dir ../ct-directory
+    --referenced-ct ../image-directory
 
 
 plastimatch dice

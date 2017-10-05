@@ -8,6 +8,7 @@ User guide
    windows_installation
    image_registration_guidebook
    registration_command_file_reference
+   registration_tutorial
    mabs_guidebook
    mabs_commands
    segmentation_command_file_reference
