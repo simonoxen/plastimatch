@@ -146,7 +146,7 @@ raw_save (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     
-    fp = fopen (img_filename, "wb");
+    fp = plm_fopen (img_filename, "wb");
     if (!fp) {
         fprintf (stderr, "Can't open file %s for write\n", img_filename);
         exit (-1);
@@ -212,7 +212,7 @@ pfm_save (Proj_image *proj, const char* img_filename)
     FILE* fp;
     
     make_parent_directories (img_filename);
-    fp = fopen (img_filename, "wb");
+    fp = plm_fopen (img_filename, "wb");
     if (!fp) {
         fprintf (stderr, "Can't open file %s for write\n", img_filename);
         exit (-1);
@@ -235,7 +235,7 @@ pgm_save (Proj_image *proj, const char* img_filename)
     int i;
     
     make_parent_directories (img_filename);
-    fp = fopen (img_filename, "wb");
+    fp = plm_fopen (img_filename, "wb");
     if (!fp) {
         fprintf (stderr, "Can't open file %s for write\n", img_filename);
         exit (-1);

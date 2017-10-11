@@ -14,6 +14,7 @@
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_trilin.h"
+#include "file_util.h"
 #include "plm_int.h"
 #include "plm_math.h"
 #include "proj_image.h"
@@ -183,7 +184,11 @@ drr_ray_trace_image (
 
     FILE *details_fp = 0;
     if (options->output_details_fn != "") {
-        details_fp = fopen (options->output_details_fn.c_str(), "w");
+        details_fp = plm_fopen (options->output_details_fn.c_str(), "w");
+        if (!details_fp) {
+            print_and_exit ("Failed to open %s for write\n",
+                options->output_details_fn.c_str());
+        }
     }
 
     /* Compute the drr pixels */
