@@ -3698,7 +3698,7 @@ plmtest_check_interval ("plm-compose-c-check"
   "12.6"
   )
 set_tests_properties (plm-compose-c PROPERTIES 
-  DEPENDS "plm-reg-itk-translation;plm-reg-compose")
+  DEPENDS "gauss-5;plm-bsp-mse-h;plm-reg-compose")
 set_tests_properties (plm-compose-c-warp PROPERTIES DEPENDS plm-compose-c)
 set_tests_properties (plm-compose-c-stats PROPERTIES DEPENDS plm-compose-c)
 set_tests_properties (plm-compose-c-check PROPERTIES 
