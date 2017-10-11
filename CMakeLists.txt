@@ -8,7 +8,7 @@ project (plastimatch)
 ## The version here should be equal to the "next release"
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "6")
-set (PLM_VERSION_PATCH "5")
+set (PLM_VERSION_PATCH "6")
 #set (PLM_RELEASE_VERSION FALSE)
 set (PLM_RELEASE_VERSION TRUE)
 

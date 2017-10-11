@@ -7,28 +7,33 @@ of plastimatch.
 
 Step 1: Preliminary testing
 ---------------------------
-#. Use tarball described in "Debian packaging" page (need link here)
+#. Download tarball from gitlab.
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
 
 Step 2: Marking the version
 ---------------------------
-#. Bump version number in CHANGELOG
+#. Update CHANGELOG; Bump version number in CHANGELOG
 #. Bump version number in CMakeLists
 #. Bump version number in doc/sphinx/conf.py
-#. Regenerate man pages
-#. Push to remote
+#. Bump version number in doc/sphinx/plastimatch.rst
+#. Regenerate man pages::
+
+     sphinx-build -b man -d ~/work/web-plastimatch/.doctrees  ~/work/plastimatch/doc/sphinx ~/work/plastimatch/doc/man
+
+#. Push above changes to remote
 #. Tag version::
 
      git tag -a "v1.6.5" -m "Version 1.6.5"
      git push origin --tags
 
+#. Edit changelog on gitlab site.
+
 Step 3: Making the final version
 --------------------------------
 #. Download tarball from gitlab.
-#. Edit gitlab changelog.
-#. Unpack and test tarball on linux (don't skip this step)
-#. Unpack and test tarball on windows (don't skip this step)
+#. Unpack and test tarball on linux (don't skip this step).
+#. Unpack and test tarball on windows (don't skip this step).
 #. Upload to sourceforge::
 
      sftp gregsharp,plastimatch@frs.sourceforge.net

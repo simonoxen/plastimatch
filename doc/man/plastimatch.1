@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "PLASTIMATCH" "1" "Dec 04, 2016" "Plastimatch 1.6.5" "Plastimatch"
+.TH "PLASTIMATCH" "1" "October 11, 2017" "Plastimatch 1.6.6" "Plastimatch"
 .SH NAME
 plastimatch \- register, convert, warp, or manipulate images
 .
@@ -47,16 +47,17 @@ without any additional command line arguments:
 .nf
 .ft C
 $ plastimatch
-plastimatch version 1.6.0\-beta (5023)
+plastimatch version 1.6.6
 Usage: plastimatch command [options]
 Commands:
- add           adjust        average       boundary      crop
- compare       compose       convert       dice          diff
- dmap          dvh           fill          filter        gamma
- header        jacobian      mabs          mask          probe
+ add           adjust        average       bbox          boundary
+ crop          compare       compose       convert       dice
+ diff          dmap          dose          dvh           fill
+ filter        gamma         header        jacobian      mabs
+ mask          maximum       ml\-convert    multiply      probe
  register      resample      scale         segment       stats
  synth         synth\-vf      threshold     thumbnail     union
- warp          xf\-convert
+ vf\-invert     warp          xf\-convert
 
 For detailed usage of a specific command, type:
   plastimatch command
@@ -616,10 +617,11 @@ plastimatch convert \e
 .sp
 In the previous example, the geometry of the output file wasn\(aqt specified.
 When the geometry of a DICOM RT structure set isn\(aqt specified, it is
-assumed to match the geometry of the DICOM CT image associated with the
-contours.  If the associated DICOM CT image is in the same directory as
+assumed to match the geometry of the DICOM (CT, MR, etc)
+image associated with the
+contours.  If the associated DICOM image is in the same directory as
 the structure set file, it will be found automatically.  Otherwise, we
-have to tell plastimatch where it is located with the \-\-dicom\-dir option.
+have to tell plastimatch where it is located with the \-\-referenced\-ct option.
 .INDENT 0.0
 .INDENT 3.5
 .sp
@@ -629,7 +631,7 @@ plastimatch convert \e
   \-\-input structures.dcm \e
   \-\-output\-ss\-img outfile.nrrd \e
   \-\-output\-ss\-list outfile.txt \e
-  \-\-dicom\-dir ../ct\-directory
+  \-\-referenced\-ct ../image\-directory
 .ft P
 .fi
 .UNINDENT
@@ -1132,8 +1134,8 @@ Prior to running the mabs command, you must create a configuration
 file, and you must arrange your training data into the proper
 directory format.
 For a complete description of the command file syntax and
-usage examples, please refer to the mabs_guidebook
-and the segmentation_command_file_reference\&.
+usage examples, please refer to the \fImabs_guidebook\fP
+and the \fIsegmentation_command_file_reference\fP\&.
 .SH PLASTIMATCH MASK
 .sp
 The \fImask\fP command is used to fill an image region with a constant
@@ -1287,7 +1289,7 @@ and each stage begins with a line containing the string "[STAGE]".
 The global section is used to set input files, output files, and
 global parameters, while the each stage section defines a sequential
 stage of processing.  For a complete description of the command file
-syntax, please refer to the registration_command_file_reference\&.
+syntax, please refer to the \fIregistration_command_file_reference\fP\&.
 .SS Examples
 .sp
 If you want to register image_2.mha to match image_1.mha using
@@ -1367,7 +1369,7 @@ res=1 1 1
 .UNINDENT
 .UNINDENT
 .sp
-For more examples, please refer to the image_registration_guidebook\&.
+For more examples, please refer to the \fIimage_registration_guidebook\fP\&.
 .SH PLASTIMATCH RESAMPLE
 .sp
 The \fIresample\fP command can be used to change the geometry of an image.

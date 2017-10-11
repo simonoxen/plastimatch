@@ -79,6 +79,10 @@ Setting up a build system for the first time
 
 Step 1: Preliminary testing
 ---------------------------
+Note: The following section is somewhat obsolete.  The current
+preferred strategy is to make the tarball from gitlab.
+However, *at least* testing parallel regression is needed.
+
 The preliminary testing is performed to make sure that the upstream 
 tarball has everything it needs.
 
@@ -131,12 +135,10 @@ tarball has everything it needs.
      --filter=libs/libf2c \
      --filter=libs/msinttypes \
      --filter=libs/sqlite-3.6.21 \
+     --filter=libs/dlib-19.1 \
      --filter-pristine-tar \
-     ~/work/plastimatch-1.6.5.tar.bz2
+     ~/debian-med/plastimatch-1.6.5.tar.bz2
 
-   This didn't work for me the last time I tried it.  Instead, I went ahead
-   and created the version, and then downloaded with uscan.
-     
 #. If you make changes and you want to reset your repository, try this::
 
      git checkout pristine-tar
