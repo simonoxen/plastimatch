@@ -2747,28 +2747,28 @@ set_tests_properties (plm-bsp-gm-k-stats PROPERTIES
 set_tests_properties (plm-bsp-gm-k-check PROPERTIES 
   DEPENDS plm-bsp-gm-k-stats)
 
-plm_add_test (
-  "plm-bsp-dmap-k" 
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k.txt"
-  )
-plm_add_test (
-  "plm-bsp-dmap-k-stats"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-img.mha"
-  )
-plmtest_check_interval ("plm-bsp-dmap-k-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "-122.5"
-  "-121.5"
-  )
-set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-4)
-set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-8)
-set_tests_properties (plm-bsp-dmap-k-stats PROPERTIES 
-  DEPENDS plm-bsp-dmap-k)
-set_tests_properties (plm-bsp-dmap-k-check PROPERTIES 
-  DEPENDS plm-bsp-dmap-k-stats)
+# plm_add_test (
+#   "plm-bsp-dmap-k" 
+#   ${PLM_PLASTIMATCH_PATH}/plastimatch
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k.txt"
+#   )
+# plm_add_test (
+#   "plm-bsp-dmap-k-stats"
+#   ${PLM_PLASTIMATCH_PATH}/plastimatch
+#   "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-img.mha"
+#   )
+# plmtest_check_interval ("plm-bsp-dmap-k-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-dmap-k-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "-122.5"
+#   "-121.5"
+#   )
+# set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-4)
+# set_property (TEST plm-bsp-dmap-k APPEND PROPERTY DEPENDS rect-8)
+# set_tests_properties (plm-bsp-dmap-k-stats PROPERTIES 
+#   DEPENDS plm-bsp-dmap-k)
+# set_tests_properties (plm-bsp-dmap-k-check PROPERTIES 
+#   DEPENDS plm-bsp-dmap-k-stats)
 
 plm_add_test (
   "plm-bsp-sm-multi-a" 
@@ -3591,11 +3591,11 @@ set_tests_properties (plm-reg-autores-b-check PROPERTIES
 ## plastimatch register (group 12)
 ##   plm-reg-gw-a         Groupwise registration
 ## -------------------------------------------------------------------------
-plm_add_test (
-  "plm-reg-gw-a"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_BUILD_TESTING_DIR}/plm-reg-gw-a.txt"
-  )
+# plm_add_test (
+#   "plm-reg-gw-a"
+#   ${PLM_PLASTIMATCH_PATH}/plastimatch
+#   "${PLM_BUILD_TESTING_DIR}/plm-reg-gw-a.txt"
+#   )
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose
