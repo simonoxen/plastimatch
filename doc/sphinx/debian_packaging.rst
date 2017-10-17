@@ -72,20 +72,18 @@ Setting up a build system for the first time
        libblas-dev liblapack-dev libsqlite-dev \
        libdcmtk-dev libdlib-dev libfftw3-dev \
        libgdcm2-dev libinsighttoolkit4-dev \
+       libsqlite3-dev \
        libpng-dev libtiff-dev uuid-dev zlib1g-dev
-  
+
    See this link for more information https://wiki.debian.org/git-pbuilder
 
 
-Step 1: Preliminary testing
----------------------------
-Note: The following section is somewhat obsolete.  The current
-preferred strategy is to make the tarball from gitlab.
-However, *at least* testing parallel regression is needed.
+Step 1: Build the tarball
+-------------------------
+Follow instructions in :ref:`making_a_tarball`.
 
-The preliminary testing is performed to make sure that the upstream 
-tarball has everything it needs.
-
+Step 2: Build the debian package
+--------------------------------
 #. Clean pbuilder environment (if needed)::
 
      pbuilder clean
@@ -94,87 +92,6 @@ tarball has everything it needs.
 
      git-pbuilder update
 
-#. Test parallel regression tests::
-
-     cd ~/build/plastimatch-3.20.0
-     ctest -j 4
-
-#. Update changelog (in an terminal, not emacs)::
-
-     cd plastimatch
-     dch -v 1.6.5+dfsg-1
-     git commit -a -m "Update changelog"
-
-#. Make a tarball::
-
-     V=1.6.5 bash -c 'git archive --prefix=plastimatch-${V}/ master | bzip2 > ../plastimatch-${V}.tar.bz2'
-
-#. Run gbp import-orig.  This will update your source code from the tarball
-   into the directory and local git repository, without pushing these changes
-   onto the remote server::
-
-     cd ~/debian-med/plastimatch
-     gbp import-orig --pristine-tar -u 1.6.5+dfsg \
-     --filter=doc/*.doc \
-     --filter=doc/*.odt \
-     --filter=doc/*.pdf \
-     --filter=doc/*.ppt \
-     --filter=doc/*.txt \
-     --filter=doc/figures \
-     --filter=doc/man/bspline.7 \
-     --filter=doc/man/proton_dose.7 \
-     --filter=doc/sphinx \
-     --filter=extra \
-     --filter=src/fatm \
-     --filter=src/ise \
-     --filter=src/mondoshot \
-     --filter=src/oraifutils \
-     --filter=src/reg-2-3 \
-     --filter=src/plastimatch/test/opencl_test.* \
-     --filter=libs/lua-5.1.4 \
-     --filter=libs/libf2c \
-     --filter=libs/msinttypes \
-     --filter=libs/sqlite-3.6.21 \
-     --filter=libs/dlib-19.1 \
-     --filter-pristine-tar \
-     ~/debian-med/plastimatch-1.6.5.tar.bz2
-
-#. If you make changes and you want to reset your repository, try this::
-
-     git checkout pristine-tar
-     git reset --hard origin/pristine-tar --
-     git checkout upstream
-     git reset --hard origin/upstream --
-     git checkout master
-     git reset --hard origin/master --
-     git tag -d upstream/1.6.5+dfsg
-
-#. Run gbp buildpackage to create the dsc::
-
-     gbp buildpackage --git-ignore-new -uc -us -j16
-
-   If the host does not contain all needed packages you will need to use pbuilder::
-
-     gbp buildpackage --git-pbuilder --git-ignore-new -uc -us -j16
-     
-   All the junk that gbp buildpackage makes, such as the orig.tar.gz and the 
-   dsc file, gets put in the parent directory.
-
-#. If you want to clean the git directory, you can run::
-
-     debuild clean
-
-#. Test with pbuilder::
-
-     gbp buildpackage --git-pbuilder --git-ignore-new -j16
-
-      
-Step 2: Build the tarball
--------------------------
-Follow instructions in :ref:`making_a_tarball`.
-
-Step 3: Build the debian package
---------------------------------
 #. Patch git with upstream::
 
      gbp import-orig --pristine-tar --uscan 
@@ -185,13 +102,13 @@ Step 3: Build the debian package
      uscan --verbose --force-download
      gbp import-orig --pristine-tar ../plastimatch_1.6.5+dfsg.1.orig.tar.gz
      
+#. Update changelog (in an terminal, not emacs)::
+
+     cd plastimatch
+     dch -v 1.6.6+dfsg.1-1
+     git commit -a -m "Update changelog"
+
 #. Test::
-
-     gbp buildpackage
-
-   Do I need --pristine-tar here?
-
-   Another way this might be done is::
 
      gbp buildpackage --git-pbuilder --git-ignore-new -j16
    
@@ -214,6 +131,39 @@ Like this::
   git checkout upstream
   git checkout master
 
+Full reset of repository
+^^^^^^^^^^^^^^^^^^^^^^^^
+Like this::
+
+     git checkout pristine-tar
+     git reset --hard origin/pristine-tar --
+     git checkout upstream
+     git reset --hard origin/upstream --
+     git checkout master
+     git reset --hard origin/master --
+     git tag -d upstream/1.6.5+dfsg
+
+
+Alternatives to running gbp buildpackage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#. Run gbp buildpackage to create the dsc::
+
+     gbp buildpackage --git-ignore-new -uc -us -j16
+
+   If the host does not contain all needed packages you will need to use pbuilder::
+
+     gbp buildpackage --git-pbuilder --git-ignore-new -uc -us -j16
+     
+   All the junk that gbp buildpackage makes, such as the orig.tar.gz and the 
+   dsc file, gets put in the parent directory.
+
+#. If you want to clean the git directory, you can run::
+
+     debuild clean
+
+#. Test with pbuilder::
+
+     gbp buildpackage --git-pbuilder --git-ignore-new -j16
 
 Rebuilding an existing debian source package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
