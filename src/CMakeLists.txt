@@ -97,7 +97,7 @@ endif ()
 
 if (NOT PLM_CONFIG_DISABLE_ISE)
   add_subdirectory (ise)
-  add_subdirectory (fatm)
+  set (PLM_CONFIG_DISABLE_FATM OFF)
 endif ()
 
 if (NOT PLM_CONFIG_DISABLE_FATM)
