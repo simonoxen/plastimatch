@@ -3,8 +3,8 @@
 #include <fstream>
 #include <QLabel>
 #include <math.h>
-//#include "itkImageRegionIterator.h"
 #include <QPainter>
+#include "itkImageRegionIterator.h"
 
 using namespace std;
 
@@ -409,3 +409,129 @@ bool YK16GrayImage::DoPixelReplacement(vector<BADPIXELMAP>& vPixelMapping )
 //		i++;
 //	}	
 //}
+
+void YK16GrayImage::CopyYKImage2ItkImage(YK16GrayImage* pYKImage, UnsignedShortImageType::Pointer& spTarImage)
+{
+	if (pYKImage == NULL)
+		return;
+	//Raw File open	
+	//UnsignedShortImageType::SizeType tmpSize = 
+	UnsignedShortImageType::RegionType region = spTarImage->GetRequestedRegion();
+	UnsignedShortImageType::SizeType tmpSize = region.GetSize();
+
+	int sizeX = tmpSize[0];
+	int sizeY = tmpSize[1];
+
+	if (sizeX < 1 || sizeY <1)
+		return;
+
+	itk::ImageRegionIterator<UnsignedShortImageType> it(spTarImage, region);
+
+	int i = 0;
+	for (it.GoToBegin() ; !it.IsAtEnd(); ++it)
+	{
+		it.Set(pYKImage->m_pData[i]);
+		i++;
+	}
+	//int totCnt = i;
+	//writerType::Pointer writer = writerType::New();	
+	//writer->SetInput(spTarImage);	
+	//writer->SetFileName("C:\\ThisImageIs_spSrcImage.png");	//It works!
+	//writer->Update();
+}
+void YK16GrayImage::CopyItkImage2YKImage(UnsignedShortImageType::Pointer& spSrcImage, YK16GrayImage* pYKImage)
+{
+	if (pYKImage == NULL)
+		return;
+	//Raw File open	
+	//UnsignedShortImageType::SizeType tmpSize = 
+	UnsignedShortImageType::RegionType region = spSrcImage->GetRequestedRegion();
+	UnsignedShortImageType::SizeType tmpSize = region.GetSize();
+
+	int sizeX = tmpSize[0];
+	int sizeY = tmpSize[1];
+
+	if (sizeX < 1 || sizeY <1)
+		return;
+
+	//itk::ImageRegionConstIterator<UnsignedShortImageType> it(spSrcImage, region);
+	itk::ImageRegionIterator<UnsignedShortImageType> it(spSrcImage, region);
+
+	int i = 0;
+	for (it.GoToBegin() ; !it.IsAtEnd() ; ++it)
+	{
+		pYKImage->m_pData[i] = it.Get();
+		i++;
+	}
+	//int totCnt = i; //Total Count is OK
+
+	//int width = pYKImage->m_iWidth;
+	//int height = pYKImage->m_iHeight;
+
+
+	//writerType::Pointer writer = writerType::New();	
+	//writer->SetInput(spSrcImage);	
+	//writer->SetFileName("C:\\ThisImageIs_spSrcImage2.png");	//It works!
+	//writer->Update();
+}
+
+
+
+
+
+bool YK16GrayImage::CalcImageInfo ()
+{
+	if (m_pData == NULL)
+		return false;
+
+	int nTotal;
+	long minPixel, maxPixel;
+	int i;
+	double pixel, sumPixel;
+
+	int npixels = m_iWidth*m_iWidth;
+	nTotal = 0;
+	//minPixel = 4095;
+	minPixel = 65535;
+	maxPixel = 0;
+	sumPixel = 0.0;
+
+	for (i = 0; i < npixels; i++)
+	{
+		pixel = (double) m_pData[i];
+		sumPixel += pixel;
+		if (m_pData[i] > maxPixel)
+			maxPixel = m_pData[i];
+		if (m_pData[i] < minPixel)
+			minPixel = m_pData[i];
+		nTotal++;
+	}
+
+	double meanPixelval = sumPixel / (double)nTotal;    
+
+	double sqrSum = 0.0;
+	for (i = 0; i < npixels; i++)
+	{
+		sqrSum = sqrSum + pow(((double)m_pData[i] - meanPixelval),2.0);
+	}
+	double SD = sqrt(sqrSum/(double)nTotal);
+
+	m_fPixelMean = meanPixelval;
+	m_fPixelSD = SD;
+	m_fPixelMin = minPixel;
+	m_fPixelMax = maxPixel;
+
+	return true;
+}
+
+void YK16GrayImage::PixelMultiply( double multiplyFactor )
+{
+	int size = m_iWidth*m_iHeight;
+	if (multiplyFactor <=0)
+		return;
+
+	for (int i= 0 ; i<size ; i++)
+	{
+		m_pData[i] = (unsigned short)(m_pData[i]*multiplyFactor);
+	}
+}

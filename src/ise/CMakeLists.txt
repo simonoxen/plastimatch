@@ -139,14 +139,27 @@ set (BADPIXELDETECTOR_SRC
   qyklabel.cpp
   )
 
+set (CROSSREMOVAL_SRC
+  CMatrix.cpp
+  crossremoval_main.cpp
+  crossremoval.cpp
+  YK16GrayImage.cxx
+  qyklabel.cpp
+  )
+
 if (BUILD_BADPIXELDETECTOR)
   qt4_wrap_cpp (BADPIXELDETECTOR_SRC
     badpixeldetector.h
-    YK16GrayImage.h
     qyklabel.h
     )
   qt4_wrap_ui (BADPIXELDETECTOR_SRC
     badpixeldetector.ui)
+  qt4_wrap_cpp (CROSSREMOVAL_SRC
+    crossremoval.h
+    qyklabel.h
+    )
+  qt4_wrap_ui (CROSSREMOVAL_SRC
+    crossremoval.ui)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -195,6 +208,7 @@ endif ()
 if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (ACQUIRE_4030E_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
   set (BADPIXELDETECTOR_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
+  set (CROSSREMOVAL_LDFLAGS "/subsystem:windows /ENTRY:mainCRTStartup")
 endif ()
 
 link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
@@ -266,6 +280,13 @@ if (BUILD_BADPIXELDETECTOR)
   
   plm_add_executable (bad_pixel_detector "${BADPIXELDETECTOR_SRC}"
     "${BADPIXELDETECTOR_LIBRARIES}" "${BADPIXELDETECTOR_LDFLAGS}"
+    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+
+  set (CROSSREMOVAL_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES}
+    ${ITK_LIBRARIES})
+  
+  plm_add_executable (cross_removal "${CROSSREMOVAL_SRC}"
+    "${CROSSREMOVAL_LIBRARIES}" "${CROSSREMOVAL_LDFLAGS}"
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
