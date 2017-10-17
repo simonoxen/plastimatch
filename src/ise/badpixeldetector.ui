@@ -206,6 +206,13 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
+       <widget class="QPushButton" name="BtnResetMap">
+        <property name="text">
+         <string>Reset Map</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="BtnDetectBadPixel">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -224,7 +231,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>Detect Bad Pixel</string>
+         <string>Reset and Detect</string>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -339,7 +346,7 @@
       <item>
        <widget class="QLabel" name="label_10">
         <property name="text">
-         <string>Row or pixel to mark</string>
+         <string>Col or pixel to mark</string>
         </property>
        </widget>
       </item>
@@ -804,6 +811,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>BtnResetMap</sender>
+   <signal>clicked()</signal>
+   <receiver>BadPixelDetectorClass</receiver>
+   <slot>SLT_ResetMap()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1241</x>
+     <y>54</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>659</x>
+     <y>478</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>SLT_LoadDarkImage()</slot>
@@ -821,5 +844,6 @@
   <slot>SLT_SaveCurGain()</slot>
   <slot>SLT_AccumulateBadPixels()</slot>
   <slot>SLT_AddManual()</slot>
+  <slot>SLT_ResetMap()</slot>
  </slots>
 </ui>

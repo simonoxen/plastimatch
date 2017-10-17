@@ -396,15 +396,27 @@ void BadPixelDetector::SLT_SaveCurGain()
     }
 }
 
-
-//called before median index input
-int BadPixelDetector::AddBadPixLine (
-    vector<BADPIXELMAP>& vPixelReplMap, int direction)
+void
+BadPixelDetector::AddBadColumn (int col)
 {
-    if (vPixelReplMap.empty())
+    for (int i = 0 ; i < m_iHeight ;i++)
+    {
+        BADPIXELMAP tmpData;
+        tmpData.BadPixX = col;
+        tmpData.BadPixY = i;
+        tmpData.ReplPixX = -1;
+        tmpData.ReplPixY = -1;
+        m_vPixelReplMap.push_back(tmpData);
+    }
+}
+
+int
+BadPixelDetector::DetectBadColumns (int direction)
+{
+    if (m_vPixelReplMap.empty())
         return 0;
 
-    int oldCnt = vPixelReplMap.size();
+    int oldCnt = m_vPixelReplMap.size();
 
     int result = 0;
 
@@ -415,16 +427,16 @@ int BadPixelDetector::AddBadPixLine (
     }
     else if (direction == 1) //vertical line
     {
-        sort(vPixelReplMap.begin(),vPixelReplMap.end(),CompareByXVal);
+        sort(m_vPixelReplMap.begin(),m_vPixelReplMap.end(),CompareByXVal);
 
         vector<BADPIXELMAP>::iterator it;
         vector<int> vSameXCnt;
         vSameXCnt.resize (m_iWidth, 0);
 
         // Count bad pixels in each column
-        for (it = vPixelReplMap.begin() ; it != vPixelReplMap.end(); it++)
+        for (it = m_vPixelReplMap.begin() ; it != m_vPixelReplMap.end(); it++)
         {
-            if ((*it).BadPixX < 0 || (*it).BadPixX >= m_iWidth) {
+            if ((*it).BadPixX < 0 || (*it).BadPixX > m_iHeight) {
                 printf ("Bogus entry: %d\n", (*it).BadPixX);
             }
             vSameXCnt[(*it).BadPixX]++;
@@ -458,26 +470,27 @@ int BadPixelDetector::AddBadPixLine (
                 tmpData.BadPixY = i;
                 tmpData.ReplPixX = -1;
                 tmpData.ReplPixY = -1;
-                vPixelReplMap.push_back(tmpData);
+                m_vPixelReplMap.push_back(tmpData);
             }
         }
 
-        // Sort pixel map
-        sort(vPixelReplMap.begin(),vPixelReplMap.end(),CompareByXVal);
-        printf("current size before duplication removal = %d\n", vPixelReplMap.size());
-
-        // Remove duplicates
-        vPixelReplMap.erase(unique(vPixelReplMap.begin(), vPixelReplMap.end(), CheckSame), vPixelReplMap.end());
-        printf("current size after duplication removal = %d\n", vPixelReplMap.size());
+        SortAndRemoveDuplicates ();
     }
     else
     {
         return 0;
     }
 
-    int newCnt = vPixelReplMap.size();
+    int newCnt = m_vPixelReplMap.size();
 
     return (newCnt - oldCnt);
+}
+
+void
+BadPixelDetector::SLT_ResetMap ()
+{
+    m_vPixelReplMap.clear();
+    SLT_ShowBadPixels();
 }
 
 void BadPixelDetector::SLT_DetectBadPixels()
@@ -487,7 +500,6 @@ void BadPixelDetector::SLT_DetectBadPixels()
     printf("[3] Current vector size = %d\n", m_vPixelReplMap.size());
     SLT_ShowBadPixels();
 }
-
 
 void BadPixelDetector::SLT_AccumulateBadPixels()
 {
@@ -499,7 +511,7 @@ void BadPixelDetector::SLT_AccumulateBadPixels()
 void BadPixelDetector::SLT_AddManual()
 {
     QString s = ui.lineEditManualAdd->text();
-    QStringList sl = s.split (" ,\"", QString::SkipEmptyParts);
+    QStringList sl = s.split (QRegExp("\\W+"), QString::SkipEmptyParts);
 
     size_t numbers_read = 0;
     bool ok = true;
@@ -519,23 +531,61 @@ void BadPixelDetector::SLT_AddManual()
     }
 
     if (!ok || numbers_read == 0 || numbers_read > 2) {
+        printf ("Numbers read: %d\n", numbers_read);
         QMessageBox::information (this, "Bad pixel detector",
             QString ("Please specify pixel or column as \"row col\" or \"col\" \n"));
+        return;
     }
 
+    printf("[2a] Current vector size = %d\n", m_vPixelReplMap.size());
     if (numbers_read == 1) {
         QMessageBox::information (this, "Bad pixel detector",
             QString ("Bad column %1").arg(manual_add[0]));
+        AddBadColumn (manual_add[0]);
     } else {
         QMessageBox::information (this, "Bad pixel detector",
-            QString ("Bad pixel %1 %2").arg(manual_add[0],manual_add[1]));
+            QString ("Bad pixel %1 %2").arg(manual_add[0]).arg(manual_add[1]));
+        BADPIXELMAP tmpData;
+        tmpData.BadPixX = manual_add[0];
+        tmpData.BadPixY = manual_add[1];
+        tmpData.ReplPixX = -1;
+        tmpData.ReplPixY = -1;
+        m_vPixelReplMap.push_back(tmpData);
     }
-//    DetectBadPixels(m_vPixelReplMap, true);
-//    printf("Current vector size = %d\n", m_vPixelReplMap.size());
-//    SLT_ShowBadPixels();
+    printf("[2b] Current vector size = %d\n", m_vPixelReplMap.size());
+    SortAndRemoveDuplicates ();
+    printf("[2c] Current vector size = %d\n", m_vPixelReplMap.size());
+    FindReplacements ();
+    SLT_ShowBadPixels();
 }
 
-void BadPixelDetector::DetectBadPixels (bool bRefresh)
+void
+BadPixelDetector::SortAndRemoveDuplicates ()
+{
+    sort (m_vPixelReplMap.begin(),m_vPixelReplMap.end(),CompareByXVal);
+    m_vPixelReplMap.erase (unique(m_vPixelReplMap.begin(),
+            m_vPixelReplMap.end(), CheckSame), m_vPixelReplMap.end());
+}
+
+void
+BadPixelDetector::FindReplacements ()
+{
+    vector<BADPIXELMAP>::iterator it;
+    for (it = m_vPixelReplMap.begin(); it != m_vPixelReplMap.end() ; it++) {
+        int srcX = (*it).BadPixX;
+        int srcY = (*it).BadPixY;
+
+        QPoint tmpPt;
+        tmpPt = gGetMedianIndex (srcX, srcY, m_iMedianSize, m_iWidth,
+            m_iHeight, m_pImageYKGain->m_pData);
+
+        (*it).ReplPixX = tmpPt.x();
+        (*it).ReplPixY = tmpPt.y();
+    }
+}
+
+void
+BadPixelDetector::DetectBadPixels (bool bRefresh)
 {
     if (m_pImageYKDark->IsEmpty() || m_pImageYKGain->IsEmpty())
         return;
@@ -563,8 +613,11 @@ void BadPixelDetector::DetectBadPixels (bool bRefresh)
     double maxGain;
     m_pImageYKGain->CalcImageInfo(meanGain, SDGain, minGain, maxGain);
 
-    vector<BADPIXELMAP> vTmpVec;
-    printf("[2o] Current vector size = %d\n", vTmpVec.size());
+    if (bRefresh) {
+        m_vPixelReplMap.clear();
+    }
+
+    printf("[2a] Current vector size = %d\n", m_vPixelReplMap.size());
     
     // minimum percent of average increase in pixel value
     double diffThreshold = (meanGain - meanDark) * m_fPercentThre / 100.0;
@@ -594,54 +647,25 @@ void BadPixelDetector::DetectBadPixels (bool bRefresh)
             {
                 pixMap.BadPixX = j;
                 pixMap.BadPixY = i;
-                vTmpVec.push_back(pixMap);
+                m_vPixelReplMap.push_back(pixMap);
             }
         }
     }
-    printf("[2a] Current vector size = %d\n", vTmpVec.size());
+    printf("[2b] Current vector size = %d\n", m_vPixelReplMap.size());
 
+    // accumulation mode, therefore duplicate entries should be deleted
+    SortAndRemoveDuplicates ();
+
+    printf("[2c] Current vector size = %d\n", m_vPixelReplMap.size());
+    
     // Audit bad pixels. if DEFAULT_PERCENT_BADPIX_ON_COLUMN (e.g.60%)
     // pixels on one line are badpixels, make that column as bad pixel column
     // direction 0 = hor (row), dir 1 = ver(column)
-    int addedCnt = AddBadPixLine(vTmpVec, 1);
-
-    printf("[2b] Current vector size = %d\n", vTmpVec.size());
-    
-    vector<BADPIXELMAP>::iterator it;
-    for (it = vTmpVec.begin(); it != vTmpVec.end() ; it++) {
-        int srcX = (*it).BadPixX;
-        int srcY = (*it).BadPixY;
-
-        QPoint tmpPt;
-        tmpPt = gGetMedianIndex (srcX, srcY, m_iMedianSize, m_iWidth,
-            m_iHeight, m_pImageYKGain->m_pData);
-
-        (*it).ReplPixX = tmpPt.x();
-        (*it).ReplPixY = tmpPt.y();
-    }
-
-    printf("[2c] Current vector size = %d\n", vTmpVec.size());
-    
-    if (bRefresh) {
-        m_vPixelReplMap.clear();
-    }
+    int addedCnt = DetectBadColumns (1);
 
     printf("[2d] Current vector size = %d\n", m_vPixelReplMap.size());
-    
-    for (it = vTmpVec.begin(); it != vTmpVec.end() ; it++) {
-        m_vPixelReplMap.push_back (*it);
-    }
 
-    printf("[2e] Current vector size = %d\n", m_vPixelReplMap.size());
-    
-    if (!bRefresh) {
-        // accumulation mode, therefore duplicate entries should be deleted
-        sort (m_vPixelReplMap.begin(),m_vPixelReplMap.end(),CompareByXVal);
-        m_vPixelReplMap.erase (unique(m_vPixelReplMap.begin(),
-                m_vPixelReplMap.end(), CheckSame), m_vPixelReplMap.end());
-    }
-
-    printf("[2f] Current vector size = %d\n", m_vPixelReplMap.size());
+    FindReplacements ();
     
     SLT_DrawGainImage();
 }

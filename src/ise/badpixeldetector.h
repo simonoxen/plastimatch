@@ -43,8 +43,12 @@ class BadPixelDetector : public QMainWindow
 public:
     BadPixelDetector(QWidget *parent = 0, Qt::WFlags flags = 0);
     ~BadPixelDetector();
-    void LoadBadPixelMap(const char* filePath);
-    int AddBadPixLine(vector<BADPIXELMAP>& vPixelReplMap, int direction);//direction == 0: hor bad pix row, directino ==1: ver bad pix column
+    void LoadBadPixelMap (const char* filePath);
+    //direction == 0: hor bad pix row, directino ==1: ver bad pix column
+    int DetectBadColumns (int direction);
+    void AddBadColumn (int col);
+    void SortAndRemoveDuplicates ();
+    void FindReplacements ();
     void DetectBadPixels (bool bRefresh);
 
 public slots:		
@@ -53,6 +57,7 @@ public slots:
     void SLT_DrawDarkImage();
     void SLT_DrawGainImage();
     void SLT_ShowBadPixels();
+    void SLT_ResetMap();
     void SLT_DetectBadPixels();
     void SLT_SavePixelMap();
     void SLT_UncorrectDark(); //Gain Image + Dark
@@ -63,6 +68,7 @@ public slots:
     void SLT_SaveCurGain();
     void SLT_AccumulateBadPixels();
     void SLT_AddManual();
+    
     /*void SLT_GoToOriginal();}
       void SLT_Median();
       void SLT_Gaussian();
