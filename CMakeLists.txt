@@ -994,10 +994,12 @@ if (PLM_BUILD_TESTING)
   add_subdirectory (Testing)
 
   # Copy the lconv script
-  configure_file (
-    "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh" 
-    "${CMAKE_BINARY_DIR}/run_lcov.sh"
-    COPYONLY)
+  if (EXISTS "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh")
+    configure_file (
+      "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh" 
+      "${CMAKE_BINARY_DIR}/run_lcov.sh"
+      COPYONLY)
+  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
