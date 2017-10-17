@@ -136,6 +136,7 @@ set (BADPIXELDETECTOR_SRC
   badpixeldetector_main.cpp
   badpixeldetector.cpp
   YK16GrayImage.cxx
+  YK16GrayImageITK.cxx
   qyklabel.cpp
   )
 
@@ -144,6 +145,7 @@ set (CROSSREMOVAL_SRC
   crossremoval_main.cpp
   crossremoval.cpp
   YK16GrayImage.cxx
+  YK16GrayImageITK.cxx
   qyklabel.cpp
   )
 
