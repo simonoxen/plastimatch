@@ -1,6 +1,5 @@
 #pragma once
 
-#include "itkImage.h"
 class QPixmap;
 class QLabel;
 class QPainter;
@@ -14,8 +13,6 @@ class QPainter;
 #include <QImage>
 #include <vector>
 #include "acquire_4030e_define.h"
-
-typedef itk::Image<unsigned short, 2> UnsignedShortImageType;
 
 using namespace std;
 
@@ -59,9 +56,6 @@ public:
 
     double CalcAveragePixelDiff(YK16GrayImage& other);
 
-    static void CopyYKImage2ItkImage(YK16GrayImage* pYKImage, UnsignedShortImageType::Pointer& spTarImage);
-    static void CopyItkImage2YKImage(UnsignedShortImageType::Pointer& spSrcImage, YK16GrayImage* pYKImage);
-    
     bool DoPixelReplacement(vector<BADPIXELMAP>& vPixelMapping); //based on pixel mapping information, some bad pixels will be replaced with median pixel value near by
 
     void PixelMultiply(double multiplyFactor);

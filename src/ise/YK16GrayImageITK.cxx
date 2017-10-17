@@ -1,8 +1,9 @@
 #include "YK16GrayImage.h"
+#include "YK16GrayImageITK.h"
 #include "itkImageRegionIterator.h"
 
 void
-YK16GrayImage::CopyYKImage2ItkImage (
+CopyYKImage2ItkImage (
     YK16GrayImage* pYKImage, UnsignedShortImageType::Pointer& spTarImage)
 {
     if (pYKImage == NULL)
@@ -34,7 +35,7 @@ YK16GrayImage::CopyYKImage2ItkImage (
 }
 
 void
-YK16GrayImage::CopyItkImage2YKImage (
+CopyItkImage2YKImage (
     UnsignedShortImageType::Pointer& spSrcImage, YK16GrayImage* pYKImage)
 {
 	if (pYKImage == NULL)

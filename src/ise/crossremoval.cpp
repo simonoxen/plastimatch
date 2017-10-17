@@ -1,5 +1,3 @@
-#include "crossremoval.h"
-#include "YK16GrayImage.h"
 #include <QFileDialog>
 #include <math.h>
 #include <vector>
@@ -7,7 +5,9 @@
 #include "CMatrix.h"
 #include <QProgressDialog>
 #include <algorithm>
-
+#include "crossremoval.h"
+#include "YK16GrayImage.h"
+#include "YK16GrayImageITK.h"
 
 using namespace std;
 
@@ -395,7 +395,7 @@ void CrossRemoval::SLT_Median() //Median Filtering
 
     //this->MedianFiltering(m_pImageYKCur, 2);
 
-    YK16GrayImage::CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
+    CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
 
     MedianFilterType::Pointer medianFilter = MedianFilterType::New();
     //MedianFilterType::InputSizeType radius;
@@ -410,7 +410,7 @@ void CrossRemoval::SLT_Median() //Median Filtering
     m_itkCurImage = medianFilter->GetOutput();
 
     //YK16GrayImage::CopyItkImage2YKImage(m_itkCurImage,m_pImageYKCur);
-    YK16GrayImage::CopyItkImage2YKImage(m_itkCurImage,m_pMedianYKImg);
+    CopyItkImage2YKImage(m_itkCurImage,m_pMedianYKImg);
     //m_pMedianYKImg->SaveDataAsRaw("C:\\TestMedian.raw");
 
     m_pImageYKCur->CopyFromBuffer(m_pMedianYKImg->m_pData, m_iWidth , m_iHeight);
@@ -420,7 +420,7 @@ void CrossRemoval::SLT_Median() //Median Filtering
 
 void CrossRemoval::SLT_Gaussian()
 {
-    YK16GrayImage::CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
+    CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
 
     SmoothingFilterType::Pointer gaussianFilter = SmoothingFilterType::New();
     double sigma = 4.0;	
@@ -431,14 +431,14 @@ void CrossRemoval::SLT_Gaussian()
 
     m_itkCurImage = gaussianFilter->GetOutput();
 
-    YK16GrayImage::CopyItkImage2YKImage(m_itkCurImage,m_pImageYKCur);
+    CopyItkImage2YKImage(m_itkCurImage,m_pImageYKCur);
 
     SLT_DrawCurImage();
 }
 
 void CrossRemoval::SLT_DerivativeHor()
 {
-    YK16GrayImage::CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
+    CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
 
     DerivativeFilterType::Pointer derivativeFilter = DerivativeFilterType::New();
 
@@ -505,7 +505,7 @@ void CrossRemoval::SLT_DerivativeHor()
 
 void CrossRemoval::SLT_DerivativeVer()
 {
-    YK16GrayImage::CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
+    CopyYKImage2ItkImage(m_pImageYKCur, m_itkCurImage);
 
     DerivativeFilterType::Pointer derivativeFilter = DerivativeFilterType::New();
 
@@ -1494,7 +1494,7 @@ bool CrossRemoval::MedianFiltering( YK16GrayImage* pImage, int medWindow )
     itkCurImage->SetRegions(region);
     itkCurImage->Allocate();
 
-    YK16GrayImage::CopyYKImage2ItkImage(pImage, itkCurImage);
+    CopyYKImage2ItkImage(pImage, itkCurImage);
 
     MedianFilterType::Pointer medianFilter = MedianFilterType::New();
 
@@ -1504,7 +1504,7 @@ bool CrossRemoval::MedianFiltering( YK16GrayImage* pImage, int medWindow )
 
     itkCurImage = medianFilter->GetOutput();
     //YK16GrayImage::CopyItkImage2YKImage(m_itkCurImage,m_pImageYKCur);
-    YK16GrayImage::CopyItkImage2YKImage(itkCurImage,pImage);
+    CopyItkImage2YKImage(itkCurImage,pImage);
     //m_pMedianYKImg->SaveDataAsRaw("C:\\TestMedian.raw");
     //m_pImageYKCur->CopyFromBuffer(m_pMedianYKImg->m_pData, m_iWidth , m_iHeight);
 
@@ -1534,7 +1534,7 @@ bool CrossRemoval::GaussianFiltering( YK16GrayImage* pImage, double sigma )
     itkCurImage->Allocate();
 
 
-    YK16GrayImage::CopyYKImage2ItkImage(pImage, itkCurImage);
+    CopyYKImage2ItkImage(pImage, itkCurImage);
 
     SmoothingFilterType::Pointer gaussianFilter = SmoothingFilterType::New();
     //double sigma = sigma;	
@@ -1545,7 +1545,7 @@ bool CrossRemoval::GaussianFiltering( YK16GrayImage* pImage, double sigma )
 
     itkCurImage = gaussianFilter->GetOutput();
 
-    YK16GrayImage::CopyItkImage2YKImage(itkCurImage,pImage);
+    CopyItkImage2YKImage(itkCurImage,pImage);
 
     //itkCurImage->Delete();
 
@@ -1573,7 +1573,7 @@ bool CrossRemoval::DerivativeFiltering( YK16GrayImage* pImage, int direction )
 	itkCurImage->SetRegions(region);
 	itkCurImage->Allocate();
 
-	YK16GrayImage::CopyYKImage2ItkImage(pImage, itkCurImage);	
+	CopyYKImage2ItkImage(pImage, itkCurImage);	
 
 	DerivativeFilterType::Pointer derivativeFilter = DerivativeFilterType::New();
 
