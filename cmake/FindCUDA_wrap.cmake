@@ -95,14 +95,22 @@ endif ()
 #   This script will modify CUDA_NVCC_FLAGS if system default is not gcc-4.3
 include (nvcc-check)
 
+# GCS 2017-10-24: Let CUDA work with gcc 6 and CUDA 8
+if (CUDA_VERSION_MAJOR EQUAL "8"
+    AND CMAKE_COMPILER_IS_GNUCC
+    AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+  list (APPEND CUDA_NVCC_FLAGS 
+    --compiler-options -D__GNUC__=5)
+endif ()
+
 # JAS 2010.12.09
 #   Build code for all known compute capabilities by default.
 #   When developing, it is sometimes nice to turn this off in order
 #   to speed up the build processes (since you only have 1 GPU in your machine).
 set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL 
-    "Generate GPU code for all compute capabilities?")
+  "Generate GPU code for all compute capabilities?")
 if (PLM_CUDA_ALL_DEVICES)
-    message (STATUS "CUDA Build Level: ALL Compute Capabilities")
+  message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
     if (CUDA_VERSION_MAJOR LESS "7")
 	message (STATUS "  >> Generation 1: [X]")
