@@ -271,7 +271,8 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_bea
         {
             img[i] = img[i] / norm * dose;
         }
-        int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+        plm_long ap_dim[2] = {
+            beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
         beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
 
         printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
@@ -294,7 +295,8 @@ void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double do
         {
             img[i] = img[i] / norm * dose;
         }
-        int ap_dim[2] = {beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+        plm_long ap_dim[2] = {
+            beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
         beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
         printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
     }

@@ -144,7 +144,7 @@ Rpl_volume_lut::build_lut ()
                 /* Solve for interpolation fractions on aperture planes */
                 plm_long ijk_f[3];
                 float li_frac_1[3], li_frac_2[3];
-                float ap_xy_float[2] = { ap_xy[0], ap_xy[1] };
+                float ap_xy_float[2] = { (float) ap_xy[0], (float) ap_xy[1] };
                 li_2d (ijk_f, li_frac_1, li_frac_2, ap_xy_float, ap_dim);
 
                 /* Inspect four interpolant aperture pixels.  

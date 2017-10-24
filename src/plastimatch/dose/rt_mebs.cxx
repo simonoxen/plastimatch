@@ -1288,7 +1288,7 @@ Rt_mebs::generate_part_num_from_weight (const plm_long* ap_dim)
 }
 
 void 
-Rt_mebs::scale_num_part(double A, int* ap_dim)
+Rt_mebs::scale_num_part (double A, plm_long* ap_dim)
 {
     for (int i = 0; i < (int) d_ptr->energy_number * ap_dim[0] * ap_dim[1]; i++)
     {
@@ -1452,7 +1452,7 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     std::vector <double>& wepl_min,
     std::vector <double>& wepl_max)
 {
-    int dim[2] = {
+    plm_long dim[2] = {
         rpl_vol->get_aperture()->get_dim()[0],
         rpl_vol->get_aperture()->get_dim()[1]
     };
