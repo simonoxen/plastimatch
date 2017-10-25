@@ -512,7 +512,7 @@ opencl_kernel_create (
 )
 {
     ocl_dev->kernels = (cl_kernel*) malloc (
-    ocl_dev->device_count * sizeof(cl_kernel));
+        ocl_dev->device_count * sizeof(cl_kernel));
 
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
         cl_int status;

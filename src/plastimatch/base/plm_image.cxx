@@ -300,6 +300,14 @@ Plm_image::load_native (const char* fname)
     itk_image_get_props (fname, &num_dimensions, &pixel_type, 
 	&component_type, &num_components);
 
+    /* Handle RGB images as a special case */
+    if (pixel_type == itk::ImageIOBase::RGB) {
+	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
+	this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+	return true;
+    }
+
     /* Handle ss_image as a special case */
     if (num_components > 1 && component_type == itk::ImageIOBase::UCHAR) {
 	this->m_itk_uchar_vec = itk_image_load_uchar_vec (fname);
