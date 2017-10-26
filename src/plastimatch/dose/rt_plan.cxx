@@ -475,7 +475,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
     if (!beam->prepare_for_calc (d_ptr->patient_hu,
             d_ptr->patient_psp, d_ptr->target))
     {
-        print_and_exit ("ERROR: Unable to initilize plan.\n");
+        print_and_exit ("ERROR: Unable to initiliaze plan.\n");
     }
     d_ptr->rt_dose_timing->timer_dose_calc.stop ();
 

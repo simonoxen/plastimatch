@@ -1249,21 +1249,23 @@ The command line usage is given as follows::
 plastimatch threshold
 ---------------------
 The *threshold* command creates a binary labelmap image from an
-input intensity image.  
+input intensity image.
 
 The command line usage is given as follows::
 
- Usage: plastimatch threshold [options]
- Options:
-    --above <arg>    value above which output has value high 
-    --below <arg>    value below which output has value high 
-    --input <arg>    input directory or filename 
-    --output <arg>   output image 
-    --range <arg>    a string that forms a list of threshold ranges 
-                      ofthe form "r1-lo,r1-hi,r2-lo,r2-hi,...", 
-                      such thatvoxels with intensities within any 
-                      of the ranges ([r1-lo,r1-hi], [r2-lo,r2-hi], 
-                      ...) have output value high 
+Usage: plastimatch threshold [options]
+Options:
+      --above <arg>    value above which output has value high 
+      --below <arg>    value below which output has value high 
+  -h, --help           display this help message 
+      --input <arg>    input directory or filename 
+      --output <arg>   output image 
+      --range <arg>    a string that forms a list of threshold ranges of the 
+                        form "r1-lo,r1-hi,r2-lo,r2-hi,...", such that voxels 
+                        with intensities within any of the ranges 
+                        ([r1-lo,r1-hi], [r2-lo,r2-hi], ...) have output value 
+                        high 
+      --version        display the program version 
 
 Example
 ^^^^^^^
@@ -1402,7 +1404,7 @@ would become.  ::
 plastimatch xf-convert
 ----------------------
 The *xf-convert* command converts between transform types.  
-A tranform can be either a B-spline transform, or a vector field. 
+A transform can be either a B-spline transform, or a vector field. 
 There are two different kinds of B-spline transform formats: 
 the plastimatch native format, and the ITK format.
 In addition to converting the transform type, the *xf-convert* command 

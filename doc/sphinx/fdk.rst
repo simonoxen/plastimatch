@@ -32,8 +32,8 @@ Input files
 -----------
 Three different formats of input files are supported.  These are:
 
-- Pfm format image files with geomtry txt files
-- Raw format image files with geomtry txt files
+- Pfm format image files with geometry txt files
+- Raw format image files with geometry txt files
 - Varian hnd files
 
 The pfm and raw files are similar, in that they store the image as 
