@@ -17,6 +17,7 @@ public:
     Parameter_parser ();
 public:
     bool key_regularization;
+    bool empty_values_allowed;
     std::string default_index;
 public:
     /* Callbacks */
@@ -30,9 +31,18 @@ public:
         const std::string& index, 
         const std::string& val) = 0;
 
-    /* Pass in "true" to enable key regularization, or "false" to 
-       disable it.   Default is "true". */
+    /*! \brief Key regularization convert the key field to lowercase and 
+      changes hyphens to underscores.  Only the key is modified. 
+      Pass in "true" to enable key regularization, or "false" to 
+      disable it.   Default is "true". */
     void enable_key_regularization (
+        bool enable
+    );
+
+    /*! \brief If a key does not have an equal sign, it will be 
+      considered a syntax error unless empty values are allowed.
+    */
+    void allow_empty_values (
         bool enable
     );
 

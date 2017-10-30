@@ -33,39 +33,48 @@ public:
     {
         if (section == "CONVERT") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "PREALIGN" || section == "PREALIGNMENT") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "ATLAS-SELECTION") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "TRAINING") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "REGISTRATION") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "STRUCTURES") {
             this->enable_key_regularization (false);
+            this->allow_empty_values (true);
             return PLM_SUCCESS;
         }
         if (section == "LABELING") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "OPTIMIZATION-RESULT-REG") {
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
         if (section == "OPTIMIZATION-RESULT-SEG") {
             ors.factory_reset ();
             this->enable_key_regularization (true);
+            this->allow_empty_values (false);
             return PLM_SUCCESS;
         }
 

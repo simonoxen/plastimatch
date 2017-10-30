@@ -18,6 +18,7 @@
 
 Parameter_parser::Parameter_parser () {
     key_regularization = true;
+    empty_values_allowed = false;
     default_index = "";
 }
 
@@ -70,7 +71,7 @@ Parameter_parser::parse_config_string (
         /* Process "key=value" */
         std::string key;
         std::string val;
-        if (!split_key_val (buf, key, val)) {
+        if (!split_key_val (buf, key, val) && !this->empty_values_allowed) {
             lprintf ("Parse error: %s\n", buf_ori.c_str());
             return PLM_ERROR;
         }
@@ -121,6 +122,14 @@ Parameter_parser::enable_key_regularization (
 )
 {
     this->key_regularization = enable;
+}
+
+void 
+Parameter_parser::allow_empty_values (
+    bool enable
+)
+{
+    this->empty_values_allowed = enable;
 }
 
 void 
