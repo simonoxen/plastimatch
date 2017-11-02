@@ -96,13 +96,47 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
       PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
 
+## Legacy version, designed before target_include_directories was
+## implemented in cmake 2.8.12
 macro (PLM_ADD_EXECUTABLE 
-    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS 
-    TARGET_BUILD TARGET_INSTALL)
+    TARGET_NAME
+    TARGET_SRC
+    TARGET_LIBS
+    TARGET_LDFLAGS 
+    TARGET_BUILD
+    TARGET_INSTALL)
 
   if (${TARGET_BUILD})
     add_executable (${TARGET_NAME} ${TARGET_SRC})
     target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
+    set_target_properties (${TARGET_NAME} 
+      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+    if (NOT ${TARGET_LDFLAGS} STREQUAL "")
+      set_target_properties(${TARGET_NAME} 
+	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+    endif ()
+    # CXX linkage required for nlopt
+    set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+    if (${TARGET_INSTALL})
+      install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
+    endif ()
+  endif ()
+endmacro ()
+
+## New version, uses target_include_directories
+macro (plm_add_executable_v2
+    TARGET_NAME
+    TARGET_SRC
+    TARGET_INCLUDES
+    TARGET_LIBS
+    TARGET_LDFLAGS 
+    TARGET_BUILD
+    TARGET_INSTALL)
+
+  if (${TARGET_BUILD})
+    add_executable (${TARGET_NAME} ${TARGET_SRC})
+    target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
+    target_include_directories (${TARGET_NAME} PRIVATE ${TARGET_INCLUDES})
     set_target_properties (${TARGET_NAME} 
       PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
     if (NOT ${TARGET_LDFLAGS} STREQUAL "")

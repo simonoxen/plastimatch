@@ -31,6 +31,11 @@ endif ()
 # policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
 # older CMake versions.
 cmake_policy (SET CMP0017 NEW)
+# CMP0054: Quoted variables no longer dereferenced
+# GCS 2017-11-02: This is added to suppress Qt warnings
+if (POLICY CMP0054)
+  cmake_policy (SET CMP0054 NEW)
+endif ()
 
 # Default to release
 if (NOT CMAKE_BUILD_TYPE)
@@ -687,16 +692,17 @@ else ()
     message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
     find_package (Qt4 4.6.3 COMPONENTS QtCore QtGui QtWebKit QtDesigner)
   endif ()
+  find_package (Qt5 COMPONENTS Core Gui Designer Network Widgets)
 endif ()
 
 if (QT4_FOUND)
-   # Test Qt install to make sure it can build and run a test program
-   include (cmake/CheckQt)
-   check_qt (QT_TEST_COMPILE_SUCCEEDED)
-   if (NOT QT_TEST_COMPILE_SUCCEEDED)
-       message (STATUS "Qt failed to compile a test program")
-       set (QT4_FOUND false)
-   endif ()
+  # Test Qt install to make sure it can build and run a test program
+  include (cmake/CheckQt)
+  check_qt (QT_TEST_COMPILE_SUCCEEDED)
+  if (NOT QT_TEST_COMPILE_SUCCEEDED)
+    message (STATUS "Qt failed to compile a test program")
+    set (QT4_FOUND false)
+  endif ()
 endif ()
 
 if (QT4_FOUND)
@@ -713,10 +719,16 @@ if (QT4_FOUND)
 	set (QT4_FOUND FALSE)
     else ()
 	message (STATUS "Looking for Qt4 - found")
-	include (${QT_USE_FILE})
+	#include (${QT_USE_FILE})
     endif ()
 else ()
     message (STATUS "Looking for Qt4 - not found")
+endif ()
+
+if (Qt5_FOUND)
+  message (STATUS "Looking for Qt5 - found")
+else ()
+  message (STATUS "Looking for Qt5 - not found")
 endif ()
 
 ##-----------------------------------------------------------------------------

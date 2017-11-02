@@ -37,9 +37,12 @@ template < class G > void d (int x) {
 }
 
 /* Even more complex */
+#if defined (commentout)
+/* This doesn't compile on gcc 6.3 */
 template < class J, template<class J> class I> void h (J x) {
     I<J>::g (x);
 }
+#endif
 
 template < template<class J> class I, class J > void k (J x) {
     I<J>::g (x);
@@ -73,7 +76,9 @@ int main
     a<c>(x);
     G<int>::g (x);
     d< G<int> >(x);
+#if defined (commentout)
     h< int, G >(x);
+#endif
     k< G, int >(x);
 
     M<int> m;

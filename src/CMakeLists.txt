@@ -68,9 +68,10 @@ if (SPECFUN_FOUND)
   set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
 endif ()
 
-if (QT4_FOUND)
-  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
-endif ()
+### Let QT applications add this themselves
+#if (QT4_FOUND)
+#  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+#endif ()
 
 ##-----------------------------------------------------------------------------
 ##  DETERMINE LINKER FLAGS

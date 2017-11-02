@@ -302,21 +302,24 @@ endif ()
 endif ()
 
 if (QT4_FOUND)
-    plm_add_executable (nki2mha_converter "${nki2mha_converter_SRC}" 
-	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
-    if (DCMTK_FOUND)
-	plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}" 
-	    "${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+  set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
+    ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+  set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
+  plm_add_executable_v2 (nki2mha_converter "${nki2mha_converter_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+    "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+  if (DCMTK_FOUND)
+    plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}"
+      "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+      "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 
-	plm_add_executable (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
-	    "${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
-    endif ()
-    plm_add_executable (register_gui "${REGISTER_GUI_SRC}" 
-	"${PLASTIMATCH_LIBS};${QT_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    plm_add_executable (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
+      "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+      "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+  endif ()
+  plm_add_executable (register_gui "${REGISTER_GUI_SRC}" 
+    "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+    "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
 endif()
 
 plm_add_executable (cmd_prompt_launcher "${CMD_PROMPT_LAUNCHER_SRC}" 

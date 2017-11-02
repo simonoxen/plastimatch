@@ -11,10 +11,16 @@ find_package (Bitflow)
 find_package (MIL)
 find_package (Paxscan)
 
+if (QT4_FOUND)
+  set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
+    ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+  set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
+endif ()
+
 ##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
-if (QT_FOUND AND ITK_FOUND)
+if (QT4_FOUND AND ITK_FOUND)
   set (BUILD_BADPIXELDETECTOR TRUE)
 else ()
   set (BUILD_BADPIXELDETECTOR FALSE)
@@ -231,7 +237,7 @@ if (COMMENTOUT)
 endif ()
 
 if (BUILD_ISE_QT)
-  set (ISE_QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
+  set (ISE_QT_LIBRARIES ${QT4_LIBRARIES} ${QT_QTSQL_LIBRARIES})
 ##  set (ISE_QT_LIBRARIES QVTK)  ## Hard-coded "for now"...
   if (ADVANTECH_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${ADVANTECH_LIBRARIES})
@@ -249,8 +255,9 @@ if (BUILD_ISE_QT)
   if (FFTW_FOUND)
     set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${FFTW_LIBRARIES})
   endif ()
-  plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" ""
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v2 (ise_qt "${ISE_QT_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${ISE_QT_LIBRARIES}"
+    "" ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
 set (ACQUIRE_4030E_LIBRARIES
@@ -277,19 +284,19 @@ if (BUILD_ACQUIRE_4030E)
 endif ()
 
 if (BUILD_BADPIXELDETECTOR)
-  set (BADPIXELDETECTOR_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES}
+  set (BADPIXELDETECTOR_LIBRARIES ${QT4_LIBRARIES} ${QT_QTSQL_LIBRARIES}
     ${ITK_LIBRARIES})
   
-  plm_add_executable (bad_pixel_detector "${BADPIXELDETECTOR_SRC}"
-    "${BADPIXELDETECTOR_LIBRARIES}" "${BADPIXELDETECTOR_LDFLAGS}"
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v2 (bad_pixel_detector "${BADPIXELDETECTOR_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${BADPIXELDETECTOR_LIBRARIES}"
+    "${BADPIXELDETECTOR_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_NEVER})
 
-  set (CROSSREMOVAL_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES}
+  set (CROSSREMOVAL_LIBRARIES ${QT4_LIBRARIES} ${QT_QTSQL_LIBRARIES}
     ${ITK_LIBRARIES})
   
-  plm_add_executable (cross_removal "${CROSSREMOVAL_SRC}"
-    "${CROSSREMOVAL_LIBRARIES}" "${CROSSREMOVAL_LDFLAGS}"
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v2 (cross_removal "${CROSSREMOVAL_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${CROSSREMOVAL_LIBRARIES}"
+    "${CROSSREMOVAL_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_NEVER})
 endif ()
 
 if (WIN32)

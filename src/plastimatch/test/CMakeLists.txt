@@ -169,10 +169,20 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 	${BUILD_ALWAYS} ${INSTALL_NEVER})
 
     # Test executable -- qt
+    if (Qt5_FOUND)
+      set (QT5_TEST_LIBRARIES Qt5::Network Qt5::Widgets Qt5::Gui Qt5::Core)
+      plm_add_executable (qt5_test qt_test.cxx
+	"${QT5_TEST_LIBRARIES}" "" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
+    endif ()
     if (QT4_FOUND)
-	plm_add_executable (qt_test qt_test.cxx
-	    "${QT_LIBRARIES}" "" 
-	    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+      set (QT4_TEST_INCLUDES ${PLASTIMATCH_INCLUDES} ${QT_QTGUI_INCLUDE_DIR}
+	${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+      set (QT4_TEST_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
+      plm_add_executable_v2 (qt4_test qt_test.cxx
+	"${QT4_TEST_INCLUDES}"
+	"${QT4_TEST_LIBRARIES}" "" 
+	${BUILD_ALWAYS} ${INSTALL_NEVER})
     endif ()
 
     # Test executable -- ransac

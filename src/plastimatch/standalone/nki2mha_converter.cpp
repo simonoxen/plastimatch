@@ -134,25 +134,25 @@ void nki2mha_converter::SLT_Correct_NKI2DCM()
     if (listSize < 1)
         return;
 
-	QString strPatientID = ui.lineEditPatientID->text();
-	QString strPatientName = ui.lineEditPatientName->text();
+    QString strPatientID = ui.lineEditPatientID->text();
+    QString strPatientName = ui.lineEditPatientName->text();
 
-	bool bPatientIDExist = false;
+    bool bPatientIDExist = false;
 
-	if (strPatientID.length() > 1 && strPatientName.length() > 1)
-	{
-	  bPatientIDExist = true;  	  
-	}
+    if (strPatientID.length() > 1 && strPatientName.length() > 1)
+    {
+        bPatientIDExist = true;  	  
+    }
 
 
     int cnt = 0;
     for (int i = 0 ; i<listSize ; i++)
     {
-	  if (listSize > 1)
-	  {
-		int index = i+1;
-		strPatientID = strPatientID + QString("%1").arg(index);
-	  }
+        if (listSize > 1)
+        {
+            int index = i+1;
+            strPatientID = strPatientID + QString("%1").arg(index);
+        }
 
         QString filePath = m_strlistPath.at(i);
 
@@ -162,17 +162,17 @@ void nki2mha_converter::SLT_Correct_NKI2DCM()
 
         if (extName == "scan" || extName == "SCAN")
         {		 
-		  if (bPatientIDExist)
-		  	corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);		  
-		  else
-			corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
+            if (bPatientIDExist)
+                corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);		  
+            else
+                corrFilePath = CorrectSingle_NKI2DCM(filePath.toLocal8Bit().constData());
         }
         else if (extName == "mha" || extName == "MHA")
         {
-		  if (bPatientIDExist)
-			corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);
-		  else
-            corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData());			
+            if (bPatientIDExist)
+                corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData(), strPatientID,strPatientName);
+            else
+                corrFilePath = CorrectSingle_MHA2DCM(filePath.toLocal8Bit().constData());			
         }
 
         if (corrFilePath.length() > 0 )
