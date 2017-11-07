@@ -67,8 +67,9 @@ option (PLM_CONFIG_NOMANIFEST
     "Set to ON to build windows DLLs without manifests" OFF)
 
 # Compile and link options
-option (PLM_SUPERBUILD "Download missing external libraries" OFF)
-option (PLM_PREFER_EXTERNAL_ITK "Prefer external ITK to local one" OFF)
+option (PLM_CONFIG_ENABLE_SUPERBUILD "Allow download of missing external libraries" OFF)
+option (PLM_USE_SYSTEM_ITK "Only use ITK provided by operating system" OFF)
+option (PLM_PREFER_SYSTEM_ITK "Prefer ITK provided by operating system" ON)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
@@ -102,7 +103,7 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
   set (PLM_CONFIG_DISABLE_REG23 ON)
 endif ()
-  
+
 ##-----------------------------------------------------------------------------
 ##  SETUP IMPORTANT LOCATIONS
 ##-----------------------------------------------------------------------------
@@ -171,7 +172,7 @@ else ()
 endif ()
 
 # Superbuild
-if (PLM_SUPERBUILD)
+if (PLM_CONFIG_ENABLE_SUPERBUILD)
   include (ExternalProject)
 endif ()
 
@@ -561,15 +562,18 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  ITK
 ##-----------------------------------------------------------------------------
-find_package (ITK)
-if (PLM_SUPERBUILD)
-  if (NOT ITK_FOUND OR PLM_PREFER_EXTERNAL_ITK)
-    message (STATUS "ITK_DIR = ${ITK_DIR}")
-    include (cmake/ExternalITK.cmake)
-    message (STATUS "ITK_DIR = ${ITK_DIR}")
-    find_package (ITK)
-  endif ()
+if (PLM_USE_SYSTEM_ITK)
+  find_package (ITK REQUIRED)
+elseif (PLM_PREFER_SYSTEM_ITK)
+  find_package (ITK)
 endif ()
+if (NOT ITK_FOUND AND NOT PLM_USE_SYSTEM_ITK AND PLM_CONFIG_ENABLE_SUPERBUILD)
+  message (STATUS "ITK_DIR = ${ITK_DIR}")
+  include (SuperBuild/External_ITK.cmake)
+  message (STATUS "ITK_DIR = ${ITK_DIR}")
+  find_package (ITK)
+endif ()
+
 if (ITK_FOUND)
   # GCS 2016-10-20
   # The GDCM USE file spews out copious extraneous warnings on Debian.
