@@ -172,7 +172,7 @@ else ()
 endif ()
 
 # Superbuild
-if (PLM_CONFIG_ENABLE_SUPERBUILD)
+if (PLM_CONFIG_USE_SUPERBUILD)
   include (ExternalProject)
 endif ()
 
