@@ -568,10 +568,7 @@ elseif (PLM_PREFER_SYSTEM_ITK)
   find_package (ITK QUIET)
 endif ()
 if (NOT ITK_FOUND AND NOT PLM_USE_SYSTEM_ITK AND PLM_CONFIG_USE_SUPERBUILD)
-  message (STATUS "ITK_DIR = ${ITK_DIR}")
   include (SuperBuild/External_ITK.cmake)
-  message (STATUS "ITK_DIR = ${ITK_DIR}")
-  find_package (ITK)
 endif ()
 
 if (ITK_FOUND)
@@ -606,8 +603,10 @@ if (ITK_FOUND)
     message (FATAL_ERROR 
       "Fatal Error. ITK version should be either 3.X or 4.X")
   endif ()
+  message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
+else ()
+  message (STATUS "ITK_VERSION unknown")
 endif ()
-message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
 
 ##-----------------------------------------------------------------------------
 ##  GDCM
