@@ -11,15 +11,15 @@ project (src_plastimatch)
 
 # Plastimatch software configuration options
 option (PLM_CONFIG_CLANG_COMPLETE
-    "Generate .clang_complete for hipster Vim-ers" OFF)
+  "Generate .clang_complete for hipster Vim-ers" OFF)
 option (PLM_CONFIG_DISABLE_VISCOUS
-    "Disable experimental viscous fluid registration algorithm" ON)
+  "Disable experimental viscous fluid registration algorithm" ON)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
-    "Enable experimental plastimatch_qt executable" OFF)
+  "Enable experimental plastimatch_qt executable" OFF)
 option (PLM_CONFIG_PREFER_PATCHED_ITK
-    "Prefer to use the patched version of certain ITK files" ON)
+  "Prefer to use the patched version of certain ITK files" ON)
 option (PLM_CONFIG_VOL_LIST
-    "Native support for volumes with irregular slice thicknesses" OFF)
+  "Native support for volumes with irregular slice thicknesses" OFF)
 
 # Plastimatch legacy options
 option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
@@ -36,9 +36,9 @@ option (PLM_CONFIG_LEGACY_PROJ_GEO
 ##-----------------------------------------------------------------------------
 # If the user only has gdcm 2.x, give a warning
 if (PLM_DCM_USE_GDCM2)
-    message (WARNING "Plastimatch is being built with GDCM 2.X.  DICOM-RT functions are disabled.")
+  message (WARNING "Plastimatch is being built with GDCM 2.X.  DICOM-RT functions are disabled.")
 elseif (PLM_DCM_USE_GDCM1)
-    message (WARNING "Plastimatch is being built with GDCM 1.X.  Certain features of DICOM-RT are disabled.")
+  message (WARNING "Plastimatch is being built with GDCM 1.X.  Certain features of DICOM-RT are disabled.")
 endif ()
 
 

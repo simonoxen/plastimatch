@@ -67,7 +67,7 @@ option (PLM_CONFIG_NOMANIFEST
     "Set to ON to build windows DLLs without manifests" OFF)
 
 # Compile and link options
-option (PLM_CONFIG_ENABLE_SUPERBUILD "Allow download of missing external libraries" OFF)
+option (PLM_CONFIG_USE_SUPERBUILD "Allow download of missing external libraries" OFF)
 option (PLM_USE_SYSTEM_ITK "Only use ITK provided by operating system" OFF)
 option (PLM_PREFER_SYSTEM_ITK "Prefer ITK provided by operating system" ON)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
@@ -567,7 +567,7 @@ if (PLM_USE_SYSTEM_ITK)
 elseif (PLM_PREFER_SYSTEM_ITK)
   find_package (ITK)
 endif ()
-if (NOT ITK_FOUND AND NOT PLM_USE_SYSTEM_ITK AND PLM_CONFIG_ENABLE_SUPERBUILD)
+if (NOT ITK_FOUND AND NOT PLM_USE_SYSTEM_ITK AND PLM_CONFIG_USE_SUPERBUILD)
   message (STATUS "ITK_DIR = ${ITK_DIR}")
   include (SuperBuild/External_ITK.cmake)
   message (STATUS "ITK_DIR = ${ITK_DIR}")
