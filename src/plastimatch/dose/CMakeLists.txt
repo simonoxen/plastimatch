@@ -5,7 +5,7 @@ project (src_plastimatch_dose)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmdose_config.h.in
-    ${PLM_BUILD_ROOT}/plmdose_config.h
+    ${CMAKE_BINARY_DIR}/plmdose_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})

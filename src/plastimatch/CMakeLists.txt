@@ -6,30 +6,14 @@
 project (src_plastimatch)
 
 ##-----------------------------------------------------------------------------
-##  Local options
+##  CMake include files
 ##-----------------------------------------------------------------------------
+#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake" ${CMAKE_MODULE_PATH})
+message (STATUS "CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
+include (PlmMacros)
 
-# Plastimatch software configuration options
-option (PLM_CONFIG_CLANG_COMPLETE
-  "Generate .clang_complete for hipster Vim-ers" OFF)
-option (PLM_CONFIG_DISABLE_VISCOUS
-  "Disable experimental viscous fluid registration algorithm" ON)
-option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
-  "Enable experimental plastimatch_qt executable" OFF)
-option (PLM_CONFIG_PREFER_PATCHED_ITK
-  "Prefer to use the patched version of certain ITK files" ON)
-option (PLM_CONFIG_VOL_LIST
-  "Native support for volumes with irregular slice thicknesses" OFF)
-
-# Plastimatch legacy options
-option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
-  "Use legacy code for extending b-spline domain" OFF)
-option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
-  "Use legacy code for reading and writing b-spline xform files" OFF)
-option (PLM_CONFIG_LEGACY_MI_METRIC
-  "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
-option (PLM_CONFIG_LEGACY_PROJ_GEO
-  "Use legacy method for specifying projection geometry" ON)
+#message (FATAL_ERROR "PLM_CONFIG_DISABLE_OPENMP is ${PLM_CONFIG_DISABLE_OPENMP}")
 
 ##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries
@@ -46,6 +30,7 @@ endif ()
 ##  Figure out if we should patch itk
 ##-----------------------------------------------------------------------------
 set (PLM_CONFIG_USE_PATCHED_ITK 0)
+find_package (ITK REQUIRED)
 if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
   set (PLM_CONFIG_USE_PATCHED_ITK 1)
 endif ()
@@ -137,21 +122,21 @@ endif ()
 ##  CONFIGURE INCLUDE FILES
 ##-----------------------------------------------------------------------------
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
-  ${PLM_BUILD_ROOT}/plm_config.h)
+  ${CMAKE_BINARY_DIR}/plm_config.h)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
-  ${PLM_BUILD_ROOT}/plm_version.h)
+  ${CMAKE_BINARY_DIR}/plm_version.h)
 
 ##-----------------------------------------------------------------------------
 ## Option to generate .clang_complete for hip Vim users using clang_complete
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_CLANG_COMPLETE)
-    get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-    set (file_clang_complete "${PLM_SRC_ROOT}/src/plastimatch/.clang_complete")
-    foreach (arg ${inc_dirs})
-        set (inc_args "${inc_args} -I${arg}\n")
-    endforeach ()
-    file (WRITE "${file_clang_complete}" "${inc_args}")
-    message (STATUS "Generated ${file_clang_complete}")
+  get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+  set (file_clang_complete "${CMAKE_SOURCE_DIR}/src/plastimatch/.clang_complete")
+  foreach (arg ${inc_dirs})
+    set (inc_args "${inc_args} -I${arg}\n")
+  endforeach ()
+  file (WRITE "${file_clang_complete}" "${inc_args}")
+  message (STATUS "Generated ${file_clang_complete}")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -183,6 +168,31 @@ if (PLMLIB_CONFIG_ENABLE_REGISTER OR PLMLIB_CONFIG_ENABLE_RECONSTRUCT)
   set (PLMLIB_CONFIG_ENABLE_CUDA true)
   set (PLMLIB_CONFIG_ENABLE_OPENCL true)
 endif ()
+
+
+##-----------------------------------------------------------------------------
+##  SETUP IMPORTANT LOCATIONS
+##-----------------------------------------------------------------------------
+# Offer the user the choice of overriding the installation directories
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+  "Installation directory for libraries")
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+  "Installation directory for executables")
+set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
+  "Installation directory for header files")
+if (WIN32 AND NOT CYGWIN)
+  set (DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
+endif()
+set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for CMake files")
+mark_as_advanced (
+  PLM_INSTALL_LIB_DIR 
+  PLM_INSTALL_BIN_DIR 
+  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_CMAKE_DIR)
+
 
 ## Specify which include directories are needed when
 ## compiling code that links to the libraries
@@ -372,14 +382,14 @@ endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 ##  DOXYGEN
 ##-----------------------------------------------------------------------------
 if (DOXYGEN_FOUND)
-  file (MAKE_DIRECTORY "${PLM_BUILD_ROOT}/doc")
+  file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
   configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
     @ONLY)
   add_custom_target (doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY "${PLM_BUILD_ROOT}/doc"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/doc"
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 endif ()

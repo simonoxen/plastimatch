@@ -5,7 +5,7 @@ project (src_plastimatch_reconstruct)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmreconstruct_config.h.in
-    ${PLM_BUILD_ROOT}/plmreconstruct_config.h
+    ${CMAKE_BINARY_DIR}/plmreconstruct_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})

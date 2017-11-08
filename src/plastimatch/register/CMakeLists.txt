@@ -5,7 +5,7 @@ project (src_plastimatch_register)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmregister_config.h.in
-    ${PLM_BUILD_ROOT}/plmregister_config.h
+    ${CMAKE_BINARY_DIR}/plmregister_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
