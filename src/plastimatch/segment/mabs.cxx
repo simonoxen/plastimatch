@@ -1972,14 +1972,14 @@ Mabs::run_segmentation (const Mabs_seg_weights_list& seg_weights)
 {
     
     /* Just one atlas and no voting option selected */
-    if (d_ptr->parms->fusion_criteria == "none" && d_ptr->parms->atlases_from_ranking == 1) {
-
+    if (d_ptr->parms->fusion_criteria == "none"
+        && d_ptr->parms->atlases_from_ranking == 1)
+    {
         std::string atlas_id = basename (*d_ptr->atlas_list.begin());
         std::string label_output_dir =
             string_format ("%s/segmentations", d_ptr->output_dir.c_str());
 
-        no_voting(atlas_id, label_output_dir);
-
+        no_voting (atlas_id, label_output_dir);
         return;
     }
 
@@ -2037,14 +2037,14 @@ void
 Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
 {
     /* Just one atlas and no voting option selected */
-    if (d_ptr->parms->fusion_criteria == "none" && d_ptr->parms->atlases_from_ranking == 1) {
-
+    if (d_ptr->parms->fusion_criteria == "none"
+        && d_ptr->parms->atlases_from_ranking == 1)
+    {
         std::string atlas_id = basename (*d_ptr->atlas_list.begin());
         std::string label_output_dir =
             string_format ("%s/segmentations", d_ptr->output_dir.c_str());
 
         no_voting(atlas_id, label_output_dir);
-
         return;
     }
 
@@ -2106,7 +2106,8 @@ Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
         }
     }
     
-    /* If gaussian is chosen (alone or with staple) and its segmentations aren't already present run its code */
+    /* If gaussian is chosen (alone or with staple) and its segmentations 
+       aren't already present run its code */
     if (d_ptr->parms->fusion_criteria.find("gaussian") != std::string::npos
         && gaussian_seg_checkpoint_fn != "")
     {
@@ -2120,7 +2121,8 @@ Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
         /* Clear out internal structure */
         d_ptr->clear_vote_map ();
     }
-    /* If staple is chosen (alone or with gaussian) and its segmentations aren't already present run its code */
+    /* If staple is chosen (alone or with gaussian) and its segmentations 
+       aren't already present run its code */
     if (d_ptr->parms->fusion_criteria.find("staple") != std::string::npos
         && staple_seg_checkpoint_fn != "")
     {
@@ -2139,13 +2141,11 @@ Mabs::run_segmentation_train (const Mabs_seg_weights& msw)
        is complete */
     if (gaussian_seg_checkpoint_fn!="") touch_file (gaussian_seg_checkpoint_fn);
     if (staple_seg_checkpoint_fn!="") touch_file (staple_seg_checkpoint_fn);
-
 }
 
 void
 Mabs::run_segmentation_train_loop ()
 {
-
     Option_range minsim_range, rho_range, sigma_range, confidence_weight_range;
     minsim_range.set_range (d_ptr->parms->minsim_values);
     rho_range.set_range (d_ptr->parms->rho_values);
@@ -2316,6 +2316,8 @@ Mabs::train_internal ()
             d_ptr->parms->registration_config.c_str(),
             d_ptr->parms->optimization_result_reg.c_str());
         this->parse_registration_dir (registration_fn);
+        lprintf ("Training based on optimized registration result: %s\n",
+            registration_fn.c_str());
     } else {
         /* Else, parse directory with registration files */
         this->parse_registration_dir (d_ptr->parms->registration_config);

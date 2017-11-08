@@ -200,12 +200,12 @@ foreach $reg (sort keys %reghash) {
 	$best_reg = $reg;
     }
 }
-if ($best_reg ne "") {
-    ## Update training file
-##    $fn = "$dice_source_dir/optimization_result_reg.txt";
-##    open FP, ">$fn";
-##    print FP "[OPTIMIZATION_RESULT]\nregistration=$best_reg\n";
-##    close FP;
+if ($best_reg ne "" && $save_optimization_result) {
+    
+    $fn = "$training_dir/optimization_result_reg.txt";
+    open FP, ">$fn";
+    print FP "[OPTIMIZATION-RESULT-REG]\nregistration=$best_reg\n";
+    close FP;
 }
 
 if (keys(%seghash) == 0) {
@@ -298,7 +298,7 @@ if ($save_optimization_result) {
 	    ## Update training file
 	    ($rho,$sigma,$minsim,$thresh) = split (',', $best_seg);
 	    $output_string = <<EOSTRING
-[OPTIMIZATION_RESULT]
+[OPTIMIZATION-RESULT-SEG]
 structure=$struct
 gaussian_weighting_voting_rho=$rho
 gaussian_weighting_voting_sigma=$sigma
