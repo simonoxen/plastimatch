@@ -7,7 +7,7 @@ Image segmentation (MABS) guidebook
    .. container:: rightside
 
       .. image:: ../figures/mabs_1.png
-        :width: 100 %
+        :width: 30 %
         :align: right
 
    .. container:: leftside
