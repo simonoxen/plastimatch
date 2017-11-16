@@ -5,7 +5,7 @@ project (src_plastimatch_util)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmutil_config.h.in
-    ${PLM_BUILD_ROOT}/plmutil_config.h
+    ${CMAKE_BINARY_DIR}/plmutil_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})

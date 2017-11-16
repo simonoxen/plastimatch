@@ -1,4 +1,19 @@
 ##-----------------------------------------------------------------------------
+##  A few constants used to control build & install
+##-----------------------------------------------------------------------------
+set (INSTALL_NEVER 0)
+set (INSTALL_ALWAYS 1)
+if (PLM_CONFIG_DEBIAN_BUILD)
+  set (INSTALL_IF_NOT_DEBIAN 0)
+else ()
+  set (INSTALL_IF_NOT_DEBIAN 1)
+endif ()
+
+set (BUILD_NEVER 0)
+set (BUILD_ALWAYS 1)
+set (BUILD_IF_NOT_SLICER_EXT 1)
+
+##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 macro (PLM_ADD_LIBRARY 
@@ -77,9 +92,9 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
   # Set output directory.  No PUBLIC_HEADER directory is needed, 
   # because they don't have a public API.
   set_target_properties (${TARGET_NAME} PROPERTIES 
-    ARCHIVE_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-    LIBRARY_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}"
-    RUNTIME_OUTPUT_DIRECTORY "${PLM_BUILD_ROOT}")
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
   # Set installation diretory and export definition.  No PUBLIC_HEADER needed.
   if (PLM_CONFIG_INSTALL_LIBRARIES)

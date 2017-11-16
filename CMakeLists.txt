@@ -66,6 +66,28 @@ option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST
     "Set to ON to build windows DLLs without manifests" OFF)
 
+# Plastimatch software configuration options
+option (PLM_CONFIG_CLANG_COMPLETE
+  "Generate .clang_complete for hipster Vim-ers" OFF)
+option (PLM_CONFIG_DISABLE_VISCOUS
+  "Disable experimental viscous fluid registration algorithm" ON)
+option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
+  "Enable experimental plastimatch_qt executable" OFF)
+option (PLM_CONFIG_PREFER_PATCHED_ITK
+  "Prefer to use the patched version of certain ITK files" ON)
+option (PLM_CONFIG_VOL_LIST
+  "Native support for volumes with irregular slice thicknesses" OFF)
+
+# Plastimatch legacy options
+option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
+  "Use legacy code for extending b-spline domain" OFF)
+option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
+  "Use legacy code for reading and writing b-spline xform files" OFF)
+option (PLM_CONFIG_LEGACY_MI_METRIC
+  "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
+option (PLM_CONFIG_LEGACY_PROJ_GEO
+  "Use legacy method for specifying projection geometry" ON)
+
 # Compile and link options
 option (PLM_CONFIG_USE_SUPERBUILD "Allow download of missing external libraries" OFF)
 option (PLM_USE_SYSTEM_ITK "Only use ITK provided by operating system" OFF)
@@ -104,32 +126,6 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_REG23 ON)
 endif ()
 
-##-----------------------------------------------------------------------------
-##  SETUP IMPORTANT LOCATIONS
-##-----------------------------------------------------------------------------
-set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
-set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
-
-# Offer the user the choice of overriding the installation directories
-set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
-  "Installation directory for libraries")
-set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
-  "Installation directory for executables")
-set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
-  "Installation directory for header files")
-if (WIN32 AND NOT CYGWIN)
-  set (DEF_INSTALL_CMAKE_DIR CMake)
-else()
-  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
-endif()
-set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
-  "Installation directory for CMake files")
-mark_as_advanced (
-  PLM_INSTALL_LIB_DIR 
-  PLM_INSTALL_BIN_DIR 
-  PLM_INSTALL_INCLUDE_DIR 
-  PLM_INSTALL_CMAKE_DIR)
-
 # GCS 2015-07-08.  The below workflow is described here:
 #   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
 # However, it creates install targets with absolute paths, which is 
@@ -152,10 +148,10 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-include (cmake/PlmMacros.cmake)
+include (PlmMacros)
 include (CTest)
 include (CheckFunctionExists)
 include (CheckIncludeFiles)
@@ -177,10 +173,10 @@ if (PLM_CONFIG_USE_SUPERBUILD)
 endif ()
 
 # Machine precision
-include (cmake/CheckEpsilon)
+include (CheckEpsilon)
 
 # Is char signed or unsigned?
-include (cmake/CheckCharSign)
+include (CheckCharSign)
 
 ##-----------------------------------------------------------------------------
 ##  Processor and OS characteristics
@@ -256,21 +252,6 @@ set (PLM_BUILD_TESTING_DIR "${CMAKE_BINARY_DIR}/Testing")
 ##-----------------------------------------------------------------------------
 check_include_files ("stdint.h" HAVE_STDINT_H)
 check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
-
-##-----------------------------------------------------------------------------
-##  A few constants used to control build & install
-##-----------------------------------------------------------------------------
-set (INSTALL_NEVER 0)
-set (INSTALL_ALWAYS 1)
-if (PLM_CONFIG_DEBIAN_BUILD)
-  set (INSTALL_IF_NOT_DEBIAN 0)
-else ()
-  set (INSTALL_IF_NOT_DEBIAN 1)
-endif ()
-
-set (BUILD_NEVER 0)
-set (BUILD_ALWAYS 1)
-set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library
@@ -701,7 +682,7 @@ endif ()
 
 if (QT4_FOUND)
   # Test Qt install to make sure it can build and run a test program
-  include (cmake/CheckQt)
+  include (CheckQt)
   check_qt (QT_TEST_COMPILE_SUCCEEDED)
   if (NOT QT_TEST_COMPILE_SUCCEEDED)
     message (STATUS "Qt failed to compile a test program")
