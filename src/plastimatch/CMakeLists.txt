@@ -4,6 +4,7 @@
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
 project (src_plastimatch)
+cmake_minimum_required (VERSION 2.8.12)
 
 ##-----------------------------------------------------------------------------
 ##  CMake include files
@@ -12,8 +13,6 @@ project (src_plastimatch)
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake" ${CMAKE_MODULE_PATH})
 message (STATUS "CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 include (PlmMacros)
-
-#message (FATAL_ERROR "PLM_CONFIG_DISABLE_OPENMP is ${PLM_CONFIG_DISABLE_OPENMP}")
 
 ##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries
@@ -25,7 +24,6 @@ elseif (PLM_DCM_USE_GDCM1)
   message (WARNING "Plastimatch is being built with GDCM 1.X.  Certain features of DICOM-RT are disabled.")
 endif ()
 
-
 ##-----------------------------------------------------------------------------
 ##  Figure out if we should patch itk
 ##-----------------------------------------------------------------------------
@@ -34,7 +32,6 @@ find_package (ITK REQUIRED)
 if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
   set (PLM_CONFIG_USE_PATCHED_ITK 1)
 endif ()
-
 
 ##-----------------------------------------------------------------------------
 ##  Include directories
@@ -342,13 +339,14 @@ if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     )
 
 else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
-
+  ## GCS: This is not working
+  if (COMMENTOUT)
   include (CMakePackageConfigHelpers)
 
   # Make the version file
   write_basic_package_version_file (
     "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
-    VERSION ${PLM_BASIC_VERSION_STRING}
+    VERSION ${PLASTIMATCH_VERSION_STRING}
     COMPATIBILITY AnyNewerVersion
     )
 
@@ -375,7 +373,7 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     COMPONENT Devel
     )
-
+  endif (COMMENTOUT)
 endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
 ##-----------------------------------------------------------------------------
