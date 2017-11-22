@@ -41,11 +41,6 @@ public:
     Lut_entry *lut;
 };
 
-Rpl_volume_lut::Rpl_volume_lut ()
-{
-    d_ptr = new Rpl_volume_lut_private (0, 0);
-}
-
 Rpl_volume_lut::Rpl_volume_lut (Rpl_volume *rv, Volume *vol)
 {
     d_ptr = new Rpl_volume_lut_private (rv, vol);
@@ -56,14 +51,14 @@ Rpl_volume_lut::~Rpl_volume_lut ()
     delete d_ptr;
 }
 
-void 
+void
 Rpl_volume_lut::set_lut_entry (
-    const Ray_data* ray_data, 
-    plm_long vox_idx, 
-    const float *vox_ray, 
-    plm_long ap_idx, 
-    float li_frac, 
-    float step_length, 
+    const Ray_data* ray_data,
+    plm_long vox_idx,
+    const float *vox_ray,
+    plm_long ap_idx,
+    float li_frac,
+    float step_length,
     int lut_entry_idx
 )
 {
@@ -73,7 +68,7 @@ Rpl_volume_lut::set_lut_entry (
     }
 
     // Project voxel vector onto unit vector of aperture ray
-    // This assumes that 
+    // This assumes that
     // d_ptr->rvrts == RAY_TRACE_START_AT_RAY_VOLUME_INTERSECTION
     // We omit the check for speed.
     const double *ap_ray = ray_data[ap_idx].ray;
@@ -89,7 +84,7 @@ Rpl_volume_lut::set_lut_entry (
     if (steps_f >= d_ptr->rv->get_num_steps()) {
         return;
     }
-    
+
     // Compute lut entries
     const Aperture::Pointer ap = d_ptr->rv->get_aperture ();
     plm_long lut_idx = ap_idx + steps_f * ap->get_dim(0) * ap->get_dim(1);
@@ -104,7 +99,7 @@ Rpl_volume_lut::set_lut_entry (
     d_ptr->lut[lut_idx].weight[4+lut_entry_idx] = (1. - dist_frac) * li_frac;
 }
 
-void 
+void
 Rpl_volume_lut::build_lut ()
 {
     const Proj_volume *pv = d_ptr->rv->get_proj_volume ();
@@ -136,7 +131,7 @@ Rpl_volume_lut::build_lut ()
                 {
                     continue;
                 }
-                
+
                 /* Get vector from source to voxel */
                 float vox_ray[3];
                 vec3_sub3 (vox_ray, xyz, src);
@@ -144,19 +139,19 @@ Rpl_volume_lut::build_lut ()
                 /* Solve for interpolation fractions on aperture planes */
                 plm_long ijk_f[3];
                 float li_frac_1[3], li_frac_2[3];
-                float ap_xy_float[2] = { (float) ap_xy[0], (float) ap_xy[1] };
+                float ap_xy_float[2] = { static_cast<float>(ap_xy[0]), static_cast<float>(ap_xy[1]) };
                 li_2d (ijk_f, li_frac_1, li_frac_2, ap_xy_float, ap_dim);
 
-                /* Inspect four interpolant aperture pixels.  
-                   For each pixel, calculate distance to point 
+                /* Inspect four interpolant aperture pixels.
+                   For each pixel, calculate distance to point
                    on ray closest to voxel center */
                 plm_long ap_ij[2], ap_idx;
                 ap_ij[0] = ijk_f[0], ap_ij[1] = ijk_f[1];
                 ap_idx = ap_ij[0] + ap_ij[1] * ap_dim[0];
 
-                set_lut_entry (ray_data, idx, vox_ray, 
+                set_lut_entry (ray_data, idx, vox_ray,
                     ap_idx, li_frac_1[0], li_frac_2[0], 0);
-                
+
             }
         }
     }
