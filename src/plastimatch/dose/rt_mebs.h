@@ -144,7 +144,7 @@ public:
         std::vector<float>* weight_tmp, std::vector<float>* energy_tmp, 
         std::vector<Rt_depth_dose*>* depth_dose_tmp);
 
-    void scale_num_part (double A, plm_long* ap_dim);
+    void scale_num_part (double A, const plm_long* ap_dim);
     double get_particle_number_xyz (plm_long* idx, double* rest, 
         int idx_beam, const plm_long* ap_dim);
 

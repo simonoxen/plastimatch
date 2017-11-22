@@ -1288,7 +1288,7 @@ Rt_mebs::generate_part_num_from_weight (const plm_long* ap_dim)
 }
 
 void
-Rt_mebs::scale_num_part(double A, int* ap_dim)
+Rt_mebs::scale_num_part (double A, const plm_long* ap_dim)
 {
     for (int i = 0; i < (int) d_ptr->energy_number * ap_dim[0] * ap_dim[1]; i++)
     {
