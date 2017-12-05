@@ -45,6 +45,13 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  CMake include files
+##-----------------------------------------------------------------------------
+#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+include (PlmMacros)
+
+##-----------------------------------------------------------------------------
 ##  Define plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
@@ -89,14 +96,19 @@ option (PLM_CONFIG_LEGACY_PROJ_GEO
   "Use legacy method for specifying projection geometry" ON)
 
 # Compile and link options
-option (PLM_CONFIG_USE_SUPERBUILD "Allow download of missing external libraries" OFF)
-option (PLM_USE_SYSTEM_ITK "Only use ITK provided by operating system" OFF)
-option (PLM_PREFER_SYSTEM_ITK "Prefer ITK provided by operating system" ON)
 option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
-# GCS 2016-08-18: Debian now ships dlib, give option to prefer local copy
+
+# Choose whether to build against included and/or superbuild libraries
+# instead of system libraries
+option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system" 
+  PREFERRED
+  NO PREFERRED YES)
 option (PLM_PREFER_SYSTEM_DLIB
     "Prefer the system dlib over the included dlib" ON)
+option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system" 
+  PREFERRED
+  NO PREFERRED YES)
 
 # Testing
 option (PLM_BUILD_TESTING "Enable regression testing" ON)
@@ -148,10 +160,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
-#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
-include (PlmMacros)
 include (CTest)
 include (CheckFunctionExists)
 include (CheckIncludeFiles)
@@ -168,9 +176,7 @@ else ()
 endif ()
 
 # Superbuild
-if (PLM_CONFIG_USE_SUPERBUILD)
-  include (ExternalProject)
-endif ()
+include (ExternalProject)
 
 # Machine precision
 include (CheckEpsilon)
@@ -269,16 +275,20 @@ endif ()
 find_library (LIBDL_FOUND dl)
 
 ##-----------------------------------------------------------------------------
+##  DCMTK
+##-----------------------------------------------------------------------------
+if (PLM_SYSTEM_DCMTK STREQUAL "YES")
+  find_package (DCMTK REQUIRED)
+elseif (PLM_SYSTEM_DCMTK STREQUAL "PREFERRED")
+  find_package (DCMTK QUIET)
+endif ()
+if (NOT DCMTK_FOUND AND NOT PLM_SYSTEM_DCMTK STREQUAL "YES")
+  include (SuperBuild/External_DCMTK.cmake)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
-if (PLM_CONFIG_DISABLE_DCMTK)
-  set (DCMTK_FOUND FALSE)
-else ()
-  find_package (DCMTK_wrap)
-  if (DCMTK_FOUND AND DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
-    set (DCMTK_FOUND FALSE)
-  endif ()
-endif ()
 if (PLM_PREFER_SYSTEM_DLIB)
   # Use this version if you want to use the internal cmake find. 
   # The internal version has issue finding the correct BLAS library
@@ -543,12 +553,12 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  ITK
 ##-----------------------------------------------------------------------------
-if (PLM_USE_SYSTEM_ITK)
+if (PLM_SYSTEM_ITK STREQUAL "YES")
   find_package (ITK REQUIRED)
-elseif (PLM_PREFER_SYSTEM_ITK)
+elseif (PLM_SYSTEM_ITK STREQUAL "PREFERRED")
   find_package (ITK QUIET)
 endif ()
-if (NOT ITK_FOUND AND NOT PLM_USE_SYSTEM_ITK AND PLM_CONFIG_USE_SUPERBUILD)
+if (NOT ITK_FOUND AND NOT PLM_SYSTEM_ITK STREQUAL "YES")
   include (SuperBuild/External_ITK.cmake)
 endif ()
 

@@ -14,6 +14,18 @@ set (BUILD_ALWAYS 1)
 set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
+##  Create enum options
+##-----------------------------------------------------------------------------
+macro (option_enum
+    option_name
+    option_descr
+    option_value
+    )
+  set (${option_name} ${option_value} CACHE STRING ${option_descr})
+  set_property (CACHE ${option_name} PROPERTY STRINGS ${ARGN})
+endmacro ()
+
+##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 macro (PLM_ADD_LIBRARY 
