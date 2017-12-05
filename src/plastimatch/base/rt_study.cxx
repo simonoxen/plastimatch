@@ -543,6 +543,7 @@ Rt_study::set_study_metadata (const std::vector<std::string>& metadata)
 {
     Metadata::Pointer& study_metadata = d_ptr->m_drs->get_study_metadata ();
     study_metadata->set_metadata (metadata);
+
     /* GCS FIX.  This is the wrong place for this. */
     d_ptr->m_xio_transform->set (d_ptr->m_drs->get_image_metadata());
 }
@@ -591,6 +592,13 @@ Rt_study::get_rtstruct_metadata (void)
 {
     return d_ptr->m_drs->get_rtstruct_metadata();
 }
+
+void
+Rt_study::force_ct_series_uid (const std::string& series_uid)
+{
+    d_ptr->m_drs->force_ct_series_uid (series_uid);
+}
+
 
 bool
 Rt_study::have_image ()

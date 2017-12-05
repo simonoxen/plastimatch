@@ -601,6 +601,13 @@ Dcmtk_rt_study::save_image (
     d_ptr->rt_study_metadata->set_image_header (pih);
 
     /* Find slope / offset on a per-volume basis */
+    const Rt_study_metadata::Pointer& rsm = d_ptr->rt_study_metadata;
+    const Metadata::Pointer& image_metadata = rsm->get_image_metadata ();
+    const std::string& meta_intercept
+        = image_metadata->get_metadata (DCM_RescaleIntercept);
+    const std::string& meta_slope
+        = image_metadata->get_metadata (DCM_RescaleSlope);
+    
     float vol_min = FLT_MAX;
     float vol_max = - FLT_MAX;
     float *img = (float*) dsd.vol->img;
@@ -622,8 +629,21 @@ Dcmtk_rt_study::save_image (
          floating point numbers
        - map integers to integers
     */
-    dsd.intercept = floorf (vol_min);
-    if (all_integers) {
+    if (meta_intercept != "") {
+        int rc = sscanf (meta_intercept.c_str(), "%f", &dsd.intercept);
+        if (rc != 1) {
+            dsd.intercept = floorf (vol_min);
+        }
+    } else {
+        dsd.intercept = floorf (vol_min);
+    }
+    if (meta_slope != "") {
+        int rc = sscanf (meta_slope.c_str(), "%f", &dsd.slope);
+        if (rc != 1) {
+            dsd.slope = 1;
+        }
+    }
+    else if (all_integers) {
         dsd.slope = 1;
     }
     else {

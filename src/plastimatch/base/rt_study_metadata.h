@@ -38,6 +38,7 @@ public:
 public:
     const char* get_ct_series_uid () const;
     void set_ct_series_uid (const char* uid);
+    void force_ct_series_uid (const std::string& uid);
     const char* get_ct_series_description () const;
     const std::string& get_dose_instance_uid () const;
     const char* get_dose_series_uid () const;
@@ -93,8 +94,6 @@ public:
     const std::string& get_patient_sex ();
     void set_patient_sex (const char* sex);
     void set_patient_sex (const std::string& sex);
-
-
 
     const Plm_image_header* get_image_header () const;
     void set_image_header (const Plm_image::Pointer& pli);

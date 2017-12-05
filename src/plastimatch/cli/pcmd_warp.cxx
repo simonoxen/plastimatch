@@ -173,6 +173,8 @@ parse_fn (
         "series number for dose metadata: integer", 1);
     parser->add_long_option ("", "rtss-series-number",
         "series number for structure metadata: integer", 1);
+    parser->add_long_option ("", "series-uid",
+        "series UID for image metadata: string", 1);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -389,6 +391,12 @@ parse_fn (
         std::string arg = parser->get_string ("rtss-series-number");
         std::string metadata_string = "0020,0011=" + arg;
         parms->m_rtstruct_metadata.push_back (metadata_string);
+    }
+    if (parser->option ("series-uid")) {
+        std::string arg = parser->get_string ("series-uid");
+        std::string metadata_string = "0020,000e=" + arg;
+        parms->m_image_metadata.push_back (metadata_string);
+        parms->image_series_uid_forced = true;
     }
 }
 
