@@ -138,6 +138,36 @@ if (PLM_CONFIG_LIBRARY_BUILD)
   set (PLM_CONFIG_DISABLE_REG23 ON)
 endif ()
 
+##-----------------------------------------------------------------------------
+##  SETUP IMPORTANT LOCATIONS
+##  GCS: Removing this section broke Tony's build!  
+##-----------------------------------------------------------------------------
+set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
+set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
+
+# Offer the user the choice of overriding the installation directories
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+  "Installation directory for libraries")
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+  "Installation directory for executables")
+set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
+  "Installation directory for header files")
+if (WIN32 AND NOT CYGWIN)
+  set (DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set (DEF_INSTALL_CMAKE_DIR lib/cmake/plastimatch)
+endif()
+set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
+  "Installation directory for CMake files")
+mark_as_advanced (
+  PLM_INSTALL_LIB_DIR 
+  PLM_INSTALL_BIN_DIR 
+  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_CMAKE_DIR)
+##-----------------------------------------------------------------------------
+##  END SETUP IMPORTANT LOCATIONS
+##-----------------------------------------------------------------------------
+
 # GCS 2015-07-08.  The below workflow is described here:
 #   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
 # However, it creates install targets with absolute paths, which is 

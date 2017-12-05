@@ -178,6 +178,7 @@ public:
     const Aperture::Pointer& get_aperture () const;
     Plm_image::Pointer& get_aperture_image ();
     const Plm_image::Pointer& get_aperture_image () const;
+    const plm_long* get_aperture_dim () const;
     Plm_image::Pointer& get_range_compensator_image ();
     const Plm_image::Pointer& get_range_compensator_image () const;
     void set_aperture_vup (const float[]);

@@ -16,7 +16,7 @@ dose_volume_create (
 {
     /* we want to add extra margins around our volume take into account the dose that will be scattered outside of the rpl_volume */
     /* A 3 sigma margin is applied to the front_back volume, and the size of our volume will be the projection of this shape on the back_clipping_plane */
-    
+
     float ap_ul_pixel[3]; // coordinates in the BEV (rpl_volume) volume
     float proj_pixel[3]; // coordinates of the ap_ul_pixel + 3 sigma margins on the back clipping plane
     float first_pixel[3]; // coordinates of the first_pixel of the volume to be created
@@ -24,8 +24,8 @@ dose_volume_create (
     float origin[3] = {0,0,0};
     float spacing[3] = {0,0,0};
     const float dc[9] = {
-        dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2], 
-        dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5], 
+        dose_volume->get_direction_cosines()[0], dose_volume->get_direction_cosines()[1], dose_volume->get_direction_cosines()[2],
+        dose_volume->get_direction_cosines()[3], dose_volume->get_direction_cosines()[4], dose_volume->get_direction_cosines()[5],
         dose_volume->get_direction_cosines()[6], dose_volume->get_direction_cosines()[7], dose_volume->get_direction_cosines()[8]};
 
     float sigma_margins = 3 * *sigma_max;
@@ -48,7 +48,7 @@ dose_volume_create (
     {
         origin[i] = first_pixel[i];
         if (i != 2)
-        {   
+        {
             spacing[i] = 1;
             //spacing[i] = volume->get_aperture()->get_spacing(i); // MD Fix
             dim[i] = (plm_long) (2*abs(first_pixel[i]/spacing[i])+1);
@@ -73,12 +73,12 @@ calculate_rpl_coordinates_xyz (
     double vec_antibug_prt[3] = {0.0,0.0,0.0};
 
     const plm_long *dim = rpl_volume->get_vol()->dim;
-    int idx2d = 0;   
+    int idx2d = 0;
     int idx3d = 0;
 
     for (int i = 0; i < rpl_volume->get_vol()->dim[0];i++){
         for (int j = 0; j < rpl_volume->get_vol()->dim[1];j++){
-        
+
             idx2d = j * dim[0] + i;
             Ray_data* ray_data = &rpl_volume->get_ray_data()[idx2d];
 
@@ -103,9 +103,9 @@ calculate_rpl_coordinates_xyz (
     }
 }
 
-void 
+void
 dose_volume_reconstruction (
-    Rpl_volume* dose_rv, 
+    Rpl_volume* dose_rv,
     Volume::Pointer dose_vol
 )
 {
@@ -160,10 +160,10 @@ build_hong_grid (
             (*xy_grid)[2*(i*theta_sample+j)] = ((double) i + 0.5)* dr * sin ((double) j * dt);
             (*xy_grid)[2*(i*theta_sample+j)+1] = ((double) i + 0.5) * dr * cos ((double) j * dt);
         }
-    }	
+    }
 }
 
-void 
+void
 find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume)
 {
     ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->origin[0]) / dose_volume->spacing[0] + 0.5);
@@ -171,7 +171,7 @@ find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume* dose_volume)
     ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->origin[2]) / dose_volume->spacing[2] + 0.5);
 }
 
-void 
+void
 find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume::Pointer dose_volume)
 {
     ijk_idx[0] = (int) floor((xyz_ray_center[0] - dose_volume->origin[0]) / dose_volume->spacing[0] + 0.5);
@@ -179,7 +179,7 @@ find_ijk_pixel(int* ijk_idx, double* xyz_ray_center, Volume::Pointer dose_volume
     ijk_idx[2] = (int) floor((xyz_ray_center[2] - dose_volume->origin[2]) / dose_volume->spacing[2] + 0.5);
 }
 
-void 
+void
 find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offset)
 {
     xyz_ray_center[0] = z_axis_offset * ray[0];
@@ -187,7 +187,7 @@ find_xyz_center_entrance(double* xyz_ray_center, double* ray, float z_axis_offse
     xyz_ray_center[2] = z_axis_offset * ray[2];
 }
 
-void 
+void
 find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k, float z_spacing)
 {
     float alpha = 0.0f;
@@ -199,7 +199,7 @@ find_xyz_center(double* xyz_ray_center, double* ray, float z_axis_offset, int k,
 
 }
 
-void 
+void
 find_xyz_from_ijk(double* xyz, Volume* volume, int* ijk)
 {
     xyz[0] = volume->origin[0] + ijk[0]*volume->spacing[0];
@@ -228,7 +228,7 @@ double_gaussian_interpolation (
     double y1 = pixel_center[1] - 0.5 * spacing[1];
     double y2 = y1 + spacing[1];
 
-    double z = .25 
+    double z = .25
         * (erf_gauss((x2-gaussian_center[0])/(sigma*M_SQRT2)) - erf_gauss((x1-gaussian_center[0])/(sigma*M_SQRT2)))
         * (erf_gauss((y2-gaussian_center[1])/(sigma*M_SQRT2)) - erf_gauss((y1-gaussian_center[1])/(sigma*M_SQRT2)));
     return z;
@@ -271,8 +271,7 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_bea
         {
             img[i] = img[i] / norm * dose;
         }
-        plm_long ap_dim[2] = {
-            beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
+        const plm_long *ap_dim = beam->get_aperture_dim();
         beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
 
         printf("Raw dose at the maximum (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the maximum to ", dose_volume->origin[0] + ijk_max[0] * dose_volume->spacing[0], dose_volume->origin[1] + ijk_max[1] * dose_volume->spacing[1], dose_volume->origin[2] + ijk_max[2] * dose_volume->spacing[2], norm);
@@ -295,9 +294,8 @@ void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double do
         {
             img[i] = img[i] / norm * dose;
         }
-        plm_long ap_dim[2] = {
-            beam->get_aperture()->get_dim(0),beam->get_aperture()->get_dim(1)};
-        beam->get_mebs()->scale_num_part(dose/norm, ap_dim);
+        const plm_long *ap_dim = beam->get_aperture_dim();
+        beam->get_mebs()->scale_num_part (dose/norm, ap_dim);
         printf("Raw dose at the reference dose point (%lg, %lg, %lg) : %lg A.U.\nDose normalized at the reference dose point to ", rdp[0], rdp[1], rdp[2], norm);
     }
     else

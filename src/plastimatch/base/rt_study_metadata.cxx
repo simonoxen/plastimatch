@@ -33,6 +33,7 @@ public:
     std::string rtstruct_instance_uid;
     std::string rtstruct_series_uid;
     Slice_list slice_list;
+    bool ct_series_uid_forced;
 
     Metadata::Pointer study_metadata;
     Metadata::Pointer image_metadata;
@@ -59,6 +60,7 @@ public:
         rtplan_metadata->set_parent (study_metadata);
         sro_metadata->set_parent (study_metadata);
 
+        ct_series_uid_forced = false;
         this->generate_new_study_uids ();
         this->generate_new_series_uids ();
     }
@@ -70,7 +72,9 @@ public:
     }
     void
     generate_new_series_uids () {
-        ct_series_uid = dicom_uid (PLM_UID_PREFIX);
+        if (!ct_series_uid_forced) {
+            ct_series_uid = dicom_uid (PLM_UID_PREFIX);
+        }
         dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
         dose_series_uid = dicom_uid (PLM_UID_PREFIX);
         plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
@@ -114,6 +118,14 @@ Rt_study_metadata::set_ct_series_uid (const char* uid)
 {
     if (!uid) return;
     d_ptr->ct_series_uid = uid;
+}
+
+void
+Rt_study_metadata::force_ct_series_uid (const std::string& uid)
+{
+    if (uid == "") return;
+    d_ptr->ct_series_uid = uid;
+    d_ptr->ct_series_uid_forced = true;
 }
 
 const char*

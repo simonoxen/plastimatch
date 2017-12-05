@@ -77,7 +77,8 @@ public:
     std::vector<std::string> m_image_metadata;
     std::vector<std::string> m_dose_metadata;
     std::vector<std::string> m_rtstruct_metadata;
-
+    bool image_series_uid_forced;
+    
 public:
     Warp_parms () {
 
@@ -103,6 +104,7 @@ public:
 	use_itk = 0;
 	simplify_perc = 0;
 	xor_contours = false;
+        image_series_uid_forced = false;
     }
 };
 

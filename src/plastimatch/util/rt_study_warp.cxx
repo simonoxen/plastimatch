@@ -242,6 +242,14 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     rt_study->set_dose_metadata (parms->m_dose_metadata);
     rt_study->set_rtstruct_metadata (parms->m_rtstruct_metadata);
 
+    // UIDs are handled differently when saving.  Normally they are 
+    // generated fresh, you need to explicitly force
+    if (parms->image_series_uid_forced) {
+        const std::string& series_uid =
+            rt_study->get_image_metadata()->get_metadata (0x0020, 0x000e);
+        rt_study->force_ct_series_uid (series_uid);
+    }
+    
     /* Load transform */
     if (parms->xf_in_fn != "") {
         lprintf ("Loading xform (%s)\n", parms->xf_in_fn.c_str());

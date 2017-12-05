@@ -7,7 +7,7 @@ Image segmentation (MABS) guidebook
    .. container:: rightside
 
       .. image:: ../figures/mabs_1.png
-        :width: 100 %
+        :width: 30 %
         :align: right
 
    .. container:: leftside
@@ -41,6 +41,8 @@ the configuration file specified below::
 
   [TRAINING]
   atlas_dir=task01-atlas
+  convert_dir=task01-convert
+  prealign_dir=task01-prealign
   training_dir=task01
 
   rho_values=0.75:0.25:1.25
@@ -90,11 +92,10 @@ containing converted images and structures.  The layout is as follows::
     +--+---- mabs/task01-atlas/
     |  +---- mabs/task01-atlas/subject-01
     |  +---- ...
-    +--+---- mabs/task01/
-    |  +---- mabs/task01/convert/
-    |  +--+- mabs/task01/convert/subject-01/img.nrrd
-    |     +- mabs/task01/convert/subject-01/structures/brainstem.nrrd
-    |     +- mabs/task01/convert/subject-01/structures/right_parotid.nrrd
+    |  +---- mabs/task01-convert/
+    |  +--+- mabs/task01-convert/subject-01/img.nrrd
+    |     +- mabs/task01-convert/subject-01/structures/brainstem.nrrd
+    |     +- mabs/task01-convert/subject-01/structures/right_parotid.nrrd
     |     +- ...
 
 Finally, you must create a prealign directory.  At this time, the 
@@ -102,7 +103,7 @@ prealignment procedure is still under development, so you may simply
 rename or copy the converted data directory.  Here is how to do this 
 on linux::
 
-  mv task01/convert task01/prealign
+  mv task01-convert task01-prealign
 
 If your input data is not DICOM, you must manually convert them 
 into nrrd, and then put them into the prealign directory as described 
@@ -196,15 +197,15 @@ of all pairs of atlas members on all registration strategies.
 These results are analyzed by running a script in the plastimatch 
 source code directory::
 
-  plastimatch-source/extra/perl/digest_mabs_stats.pl task01/mabs-train
+  plastimatch-source/extra/perl/digest_mabs_stats.pl --save-optimization-result task01/mabs-train
 
 You will see something like this::
 
-  reg01.txt,0.718458,4.91699
-  reg02.txt,0.769172,3.26388
+  reg: reg01.txt,0.498976166666667,8.938063
+  reg: reg02.txt,0.673245246153846,5.02114200090498
 
 Which means that the first registration strategy (reg01.txt) 
-had an average Dice of 0.72 and an average 95-boundary Hausdorff of 4.9.  
+had an average Dice of 0.49 and an average 95-boundary Hausdorff of 8.9.
 The second strategy (reg02.txt) was better, and therefore was selected.
 The script writes another file which confirms this choice to MABS.::
 
@@ -240,19 +241,23 @@ files and directories like this::
 
 Once again, run the analysis script::
 
-  plastimatch-source/extra/perl/digest_mabs_stats.pl task01/mabs-train
+  plastimatch-source/extra/perl/digest_mabs_stats.pl --save-optimization-result task01/mabs-train
 
 Which should give something like this::
 
-  reg01.txt,0.718458,4.91699
-  reg02.txt,0.769172,3.26388
-  seg: 0.750000,31.622776,0.199526,0.200000,0.777639
+  reg: reg01.txt,0.498976166666667,8.938063
+  reg: reg02.txt,0.673245246153846,5.02114200090498
+  seg (dice): BrainStem,1.250000,31.622776,0.199526,0.200000,0.8218795
+  seg (hd95): BrainStem,1.250000,5.623413,0.316228,0.200000,2.468004
+  seg (dice): Parotid_L,1.000000,31.622776,0.199526,0.300000,0.71477
+  seg (hd95): Parotid_L,1.000000,31.622776,0.199526,0.500000,3.544994
 
-This tells you that the optimal segmentation parameters are 
-rho=0.75, sigma=31.6, minsim=0.20, and thresh=0.20.
-The average Dice over all structures using these parameters is 0.77.
-The script writes yet another file which confirms these choices
-for future use with MABS.::
+This tells you the optimal segmentation parameters for each structure.
+For example, using the dice criteria, the optimal values for the BrainStem
+structure are rho=1.25, sigma=31.6, minsim=0.20, and thresh=0.20.
+The average Dice of the BrainStem using these parameters is 0.82.
+The script writes yet another file which tells mabs which parameter
+values are optimal according to the Dice metric.::
 
   --+----------- mabs/
     +--+--+----- mabs/task01/mabs-train/optimization_result_seg.txt

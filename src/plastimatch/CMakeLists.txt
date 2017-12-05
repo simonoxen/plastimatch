@@ -340,7 +340,7 @@ if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
 else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
   ## GCS: This is not working
-  if (COMMENTOUT)
+  #if (COMMENTOUT)
   include (CMakePackageConfigHelpers)
 
   # Make the version file
@@ -373,7 +373,7 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     COMPONENT Devel
     )
-  endif (COMMENTOUT)
+  #endif (COMMENTOUT)
 endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
 ##-----------------------------------------------------------------------------

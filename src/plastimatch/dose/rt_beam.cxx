@@ -1153,6 +1153,12 @@ Rt_beam::get_aperture_image () const
     return d_ptr->aperture->get_aperture_image ();
 }
 
+const plm_long*
+Rt_beam::get_aperture_dim () const
+{
+    return d_ptr->aperture->get_dim ();
+}
+
 Plm_image::Pointer&
 Rt_beam::get_range_compensator_image () 
 {
