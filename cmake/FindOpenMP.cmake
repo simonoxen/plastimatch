@@ -15,6 +15,8 @@ SET(
   "-fopenmp##-fopenmp#"
   "-fopenmp##-fopenmp#gomp"
   "-fopenmp##-fopenmp#gomp pthread"
+  # clang (??)
+  "-fopenmp=libomp##NONE#gomp"
   # icc
   "-openmp##-openmp#"
   "-openmp -parallel##-openmp -parallel#"
@@ -53,9 +55,13 @@ FOREACH(I RANGE 0 ${NUM_FLAGS})
     ENDIF(OPENMP_LIBRARIES MATCHES " ")
 
     ## I think I need to do a try-compile
+    SET(CMAKE_REQUIRED_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
+    SET(CMAKE_REQUIRED_LIBRARIES_BACKUP ${CMAKE_REQUIRED_LIBRARIES})
     SET(CMAKE_REQUIRED_FLAGS ${OPENMP_FLAGS})
     SET(CMAKE_REQUIRED_LIBRARIES ${OPENMP_LIBRARIES})
     CHECK_FUNCTION_EXISTS(omp_get_thread_num OPENMP_FOUND${I})
+    SET(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
+    SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_BACKUP})
 
     IF(OPENMP_FOUND${I})
       SET(OPENMP_FOUND TRUE)
