@@ -310,13 +310,21 @@ find_library (LIBDL_FOUND dl)
 ##  DCMTK
 ##-----------------------------------------------------------------------------
 if (PLM_SYSTEM_DCMTK STREQUAL "YES")
-  find_package (DCMTK REQUIRED)
+  find_package (DCMTK NO_MODULE REQUIRED)
 elseif (PLM_SYSTEM_DCMTK STREQUAL "PREFERRED")
-  find_package (DCMTK QUIET)
+  find_package (DCMTK NO_MODULE QUIET)
 endif ()
 if (NOT DCMTK_FOUND AND NOT PLM_SYSTEM_DCMTK STREQUAL "YES")
   include (SuperBuild/External_DCMTK.cmake)
 endif ()
+message (STATUS "DCMTK: ${DCMTK_FOUND} || ${DCMTK_INCLUDE_DIRS}")
+# Workaround for CMake bug in FindDCMTK.  This was fixed some time between 
+# 3.4.3 and 3.7.2
+# if (CMAKE_VERSION VERSION_LESS "3.7.2" AND DCMTK_ofstd_INCLUDE_DIR)
+#   get_filename_component(_tmp ${DCMTK_ofstd_INCLUDE_DIR} PATH)
+#   get_filename_component(_tmp ${_tmp} PATH)
+#   list (APPEND DCMTK_INCLUDE_DIRS ${_tmp})
+# endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
