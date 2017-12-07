@@ -68,17 +68,20 @@ foreach (I RANGE 0 ${NUM_FLAGS})
       string (REPLACE " " ";" OPENMP_LIBRARIES ${OPENMP_LIBRARIES})
     endif ()
 
+    # 2017-12-07. If you overwrite CMAKE_REQUIRED_FLAGS, FindCUDA 
+    # does not work correctly.  It gives the wrong set of libraries.
+    # Therefore, we must save and restore the original values.
     push_vars ("CMAKE_REQUIRED_QUIET" "CMAKE_REQUIRED_FLAGS" 
         "CMAKE_REQUIRED_LIBRARIES")
-    #set (CMAKE_REQUIRED_QUIET TRUE)
+    set (CMAKE_REQUIRED_QUIET TRUE)
     set (CMAKE_REQUIRED_FLAGS ${OPENMP_FLAGS})
     set (CMAKE_REQUIRED_LIBRARIES ${OPENMP_LIBRARIES})
-    # CHECK_FUNCTION_EXISTS(omp_get_thread_num OPENMP_FOUND${I})
 
     # CMake caches results from test compilations.  We need to unset the 
     # cache value, or else cached test results gets used after first 
-
+    # iteration
     unset (OPENMP_COMPILES CACHE)
+
     check_cxx_source_compiles ("${OpenMP_C_TEST_SOURCE}" OPENMP_COMPILES)
 
     pop_vars ("CMAKE_REQUIRED_QUIET" "CMAKE_REQUIRED_FLAGS" 
