@@ -261,8 +261,8 @@ if (BUILD_ISE_QT)
 endif ()
 
 set (ACQUIRE_4030E_LIBRARIES
-  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT_LIBRARIES}
-  ${QT_QTNETWORK_LIBRARIES})
+  ${PAXSCAN_LIBRARIES} ${ADVANTECH_LIBRARIES} ${QT4_LIBRARIES}
+  ${QT_QTNETWORK_LIBRARY})
 
 if (BUILD_ACQUIRE_4030E)
   # Set compiler options.
@@ -278,7 +278,8 @@ if (BUILD_ACQUIRE_4030E)
   #   endif()
   # endforeach()
 
-  plm_add_executable (acquire_4030e "${ACQUIRE_4030E_SRC}"
+  plm_add_executable_v2 (acquire_4030e "${ACQUIRE_4030E_SRC}"
+    "${QT4_INCLUDE_DIRS}"
     "${ACQUIRE_4030E_LIBRARIES}" "${ACQUIRE_4030E_LDFLAGS}"
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
