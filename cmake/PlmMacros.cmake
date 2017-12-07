@@ -26,6 +26,29 @@ macro (option_enum
 endmacro ()
 
 ##-----------------------------------------------------------------------------
+##  Save and restore variables
+##-----------------------------------------------------------------------------
+macro (push_var _var)
+  set (${_var}_BACKUP ${${_var}})
+endmacro ()
+
+macro (push_vars)
+  foreach (_var IN ITEMS ${ARGN})
+    push_var (${_var})
+  endforeach ()
+endmacro ()
+
+macro (pop_var _var)
+  set (${_var} ${${_var}_BACKUP})
+endmacro ()
+
+macro (pop_vars)
+  foreach (_var IN ITEMS ${ARGN})
+    pop_var (${_var})
+  endforeach ()
+endmacro ()
+
+##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 macro (PLM_ADD_LIBRARY 

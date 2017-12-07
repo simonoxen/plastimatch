@@ -3,10 +3,10 @@
 ######################################################
 include (CheckFunctionExists)
 include (CheckCXXSourceCompiles)
-MESSAGE(STATUS "Check for compiler OpenMP support...")
-SET(OPENMP_FLAGS)
-SET(OPENMP_LIBRARIES)
-SET(OPENMP_FOUND FALSE)
+message (STATUS "Check for compiler OpenMP support...")
+set (OPENMP_FLAGS)
+set (OPENMP_LIBRARIES)
+set (OPENMP_FOUND FALSE)
 
 # sample openmp source code to test
 set(OpenMP_C_TEST_SOURCE
@@ -23,15 +23,14 @@ int main() {
 
 # Key: CFLAGS##LDFLAGS#LIBRARIES
 # Neither CFLAGS nor LDFLAGS can be empty.  Use NONE instead.
-SET(
+set(
   OPENMP_FLAGS_AND_LIBRARIES
-  # MSVC - this should be the first one, since the below test based on 
-  # function availability is insufficient on that platform
-  "/openmp##NONE#"
   # gcc
   "-fopenmp##-fopenmp#"
   "-fopenmp##-fopenmp#gomp"
   "-fopenmp##-fopenmp#gomp pthread"
+  # MSVC
+  "/openmp##NONE#"
   # clang (??)
   "-fopenmp=libomp##NONE#gomp"
   # icc
@@ -48,51 +47,51 @@ SET(
 )
 
 # Massive hack to workaround CMake limitations
-LIST(LENGTH OPENMP_FLAGS_AND_LIBRARIES NUM_FLAGS)
-MATH(EXPR NUM_FLAGS "${NUM_FLAGS} - 1")
-FOREACH(I RANGE 0 ${NUM_FLAGS})
-  IF(NOT OPENMP_FOUND)
-    LIST(GET OPENMP_FLAGS_AND_LIBRARIES ${I} TMP)
-    STRING(REGEX MATCH "([^#]*)" OPENMP_FLAGS ${TMP})
-    STRING(REGEX REPLACE "[^#]*##" "" TMP ${TMP})
-    STRING(REGEX MATCH "([^#]*)" OPENMP_LDFLAGS ${TMP})
-    STRING(REGEX REPLACE "[^#]*#" "" OPENMP_LIBRARIES ${TMP})
-    # MESSAGE(STATUS "OPENMP_FLAGS=${OPENMP_FLAGS}")
-    # MESSAGE(STATUS "OPENMP_LDFLAGS = ${OPENMP_LDFLAGS}")
-    # MESSAGE(STATUS "OPENMP_LIBRARIES = ${OPENMP_LIBRARIES}")
-    # MESSAGE(STATUS "-------")
+list (LENGTH OPENMP_FLAGS_AND_LIBRARIES NUM_FLAGS)
+math (EXPR NUM_FLAGS "${NUM_FLAGS} - 1")
+foreach (I RANGE 0 ${NUM_FLAGS})
+  if (NOT OPENMP_FOUND)
+    list (GET OPENMP_FLAGS_AND_LIBRARIES ${I} TMP)
+    string (REGEX MATCH "([^#]*)" OPENMP_FLAGS ${TMP})
+    string (REGEX REPLACE "[^#]*##" "" TMP ${TMP})
+    string (REGEX MATCH "([^#]*)" OPENMP_LDFLAGS ${TMP})
+    string (REGEX REPLACE "[^#]*#" "" OPENMP_LIBRARIES ${TMP})
+#    message (STATUS "OPENMP_FLAGS=${OPENMP_FLAGS}")
+#    message (STATUS "OPENMP_LDFLAGS = ${OPENMP_LDFLAGS}")
+#    message (STATUS "OPENMP_LIBRARIES = ${OPENMP_LIBRARIES}")
+#    message (STATUS "-------")
 
-    IF(OPENMP_LDFLAGS MATCHES "NONE")
-      SET(OPENMP_LDFLAGS "")
-    ENDIF(OPENMP_LDFLAGS MATCHES "NONE")
-    IF(OPENMP_LIBRARIES MATCHES " ")
-      STRING(REPLACE " " ";" OPENMP_LIBRARIES ${OPENMP_LIBRARIES})
-    ENDIF(OPENMP_LIBRARIES MATCHES " ")
+    if (OPENMP_LDFLAGS MATCHES "NONE")
+      set (OPENMP_LDFLAGS "")
+    endif ()
+    if (OPENMP_LIBRARIES MATCHES " ")
+      string (REPLACE " " ";" OPENMP_LIBRARIES ${OPENMP_LIBRARIES})
+    endif ()
 
-    set (SRC_FILE ${CMAKE_BINARY_DIR}/omptest.cpp)
-    file (WRITE ${SRC_FILE} "${OpenMP_C_TEST_SOURCE}")
-
-    ## I think I need to do a try-compile
-    SET(CMAKE_REQUIRED_FLAGS_BACKUP ${CMAKE_REQUIRED_FLAGS})
-    SET(CMAKE_REQUIRED_LIBRARIES_BACKUP ${CMAKE_REQUIRED_LIBRARIES})
-    list (APPEND CMAKE_REQUIRED_FLAGS ${OPENMP_FLAGS})
-    SET(CMAKE_REQUIRED_LIBRARIES ${OPENMP_LIBRARIES})
-
+    push_vars ("CMAKE_REQUIRED_QUIET" "CMAKE_REQUIRED_FLAGS" 
+        "CMAKE_REQUIRED_LIBRARIES")
+    #set (CMAKE_REQUIRED_QUIET TRUE)
+    set (CMAKE_REQUIRED_FLAGS ${OPENMP_FLAGS})
+    set (CMAKE_REQUIRED_LIBRARIES ${OPENMP_LIBRARIES})
     # CHECK_FUNCTION_EXISTS(omp_get_thread_num OPENMP_FOUND${I})
-    # check_cxx_source_compiles("${OpenMP_CXX_TEST_SOURCE}" OPENMP_FOUND${I})
-    # message (STATUS "OPENMP: ${CMAKE_REQUIRED_FLAGS} | ${CMAKE_REQUIRED_LIBRARIES} | ${OPENMP_FOUND${I}}")
 
-    SET(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_BACKUP})
-    SET(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_BACKUP})
+    # CMake caches results from test compilations.  We need to unset the 
+    # cache value, or else cached test results gets used after first 
 
-    IF(OPENMP_FOUND${I})
-      SET(OPENMP_FOUND TRUE)
-    ENDIF(OPENMP_FOUND${I})
-  ENDIF(NOT OPENMP_FOUND)
-ENDFOREACH(I RANGE 0 ${NUM_FLAGS})
+    unset (OPENMP_COMPILES CACHE)
+    check_cxx_source_compiles ("${OpenMP_C_TEST_SOURCE}" OPENMP_COMPILES)
 
-IF(OPENMP_FOUND)
-  MESSAGE(STATUS "OpenMP flags \"${OPENMP_FLAGS}\", OpenMP libraries \"${OPENMP_LIBRARIES}\"")
-ELSE(OPENMP_FOUND)
-  MESSAGE(STATUS "Given compiler does not support OpenMP.")
-ENDIF(OPENMP_FOUND)
+    pop_vars ("CMAKE_REQUIRED_QUIET" "CMAKE_REQUIRED_FLAGS" 
+        "CMAKE_REQUIRED_LIBRARIES")
+
+    if (OPENMP_COMPILES)
+      set (OPENMP_FOUND TRUE)
+    endif ()
+  endif ()
+endforeach ()
+
+if (OPENMP_FOUND)
+  message (STATUS "OpenMP flags \"${OPENMP_FLAGS}\", OpenMP libraries \"${OPENMP_LIBRARIES}\"")
+else ()
+  message (STATUS "Given compiler does not support OpenMP.")
+endif ()
