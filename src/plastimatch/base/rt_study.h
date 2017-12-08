@@ -98,6 +98,8 @@ public:
     void set_rtstruct_metadata (const std::vector<std::string>& metadata);
     /*! \brief Get the rtstruct portion of Rt_study_metadata */
     Metadata::Pointer& get_rtstruct_metadata ();
+    /*! \brief Create new StudyInstanceUID and FrameOfReferenceUID for the study */
+    void generate_new_study_uids ();
     /*! \brief Force the CT series UID to a certain value when saving */
     void force_ct_series_uid (const std::string& series_uid);
 

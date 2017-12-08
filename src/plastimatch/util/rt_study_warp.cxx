@@ -244,6 +244,9 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
 
     // UIDs are handled differently when saving.  Normally they are 
     // generated fresh, you need to explicitly force
+    if (!parms->retain_study_uids) {
+        rt_study->generate_new_study_uids ();
+    }
     if (parms->image_series_uid_forced) {
         const std::string& series_uid =
             rt_study->get_image_metadata()->get_metadata (0x0020, 0x000e);

@@ -594,11 +594,16 @@ Rt_study::get_rtstruct_metadata (void)
 }
 
 void
+Rt_study::generate_new_study_uids ()
+{
+    d_ptr->m_drs->generate_new_study_uids ();
+}
+
+void
 Rt_study::force_ct_series_uid (const std::string& series_uid)
 {
     d_ptr->m_drs->force_ct_series_uid (series_uid);
 }
-
 
 bool
 Rt_study::have_image ()
