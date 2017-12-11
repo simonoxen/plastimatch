@@ -123,7 +123,7 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
 
       set (sb_option_list "")
       foreach (_var ${sb_cmake_vars})
-	list (APPEND sb_option_list "-D${_var}:BOOL=${${_var}}")
+	list (APPEND sb_option_list "-D${_var}=${${_var}}")
       endforeach ()
       ExternalProject_Add (${proj}
 	DOWNLOAD_COMMAND ""

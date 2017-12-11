@@ -151,11 +151,10 @@ if (PLM_CONFIG_LIBRARY_BUILD)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  SETUP IMPORTANT LOCATIONS
-##  GCS: Removing this section broke Tony's build!  
+##  Setup important locations
 ##-----------------------------------------------------------------------------
-set (PLM_BUILD_ROOT "${CMAKE_CURRENT_BINARY_DIR}")
-set (PLM_SRC_ROOT   "${CMAKE_CURRENT_SOURCE_DIR}")
+sb_set (PLM_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+sb_set (PLM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Offer the user the choice of overriding the installation directories
 set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
@@ -176,9 +175,7 @@ mark_as_advanced (
   PLM_INSTALL_BIN_DIR 
   PLM_INSTALL_INCLUDE_DIR 
   PLM_INSTALL_CMAKE_DIR)
-##-----------------------------------------------------------------------------
-##  END SETUP IMPORTANT LOCATIONS
-##-----------------------------------------------------------------------------
+
 
 # GCS 2015-07-08.  The below workflow is described here:
 #   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file

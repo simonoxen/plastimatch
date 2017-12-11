@@ -9,8 +9,7 @@ cmake_minimum_required (VERSION 2.8.12)
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
-#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${PLM_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 message (STATUS "CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 include (PlmMacros)
 
@@ -43,7 +42,7 @@ if (dlib_FOUND)
   set (DLIB_LIBRARIES ${dlib_LIBRARIES})
   set (DLIB_FOUND TRUE)
 else ()
-  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
+  set (DLIB_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/dlib-19.1")
   set (DLIB_LIBRARIES "")
   set (DLIB_HAVE_LIBRARY FALSE)
 endif ()
