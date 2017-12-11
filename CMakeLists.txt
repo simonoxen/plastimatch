@@ -621,8 +621,10 @@ if (ITK_FOUND)
   # set (ITK_USE_SYSTEM_GDCM FALSE)
   #endif ()
   include (${ITK_USE_FILE})
-  set (ITK_VERSION 
-    "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
+  if (NOT ITK_VERSION)
+    set (ITK_VERSION
+      "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
+  endif ()
   if (${ITK_VERSION} VERSION_LESS "3.16.0")
     message (FATAL_ERROR 
       "Fatal Error. ITK must be version 3.16.0 or higher")
