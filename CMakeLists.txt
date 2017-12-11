@@ -37,19 +37,25 @@ if (POLICY CMP0054)
   cmake_policy (SET CMP0054 NEW)
 endif ()
 
-# Default to release
+##-----------------------------------------------------------------------------
+##  CMake include files
+##-----------------------------------------------------------------------------
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+include (PlmMacros)
+
+##-----------------------------------------------------------------------------
+##  Prevent in-source build
+##-----------------------------------------------------------------------------
+include (PreventInSourceBuilds)
+
+##-----------------------------------------------------------------------------
+##  Default to release
+##-----------------------------------------------------------------------------
 if (NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Choose the type of build, options are: Debug Release
       RelWithDebInfo MinSizeRel." FORCE)
 endif ()
-
-##-----------------------------------------------------------------------------
-##  CMake include files
-##-----------------------------------------------------------------------------
-#set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-include (PlmMacros)
 
 ##-----------------------------------------------------------------------------
 ##  Define plastimatch configuration variables
