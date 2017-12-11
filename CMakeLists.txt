@@ -383,22 +383,19 @@ add_subdirectory (libs/inih-r29)
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
-set (SPECFUN_FOUND FALSE)
 add_subdirectory (libs/specfun)
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
-set (SPECFUN_FOUND TRUE)
+sb_set (SPECFUN_FOUND TRUE)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local msinttypes
 ##-----------------------------------------------------------------------------
-set (MSINTTYPES_INCLUDE_DIR 
-  "${CMAKE_SOURCE_DIR}/libs" 
-  )
+sb_set (MSINTTYPES_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs")
 
 ##-----------------------------------------------------------------------------
 ##  Only use local nkidecompress
 ##-----------------------------------------------------------------------------
-set (NKIDECOMPRESS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/nkidecompress")
+sb_set (NKIDECOMPRESS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/nkidecompress")
 add_subdirectory (libs/nkidecompress)
 
 ##-----------------------------------------------------------------------------
