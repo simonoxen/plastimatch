@@ -14,6 +14,60 @@ message (STATUS "CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 include (PlmMacros)
 
 ##-----------------------------------------------------------------------------
+##  Processor and OS characteristics
+##    32-bit or 64-bit machine
+##    Endian-ness
+##    Machine precision
+##    Processor type
+##-----------------------------------------------------------------------------
+include (CheckCharSign)
+include (CheckEpsilon)
+include (CheckTypeSize)
+include (TestBigEndian)
+
+check_type_size ("unsigned int" CMAKE_SIZEOF_UINT)
+check_type_size ("unsigned long" CMAKE_SIZEOF_ULONG)
+check_type_size ("size_t" CMAKE_SIZEOF_SIZE_T)
+if (NOT APPLE)
+  if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (MACHINE_IS_32_BIT TRUE)
+    set (MACHINE_IS_64_BIT FALSE)
+    message (STATUS "Machine is 32-bit")
+  else ()
+    set (MACHINE_IS_32_BIT FALSE)
+    set (MACHINE_IS_64_BIT TRUE)
+    message (STATUS "Machine is 64-bit")
+  endif ()
+endif ()
+
+test_big_endian (PLM_BIG_ENDIAN)
+check_epsilon (MACHINE_EPS)
+check_char_sign (CHAR_SIGN)
+message (STATUS "Checking host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+message (STATUS "Checking target processor: ${CMAKE_SYSTEM_PROCESSOR}")
+message (STATUS "Checking epsilon: ${MACHINE_EPS}")
+message (STATUS "Checking sign of char: ${CHAR_SIGN}")
+
+include (CheckIncludeFiles)
+check_include_files ("stdint.h" HAVE_STDINT_H)
+check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
+
+##-----------------------------------------------------------------------------
+##  Figure out if we should use gdcm or dcmtk
+##-----------------------------------------------------------------------------
+set (PLM_DCM_USE_DCMTK 0)
+set (PLM_DCM_USE_GDCM1 0)
+set (PLM_DCM_USE_GDCM2 0)
+
+if (DCMTK_FOUND)
+    set (PLM_DCM_USE_DCMTK 1)
+elseif (GDCM_VERSION_2)
+    set (PLM_DCM_USE_GDCM2 1)
+else ()
+    set (PLM_DCM_USE_GDCM1 1)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Give a warning for obsolete dicom libraries
 ##-----------------------------------------------------------------------------
 # If the user only has gdcm 2.x, give a warning
@@ -61,6 +115,87 @@ if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  Libraries
+##-----------------------------------------------------------------------------
+set (PLASTIMATCH_LIBS
+  plmclp
+#  plmscript
+  plmsegment
+  plmregister
+  plmreconstruct
+  plmdose
+  plmutil
+  plmbase
+  plmsys
+  ${ITK_LIBRARIES}
+  devillard
+  nkidecompress
+#  lua
+  ${MATH_LIB}
+  )
+
+if (CUDA_FOUND AND NOT PLM_USE_GPU_PLUGINS)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmcuda)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmreconstructcuda)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmregistercuda)
+endif ()
+
+if (DCMTK_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${DCMTK_LIBRARIES})
+endif ()
+
+if (DLIB_LIBRARIES)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${DLIB_LIBRARIES})
+endif ()
+
+if (FFTW_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${FFTW_LIBRARIES})
+endif ()
+
+if (KAZE_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${KAZE_LIBRARIES})
+endif ()
+
+if (LIBDL_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} dl)
+endif ()
+
+if (NLOPT_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${NLOPT_LIBRARIES})
+endif ()
+
+if (OPENCL_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} plmopencl)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${OPENCL_LIBRARIES})
+endif ()
+
+if (OPENMP_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${OPENMP_LIBRARIES})
+endif ()
+
+if (SPECFUN_FOUND)
+  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} specfun)
+endif ()
+
+### Let QT applications add this themselves
+#if (QT4_FOUND)
+#  set (PLASTIMATCH_LIBS ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+#endif ()
+
+##-----------------------------------------------------------------------------
+##  Linker flags
+##-----------------------------------------------------------------------------
+set (PLASTIMATCH_LDFLAGS "${OPENMP_LDFLAGS}")
+if (PLM_USE_GPU_PLUGINS AND WIN32 AND NOT CYGWIN AND NOT MINGW)
+  set (PLASTIMATCH_LDFLAGS
+ "${PLASTIMATCH_LDFLAGS} /DELAYLOAD:plmregistercuda.dll /DELAYLOAD:plmreconstructcuda.dll")
+endif ()
+
+if (PLM_CONFIG_NOMANIFEST AND WIN32)
+  set (PLASTIMATCH_LDFLAGS "${PLASTIMATCH_LDFLAGS} /MANIFEST:NO")
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
@@ -84,6 +219,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (AFTER ${ITK_INCLUDE_DIRS})
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/DiffeomorphicDemons)
 include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)

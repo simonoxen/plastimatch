@@ -54,24 +54,25 @@ include (PlmMacros)
 include (SuperbuildOptions)
 
 ##-----------------------------------------------------------------------------
-##  Default to release
+##  Define default build type as Release
 ##-----------------------------------------------------------------------------
 if (NOT CMAKE_BUILD_TYPE)
   set (CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Choose the type of build, options are: Debug Release
       RelWithDebInfo MinSizeRel." FORCE)
 endif ()
+sb_variable (CMAKE_BUILD_TYPE)
 
 ##-----------------------------------------------------------------------------
 ##  Define plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
+sb_option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" ON)
 option (PLM_CONFIG_DISABLE_ISE "Build ISE fluoro program" ON)
 option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
-option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
-option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
+sb_option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
+sb_option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" ON)
@@ -93,9 +94,9 @@ option (PLM_CONFIG_DISABLE_VISCOUS
   "Disable experimental viscous fluid registration algorithm" ON)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
   "Enable experimental plastimatch_qt executable" OFF)
-option (PLM_CONFIG_PREFER_PATCHED_ITK
+sb_option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
-option (PLM_CONFIG_VOL_LIST
+sb_option (PLM_CONFIG_VOL_LIST
   "Native support for volumes with irregular slice thicknesses" OFF)
 
 # Plastimatch legacy options
@@ -113,17 +114,17 @@ sb_option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # Choose whether to build against included and/or superbuild libraries
 # instead of system libraries
-option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system" 
+sb_option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system" 
   PREFERRED
   NO PREFERRED YES)
 sb_option (PLM_PREFER_SYSTEM_DLIB
     "Prefer the system dlib over the included dlib" ON)
-option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system" 
+sb_option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system" 
   PREFERRED
   NO PREFERRED YES)
 
 # Testing
-option (PLM_BUILD_TESTING "Enable regression testing" ON)
+sb_option (PLM_BUILD_TESTING "Enable regression testing" ON)
 
 # Installer Options
 option (PLM_INSTALL_RPATH "Add full RPATH to install" OFF)
@@ -134,7 +135,7 @@ option (PLM_PACKAGE_32BIT
     "Set this when building 32-bit packages on a 64-bit machine" OFF)
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
 option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
-option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
+sb_option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
     "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
 # Use legacy packaging if cmake version is < 3.0
@@ -153,7 +154,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Setup important locations
 ##-----------------------------------------------------------------------------
-sb_set (PLM_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+sb_set (PLM_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 sb_set (PLM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Offer the user the choice of overriding the installation directories
@@ -201,9 +202,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 include (CTest)
 include (CheckFunctionExists)
-include (CheckIncludeFiles)
-include (CheckTypeSize)
-include (TestBigEndian)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
 # http://www.cmake.org/Bug/view.php?id=15117
@@ -216,48 +214,6 @@ endif ()
 
 # Superbuild
 include (ExternalProject)
-
-# Machine precision
-include (CheckEpsilon)
-
-# Is char signed or unsigned?
-include (CheckCharSign)
-
-##-----------------------------------------------------------------------------
-##  Processor and OS characteristics
-##    32-bit or 64-bit machine
-##    Endian-ness
-##    Machine precision
-##    Processor type
-##-----------------------------------------------------------------------------
-if (UNIX) # OS X and Cygwin are both considered UNIX
-  if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set (GNU TRUE)
-  endif ()
-endif()
-
-check_type_size ("unsigned int"   CMAKE_SIZEOF_UINT)
-check_type_size ("unsigned long"  CMAKE_SIZEOF_ULONG)
-check_type_size ("size_t"         CMAKE_SIZEOF_SIZE_T)
-if (NOT APPLE)
-  if (CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set (MACHINE_IS_32_BIT TRUE)
-    set (MACHINE_IS_64_BIT FALSE)
-    message (STATUS "Machine is 32-bit")
-  else ()
-    set (MACHINE_IS_32_BIT FALSE)
-    set (MACHINE_IS_64_BIT TRUE)
-    message (STATUS "Machine is 64-bit")
-  endif ()
-endif ()
-
-test_big_endian (PLM_BIG_ENDIAN)
-check_epsilon (MACHINE_EPS)
-check_char_sign (CHAR_SIGN)
-message (STATUS "Checking host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-message (STATUS "Checking target processor: ${CMAKE_SYSTEM_PROCESSOR}")
-message (STATUS "Checking epsilon: ${MACHINE_EPS}")
-message (STATUS "Checking sign of char: ${CHAR_SIGN}")
 
 ##-----------------------------------------------------------------------------
 ##  Disable spurious warnings on MSVC (version 8 & higher)
@@ -291,12 +247,6 @@ set (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 set (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
 set (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
 set (PLM_BUILD_TESTING_DIR "${CMAKE_BINARY_DIR}/Testing")
-
-##-----------------------------------------------------------------------------
-##  Search for include files
-##-----------------------------------------------------------------------------
-check_include_files ("stdint.h" HAVE_STDINT_H)
-check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library
@@ -684,21 +634,6 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Figure out if we should use gdcm or dcmtk
-##-----------------------------------------------------------------------------
-set (PLM_DCM_USE_DCMTK 0)
-set (PLM_DCM_USE_GDCM1 0)
-set (PLM_DCM_USE_GDCM2 0)
-
-if (DCMTK_FOUND)
-    set (PLM_DCM_USE_DCMTK 1)
-elseif (GDCM_VERSION_2)
-    set (PLM_DCM_USE_GDCM2 1)
-else ()
-    set (PLM_DCM_USE_GDCM1 1)
-endif ()
-
-##-----------------------------------------------------------------------------
 ##  VTK
 ##-----------------------------------------------------------------------------
 if (NOT PLM_CONFIG_DISABLE_REG23)
@@ -784,10 +719,10 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (RAPIDJSON_DIR "${CMAKE_SOURCE_DIR}/libs/rapidjson-2015-03-22")
 if (EXISTS "${RAPIDJSON_DIR}" AND IS_DIRECTORY "${RAPIDJSON_DIR}")
-    set (RAPIDJSON_INCLUDE_DIR 
-	"${RAPIDJSON_DIR}/include"
-	)
-    set (RAPIDJSON_FOUND true)
+  set (RAPIDJSON_INCLUDE_DIR 
+    "${RAPIDJSON_DIR}/include"
+    )
+  set (RAPIDJSON_FOUND true)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -809,84 +744,9 @@ add_subdirectory (src)
 ##  Additional install files
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
-    file (GLOB DLLFILES "${ITK_DIR}/bin/release/*.dll")
-    if (DLLFILES)
-      install (FILES ${DLLFILES} DESTINATION bin)
-    endif ()
-endif ()
-
-if (CUDA_FOUND)
-  if (UNIX)
-    set (CUDART_LINUX_VERSION "libcudart.so.3.0.14")
-    set (CUDART_LINUX32 
-      "${CUDA_TOOLKIT_ROOT_DIR}/lib/${CUDART_LINUX_VERSION}")
-    set (CUDART_LINUX64 
-      "${CUDA_TOOLKIT_ROOT_DIR}/lib64/${CUDART_LINUX_VERSION}")
-
-    if (MACHINE_IS_32_BIT AND EXISTS "${CUDART_LINUX32}")
-      set (CUDART_FILE_SRC "${CUDART_LINUX32}")
-    endif ()
-
-    if (MACHINE_IS_64_BIT AND EXISTS "${CUDART_LINUX64}")
-      set (CUDART_FILE_SRC "${CUDART_LINUX64}")
-    endif ()
-
-    # Override for packagers building 32-bit packages on 64-bit machine
-    if (PLM_PACKAGE_32BIT AND EXISTS "${CUDART_LINUX32}")
-      set (CUDART_FILE_SRC "${CUDART_LINUX32}")
-    endif ()
-
-    # Hard code to cuda 3.0 (runtime 3.0.14).  Note, we copy it first, because
-    # otherwise CMake 2.6 will install a broken symbolic link
-    set (CUDART_FILE "${CMAKE_BINARY_DIR}/${CUDART_LINUX_VERSION}")
-    if (EXISTS "${CUDART_FILE_SRC}")
-      execute_process (COMMAND
-        ${CMAKE_COMMAND} "-E" "copy" 
-	    "${CUDART_FILE_SRC}" "${CUDART_FILE}"
-      )
-    endif ()
-  else ()
-#    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
-#    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
-#05/27/2016 YKP (for window users only): will copy dll files to bin for packaging.
-    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_65.dll")
-    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_65.dll")
-    set (CUFFT_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cufft32_65.dll")
-    set (CUFFT_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cufft64_65.dll")
-
-    if (MACHINE_IS_32_BIT AND EXISTS "${CUDART_WIN32}")
-      set (CUDART_FILE "${CUDART_WIN32}")
-    endif ()
-    if (MACHINE_IS_32_BIT AND EXISTS "${CUFFT_WIN32}")
-      set (CUFFT_FILE "${CUFFT_WIN32}")
-    endif ()
-    if (MACHINE_IS_64_BIT AND EXISTS "${CUDART_WIN64}")	
-      set (CUDART_FILE "${CUDART_WIN64}")	  
-    endif ()
-    if (MACHINE_IS_64_BIT AND EXISTS "${CUFFT_WIN64}")		
-      set (CUFFT_FILE "${CUFFT_WIN64}")	  
-    endif ()
-
-    # Override for packagers building 32-bit packages on 64-bit machine
-    if (PLM_PACKAGE_32BIT AND EXISTS "${CUDART_WIN32}")
-      set (CUDART_FILE_SRC "${CUDART_WIN32}")
-    endif ()
-  endif ()
-
-  if (EXISTS "${CUDART_FILE}")
-    if (UNIX)
-      install (FILES "${CUDART_FILE}" DESTINATION lib)
-    else ()
-      install (FILES "${CUDART_FILE}" DESTINATION bin)
-    endif ()
-  endif ()
-
-  if (EXISTS "${CUFFT_FILE}")
-    if (UNIX)
-      install (FILES "${CUFFT_FILE}" DESTINATION lib)
-    else ()
-      install (FILES "${CUFFT_FILE}" DESTINATION bin)
-    endif ()
+  file (GLOB DLLFILES "${ITK_DIR}/bin/release/*.dll")
+  if (DLLFILES)
+    install (FILES ${DLLFILES} DESTINATION bin)
   endif ()
 endif ()
 
@@ -898,10 +758,10 @@ if (QT4_FOUND)
     set (QT4_CORE_DLL_WIN "${QT_LIBRARY_DIR}/QtCore4.dll")
     set (QT4_GUI_DLL_WIN "${QT_LIBRARY_DIR}/QtGui4.dll")
     if (EXISTS "${QT4_CORE_DLL_WIN}")
-		install (FILES "${QT4_CORE_DLL_WIN}" DESTINATION bin)
+      install (FILES "${QT4_CORE_DLL_WIN}" DESTINATION bin)
     endif ()
-	if (EXISTS "${QT4_GUI_DLL_WIN}")
-		install (FILES "${QT4_GUI_DLL_WIN}" DESTINATION bin)
+    if (EXISTS "${QT4_GUI_DLL_WIN}")
+      install (FILES "${QT4_GUI_DLL_WIN}" DESTINATION bin)
     endif ()
   endif ()
 endif ()
@@ -911,7 +771,7 @@ if (FFTW_FOUND)
   if (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
     install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)	
   endif ()
-    #YKP 05/27/2016: no need of libfftw3f-3.dll and libfftw3l-3.dll?
+  #YKP 05/27/2016: no need of libfftw3f-3.dll and libfftw3l-3.dll?
 endif ()
 
 # Add sample directory/files to Install Only for windows users
