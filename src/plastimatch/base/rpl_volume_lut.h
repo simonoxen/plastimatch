@@ -17,9 +17,11 @@ public:
     SMART_POINTER_SUPPORT (Rpl_volume_lut);
     Rpl_volume_lut_private *d_ptr;
 public:
-    Rpl_volume_lut ();
     Rpl_volume_lut (Rpl_volume *rv, Volume *vol);
     ~Rpl_volume_lut ();
+private:
+    /* Should not be called */
+    Rpl_volume_lut ();
 public:
     void build_lut ();
 protected:

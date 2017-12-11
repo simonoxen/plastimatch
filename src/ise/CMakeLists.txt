@@ -305,7 +305,8 @@ if (WIN32)
     aqprintf.cxx aqprintf.h
     dips_test.cxx
     dips_panel.cxx dips_panel.h)
-  plm_add_executable (dips_test "${DIPS_TEST_SRC}" "" ""
+  plm_add_executable_v2 (dips_test "${DIPS_TEST_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${ADVANTECH_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
@@ -315,8 +316,8 @@ if (ADVANTECH_FOUND)
     advantech_test.cxx
     aqprintf.cxx aqprintf.h
     )
-  plm_add_executable (advantech_test "${ADVANTECH_TEST_SRC}"
-    "${ADVANTECH_LIBRARIES}" ""
+  plm_add_executable_v2 (advantech_test "${ADVANTECH_TEST_SRC}"
+    "${QT4_INCLUDE_DIRS}" "${ADVANTECH_LIBRARIES}" ""
     ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
 endif ()
 
