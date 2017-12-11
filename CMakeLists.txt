@@ -72,7 +72,7 @@ option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST
   "Set to ON to build windows DLLs without manifests" OFF)
-option (PLM_CONFIG_USE_SUPERBUILD
+option (PLM_CONFIG_ENABLE_SUPERBUILD
   "Set to ON to build src/plastimatch using nested superbuild" OFF)
 
 # Plastimatch software configuration options
@@ -603,7 +603,7 @@ elseif (PLM_SYSTEM_ITK STREQUAL "PREFERRED")
 endif ()
 if (NOT ITK_FOUND AND NOT PLM_SYSTEM_ITK STREQUAL "YES")
   include (SuperBuild/External_ITK.cmake)
-  if (NOT PLM_CONFIG_USE_SUPERBUILD)
+  if (NOT PLM_CONFIG_ENABLE_SUPERBUILD)
     find_package (ITK REQUIRED)
   endif ()
 endif ()
