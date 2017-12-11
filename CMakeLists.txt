@@ -309,18 +309,31 @@ find_library (LIBDL_FOUND dl)
 ##-----------------------------------------------------------------------------
 ##  DCMTK
 ##-----------------------------------------------------------------------------
-if (PLM_SYSTEM_DCMTK STREQUAL "YES")
-  #find_package (DCMTK NO_MODULE REQUIRED)
-  find_package (DCMTK_legacy REQUIRED)
-elseif (PLM_SYSTEM_DCMTK STREQUAL "PREFERRED")
-  #find_package (DCMTK NO_MODULE QUIET)
-  find_package (DCMTK_legacy QUIET)
+## If it is a modern version of DCMTK, such as found in Slicer build, 
+## it will have a working version of DCMTKConfig.cmake.
+## Otherwise we use the old hacked version of FindDCMTK.cmake.
+if (DCMTK_DIR)
+  if (EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
+    find_package (DCMTK NO_MODULE)
+  endif ()
+endif ()
+if (NOT DCMTK_FOUND)
+  if (PLM_SYSTEM_DCMTK STREQUAL "YES")
+    #find_package (DCMTK NO_MODULE REQUIRED)
+    find_package (DCMTK_legacy REQUIRED)
+  elseif (PLM_SYSTEM_DCMTK STREQUAL "PREFERRED")
+    #find_package (DCMTK NO_MODULE QUIET)
+    find_package (DCMTK_legacy QUIET)
+  endif ()
 endif ()
 if (NOT DCMTK_FOUND AND NOT PLM_SYSTEM_DCMTK STREQUAL "YES")
   include (SuperBuild/External_DCMTK.cmake)
 endif ()
-message (STATUS "DCMTK: ${DCMTK_FOUND} || ${DCMTK_INCLUDE_DIRS}")
-
+if (DCMTK_FOUND)
+  message (STATUS "DCMTK version ${DCMTK_VERSION} found.")
+else ()
+  message (STATUS "DCMTK not found.")
+endif ()
 
 # Workaround for CMake bug in FindDCMTK.  This was fixed some time between 
 # 3.4.3 and 3.7.2
