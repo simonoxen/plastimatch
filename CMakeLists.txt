@@ -41,12 +41,17 @@ endif ()
 ##  CMake include files
 ##-----------------------------------------------------------------------------
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-include (PlmMacros)
 
 ##-----------------------------------------------------------------------------
 ##  Prevent in-source build
 ##-----------------------------------------------------------------------------
 include (PreventInSourceBuilds)
+
+##-----------------------------------------------------------------------------
+##  Macros and functions used in this script
+##-----------------------------------------------------------------------------
+include (PlmMacros)
+include (SuperbuildOptions)
 
 ##-----------------------------------------------------------------------------
 ##  Default to release
@@ -70,11 +75,11 @@ option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
 option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" ON)
-option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
+sb_option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 
 option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
-option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
+sb_option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST
   "Set to ON to build windows DLLs without manifests" OFF)
@@ -94,25 +99,24 @@ option (PLM_CONFIG_VOL_LIST
   "Native support for volumes with irregular slice thicknesses" OFF)
 
 # Plastimatch legacy options
-option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
+sb_option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
   "Use legacy code for extending b-spline domain" OFF)
-option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
+sb_option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
   "Use legacy code for reading and writing b-spline xform files" OFF)
-option (PLM_CONFIG_LEGACY_MI_METRIC
+sb_option (PLM_CONFIG_LEGACY_MI_METRIC
   "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
-option (PLM_CONFIG_LEGACY_PROJ_GEO
+sb_option (PLM_CONFIG_LEGACY_PROJ_GEO
   "Use legacy method for specifying projection geometry" ON)
 
 # Compile and link options
-option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
-
+sb_option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # Choose whether to build against included and/or superbuild libraries
 # instead of system libraries
 option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system" 
   PREFERRED
   NO PREFERRED YES)
-option (PLM_PREFER_SYSTEM_DLIB
+sb_option (PLM_PREFER_SYSTEM_DLIB
     "Prefer the system dlib over the included dlib" ON)
 option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system" 
   PREFERRED
@@ -123,7 +127,7 @@ option (PLM_BUILD_TESTING "Enable regression testing" ON)
 
 # Installer Options
 option (PLM_INSTALL_RPATH "Add full RPATH to install" OFF)
-option (PLM_CONFIG_INSTALL_LIBRARIES "Include libraries in install" ON)
+sb_option (PLM_CONFIG_INSTALL_LIBRARIES "Include libraries in install" ON)
 
 # Packaging
 option (PLM_PACKAGE_32BIT
@@ -352,17 +356,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
-if (PLM_PREFER_SYSTEM_DLIB)
-  # Use this version if you want to use the internal cmake find. 
-  # The internal version has issue finding the correct BLAS library
-  # for Debian, so we prefer Debian version.
-  # find_package (Dlib)
-  
-  # However, the Debian cmake find is broken.  Its breakage can
-  # be worked around by setting dlib_BINARY_DIR.
-  set (dlib_BINARY_DIR 1)
-  find_package (dlib QUIET)
-endif ()
 find_package (Etags)
 #find_package (Fann)
 find_package (FFTW)
@@ -421,22 +414,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
 add_subdirectory (libs/devillard)
-
-##-----------------------------------------------------------------------------
-##  If using local dlib
-##-----------------------------------------------------------------------------
-if (dlib_FOUND)
-  set (DLIB_INCLUDE_DIR ${dlib_INCLUDE_DIR})
-  set (DLIB_LIBRARIES ${dlib_LIBRARIES})
-  set (DLIB_FOUND TRUE)
-endif ()
-if (DLIB_FOUND)
-  set (DLIB_HAVE_LIBRARY TRUE)
-else ()
-  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
-  set (DLIB_LIBRARIES "")
-  set (DLIB_HAVE_LIBRARY FALSE)
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local inih

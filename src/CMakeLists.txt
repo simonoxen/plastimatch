@@ -120,7 +120,11 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
       else()
 	set(gen "${CMAKE_GENERATOR}")
       endif()
-      
+
+      set (sb_option_list "")
+      foreach (_var ${sb_cmake_vars})
+	list (APPEND sb_option_list "-D${_var}:BOOL=${${_var}}")
+      endforeach ()
       ExternalProject_Add (${proj}
 	DOWNLOAD_COMMAND ""
 	INSTALL_COMMAND ""
@@ -140,7 +144,7 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
 	-DCMAKE_OSX_SYSROOT:PATH=${CMAKE_OSX_SYSROOT}
 	-DITK_DIR:PATH=${ITK_DIR}
 	-DPLASTIMATCH_VERSION_STRING:STRING=${PLASTIMATCH_VERSION_STRING}
-	-DPLM_CONFIG_DEBIAN_BUILD:BOOL=${PLM_CONFIG_DEBIAN_BUILD}
+	${sb_option_list}
 	DEPENDS
 	ITK
 	)

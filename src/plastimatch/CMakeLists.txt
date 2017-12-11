@@ -25,6 +25,30 @@ elseif (PLM_DCM_USE_GDCM1)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  dlib
+##-----------------------------------------------------------------------------
+if (PLM_PREFER_SYSTEM_DLIB)
+  # Use this version if you want to use the internal cmake find. 
+  # The internal version has issue finding the correct BLAS library
+  # for Debian, so we prefer Debian version.
+  # find_package (Dlib)
+  
+  # However, the Debian cmake find is broken.  Its breakage can
+  # be worked around by setting dlib_BINARY_DIR.
+  set (dlib_BINARY_DIR 1)
+  find_package (dlib QUIET)
+endif ()
+if (dlib_FOUND)
+  set (DLIB_INCLUDE_DIR ${dlib_INCLUDE_DIR})
+  set (DLIB_LIBRARIES ${dlib_LIBRARIES})
+  set (DLIB_FOUND TRUE)
+else ()
+  set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-19.1")
+  set (DLIB_LIBRARIES "")
+  set (DLIB_HAVE_LIBRARY FALSE)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Figure out if we should patch itk
 ##-----------------------------------------------------------------------------
 set (PLM_CONFIG_USE_PATCHED_ITK 0)
