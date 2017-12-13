@@ -10,7 +10,6 @@ cmake_minimum_required (VERSION 2.8.12)
 ##  CMake include files
 ##-----------------------------------------------------------------------------
 set (CMAKE_MODULE_PATH "${PLM_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-message (STATUS "CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 include (PlmMacros)
 
 ##-----------------------------------------------------------------------------
@@ -55,16 +54,22 @@ check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
 ##-----------------------------------------------------------------------------
 ##  Figure out if we should use gdcm or dcmtk
 ##-----------------------------------------------------------------------------
+if (DCMTK_DIR AND EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
+  find_package (DCMTK NO_MODULE)
+else ()
+  find_package (DCMTK_legacy)
+endif ()
+
 set (PLM_DCM_USE_DCMTK 0)
 set (PLM_DCM_USE_GDCM1 0)
 set (PLM_DCM_USE_GDCM2 0)
 
 if (DCMTK_FOUND)
-    set (PLM_DCM_USE_DCMTK 1)
+  set (PLM_DCM_USE_DCMTK 1)
 elseif (GDCM_VERSION_2)
-    set (PLM_DCM_USE_GDCM2 1)
+  set (PLM_DCM_USE_GDCM2 1)
 else ()
-    set (PLM_DCM_USE_GDCM1 1)
+  set (PLM_DCM_USE_GDCM1 1)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -102,6 +107,13 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  ransac
+##-----------------------------------------------------------------------------
+set (RANSAC_INCLUDE_DIRS 
+  "${PLM_SOURCE_DIR}/libs/ransac" 
+  "${PLM_SOURCE_DIR}/libs/ransac/Common")
+
+##-----------------------------------------------------------------------------
 ##  Figure out if we should patch itk
 ##-----------------------------------------------------------------------------
 set (PLM_CONFIG_USE_PATCHED_ITK 0)
@@ -113,6 +125,11 @@ endif ()
 if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
   set (PLM_CONFIG_USE_PATCHED_ITK 1)
 endif ()
+
+##-----------------------------------------------------------------------------
+##  Hack for superbuild
+##-----------------------------------------------------------------------------
+link_directories (${PLM_BINARY_DIR})
 
 ##-----------------------------------------------------------------------------
 ##  Libraries
@@ -220,11 +237,11 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
 
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${ITK_INCLUDE_DIRS})
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight)
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/DiffeomorphicDemons)
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/demons_itk_insight/LOGDomainDemons)
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
+include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight)
+include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight/DiffeomorphicDemons)
+include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
+include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight/LOGDomainDemons)
+include_directories (AFTER ${PLM_SOURCE_DIR}/libs/nSIFT)
 include_directories (AFTER ${DLIB_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})

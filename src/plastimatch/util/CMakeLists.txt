@@ -9,7 +9,7 @@ configure_file (
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/devillard)
+include_directories (AFTER ${DEVILLARD_INCLUDE_DIR})
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES

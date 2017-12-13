@@ -1,7 +1,14 @@
 ******************************************************************************
-Good ideas
+Superbuild test configurations
 
-Elastix:
+Standard build: local ITK, local DCMTK
+Standard build: system ITK, system DCMTK
+Superbuild: system ITK, system DCMTK
+Superbuild: download ITK, download DCMTK
+
+******************************************************************************
+Good ideas from Elastix
+
 A good set of random sampling options
 Schedule of grid spacing allows multiple sub-stages
 Parameter file overwrites

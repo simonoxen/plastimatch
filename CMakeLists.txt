@@ -5,7 +5,7 @@
 ##-----------------------------------------------------------------------------
 project (plastimatch)
 
-## The version here should be equal to the "next release"
+## The version here should be equal to the "most recent release"
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "6")
 set (PLM_VERSION_PATCH "6")
@@ -27,10 +27,11 @@ endif ()
 if (POLICY CMP0012)
   cmake_policy (SET CMP0012 NEW)
 endif ()
-# Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
-# policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
-# older CMake versions.
-cmake_policy (SET CMP0017 NEW)
+# CMP0017: Prefer files from the CMake module directory when including
+# from there.
+if (POLICY CMP0017)
+  cmake_policy (SET CMP0017 NEW)
+endif ()
 # CMP0054: Quoted variables no longer dereferenced
 # GCS 2017-11-02: This is added to suppress Qt warnings
 if (POLICY CMP0054)
@@ -268,28 +269,33 @@ find_library (LIBDL_FOUND dl)
 ##-----------------------------------------------------------------------------
 ## If it is a modern version of DCMTK, such as found in Slicer build, 
 ## it will have a working version of DCMTKConfig.cmake.
+## In this case, we can use the modern find_package variant.
 ## Otherwise we use the old hacked version of FindDCMTK.cmake.
-if (DCMTK_DIR)
-  if (EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
-    find_package (DCMTK NO_MODULE)
-  endif ()
-endif ()
-if (NOT DCMTK_FOUND)
+if (NOT PLM_CONFIG_DISABLE_DCMTK)
   if (PLM_SYSTEM_DCMTK STREQUAL "YES")
-    #find_package (DCMTK NO_MODULE REQUIRED)
-    find_package (DCMTK_legacy REQUIRED)
+    if (DCMTK_DIR AND EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
+      find_package (DCMTK NO_MODULE REQUIRED)
+    else ()
+      find_package (DCMTK_legacy REQUIRED)
+    endif ()
   elseif (PLM_SYSTEM_DCMTK STREQUAL "PREFERRED")
-    #find_package (DCMTK NO_MODULE QUIET)
-    find_package (DCMTK_legacy QUIET)
+    if (DCMTK_DIR AND EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
+      find_package (DCMTK NO_MODULE QUIET)
+    else ()
+      find_package (DCMTK_legacy QUIET)
+    endif ()
   endif ()
-endif ()
-if (NOT DCMTK_FOUND AND NOT PLM_SYSTEM_DCMTK STREQUAL "YES")
-  include (SuperBuild/External_DCMTK.cmake)
-endif ()
-if (DCMTK_FOUND)
-  message (STATUS "DCMTK version ${DCMTK_VERSION} found.")
-else ()
-  message (STATUS "DCMTK not found.")
+
+  if (NOT DCMTK_FOUND AND NOT PLM_SYSTEM_DCMTK STREQUAL "YES")
+    include (SuperBuild/External_DCMTK.cmake)
+    message (STATUS "DCMTK will be downloaded and built.")
+  else ()
+    if (DCMTK_FOUND)
+      message (STATUS "DCMTK version ${DCMTK_VERSION} found.")
+    else ()
+      message (STATUS "DCMTK not found.")
+    endif ()
+  endif ()
 endif ()
 
 # Workaround for CMake bug in FindDCMTK.  This was fixed some time between 
@@ -304,7 +310,6 @@ endif ()
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
 find_package (Etags)
-#find_package (Fann)
 find_package (FFTW)
 find_package (Git)
 find_package (Kaze)
@@ -340,10 +345,10 @@ find_package (wxWidgets)
 ##-----------------------------------------------------------------------------
 if (NOT LIBLBFGS_FOUND)
   add_subdirectory (libs/liblbfgs-1.9)
-  set (LIBLBFGS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/liblbfgs-1.9/include")
-  set (LIBLBFGS_LIBRARIES lbfgs)
+  sb_set (LIBLBFGS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/liblbfgs-1.9/include")
+  sb_set (LIBLBFGS_LIBRARIES lbfgs)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
-  set (LIBLBFGS_FOUND TRUE)
+  sb_set (LIBLBFGS_FOUND TRUE)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -359,13 +364,13 @@ endif ()
 #-----------------------------------------------------------------------------
 ##  Only use local devillard
 ##-----------------------------------------------------------------------------
-set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
+sb_set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
 add_subdirectory (libs/devillard)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local inih
 ##-----------------------------------------------------------------------------
-set (INIH_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/inih-r29")
+sb_set (INIH_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/inih-r29")
 add_subdirectory (libs/inih-r29)
 
 ##-----------------------------------------------------------------------------
@@ -526,11 +531,9 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if (${git_result} EQUAL 0)
-    message (STATUS "Looking for version in git - found ${git_version}")
     set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
-  else ()
-    message (STATUS "Looked for version in git but failed")
   endif ()
+  message (STATUS "Plastimatch version is ${git_version}")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -542,13 +545,9 @@ elseif (PLM_SYSTEM_ITK STREQUAL "PREFERRED")
   find_package (ITK QUIET)
 endif ()
 if (NOT ITK_FOUND AND NOT PLM_SYSTEM_ITK STREQUAL "YES")
+  message (STATUS "ITK will be downloaded and built.")
   include (SuperBuild/External_ITK.cmake)
-  if (NOT PLM_CONFIG_ENABLE_SUPERBUILD)
-    find_package (ITK REQUIRED)
-  endif ()
 endif ()
-
-message (STATUS "ITK_FOUND = ${ITK_FOUND}")
 
 if (ITK_FOUND)
   # GCS 2016-10-20
@@ -585,8 +584,6 @@ if (ITK_FOUND)
       "Fatal Error. ITK version should be either 3.X or 4.X")
   endif ()
   message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
-else ()
-  message (STATUS "ITK_VERSION unknown")
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -699,16 +696,6 @@ if (Qt5_FOUND)
   message (STATUS "Looking for Qt5 - found")
 else ()
   message (STATUS "Looking for Qt5 - not found")
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Only use local ransac
-##-----------------------------------------------------------------------------
-if (ITK_FOUND)
-  add_subdirectory (libs/ransac)
-  set (RANSAC_INCLUDE_DIRS 
-    "${CMAKE_SOURCE_DIR}/libs/ransac" 
-    "${CMAKE_SOURCE_DIR}/libs/ransac/Common")
 endif ()
 
 ##-----------------------------------------------------------------------------
