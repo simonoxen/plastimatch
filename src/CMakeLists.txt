@@ -31,7 +31,7 @@ if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
 endif ()
 
 if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
-  if (NOT ITK_FOUND)
+  if (NOT ITK_FOUND OR NOT DCMTK_FOUND)
     if (PLM_CONFIG_ENABLE_SUPERBUILD)
       set (proj plastimatch)
       if(CMAKE_EXTRA_GENERATOR)
@@ -44,6 +44,15 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
       foreach (_var ${sb_cmake_vars})
 	list (APPEND sb_option_list "-D${_var}=${${_var}}")
       endforeach ()
+
+      set (sb_dependencies devillard inih lbfgs nkidecompress specfun sqlite3)
+      if (NOT ITK_FOUND)
+	list (APPEND sb_dependencies ITK)
+      endif ()
+      if (NOT DCMTK_FOUND)
+	list (APPEND sb_dependencies DCMTK)
+      endif ()
+
       ExternalProject_Add (${proj}
 	DOWNLOAD_COMMAND ""
 	INSTALL_COMMAND ""
@@ -66,16 +75,14 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
 	-DPLASTIMATCH_VERSION_STRING:STRING=${PLASTIMATCH_VERSION_STRING}
 	${sb_option_list}
 	DEPENDS
-	ITK
-	DCMTK
-	devillard
+	${sb_dependencies}
 	)
     else ()
-      message (STATUS "Plastimatch will not be built (ITK not found)")
+      message (STATUS "Plastimatch will not be built (ITK or DCMTK not found; superbuild disabled)")
     endif ()
-  else (NOT ITK_FOUND)
+  else ()
     add_subdirectory (plastimatch)
-  endif (NOT ITK_FOUND)
+  endif ()
 endif ()
 
 set (PLM_BUILD_ORAIFUTILS 1)
