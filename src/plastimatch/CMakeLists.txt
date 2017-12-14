@@ -114,17 +114,11 @@ set (RANSAC_INCLUDE_DIRS
   "${PLM_SOURCE_DIR}/libs/ransac/Common")
 
 ##-----------------------------------------------------------------------------
-##  Figure out if we should patch itk
+##  ITK
 ##-----------------------------------------------------------------------------
 set (PLM_CONFIG_USE_PATCHED_ITK 0)
 find_package (ITK REQUIRED)
-if (NOT ITK_VERSION)
-  set (ITK_VERSION
-    "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
-endif ()
-if (${ITK_VERSION} VERSION_LESS "4.1" AND PLM_CONFIG_PREFER_PATCHED_ITK)
-  set (PLM_CONFIG_USE_PATCHED_ITK 1)
-endif ()
+include (HandleITK)
 
 ##-----------------------------------------------------------------------------
 ##  Hack for superbuild

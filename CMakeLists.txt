@@ -550,40 +550,7 @@ if (NOT ITK_FOUND AND NOT PLM_SYSTEM_ITK STREQUAL "YES")
 endif ()
 
 if (ITK_FOUND)
-  # GCS 2016-10-20
-  # The GDCM USE file spews out copious extraneous warnings on Debian.
-  # If we are not using GDCM, this might be avoided by setting
-  # ITK_USE_SYSTEM_GDCM to FALSE.  However, this has the undesirable
-  # effect of removing gdcm includes from include list and gdcm libraries
-  # from library list.
-  #if (DCMTK_FOUND)
-  # set (ITK_USE_SYSTEM_GDCM FALSE)
-  #endif ()
-  include (${ITK_USE_FILE})
-  if (NOT ITK_VERSION)
-    set (ITK_VERSION
-      "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
-  endif ()
-  if (${ITK_VERSION} VERSION_LESS "3.16.0")
-    message (FATAL_ERROR 
-      "Fatal Error. ITK must be version 3.16.0 or higher")
-  endif ()
-  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3")
-    if (NOT ITK_USE_REVIEW)
-      message (FATAL_ERROR 
-	"Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
-    endif ()
-    set (ITK_LIBRARIES ${ITK_LIBRARIES} ITKIOReview)
-  elseif (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
-    if (${ITK_VERSION} VERSION_LESS "4.1")
-      message (FATAL_ERROR 
-	"Fatal Error. ITK 4 must be 4.1 or greater")
-    endif ()
-  else ()
-    message (FATAL_ERROR 
-      "Fatal Error. ITK version should be either 3.X or 4.X")
-  endif ()
-  message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
+  include (HandleITK)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -814,7 +781,7 @@ endif ()
 ##    avoid this (i.e. no good suggestions on CMake/CTest email list.  
 ##    This is the purpose of the PATH_HACK code below.
 ##-----------------------------------------------------------------------------
-if (ITK_FOUND)
+if (ITK_FOUND OR NOT PLM_SYSTEM_ITK STREQUAL "YES")
 if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLM_PLASTIMATCH_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Release)
