@@ -15,10 +15,6 @@ Step 1: Preliminary testing
      cd ~/build/plastimatch
      ctest -j 16
 
-#. Run lintian on package::
-
-     lintian -i *.changes
-
 Step 2: Marking the version
 ---------------------------
 #. Update CHANGELOG; Bump version number in CHANGELOG

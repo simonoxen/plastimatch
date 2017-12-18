@@ -70,7 +70,7 @@ Setting up a build system for the first time
        apt-utils fakeroot debhelper \
        cmake \
        libblas-dev liblapack-dev libsqlite-dev \
-       libdcmtk-dev libdlib-dev libfftw3-dev \
+       libdcmtk-dev libdlib-dev libdlib18 libfftw3-dev \
        libgdcm2-dev libinsighttoolkit4-dev \
        libsqlite3-dev \
        libpng-dev libtiff-dev uuid-dev zlib1g-dev
@@ -78,11 +78,42 @@ Setting up a build system for the first time
    See this link for more information https://wiki.debian.org/git-pbuilder
 
 
-Step 1: Build the tarball
+Step 1: Test the debian build
+-----------------------------
+#. Download the candidate tarball
+
+#. Repack into correct version name::
+
+   tar xvf plastimatch-master-*.tar.gz
+   rm plastimatch-master-*.tar.gz
+   mv plastimatch-master-* plastimatch-1.6.6
+   tar cvfz plastimatch-1.6.6.tar.gz plastimatch-1.6.6
+
+Note that the old version number should be used, as we have not yet updated
+the version in the debian changelog.
+
+#. Run debian repacking::
+
+   mk-origtargz ../plastimatch-1.6.6.tar.gz
+
+#. Unzip the created tarball, and copy over the debian directory::
+
+   tar xvf plastimatch_1.6.6+dfsg.1.orig.tar.gz
+   cp -r plastimatch/debian plastimatch-1.6.6
+
+#. Run pdebuild::
+
+   pdebuild
+
+#. Run lintian on package::
+
+     lintian -i *.changes
+   
+Step 2: Build the tarball
 -------------------------
 Follow instructions in :ref:`making_a_tarball`.
 
-Step 2: Build the debian package
+Step 3: Build the debian package
 --------------------------------
 #. Clean pbuilder environment (if needed)::
 
