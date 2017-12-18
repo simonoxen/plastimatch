@@ -1,6 +1,6 @@
 .\" Man page generated from reStructuredText.
 .
-.TH "PLASTIMATCH" "1" "October 11, 2017" "Plastimatch 1.6.6" "Plastimatch"
+.TH "PLASTIMATCH" "1" "Dec 18, 2017" "Plastimatch 1.6.7" "Plastimatch"
 .SH NAME
 plastimatch \- register, convert, warp, or manipulate images
 .
@@ -47,7 +47,7 @@ without any additional command line arguments:
 .nf
 .ft C
 $ plastimatch
-plastimatch version 1.6.6
+plastimatch version 1.6.7
 Usage: plastimatch command [options]
 Commands:
  add           adjust        average       bbox          boundary
@@ -1134,8 +1134,8 @@ Prior to running the mabs command, you must create a configuration
 file, and you must arrange your training data into the proper
 directory format.
 For a complete description of the command file syntax and
-usage examples, please refer to the \fImabs_guidebook\fP
-and the \fIsegmentation_command_file_reference\fP\&.
+usage examples, please refer to the mabs_guidebook
+and the segmentation_command_file_reference\&.
 .SH PLASTIMATCH MASK
 .sp
 The \fImask\fP command is used to fill an image region with a constant
@@ -1289,7 +1289,7 @@ and each stage begins with a line containing the string "[STAGE]".
 The global section is used to set input files, output files, and
 global parameters, while the each stage section defines a sequential
 stage of processing.  For a complete description of the command file
-syntax, please refer to the \fIregistration_command_file_reference\fP\&.
+syntax, please refer to the registration_command_file_reference\&.
 .SS Examples
 .sp
 If you want to register image_2.mha to match image_1.mha using
@@ -1369,7 +1369,7 @@ res=1 1 1
 .UNINDENT
 .UNINDENT
 .sp
-For more examples, please refer to the \fIimage_registration_guidebook\fP\&.
+For more examples, please refer to the image_registration_guidebook\&.
 .SH PLASTIMATCH RESAMPLE
 .sp
 The \fIresample\fP command can be used to change the geometry of an image.
@@ -1822,24 +1822,44 @@ The \fIthreshold\fP command creates a binary labelmap image from an
 input intensity image.
 .sp
 The command line usage is given as follows:
-.INDENT 0.0
-.INDENT 3.5
 .sp
-.nf
-.ft C
 Usage: plastimatch threshold [options]
 Options:
-   \-\-above <arg>    value above which output has value high
-   \-\-below <arg>    value below which output has value high
-   \-\-input <arg>    input directory or filename
-   \-\-output <arg>   output image
-   \-\-range <arg>    a string that forms a list of threshold ranges
-                     ofthe form "r1\-lo,r1\-hi,r2\-lo,r2\-hi,...",
-                     such thatvoxels with intensities within any
-                     of the ranges ([r1\-lo,r1\-hi], [r2\-lo,r2\-hi],
-                     ...) have output value high
-.ft P
-.fi
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.INDENT 3.5
+.INDENT 0.0
+.TP
+.BI \-\-above \ <arg>
+value above which output has value high
+.TP
+.BI \-\-below \ <arg>
+value below which output has value high
+.UNINDENT
+.UNINDENT
+.UNINDENT
+.INDENT 0.0
+.TP
+.B \-h\fP,\fB  \-\-help
+display this help message
+\-\-input <arg>    input directory or filename
+\-\-output <arg>   output image
+\-\-range <arg>    a string that forms a list of threshold ranges of the
+.INDENT 7.0
+.INDENT 3.5
+form "r1\-lo,r1\-hi,r2\-lo,r2\-hi,...", such that voxels
+with intensities within any of the ranges
+([r1\-lo,r1\-hi], [r2\-lo,r2\-hi], ...) have output value
+high
+.UNINDENT
+.UNINDENT
+.INDENT 7.0
+.TP
+.B \-\-version
+display the program version
+.UNINDENT
+.UNINDENT
 .UNINDENT
 .UNINDENT
 .SS Example
@@ -2056,7 +2076,7 @@ plastimatch warp \e
 .SH PLASTIMATCH XF-CONVERT
 .sp
 The \fIxf\-convert\fP command converts between transform types.
-A tranform can be either a B\-spline transform, or a vector field.
+A transform can be either a B\-spline transform, or a vector field.
 There are two different kinds of B\-spline transform formats:
 the plastimatch native format, and the ITK format.
 In addition to converting the transform type, the \fIxf\-convert\fP command
