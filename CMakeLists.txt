@@ -70,13 +70,11 @@ sb_variable (CMAKE_BUILD_TYPE)
 sb_option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" ON)
-option (PLM_CONFIG_DISABLE_ISE "Build ISE fluoro program" ON)
 option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
 sb_option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 sb_option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
 option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
 option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
-option (PLM_CONFIG_DISABLE_REG23 "Disable building REG-2-3" ON)
 sb_option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
 
@@ -146,10 +144,8 @@ endif ()
 
 # Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
-  set (PLM_CONFIG_DISABLE_ISE ON)
   set (PLM_CONFIG_DISABLE_FATM ON)
   set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
-  set (PLM_CONFIG_DISABLE_REG23 ON)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -595,37 +591,13 @@ else ()
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  VTK
-##-----------------------------------------------------------------------------
-if (NOT PLM_CONFIG_DISABLE_REG23)
-  find_package (VTK)
-  if (VTK_FOUND)
-    message (STATUS "VTK version ${VTK_VERSION}")
-  else ()
-    message (STATUS "VTK not found")
-  endif ()
-  # GCS 2012-05-14: Including VTK_USE_FILE causes VTK to pollute the 
-  # include directory list, which causes cuda to fail to compile
-  #if (VTK_FOUND)
-  #  include (${VTK_USE_FILE})
-  #endif ()
-endif ()
-
-##-----------------------------------------------------------------------------
 ##  QT
 ##-----------------------------------------------------------------------------
 if (PLM_CONFIG_DISABLE_QT)
   set (QT4_FOUND false)
   set (QT5_FOUND false)
 else ()
-  # In VS2013 with win7, QtWebkit was not able to be compiled.(.lib file
-  # is not generated.) QtWebkit is only used by Reg23.
-  if (PLM_CONFIG_DISABLE_REG23)
-    find_package (Qt4 4.6.3 QUIET COMPONENTS QtCore QtGui QtDesigner)
-  else ()
-    message (STATUS "In VS2013 w/ Qt4.8.6, QtWebkit couldn't be compiled. Check PLM_CONFIG_DISABLE_REG23 if you don't want REG23 and there is compiling error.")
-    find_package (Qt4 4.6.3 QUIET COMPONENTS QtCore QtGui QtWebKit QtDesigner)
-  endif ()
+  find_package (Qt4 4.6.3 QUIET COMPONENTS QtCore QtGui QtDesigner)
   find_package (Qt5 QUIET COMPONENTS Core Gui Designer Network Widgets)
 endif ()
 

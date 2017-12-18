@@ -1,3 +1,7 @@
+Version 1.7.0 (tag v1.7.0)
+Mon Dec 18 17:06:14 EST 2017
+* Remove reg-2-3 and ise from distribution
+
 Version 1.6.7 (tag v1.6.7)
 Mon Dec 18 17:06:14 EST 2017
 * Implement automatic download and build of ITK, DCMTK

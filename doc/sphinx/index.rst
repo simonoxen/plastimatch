@@ -29,20 +29,6 @@ and positron emission tomography (PET). Software features include:
 * XiO import and export
 * Plugin to 3D Slicer
 
-Reg-2-3, included in the plastimatch download, is a full-featured 
-2D-3D rigid registration program.  Features include:
-
-* Automatic registration using several cost functions, 
-  including 
-  normalized mutual information (NMI), 
-  normalized correlation (NCC),
-  mean reciprocal square differences (MRSD),
-  mean squared difference (MS), 
-  and gradient difference (GD)
-* Interactive initialization
-* Programmable pre-processing and post-processing
-* Regular and irregular regions of interest
-
 Plastimatch also features other handy utilities which are not
 directly related to image registration:
 
@@ -57,7 +43,12 @@ Plastimatch lacks the following:
 * Viscous fluid registration
 * FEM registration
 * Surface matching registration
-* 2D-2D registration
+
+Reg-2-3 is no longer included in the plastimatch download.
+Please see 
+<https://www.open-radart.org/cms/index.php/sorry>
+or
+<https://gitlab.com/plastimatch/reg-2-3>
 
 Acknowledgments:
 
@@ -79,7 +70,6 @@ For more information:
 * `Gitlab project page (for git) <https://gitlab.com/plastimatch/plastimatch>`_
 * `Sourceforge project page (for files) <https://sourceforge.net/projects/plastimatch/>`_
 * `Plastimatch license (BSD-style) <https://gitlab.com/plastimatch/plastimatch/blob/master/src/plastimatch/LICENSE.TXT>`_
-* `Reg-2-3 license (BSD) <https://gitlab.com/plastimatch/plastimatch/blob/master/src/reg-2-3/LICENSE.txt>`_
 * `Doxygen </doxygen>`_
 * `E-mail list <http://groups.google.com/group/plastimatch>`_
 
