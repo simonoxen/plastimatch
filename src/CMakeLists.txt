@@ -38,12 +38,15 @@ if (NOT PLM_CONFIG_DISABLE_PLASTIMATCH)
 	list (APPEND sb_option_list "-D${_var}=${${_var}}")
       endforeach ()
 
-      set (sb_dependencies devillard inih lbfgs nkidecompress specfun sqlite3)
+      set (sb_dependencies devillard inih lbfgs nkidecompress specfun)
       if (NOT ITK_FOUND)
 	list (APPEND sb_dependencies ITK)
       endif ()
       if (NOT DCMTK_FOUND)
 	list (APPEND sb_dependencies DCMTK)
+      endif ()
+      if (NOT SQLITE_FOUND)
+	list (APPEND sb_dependencies sqlite3)
       endif ()
 
       ExternalProject_Add (${proj}
