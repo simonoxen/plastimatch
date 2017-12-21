@@ -310,7 +310,7 @@ drr_render_volume_perspective (
 #endif
 
     /* Compute volume boundary box */
-    volume_limit_set (&vol_limit, vol);
+    vol_limit.find_limit (vol);
 
     /* Trace the set of rays */
     switch (options->threading) {

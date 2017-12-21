@@ -22,6 +22,8 @@ public:
     /* dir == 0 if lower_limit corresponds to lower index */
     int dir[3];
 public:
+    void find_limit (const Volume::Pointer& vol);
+    void find_limit (const Volume *vol);
     void print ();
 };
 
@@ -39,10 +41,5 @@ PLMBASE_C_API int volume_limit_clip_segment (
         double *p1,                 /* INPUT:  Line segment point 1 */
         double *p2                  /* INPUT:  Line segment point 2 */
 );
-PLMBASE_API void volume_limit_set (Volume_limit *vol_limit, 
-    const Volume *vol);
-PLMBASE_API void volume_limit_set (Volume_limit *vol_limit, 
-    const Volume::Pointer& volume);
-
 
 #endif

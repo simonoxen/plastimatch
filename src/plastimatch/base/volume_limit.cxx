@@ -203,34 +203,34 @@ volume_limit_clip_segment (
 }
 
 void
-volume_limit_set (Volume_limit *vol_limit, const Volume *vol)
+Volume_limit::find_limit (const Volume *vol)
 {
     int d;
 
     /* Compute volume boundary box */
     for (d = 0; d < 3; d++) {
-        vol_limit->lower_limit[d] = vol->origin[d] - 0.5 * vol->spacing[d];
-        vol_limit->upper_limit[d] = vol_limit->lower_limit[d]
+        this->lower_limit[d] = vol->origin[d] - 0.5 * vol->spacing[d];
+        this->upper_limit[d] = this->lower_limit[d]
             + vol->dim[d] * vol->spacing[d];
-        if (vol_limit->lower_limit[d] <= vol_limit->upper_limit[d]) {
-            vol_limit->dir[d] = 1;
+        if (this->lower_limit[d] <= this->upper_limit[d]) {
+            this->dir[d] = 1;
         } else {
             double tmp;
-            vol_limit->dir[d] = -1;
+            this->dir[d] = -1;
             /* Swap limits */
-            tmp = vol_limit->lower_limit[d];
-            vol_limit->lower_limit[d] = vol_limit->upper_limit[d];
-            vol_limit->upper_limit[d] = tmp;
+            tmp = this->lower_limit[d];
+            this->lower_limit[d] = this->upper_limit[d];
+            this->upper_limit[d] = tmp;
         }
-        vol_limit->lower_limit[d] += DRR_BOUNDARY_TOLERANCE;
-        vol_limit->upper_limit[d] -= DRR_BOUNDARY_TOLERANCE;
+        this->lower_limit[d] += DRR_BOUNDARY_TOLERANCE;
+        this->upper_limit[d] -= DRR_BOUNDARY_TOLERANCE;
     }
 }
 
 void
-volume_limit_set (Volume_limit *vol_limit, const Volume::Pointer& vol)
+Volume_limit::find_limit (const Volume::Pointer& vol)
 {
-    volume_limit_set (vol_limit, vol.get());
+    this->find_limit (vol.get());
 }
 
 void

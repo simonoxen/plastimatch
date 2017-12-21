@@ -189,7 +189,7 @@ Rpl_volume::set_ct_volume (Plm_image::Pointer& ct_volume)
     d_ptr->ct = ct_volume;
 
     /* Compute volume boundary box */
-    volume_limit_set (&d_ptr->ct_limit, ct_volume->get_volume_float());
+    d_ptr->ct_limit.find_limit (ct_volume->get_volume_float());
 }
 
 Aperture::Pointer& 
