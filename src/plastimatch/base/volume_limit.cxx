@@ -13,12 +13,12 @@
 // TODO: All the #defines in base/ray_trace.h need to
 //       be rethought/goaway.
 
-static Point_location
-test_boundary (Volume_limit* vol_limit, int d, double x)
+Point_location
+Volume_limit::test_boundary (int d, double x)
 {
-    if (x < vol_limit->lower_limit[d]) {
+    if (x < this->lower_limit[d]) {
         return POINTLOC_LEFT;
-    } else if (x > vol_limit->upper_limit[d]) {
+    } else if (x > this->upper_limit[d]) {
         return POINTLOC_RIGHT;
     } else {
         return POINTLOC_INSIDE;
@@ -27,8 +27,7 @@ test_boundary (Volume_limit* vol_limit, int d, double x)
 
 /* Return 1 if ray intersects volume */
 int
-volume_limit_clip_ray (
-    Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
+Volume_limit::clip_ray (
     double *ip1,                /* OUTPUT: Intersection point 1 */
     double *ip2,                /* OUTPUT: Intersection point 2 */
     const double *p1,           /* INPUT:  Starting point of ray */
@@ -46,7 +45,7 @@ volume_limit_clip_ray (
     
     /* Compute point location */
     for (d = 0; d < 3; d++) {
-        ploc[d] = test_boundary (vol_limit, d, p1[d]);
+        ploc[d] = this->test_boundary (d, p1[d]);
     }
 
     /* Compute alphas */
@@ -62,8 +61,8 @@ volume_limit_clip_ray (
         }
 
         /* General configuration */
-        alpha[d][0] = (vol_limit->lower_limit[d] - p1[d]) / ray[d];
-        alpha[d][1] = (vol_limit->upper_limit[d] - p1[d]) / ray[d];
+        alpha[d][0] = (this->lower_limit[d] - p1[d]) / ray[d];
+        alpha[d][1] = (this->upper_limit[d] - p1[d]) / ray[d];
 
         /* Sort alpha */
         if (alpha[d][0] > alpha[d][1]) {
@@ -104,12 +103,11 @@ volume_limit_clip_ray (
 
 /* Return 1 if line segment intersects volume */
 int
-volume_limit_clip_segment (
-    Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
+Volume_limit::clip_segment (
     double *ip1,                /* OUTPUT: Intersection point 1 */
     double *ip2,                /* OUTPUT: Intersection point 2 */
-    double *p1,                 /* INPUT:  Line segment point 1 */
-    double *p2                  /* INPUT:  Line segment point 2 */
+    const double *p1,           /* INPUT:  Line segment point 1 */
+    const double *p2            /* INPUT:  Line segment point 2 */
 )
 {
     Point_location ploc[3][2];
@@ -122,8 +120,8 @@ volume_limit_clip_segment (
     vec3_sub3 (ray, p2, p1);
 
     for (d = 0; d < 3; d++) {
-        ploc[d][0] = test_boundary (vol_limit, d, p1[d]);
-        ploc[d][1] = test_boundary (vol_limit, d, p2[d]);
+        ploc[d][0] = this->test_boundary (d, p1[d]);
+        ploc[d][1] = this->test_boundary (d, p2[d]);
         /* Immediately reject segments which don't intersect the volume in 
            this dimension */
         if (ploc[d][0] == POINTLOC_LEFT && ploc[d][1] == POINTLOC_LEFT) {
@@ -150,8 +148,8 @@ volume_limit_clip_segment (
             continue;
         }
 
-        alpha_lo[d] = (vol_limit->lower_limit[d] - p1[d]) / ray[d];
-        alpha_hi[d] = (vol_limit->upper_limit[d] - p1[d]) / ray[d];
+        alpha_lo[d] = (this->lower_limit[d] - p1[d]) / ray[d];
+        alpha_hi[d] = (this->upper_limit[d] - p1[d]) / ray[d];
 
         /* Sort alphas */
         if (alpha_hi[d] < alpha_lo[d]) {
@@ -179,10 +177,10 @@ volume_limit_clip_segment (
     printf ("p1 = %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("p2 = %g %g %g\n", p2[0], p2[1], p2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
-    printf ("lower_lim = %g %g %g\n", vol_limit->lower_limit[0], 
-        vol_limit->lower_limit[1], vol_limit->lower_limit[2]);
-    printf ("upper_lim = %g %g %g\n", vol_limit->upper_limit[0], 
-        vol_limit->upper_limit[1], vol_limit->upper_limit[2]);
+    printf ("lower_lim = %g %g %g\n", this->lower_limit[0], 
+        this->lower_limit[1], this->lower_limit[2]);
+    printf ("upper_lim = %g %g %g\n", this->upper_limit[0], 
+        this->upper_limit[1], this->upper_limit[2]);
     printf ("alpha_lo = %g %g %g\n", alpha_lo[0], alpha_lo[1], alpha_lo[2]);
     printf ("alpha_hi = %g %g %g\n", alpha_hi[0], alpha_hi[1], alpha_hi[2]);
     printf ("alpha in/out = %g %g\n", alpha_in, alpha_out);
@@ -241,3 +239,4 @@ Volume_limit::print ()
         lower_limit[1], upper_limit[1], 
         lower_limit[2], upper_limit[2]);
 }
+

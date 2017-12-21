@@ -478,7 +478,7 @@ Rpl_volume::compute_ray_data ()
 	    /* Test if ray intersects volume and create intersection points */
             ray_data->intersects_volume = false;
 
-	    if (!volume_limit_clip_ray (&d_ptr->ct_limit, ip1, ip2, src, ray))
+	    if (!d_ptr->ct_limit.clip_ray (ip1, ip2, src, ray))
             {
 		continue;
 	    }
@@ -1115,7 +1115,7 @@ Rpl_volume::compute_wed_volume (
 	    double ray_end[3];
 
             /* GCS FIX: Why do this?  Is the ray data not already valid? */
-	    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_data->p2, ray_data->ip2)) {
+	    if (!d_ptr->ct_limit.clip_segment (ray_start, ray_end, ray_data->p2, ray_data->ip2)) {
                 printf("Error in ray clipping, exiting...\n");
                 return;
 	    }
@@ -1354,7 +1354,7 @@ Rpl_volume::compute_dew_volume (
                     ray_adj_len = (vec3_len(coord_vec)/coord_ap_len)*vec3_len(dummy_adj_ray);
                     vec3_scale3(adj_ray_coord,ray_adj[i]->ray,ray_adj_len);
 
-                    if (!volume_limit_clip_segment (&d_ptr->ct_limit, ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
+                    if (!d_ptr->ct_limit.clip_segment (ray_start, ray_end, ray_adj[i]->p2, ray_adj[i]->ip2)) {
                         printf("Error in ray clipping, exiting...\n");
                         return;
                     }

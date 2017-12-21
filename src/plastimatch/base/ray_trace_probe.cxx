@@ -40,7 +40,7 @@ ray_trace_probe (
     float* img = (float*) vol->img;
 
     /* Test if ray intersects volume */
-    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, ip1in, ip2in)) {
+    if (!vol_limit->clip_segment (ip1, ip2, ip1in, ip2in)) {
         return;
     }
 

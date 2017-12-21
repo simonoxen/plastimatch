@@ -76,7 +76,7 @@ ray_trace_exact_init (
     //double ips[2][4];
 
     /* Test if ray intersects volume */
-    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
+    if (!vol_limit->clip_segment (ip1, ip2, p1, p2)) {
 	return 0;
     }
 

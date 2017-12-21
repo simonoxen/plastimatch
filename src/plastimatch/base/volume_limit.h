@@ -22,24 +22,22 @@ public:
     /* dir == 0 if lower_limit corresponds to lower index */
     int dir[3];
 public:
-    void find_limit (const Volume::Pointer& vol);
-    void find_limit (const Volume *vol);
-    void print ();
-};
-
-PLMBASE_C_API int volume_limit_clip_ray (
-        Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
+    int clip_ray (
         double *ip1,                /* OUTPUT: Intersection point 1 */
         double *ip2,                /* OUTPUT: Intersection point 2 */
         const double *p1,           /* INPUT:  Starting point of ray */
         const double *ray           /* INPUT:  Direction of ray */
-);
-PLMBASE_C_API int volume_limit_clip_segment (
-        Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
+    );
+    int clip_segment (
         double *ip1,                /* OUTPUT: Intersection point 1 */
         double *ip2,                /* OUTPUT: Intersection point 2 */
-        double *p1,                 /* INPUT:  Line segment point 1 */
-        double *p2                  /* INPUT:  Line segment point 2 */
-);
+        const double *p1,           /* INPUT:  Line segment point 1 */
+        const double *p2            /* INPUT:  Line segment point 2 */
+    );
+    void find_limit (const Volume *vol);
+    void find_limit (const Volume::Pointer& vol);
+    Point_location test_boundary (int d, double x);
+    void print ();
+};
 
 #endif
