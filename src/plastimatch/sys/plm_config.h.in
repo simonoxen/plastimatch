@@ -51,6 +51,8 @@
 #cmakedefine PLM_CONFIG_LEGACY_BSPLINE_EXTEND 1
 #cmakedefine PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO 1
 #cmakedefine PLM_CONFIG_LEGACY_MI_METRIC 1
+#cmakedefine PLM_CONFIG_LEGACY_PROJ_GEO 1
+#cmakedefine PLM_CONFIG_LEGACY_RAY_TRACE_EXACT 1
 
 /* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1

@@ -97,6 +97,7 @@ set (PLMBASE_LIBRARY_SRC
   rasterizer.cxx rasterizer.h
   raw_pointset.cxx raw_pointset.h
   ray_data.h
+  ray_trace.h
   ray_trace_exact.cxx
   ray_trace_callback.h
   ray_trace_probe.cxx

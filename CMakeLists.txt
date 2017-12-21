@@ -107,6 +107,8 @@ sb_option (PLM_CONFIG_LEGACY_MI_METRIC
   "For ITK metrics, the legacy implementation of the mi metric is Viola-Wells to Mattes" OFF)
 sb_option (PLM_CONFIG_LEGACY_PROJ_GEO
   "Use legacy method for specifying projection geometry" ON)
+sb_option (PLM_CONFIG_LEGACY_RAY_TRACE_EXACT
+  "Use legacy algorithm for exact ray tracing" ON)
 
 # Compile and link options
 sb_option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
