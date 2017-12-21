@@ -11,7 +11,7 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-void
+static void
 ray_trace_exact_init_loopvars (
     int* ai,           /* Output: index */
     int* aidir,        /* Output: are indices moving up or down? */

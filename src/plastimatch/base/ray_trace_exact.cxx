@@ -13,7 +13,7 @@
 
 void
 ray_trace_exact_init_loopvars (
-    int* ai,           /* Output: index */
+    plm_long* ai,      /* Output: index */
     int* aidir,        /* Output: are indices moving up or down? */
     double* ao,        /* Output: absolute length to next voxel crossing */
     double* al,        /* Output: length between voxel crossings */
@@ -31,7 +31,7 @@ ray_trace_exact_init_loopvars (
     *aidir = SIGN (ry) * SIGN (samp);
     *ai = ROUND_INT ((pt - origin) / samp);
     *ai = clamp<int> (*ai, 0, (int) dim - 1);
-    *ao = SIGN (ry) 
+    *ao = SIGN (ry)
 	* (((*ai) * samp + origin) + (SIGN (ry) * 0.5 * fabs (samp)) - pt);
 
     if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
@@ -43,13 +43,13 @@ ray_trace_exact_init_loopvars (
     }
 }
 
-/* Initialize loop variables.  Returns 1 if the segment intersects 
+/* Initialize loop variables.  Returns 1 if the segment intersects
    the volume, and 0 if the segment does not intersect. */
 int
 ray_trace_exact_init (
-    int *ai_x,
-    int *ai_y,
-    int *ai_z,
+    plm_long *ai_x,
+    plm_long *ai_y,
+    plm_long *ai_z,
     int *aixdir, 
     int *aiydir, 
     int *aizdir,
@@ -59,7 +59,6 @@ ray_trace_exact_init (
     double *al_x, 
     double *al_y, 
     double *al_z,
-    double *len,
     Volume* vol, 
     Volume_limit *vol_limit,
     double* p1, 
@@ -69,7 +68,6 @@ ray_trace_exact_init (
     double ray[3];
     double ip1[3];
     double ip2[3];
-    //double ips[2][4];
 
     /* Test if ray intersects volume */
     if (!vol_limit->clip_segment (ip1, ip2, p1, p2)) {
@@ -94,37 +92,36 @@ ray_trace_exact_init (
        al_x    // length between voxel crossings
     */
     ray_trace_exact_init_loopvars (
-	ai_x, aixdir, ao_x, al_x, 
+	ai_x, aixdir, ao_x, al_x,
 	ip1[0],
-	ray[0], 
-	vol->origin[0], 
+	ray[0],
+	vol->origin[0],
 	vol->dim[0],
 	vol->spacing[0]);
     ray_trace_exact_init_loopvars (
-	ai_y, aiydir, ao_y, al_y, 
+	ai_y, aiydir, ao_y, al_y,
 	ip1[1],
-	ray[1], 
-	vol->origin[1], 
-	vol->dim[1], 
+	ray[1],
+	vol->origin[1],
+	vol->dim[1],
 	vol->spacing[1]);
     ray_trace_exact_init_loopvars (
-	ai_z, aizdir, ao_z, al_z, 
-	ip1[2], 
-	ray[2], 
-	vol->origin[2], 
-	vol->dim[2], 
+	ai_z, aizdir, ao_z, al_z,
+	ip1[2],
+	ray[2],
+	vol->origin[2],
+	vol->dim[2],
 	vol->spacing[2]);
 
 #if defined (DRR_VERBOSE)
-    printf ("aix = %d aixdir = %d aox = %g alx = %g\n", 
+    printf ("aix = %d aixdir = %d aox = %g alx = %g\n",
 	*ai_x, *aixdir, *ao_x, *al_x);
-    printf ("aiy = %d aiydir = %d aoy = %g aly = %g\n", 
+    printf ("aiy = %d aiydir = %d aoy = %g aly = %g\n",
 	*ai_y, *aiydir, *ao_y, *al_y);
-    printf ("aiz = %d aizdir = %d aoz = %g alz = %g\n", 
+    printf ("aiz = %d aizdir = %d aoz = %g alz = %g\n",
 	*ai_z, *aizdir, *ao_z, *al_z);
 #endif
 
-    *len = vec3_dist (ip1, ip2);
     return 1;
 }
 
@@ -138,18 +135,10 @@ ray_trace_exact (
     double *p2in                  /* Input: end point for ray */
 )
 {
-    /* Variable notation:
-       ai_x     index of x
-       aixdir   x indices moving up or down?
-       ao_x     absolute length to next voxel crossing
-       al_x     length between voxel crossings
-    */
-    int ai_x, ai_y, ai_z;
-    int aixdir, aiydir, aizdir;
-    double ao_x, ao_y, ao_z;
-    double al_x, al_y, al_z;
-    double len;                       /* Total length of ray within volume */
-    double aggr_len = 0.0;            /* Length traced so far */
+    plm_long current_idx[3];
+    int travel_dir[3];
+    double next_crossing[3];      /* Length to next voxel crossing */
+    double crossing_dist[3];      /* Spacing between crossings for this angle */
     float* img = (float*) vol->img;
 
 #if defined (DRR_VERBOSE)
@@ -158,19 +147,18 @@ ray_trace_exact (
 #endif
 
     if (!ray_trace_exact_init (
-	    &ai_x,
-	    &ai_y,
-	    &ai_z,
-	    &aixdir, 
-	    &aiydir, 
-	    &aizdir,
-	    &ao_x, 
-	    &ao_y, 
-	    &ao_z,
-	    &al_x, 
-	    &al_y, 
-	    &al_z,
-	    &len,
+	    &current_idx[0],
+	    &current_idx[1],
+	    &current_idx[2],
+	    &travel_dir[0],
+	    &travel_dir[1],
+	    &travel_dir[2],
+	    &next_crossing[0], 
+	    &next_crossing[1], 
+	    &next_crossing[2],
+	    &crossing_dist[0], 
+	    &crossing_dist[1], 
+	    &crossing_dist[2],
 	    vol, 
 	    vol_limit, 
 	    p1in, 
@@ -179,44 +167,57 @@ ray_trace_exact (
 	return;
     }
 
+    int travel_limit[3] = { -1, -1, -1 };
+    if (travel_dir[0] == 1) {
+        travel_limit[0] = vol->dim[0];
+    }
+    if (travel_dir[1] == 1) {
+        travel_limit[1] = vol->dim[1];
+    }
+    if (travel_dir[2] == 1) {
+        travel_limit[2] = vol->dim[2];
+    }
+    
     /* We'll go from p1 to p2 */
     do {
-	float pix_density;
-	double pix_len;
-	int index = 
-	    ai_z*vol->dim[0]*vol->dim[1] 
-	    + ai_y*vol->dim[0] 
-	    + ai_x;
+        float pix_density;
+        double pix_len;
+        int index = vol->index (current_idx);
 
 #if defined (DRR_ULTRA_VERBOSE)
-	printf ("(%d %d %d) (%g,%g,%g)\n",ai_x,ai_y,ai_z,ao_x,ao_y,ao_z);
-	printf ("aggr_len = %g, len = %g\n", aggr_len, len);
-	fflush (stdout);
+        printf ("(%d %d %d) (%g,%g,%g)\n",current_idx[0],current_idx[1],current_idx[2],next_crossing[0],next_crossing[1],next_crossing[2]);
+        fflush (stdout);
 #endif
-	pix_density = img[index];
-	if ((ao_x < ao_y) && (ao_x < ao_z)) {
-	    pix_len = ao_x;
-	    aggr_len += ao_x;
-	    ao_y -= ao_x;
-	    ao_z -= ao_x;
-	    ao_x = al_x;
-	    ai_x += aixdir;
-	} else if ((ao_y < ao_z)) {
-	    pix_len = ao_y;
-	    aggr_len += ao_y;
-	    ao_x -= ao_y;
-	    ao_z -= ao_y;
-	    ao_y = al_y;
-	    ai_y += aiydir;
-	} else {
-	    pix_len = ao_z;
-	    aggr_len += ao_z;
-	    ao_x -= ao_z;
-	    ao_y -= ao_z;
-	    ao_z = al_z;
-	    ai_z += aizdir;
-	}
-	(*callback) (callback_data, index, pix_len, pix_density);
-	
-    } while (aggr_len+DRR_LEN_TOLERANCE < len);
+        pix_density = img[index];
+        if ((next_crossing[0] < next_crossing[1]) && (next_crossing[0] < next_crossing[2])) {
+            pix_len = next_crossing[0];
+            next_crossing[1] -= next_crossing[0];
+            next_crossing[2] -= next_crossing[0];
+            next_crossing[0] = crossing_dist[0];
+            current_idx[0] += travel_dir[0];
+            if (current_idx[0] == travel_limit[0]) {
+                break;
+            }
+        } else if ((next_crossing[1] < next_crossing[2])) {
+            pix_len = next_crossing[1];
+            next_crossing[0] -= next_crossing[1];
+            next_crossing[2] -= next_crossing[1];
+            next_crossing[1] = crossing_dist[1];
+            current_idx[1] += travel_dir[1];
+            if (current_idx[1] == travel_limit[1]) {
+                break;
+            }
+        } else {
+            pix_len = next_crossing[2];
+            next_crossing[0] -= next_crossing[2];
+            next_crossing[1] -= next_crossing[2];
+            next_crossing[2] = crossing_dist[2];
+            current_idx[2] += travel_dir[2];
+            if (current_idx[2] == travel_limit[2]) {
+                break;
+            }
+        }
+        (*callback) (callback_data, index, pix_len, pix_density);
+
+    } while (1);
 }
