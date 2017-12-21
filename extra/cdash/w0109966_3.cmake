@@ -12,8 +12,8 @@ BUILDNAME:STRING=w03-wxp32-Pisrcd-static
 //Name of the computer/site where compile is being run
 SITE:STRING=w0109966-vse9
 
-//Build with shared libraries.
-PLM_CONFIG_DISABLE_CUDA:BOOL=ON
+//Build without cuda
+PLM_CONFIG_ENABLE_CUDA:BOOL=OFF
 
 //Build with shared libraries.
 BUILD_SHARED_LIBS:BOOL=OFF

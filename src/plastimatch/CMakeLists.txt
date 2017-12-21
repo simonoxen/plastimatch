@@ -317,7 +317,7 @@ endif ()
 ##  Do we have prerequisites for viscous code?
 ##-----------------------------------------------------------------------------
 set (PLM_BUILD_VISCOUS FALSE)
-if (NOT PLM_CONFIG_DISABLE_VISCOUS
+if (PLM_CONFIG_ENABLE_VISCOUS
     AND CUDA_FOUND AND CUDA_SDK_ROOT_DIR AND THRUST_FOUND)
   set (PLM_BUILD_VISCOUS TRUE)
 endif ()

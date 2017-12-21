@@ -9,8 +9,6 @@ project (plastimatch)
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "7")
 set (PLM_VERSION_PATCH "0")
-#set (PLM_RELEASE_VERSION FALSE)
-set (PLM_RELEASE_VERSION TRUE)
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
@@ -67,18 +65,22 @@ sb_variable (CMAKE_BUILD_TYPE)
 ##-----------------------------------------------------------------------------
 ##  Define plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-sb_option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
-option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
-option (PLM_CONFIG_DISABLE_FATM "Set to ON to build without FATM" ON)
-option (PLM_CONFIG_DISABLE_MONDOSHOT "Disable building mondoshot" ON)
-sb_option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
-sb_option (PLM_CONFIG_DISABLE_OPENMP "Set to ON to build without OpenMP" OFF)
-option (PLM_CONFIG_DISABLE_PLASTIMATCH "Disable building plastimatch" OFF)
-option (PLM_CONFIG_DISABLE_QT "Set to ON to build without QT" OFF)
-sb_option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
-option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to build Matlab plugins" OFF)
+sb_option (PLM_CONFIG_ENABLE_CUDA "Set to ON to allow build with CUDA" ON)
+option (PLM_CONFIG_ENABLE_DCMTK "Set to ON to allow build with DCMTK" ON)
+option (PLM_CONFIG_ENABLE_FATM "Set to ON to allow building fatm" OFF)
+option (PLM_CONFIG_ENABLE_MONDOSHOT "Set to ON to allow building mondoshot" OFF)
+sb_option (PLM_CONFIG_ENABLE_OPENCL "Set to ON to allow build with OpenCL" ON)
+sb_option (PLM_CONFIG_ENABLE_OPENMP "Set to ON to allow build with OpenMP" ON)
+option (PLM_CONFIG_ENABLE_PLASTIMATCH "Set to ON to allow building plastimatch" ON)
+option (PLM_CONFIG_ENABLE_QT "Set to ON to allow build with QT" ON)
+sb_option (PLM_CONFIG_ENABLE_SSE2 "Set to ON to allow build with SSE" ON)
+option (PLM_CONFIG_ENABLE_MATLAB "Set to ON to allow build of Matlab plugins" OFF)
+sb_option (PLM_CONFIG_ENABLE_VISCOUS
+  "Set to ON to allow build of experimental viscous fluid registration algorithm" OFF)
+sb_option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
+  "Set to ON to allow build of experimental plastimatch_qt executable" OFF)
 
-option (PLM_CONFIG_BUILD_QT_PLUGINS "Build QT4 Designer Plugins?" OFF)
+option (PLM_CONFIG_BUILD_QT_PLUGINS "Set to ON to allow build of QT4 Designer Plugins" OFF)
 sb_option (PLM_CONFIG_DEBIAN_BUILD "Set to ON to configure build for debian" OFF)
 option (PLM_CONFIG_LIBRARY_BUILD "Set to ON to build only libraries" OFF)
 option (PLM_CONFIG_NOMANIFEST
@@ -89,10 +91,6 @@ option (PLM_CONFIG_ENABLE_SUPERBUILD
 # Plastimatch software configuration options
 option (PLM_CONFIG_CLANG_COMPLETE
   "Generate .clang_complete for hipster Vim-ers" OFF)
-option (PLM_CONFIG_DISABLE_VISCOUS
-  "Disable experimental viscous fluid registration algorithm" ON)
-option (PLM_CONFIG_ENABLE_PLASTIMATCH_QT
-  "Enable experimental plastimatch_qt executable" OFF)
 sb_option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
 sb_option (PLM_CONFIG_VOL_LIST
@@ -146,8 +144,8 @@ endif ()
 
 # Override some options if library build is selected
 if (PLM_CONFIG_LIBRARY_BUILD)
-  set (PLM_CONFIG_DISABLE_FATM ON)
-  set (PLM_CONFIG_DISABLE_MONDOSHOT ON)
+  set (PLM_CONFIG_ENABLE_FATM OFF)
+  set (PLM_CONFIG_ENABLE_MONDOSHOT OFF)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -269,7 +267,7 @@ find_library (LIBDL_FOUND dl)
 ## it will have a working version of DCMTKConfig.cmake.
 ## In this case, we can use the modern find_package variant.
 ## Otherwise we use the old hacked version of FindDCMTK.cmake.
-if (NOT PLM_CONFIG_DISABLE_DCMTK)
+if (PLM_CONFIG_ENABLE_DCMTK)
   if (PLM_SYSTEM_DCMTK STREQUAL "YES")
     if (DCMTK_DIR AND EXISTS "${DCMTK_DIR}/DCMTKConfig.cmake")
       find_package (DCMTK NO_MODULE REQUIRED)
@@ -294,6 +292,8 @@ if (NOT PLM_CONFIG_DISABLE_DCMTK)
       message (STATUS "DCMTK not found.")
     endif ()
   endif ()
+else ()
+  set (DCMTK_FOUND FALSE)
 endif ()
 
 # Workaround for CMake bug in FindDCMTK.  This was fixed some time between 
@@ -319,10 +319,10 @@ else ()
   set (MATLAB_FOUND false)
 endif ()
 find_package (Octave)
-if (NOT PLM_CONFIG_DISABLE_OPENCL)
+if (PLM_CONFIG_ENABLE_OPENCL)
   find_package (OpenCL)
 endif ()
-if (NOT PLM_CONFIG_DISABLE_OPENMP)
+if (PLM_CONFIG_ENABLE_OPENMP)
   find_package (OpenMP)
 endif ()
 if (PLM_CONFIG_DEBIAN_BUILD)
@@ -330,8 +330,8 @@ if (PLM_CONFIG_DEBIAN_BUILD)
 else ()
   find_package (SQLite)
 endif ()
-if (NOT PLM_CONFIG_DISABLE_SSE2)
-  find_package (SSE)           # SSE Extensions for CPU
+if (PLM_CONFIG_ENABLE_SSE2)
+  find_package (SSE)
 else ()
   set (SSE2_FOUND false)
 endif ()
@@ -404,14 +404,14 @@ add_subdirectory (libs/nkidecompress)
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-if (PLM_CONFIG_DISABLE_CUDA)
-  set (CUDA_FOUND false)
-else ()
+if (PLM_CONFIG_ENABLE_CUDA)
   find_package (CUDA_wrap)
   set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
   if (CUDA_FOUND)
     cuda_include_directories (${CMAKE_CURRENT_SOURCE_DIR})
   endif ()
+else ()
+  set (CUDA_FOUND false)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -514,9 +514,6 @@ set (PLM_BASIC_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
 set (PLASTIMATCH_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
-if (NOT PLM_RELEASE_VERSION)
-  set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING}-dev")
-endif ()
 if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
   execute_process (
     COMMAND 
@@ -595,12 +592,12 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  QT
 ##-----------------------------------------------------------------------------
-if (PLM_CONFIG_DISABLE_QT)
-  set (QT4_FOUND false)
-  set (QT5_FOUND false)
-else ()
+if (PLM_CONFIG_ENABLE_QT)
   find_package (Qt4 4.6.3 QUIET COMPONENTS QtCore QtGui QtDesigner)
   find_package (Qt5 QUIET COMPONENTS Core Gui Designer Network Widgets)
+else ()
+  set (QT4_FOUND false)
+  set (QT5_FOUND false)
 endif ()
 
 if (QT4_FOUND)
