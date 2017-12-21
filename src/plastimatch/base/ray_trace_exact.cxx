@@ -11,10 +11,6 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-#if RAY_TRACE_EXACT_LEGACY
-#include "ray_trace_exact_legacy.cxx"
-#else
-
 void
 ray_trace_exact_init_loopvars (
     int* ai,           /* Output: index */
@@ -224,5 +220,3 @@ ray_trace_exact (
 	
     } while (aggr_len+DRR_LEN_TOLERANCE < len);
 }
-
-#endif

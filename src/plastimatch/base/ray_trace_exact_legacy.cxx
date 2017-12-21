@@ -1,6 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plmbase_config.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "plm_math.h"
+#include "ray_trace.h"
+#include "volume.h"
+#include "volume_limit.h"
+
 void
 ray_trace_exact_init_loopvars (
     int* ai,           /* Output: index */
@@ -62,7 +72,7 @@ ray_trace_exact_init (
     //double ips[2][4];
 
     /* Test if ray intersects volume */
-    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
+    if (!vol_limit->clip_segment (ip1, ip2, p1, p2)) {
 	return 0;
     }
 

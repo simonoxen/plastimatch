@@ -98,7 +98,6 @@ set (PLMBASE_LIBRARY_SRC
   raw_pointset.cxx raw_pointset.h
   ray_data.h
   ray_trace.h
-  ray_trace_exact.cxx
   ray_trace_callback.h
   ray_trace_probe.cxx
   ray_trace_probe.h
@@ -194,6 +193,18 @@ if (PLM_DCM_USE_DCMTK)
     dcmtk_sro.cxx dcmtk_sro.h
     dcmtk_uid.cxx dcmtk_uid.h
     dcmtk_util.cxx dcmtk_util.h
+    )
+endif ()
+
+if (PLM_CONFIG_LEGACY_RAY_TRACE_EXACT)
+  set (PLMBASE_LIBRARY_SRC
+    ${PLMBASE_LIBRARY_SRC}
+    ray_trace_exact_legacy.cxx
+    )
+else ()
+  set (PLMBASE_LIBRARY_SRC
+    ${PLMBASE_LIBRARY_SRC}
+    ray_trace_exact.cxx
     )
 endif ()
 
