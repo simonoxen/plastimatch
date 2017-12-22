@@ -71,6 +71,7 @@ option (PLM_CONFIG_ENABLE_FATM "Set to ON to allow building fatm" OFF)
 option (PLM_CONFIG_ENABLE_MONDOSHOT "Set to ON to allow building mondoshot" OFF)
 sb_option (PLM_CONFIG_ENABLE_OPENCL "Set to ON to allow build with OpenCL" ON)
 sb_option (PLM_CONFIG_ENABLE_OPENMP "Set to ON to allow build with OpenMP" ON)
+sb_option (PLM_CONFIG_ENABLE_OPT4D "Set to ON to allow build with Opt4D" OFF)
 option (PLM_CONFIG_ENABLE_PLASTIMATCH "Set to ON to allow building plastimatch" ON)
 option (PLM_CONFIG_ENABLE_QT "Set to ON to allow build with QT" ON)
 sb_option (PLM_CONFIG_ENABLE_SSE2 "Set to ON to allow build with SSE" ON)
@@ -651,6 +652,20 @@ endif ()
 ##  libyaml
 ##-----------------------------------------------------------------------------
 find_package (LibYAML)
+
+##-----------------------------------------------------------------------------
+##  Opt4D
+##-----------------------------------------------------------------------------
+if (PLM_CONFIG_ENABLE_OPT4D)
+  set (opt4D_DIR "${opt4D_DIR}" CACHE PATH "Path to opt4D build directory")
+  find_package (opt4D)
+  if (NOT opt4D_FOUND)
+    message (STATUS "Opt4D will be downloaded and built.")
+    include (SuperBuild/External_opt4D.cmake)
+  endif ()
+else ()
+  set (opt4D_FOUND FALSE)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Configure include files
