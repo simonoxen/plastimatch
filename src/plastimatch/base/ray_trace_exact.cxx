@@ -47,18 +47,10 @@ ray_trace_exact_init_loopvars (
    the volume, and 0 if the segment does not intersect. */
 int
 ray_trace_exact_init (
-    plm_long *ai_x,
-    plm_long *ai_y,
-    plm_long *ai_z,
-    int *aixdir, 
-    int *aiydir, 
-    int *aizdir,
-    double *ao_x, 
-    double *ao_y, 
-    double *ao_z,
-    double *al_x, 
-    double *al_y, 
-    double *al_z,
+    plm_long current_idx[3],
+    int travel_dir[3],
+    double next_crossing[3],
+    double crossing_dist[3],
     Volume* vol, 
     Volume_limit *vol_limit,
     double* p1, 
@@ -85,43 +77,19 @@ ray_trace_exact_init (
 #endif
 
     /* We'll go from p1 to p2 */
-    /* Variable notation:
-       ai_x    // index of x
-       aixdir  // x indices moving up or down?
-       ao_x    // absolute length to next voxel crossing
-       al_x    // length between voxel crossings
-    */
-    ray_trace_exact_init_loopvars (
-	ai_x, aixdir, ao_x, al_x,
-	ip1[0],
-	ray[0],
-	vol->origin[0],
-	vol->dim[0],
-	vol->spacing[0]);
-    ray_trace_exact_init_loopvars (
-	ai_y, aiydir, ao_y, al_y,
-	ip1[1],
-	ray[1],
-	vol->origin[1],
-	vol->dim[1],
-	vol->spacing[1]);
-    ray_trace_exact_init_loopvars (
-	ai_z, aizdir, ao_z, al_z,
-	ip1[2],
-	ray[2],
-	vol->origin[2],
-	vol->dim[2],
-	vol->spacing[2]);
-
-#if defined (DRR_VERBOSE)
-    printf ("aix = %d aixdir = %d aox = %g alx = %g\n",
-	*ai_x, *aixdir, *ao_x, *al_x);
-    printf ("aiy = %d aiydir = %d aoy = %g aly = %g\n",
-	*ai_y, *aiydir, *ao_y, *al_y);
-    printf ("aiz = %d aizdir = %d aoz = %g alz = %g\n",
-	*ai_z, *aizdir, *ao_z, *al_z);
-#endif
-
+    /* GCS FIX: This doesn't respect direction cosines */
+    for (int d = 0; d < 3; d++) {
+        ray_trace_exact_init_loopvars (
+            &current_idx[d],
+            &travel_dir[d],
+            &next_crossing[d],
+            &crossing_dist[d],
+            ip1[d],
+            ray[d],
+            vol->origin[d],
+            vol->dim[d],
+            vol->spacing[d]);
+    }
     return 1;
 }
 
@@ -147,18 +115,10 @@ ray_trace_exact (
 #endif
 
     if (!ray_trace_exact_init (
-	    &current_idx[0],
-	    &current_idx[1],
-	    &current_idx[2],
-	    &travel_dir[0],
-	    &travel_dir[1],
-	    &travel_dir[2],
-	    &next_crossing[0], 
-	    &next_crossing[1], 
-	    &next_crossing[2],
-	    &crossing_dist[0], 
-	    &crossing_dist[1], 
-	    &crossing_dist[2],
+	    current_idx,
+	    travel_dir,
+	    next_crossing,
+	    crossing_dist,
 	    vol, 
 	    vol_limit, 
 	    p1in, 
