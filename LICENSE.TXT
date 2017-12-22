@@ -1,5 +1,4 @@
-Plastimatch and uno-2-3-reg are distributed under BSD-style licenses.
+Plastimatch is distributed under a BSD-style license.
 
-Please see src/plastimatch/LICENSE.TXT and src/uno-2-3-reg/LICENSE.txt 
-for license details.
+Please see src/plastimatch/LICENSE.TXT for details.
 
