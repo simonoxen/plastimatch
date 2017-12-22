@@ -46,6 +46,32 @@ texture<float, 1, cudaReadModeElementType> tex_vol;
 #define DRR_LEN_TOLERANCE 1e-6
 
 /* From volume_limit.c */
+__device__ void
+volume_limit_test_boundary (
+    int3 *ploc,             // OUT
+    float3 lower_limit,     // IN
+    float3 upper_limit,     // IN
+    float3 p                // IN
+)
+{
+    *ploc = make_int3 (-1, -1, -1);
+    if (p.x > upper_limit.x) {
+	ploc->x = 1;
+    } else if (p.x > lower_limit.x) {
+	ploc->x = 0;
+    }
+    if (p.y > upper_limit.y) {
+	ploc->y = 1;
+    } else if (p.y > lower_limit.y) {
+	ploc->y = 0;
+    }
+    if (p.z > upper_limit.z) {
+	ploc->z = 1;
+    } else if (p.z > lower_limit.z) {
+	ploc->z = 0;
+    }
+}
+    
 __device__ int
 volume_limit_clip_segment (
     float3 lower_limit,         /* INPUT:  The bounding box to clip to */
@@ -59,7 +85,6 @@ volume_limit_clip_segment (
     float3 ray, inv_ray;
     float alpha_in, alpha_out;
     float3 alpha_low, alpha_high;
-    int3 ploc;
     int3 is_parallel;
 
     ray = p2 - p1;
@@ -67,23 +92,21 @@ volume_limit_clip_segment (
 
     /* Find intersection configuration of ray base */
     /* -1 is POINTLOC_LEFT, 0 is POINTLOC_INSIDE, 1 is POINTLOC_RIGHT */
-    ploc = make_int3 (-1, -1, -1);
-    if (p1.x > upper_limit.x) {
-	ploc.x = 1;
-    } else if (p1.x > lower_limit.x) {
-	ploc.x = 0;
-    }
-    if (p1.y > upper_limit.y) {
-	ploc.y = 1;
-    } else if (p1.y > lower_limit.y) {
-	ploc.y = 0;
-    }
-    if (p1.z > upper_limit.z) {
-	ploc.z = 1;
-    } else if (p1.z > lower_limit.z) {
-	ploc.z = 0;
-    }
+    int3 ploc1, ploc2;
+    volume_limit_test_boundary (&ploc1, lower_limit, upper_limit, p1);
+    volume_limit_test_boundary (&ploc2, lower_limit, upper_limit, p2);
 
+    /* Immediately reject segments which don't intersect the volume */
+    if (ploc1.x && ploc1.x == ploc2.x) {
+        return 0;
+    }
+    if (ploc1.y && ploc1.y == ploc2.y) {
+        return 0;
+    }
+    if (ploc1.z && ploc1.z == ploc2.z) {
+        return 0;
+    }
+    
     /* Check if ray parallel to grid */
     is_parallel = fabsf3(ray) < DRR_LEN_TOLERANCE;
 
@@ -95,17 +118,14 @@ volume_limit_clip_segment (
        parallel to grid, then p1 must be inside slap, otherwise there 
        is no intersection of segment and cube. */
     if (is_parallel.x) {
-	if (!ploc.x) return 0;
 	alpha_low.x = - FLT_MAX;
 	alpha_high.x = + FLT_MAX;
     }
     if (is_parallel.y) {
-	if (!ploc.y) return 0;
 	alpha_low.y = - FLT_MAX;
 	alpha_high.y = + FLT_MAX;
     }
     if (is_parallel.z) {
-	if (!ploc.z) return 0;
 	alpha_low.z = - FLT_MAX;
 	alpha_high.z = + FLT_MAX;
     }

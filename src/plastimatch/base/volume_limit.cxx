@@ -140,9 +140,6 @@ Volume_limit::clip_segment (
     {
         /* If ray is parallel to grid, location must be inside */
         if (fabs(ray[d]) < DRR_LEN_TOLERANCE) {
-            if (ploc[d][0] != POINTLOC_INSIDE) {
-                return 0;
-            }
             alpha_lo[d] = - DBL_MAX;
             alpha_hi[d] = + DBL_MAX;
             continue;
