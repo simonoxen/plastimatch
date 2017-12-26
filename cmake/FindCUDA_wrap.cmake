@@ -107,8 +107,6 @@ endif ()
 #   Build code for all known compute capabilities by default.
 #   When developing, it is sometimes nice to turn this off in order
 #   to speed up the build processes (since you only have 1 GPU in your machine).
-set (PLM_CUDA_ALL_DEVICES ON CACHE BOOL 
-  "Generate GPU code for all compute capabilities?")
 if (PLM_CUDA_ALL_DEVICES)
   message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
