@@ -48,6 +48,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_clone.cxx itk_image_clone.h
 #  itk_image_conv.cxx (broken)
   itk_image_create.cxx itk_image_create.h
+  itk_image_header_compare.cxx itk_image_header_compare.h
   itk_image_load.txx itk_image_load.h
   itk_image_load_char.cxx
   itk_image_load_double.cxx

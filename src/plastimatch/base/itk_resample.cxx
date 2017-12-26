@@ -249,7 +249,6 @@ resample_image (UCharVecImageType::Pointer image, float spacing[3])
     return im_out;
 }
 
-
 template <class T>
 T
 subsample_image (T& image, int x_sampling_rate,
@@ -313,7 +312,9 @@ subsample_image (T& image, int x_sampling_rate,
     return out_image;
 }
 
-/* Explicit instantiations */
+/* -----------------------------------------------------------------------
+   Explicit instantiations
+   ----------------------------------------------------------------------- */
 template PLMBASE_API DeformationFieldType::Pointer vector_resample_image (const DeformationFieldType::Pointer&, const Plm_image_header*);
 
 template PLMBASE_API UCharImageType::Pointer resample_image (UCharImageType::Pointer&, const Plm_image_header*, float default_val, int interp_lin);

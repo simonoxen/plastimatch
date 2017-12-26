@@ -14,7 +14,7 @@
 
 #include "compiler_warnings.h"
 #include "dice_statistics.h"
-#include "itk_image.h"
+#include "itk_image_header_compare.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"

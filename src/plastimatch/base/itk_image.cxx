@@ -146,32 +146,6 @@ itk_image_header_copy (T dest, U src)
     dest->SetDirection (src_dc);
 }
 
-/* Return true if the headers are the same */
-template<class T, class U>
-bool 
-itk_image_header_compare (T image1, U image2)
-{
-    typedef typename U::ObjectType I1ImageType;
-    typedef typename T::ObjectType I2ImageType;
-
-    const SizeType& i1_sz = image1->GetLargestPossibleRegion().GetSize ();
-    const OriginType i1_og = itk_image_origin (image1);
-    const typename I1ImageType::SpacingType& i1_sp = image1->GetSpacing();
-    const typename I1ImageType::DirectionType& i1_dc = image1->GetDirection();
-
-    const SizeType& i2_sz = image2->GetLargestPossibleRegion().GetSize ();
-    const OriginType i2_og = itk_image_origin (image2);
-    const typename I2ImageType::SpacingType& i2_sp = image2->GetSpacing();
-    const typename I2ImageType::DirectionType& i2_dc = image2->GetDirection();
-
-    if (i1_sz != i2_sz || i1_og != i2_og || i1_sp != i2_sp || i1_dc != i2_dc)
-    {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 template<class T> 
 void 
 itk_volume_center (float center[3], const T image)
@@ -200,7 +174,9 @@ itk_image_fix_negative_spacing (T img)
 }
 
 
-/* Explicit instantiations */
+/* -----------------------------------------------------------------------
+   Explicit instantiations
+   ----------------------------------------------------------------------- */
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
@@ -217,7 +193,6 @@ template PLMBASE_API void itk_image_header_copy (UCharImageType::Pointer, UCharV
 template PLMBASE_API void itk_image_header_copy (UCharImageType::Pointer, FloatImageType::Pointer);
 template PLMBASE_API void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
 template PLMBASE_API void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);
-template PLMBASE_API bool itk_image_header_compare (UCharImageType::Pointer image1, UCharImageType::Pointer image2);
 template PLMBASE_API void itk_volume_center (float center[3], const FloatImageType::Pointer image);
 
 template PLMBASE_API UCharImageType::Pointer itk_image_fix_negative_spacing (UCharImageType::Pointer image);

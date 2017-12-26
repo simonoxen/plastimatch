@@ -12,6 +12,7 @@
 #include "distance_map.h"
 #include "hausdorff_distance.h"
 #include "image_boundary.h"
+#include "itk_image_header_compare.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"

@@ -4,6 +4,8 @@
 #include "plmutil_config.h"
 #include "itkImageRegionIterator.h"
 
+#include "itk_image_header_compare.h"
+#include "itk_resample.h"
 #include "itk_mask.h"
 
 template <class T>
@@ -17,18 +19,22 @@ mask_image (
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
-    typedef typename itk::ImageRegionIterator< UCharImageType > 
+    typedef typename itk::ImageRegionIterator< UCharImageType >
 	UCharIteratorType;
     typedef typename itk::ImageRegionIterator< ImageType > ImageIteratorType;
 
-    typename ImageType::RegionType rgn_input 
+    if (!itk_image_header_compare (input, mask)) {
+        mask = itk_resample_image (mask, input, 0, 0);
+    }
+
+    typename ImageType::RegionType rgn_input
 	= input->GetLargestPossibleRegion();
-    typename UCharImageType::RegionType rgn_mask 
+    typename UCharImageType::RegionType rgn_mask
 	= mask->GetLargestPossibleRegion();
     const typename ImageType::PointType& og = input->GetOrigin();
     const typename ImageType::SpacingType& sp = input->GetSpacing();
     const typename ImageType::DirectionType& dc = input->GetDirection();
-    
+
     typename ImageType::Pointer im_out = ImageType::New();
     im_out->SetRegions (rgn_input);
     im_out->SetOrigin (og);
@@ -54,7 +60,7 @@ mask_image (
 
 #if defined (commentout)
 void
-merge_pixels (ShortImageType::Pointer im_out, ShortImageType::Pointer im_1, 
+merge_pixels (ShortImageType::Pointer im_out, ShortImageType::Pointer im_1,
 	     UCharImageType::Pointer im_2, int mask_value)
 {
     typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
@@ -67,7 +73,7 @@ merge_pixels (ShortImageType::Pointer im_out, ShortImageType::Pointer im_1,
     //const InputImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
     const ShortImageType::PointType& og = im_1->GetOrigin();
     const ShortImageType::SpacingType& sp = im_1->GetSpacing();
-    
+
     im_out->SetRegions(r_1);
     im_out->SetOrigin(og);
     im_out->SetSpacing(sp);
@@ -89,7 +95,7 @@ merge_pixels (ShortImageType::Pointer im_out, ShortImageType::Pointer im_1,
 }
 
 void
-mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf, 
+mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
 	     UCharImageType::Pointer mask, float mask_value[3])
 {
     typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
@@ -101,7 +107,7 @@ mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
     //const DeformationFieldType::SizeType& sz = r_1.GetSize();
     const DeformationFieldType::PointType& og = vf->GetOrigin();
     const DeformationFieldType::SpacingType& sp = vf->GetSpacing();
-    
+
     vf_out->SetRegions(r_1);
     vf_out->SetOrigin(og);
     vf_out->SetSpacing(sp);

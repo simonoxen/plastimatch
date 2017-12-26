@@ -5,6 +5,7 @@
 #include "itkImageRegionIterator.h"
 
 #include "itk_image.h"
+#include "itk_image_header_compare.h"
 #include "itk_union.h"
 #include "print_and_exit.h"
 

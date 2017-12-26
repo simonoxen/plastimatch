@@ -1,4 +1,18 @@
 ******************************************************************************
+Thoughts on operations of two images
+
+Traditionally, plastimatch has resampled the non-reference image to match
+the reference image when images of differing sizes are being operated on.
+
+The traditional ITK method is to iterate the reference, and on each
+pixel operation to test if the pixel location lies within the second image.
+
+A third possible method would be to clip the second to the reference,
+and then do an ITK-style test within the clipped region.  The Dice
+code does something like this, with the caveat that no output is
+produced, so both images are resampled down to the overlapping size.
+
+******************************************************************************
 Superbuild test configurations
 
 Standard build: local ITK, local DCMTK
