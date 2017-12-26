@@ -95,7 +95,7 @@ static inline void vec3_add3 (double* v1, const double* v2, const double* v3) {
     v1[0] = v2[0] + v3[0]; v1[1] = v2[1] + v3[1]; v1[2] = v2[2] + v3[2];
 }
 
-template<class T> static inline void 
+template<class T> static inline void
 vec3_copy (T* v1, const T* v2) {
     v1[0] = v2[0]; v1[1] = v2[1]; v1[2] = v2[2];
 }
@@ -122,7 +122,7 @@ static inline void vec3_scale2 (double* v1, double a) {
     v1[0] *= a; v1[1] *= a; v1[2] *= a;
 }
 
-template<class T, class U> static inline void 
+template<class T, class U> static inline void
 vec3_scale3 (T* v1, const T* v2, U a) {
     v1[0] = a * v2[0]; v1[1] = a * v2[1]; v1[2] = a * v2[2];
 }
@@ -132,13 +132,13 @@ static inline void vec3_sub2 (double* v1, const double* v2) {
 }
 
 #if defined (commentout)
-template<class T> static inline void 
+template<class T> static inline void
 vec3_sub3 (T* v1, const T* v2, const T* v3) {
     v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
 }
 #endif
 
-template<class T, class U, class V> static inline void 
+template<class T, class U, class V> static inline void
 vec3_sub3 (T* v1, const U* v2, const V* v3) {
     v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
 }
@@ -173,14 +173,14 @@ static inline void vec3_normalize1 (double* v1) {
     vec3_scale2 (v1, 1 / vec3_len(v1));
 }
 
-template<class T> static inline T 
+template<class T> static inline T
 vec3_distsq (const T* v1, const T* v2) {
     T tmp[3];
     vec3_sub3 (tmp, v1, v2);
     return vec3_lensq(tmp);
 }
 
-template<class T> static inline T 
+template<class T> static inline T
 vec3_dist (const T* v1, const T* v2) {
     T tmp[3];
     vec3_sub3 (tmp, v1, v2);
@@ -188,7 +188,7 @@ vec3_dist (const T* v1, const T* v2) {
 }
 
 /* Cross product */
-template<class T> static inline void 
+template<class T> static inline void
 vec3_cross (T* v1, const T* v2, const T* v3)
 {
     v1[0] = v2[1] * v3[2] - v2[2] * v3[1];
@@ -221,8 +221,8 @@ static inline void mat43_mult_vec4 (double* v1, const double* m2, const double* 
 
 /* m1 = m2 * m3 */
 static inline void mat_mult_mat (
-    double* m1, 
-    const double* m2, int m2_rows, int m2_cols, 
+    double* m1,
+    const double* m2, int m2_rows, int m2_cols,
     const double* m3, int m3_rows, int m3_cols)
 {
     UNUSED_VARIABLE (m3_rows);
@@ -257,11 +257,21 @@ static inline int is_number (const double x)
     return 1;
 }
 
-template<class T> T 
+template<class T> T
 clamp (T value, T min_value, T max_value) {
     if (value < min_value) return min_value;
     if (value > max_value) return max_value;
     return value;
+}
+
+template<class T> T
+plm_max (T v1, T v2) {
+    return (v1 > v2) ? v1 : v2;
+}
+
+template<class T> T
+plm_min (T v1, T v2) {
+    return (v1 < v2) ? v1 : v2;
 }
 
 // Cf. http://realtimecollisiondetection.net/blog/?p=89

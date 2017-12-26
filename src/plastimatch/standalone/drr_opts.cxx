@@ -49,8 +49,8 @@ void
 drr_opts_init (Drr_options* options)
 {
     options->threading = THREADING_CPU_OPENMP;
-    options->image_resolution[0] = 128;
-    options->image_resolution[1] = 128;
+    options->detector_resolution[0] = 128;
+    options->detector_resolution[1] = 128;
     options->image_size[0] = 600;
     options->image_size[1] = 600;
     options->have_image_center = 0;
@@ -91,15 +91,26 @@ void
 set_image_parms (Drr_options* options)
 {
     if (!options->have_image_center) {
-	options->image_center[0] = (options->image_resolution[0]-1)/2.0;
-	options->image_center[1] = (options->image_resolution[1]-1)/2.0;
+	options->image_center[0] = (options->detector_resolution[0]-1)/2.0;
+	options->image_center[1] = (options->detector_resolution[1]-1)/2.0;
     }
-    if (!options->have_image_window) {
+    if (options->have_image_window) {
+	options->image_window[0] = plm_max (0, options->image_window[0]);
+	options->image_window[1] = plm_min (options->image_window[1],
+            options->detector_resolution[1] - 1);
+	options->image_window[2] = plm_max (0, options->image_window[2]);
+	options->image_window[3] = plm_min (options->image_window[3],
+            options->detector_resolution[3] - 1);
+    } else {
 	options->image_window[0] = 0;
-	options->image_window[1] = options->image_resolution[1] - 1;
+	options->image_window[1] = options->detector_resolution[1] - 1;
 	options->image_window[2] = 0;
-	options->image_window[3] = options->image_resolution[0] - 1;
+	options->image_window[3] = options->detector_resolution[0] - 1;
     }
+    options->image_resolution[0] = options->image_window[1]
+	- options->image_window[0] + 1;
+    options->image_resolution[1] = options->image_window[3]
+	- options->image_window[2] + 1;
     if (options->have_angle_diff) {
 	options->angle_diff *= (float) (M_TWOPI / 360.0);
     } else {
@@ -140,14 +151,15 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    options->threading = THREADING_CPU_OPENMP;
 	}
 	else if (!strcmp (argv[i], "-r")) {
-	    /* Note: user inputs row, then column.  But internally they 
+	    /* Note: user inputs row, then column.  But internally they
 	       are stored as column, then row. */
 	    if (++i >= argc) { print_usage(); }
-	    rc = sscanf (argv[i], "%d %d", 
-		&options->image_resolution[1], 
-		&options->image_resolution[0]);
+	    rc = sscanf (argv[i], "%d %d",
+		&options->detector_resolution[1],
+		&options->detector_resolution[0]);
 	    if (rc == 1) {
-		options->image_resolution[0] = options->image_resolution[1];
+		options->detector_resolution[0]
+                    = options->detector_resolution[1];
 	    } else if (rc != 2) {
 		print_usage ();
 	    }
@@ -222,10 +234,10 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-c")) {
-	    /* Note: user inputs row, then column.  But internally they 
+	    /* Note: user inputs row, then column.  But internally they
 	       are stored as column, then row. */
 	    if (++i >= argc) { print_usage(); }
-	    rc = sscanf (argv[i], "%g %g", 
+	    rc = sscanf (argv[i], "%g %g",
 		&options->image_center[1],
 		&options->image_center[0]);
 	    if (rc == 1) {
@@ -236,10 +248,10 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    options->have_image_center = 1;
 	}
 	else if (!strcmp (argv[i], "-z")) {
-	    /* Note: user inputs row, then column.  But internally they 
+	    /* Note: user inputs row, then column.  But internally they
 	       are stored as column, then row. */
 	    if (++i >= argc) { print_usage(); }
-	    rc = sscanf (argv[i], "%g %g", 
+	    rc = sscanf (argv[i], "%g %g",
 		&options->image_size[1],
 		&options->image_size[0]);
 	    if (rc == 1) {
@@ -256,7 +268,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-w")) {
-	    /* Note: user inputs row start, row end, 
+	    /* Note: user inputs row start, row end,
                column start, column end */
 	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%d %d %d %d",
@@ -288,7 +300,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-o")) {
 	    if (++i >= argc) { print_usage(); }
-	    rc = sscanf (argv[i], "%g %g %g" , 
+	    rc = sscanf (argv[i], "%g %g %g" ,
 		&options->isocenter[0],
 		&options->isocenter[1],
 		&options->isocenter[2]);
