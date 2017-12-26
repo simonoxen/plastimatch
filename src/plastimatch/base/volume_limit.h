@@ -13,7 +13,7 @@ enum point_location {
 };
 typedef enum point_location Point_location;
 
-class Volume_limit {
+class PLMBASE_API Volume_limit {
 public:
     /* upper and lower limits of volume, including tolerances */
     double lower_limit[3];
