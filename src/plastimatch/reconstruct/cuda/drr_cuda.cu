@@ -40,8 +40,11 @@
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;
 //texture<float, 1, cudaReadModeElementType> tex_matrix;
-//texture<float, 3, cudaReadModeElementType> tex_vol;
+#if PLM_CONFIG_LEGACY_DRR_CUDA_TEXTURE
 texture<float, 1, cudaReadModeElementType> tex_vol;
+#else
+texture<float, 3, cudaReadModeElementType> tex_vol;
+#endif
 
 #define DRR_LEN_TOLERANCE 1e-6
 
@@ -71,7 +74,7 @@ volume_limit_test_boundary (
 	ploc->z = 0;
     }
 }
-    
+
 __device__ int
 volume_limit_clip_segment (
     float3 lower_limit,         /* INPUT:  The bounding box to clip to */
@@ -106,7 +109,7 @@ volume_limit_clip_segment (
     if (ploc1.z && ploc1.z == ploc2.z) {
         return 0;
     }
-    
+
     /* Check if ray parallel to grid */
     is_parallel = fabsf3(ray) < DRR_LEN_TOLERANCE;
 
@@ -114,8 +117,8 @@ volume_limit_clip_segment (
     alpha_low = (lower_limit - p1) * inv_ray;
     alpha_high = (upper_limit - p1) * inv_ray;
 
-    /* Check case where ray is parallel to grid.  If any dimension is 
-       parallel to grid, then p1 must be inside slap, otherwise there 
+    /* Check case where ray is parallel to grid.  If any dimension is
+       parallel to grid, then p1 must be inside slap, otherwise there
        is no intersection of segment and cube. */
     if (is_parallel.x) {
 	alpha_low.x = - FLT_MAX;
@@ -152,7 +155,7 @@ volume_limit_clip_segment (
 }
 
 /* From volume_limit.c */
-__device__ 
+__device__
 float
 ray_trace_uniform (
     float *dev_vol,           /* Output: the rendered drr */
@@ -180,7 +183,7 @@ ray_trace_uniform (
 	ipx = ip1 + step * step_length * ray;
 
 	/* Find 3D index of sample within 3D volume */
-	ai = make_int3 (floorf3 (((ipx - vol_offset) 
+	ai = make_int3 (floorf3 (((ipx - vol_offset)
 		    + 0.5 * vol_spacing) * inv_spacing));
 
 	/* Find linear index within 3D volume */
@@ -189,7 +192,11 @@ ray_trace_uniform (
 	if (ai.x >= 0 && ai.y >= 0 && ai.z >= 0 &&
 	    ai.x < vol_dim.x && ai.y < vol_dim.y && ai.z < vol_dim.z)
 	{
+#if PLM_CONFIG_LEGACY_DRR_CUDA_TEXTURE
 	    acc += step_length * tex1Dfetch (tex_vol, idx);
+#else
+	    acc += step_length * tex3D (tex_vol, ai.x, ai.y, ai.z);
+#endif
 	}
     }
     return acc;
@@ -241,12 +248,12 @@ kernel_drr (
     //idx = (c - image_window.z) + (r - image_window.x) * cols;
 
     /* Clip ray to volume */
-    if (volume_limit_clip_segment (lower_limit, upper_limit, 
+    if (volume_limit_clip_segment (lower_limit, upper_limit,
 	    &ip1, &ip2, p1, p2) == 0)
     {
 	outval = 0.0f;
     } else {
-	outval = ray_trace_uniform (dev_vol, vol_offset, vol_dim, vol_spacing, 
+	outval = ray_trace_uniform (dev_vol, vol_offset, vol_dim, vol_spacing,
 	    ip1, ip2);
     }
 
@@ -280,47 +287,49 @@ drr_cuda_state_create_cu (
     kargs->vol_dim = make_int3 (vol->dim);
     kargs->vol_spacing = make_float3 (vol->spacing);
 
-#if defined (commentout)
-    /* The below code is Junan's.  Presumably this way can be better 
-       for using hardware linear interpolation, but for now I'm going 
+#if PLM_CONFIG_LEGACY_DRR_CUDA_TEXTURE
+    cudaMalloc ((void**) &state->dev_vol, vol->npix * sizeof (float));
+    CUDA_check_error ("Failed to allocate dev_vol.");
+
+    cudaMemcpy (state->dev_vol, vol->img, vol->npix * sizeof (float),
+	cudaMemcpyHostToDevice);
+    CUDA_check_error ("Failed to memcpy dev_vol host to device.");
+
+    cudaBindTexture (0, tex_vol, state->dev_vol, vol->npix * sizeof (float));
+    CUDA_check_error ("Failed to bind state->dev_vol to texture.");
+
+#else
+    /* The below code is Junan's.  Presumably this way can be better
+       for using hardware linear interpolation, but for now I'm going
        to follow Tony's method. */
     // prepare texture
     cudaChannelFormatDesc ca_descriptor;
     cudaExtent ca_extent;
-    cudaArray *dev_3Dvol=0;
 
     ca_descriptor = cudaCreateChannelDesc<float>();
     ca_extent.width  = vol->dim[0];
     ca_extent.height = vol->dim[1];
     ca_extent.depth  = vol->dim[2];
-    cudaMalloc3DArray (&dev_3Dvol, &ca_descriptor, ca_extent);
-    cudaBindTextureToArray (tex_3Dvol, dev_3Dvol, ca_descriptor);
+    cudaMalloc3DArray (&state->dev_3Dvol, &ca_descriptor, ca_extent);
+    cudaBindTextureToArray (tex_vol, state->dev_3Dvol, ca_descriptor);
 
     cudaMemcpy3DParms cpy_params = {0};
     cpy_params.extent   = ca_extent;
     cpy_params.kind     = cudaMemcpyHostToDevice;
-    cpy_params.dstArray = dev_3Dvol;
+    cpy_params.dstArray = state->dev_3Dvol;
 
     //http://sites.google.com/site/cudaiap2009/cookbook-1#TOC-CUDA-3D-Texture-Example-Gerald-Dall
     // The pitched pointer is really tricky to get right. We give the
     // pitch of a row, then the number of elements in a row, then the
     // height, and we omit the 3rd dimension.
-    cpy_params.srcPtr = make_cudaPitchedPtr ((void*)vol->img, 
+    cpy_params.srcPtr = make_cudaPitchedPtr ((void*)vol->img,
 	ca_extent.width * sizeof(float), ca_extent.width , ca_extent.height);
 
     cudaMemcpy3D (&cpy_params);
 #endif
 
-    cudaMalloc ((void**) &state->dev_vol, vol->npix * sizeof (float));
-    CUDA_check_error ("Failed to allocate dev_vol.");
-    cudaMemcpy (state->dev_vol, vol->img, vol->npix * sizeof (float), 
-	cudaMemcpyHostToDevice);
-    CUDA_check_error ("Failed to memcpy dev_vol host to device.");
-    cudaBindTexture (0, tex_vol, state->dev_vol, vol->npix * sizeof (float));
-    CUDA_check_error ("Failed to bind state->dev_vol to texture.");
-
-    cudaMalloc ((void**) &state->dev_img, 
-	options->image_resolution[0] * options->image_resolution[1] 
+    cudaMalloc ((void**) &state->dev_img,
+	options->image_resolution[0] * options->image_resolution[1]
 	* sizeof(float));
     CUDA_check_error ("Failed to allocate dev_img.\n");
 
@@ -333,7 +342,7 @@ drr_cuda_state_destroy_cu (
 )
 {
     Drr_cuda_state *state = (Drr_cuda_state*) void_state;
-    
+
     cudaUnbindTexture (tex_vol);
     cudaFree (state->dev_vol);
     cudaFree (state->dev_img);
@@ -344,14 +353,14 @@ drr_cuda_state_destroy_cu (
 
 void
 drr_cuda_ray_trace_image (
-    Proj_image *proj, 
-    Volume *vol, 
-    Volume_limit *vol_limit, 
-    double p1[3], 
-    double ul_room[3], 
-    double incr_r[3], 
-    double incr_c[3], 
-    void *dev_state, 
+    Proj_image *proj,
+    Volume *vol,
+    Volume_limit *vol_limit,
+    double p1[3],
+    double ul_room[3],
+    double incr_r[3],
+    double incr_c[3],
+    void *dev_state,
     Drr_options *options
 )
 {
@@ -388,7 +397,7 @@ drr_cuda_ray_trace_image (
     kargs->upper_limit = make_float3 (vol_limit->upper_limit);
     kargs->scale = options->scale;
 
-    //cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+    //cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix),
     //cudaMemcpyHostToDevice);
     //cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
 
@@ -409,18 +418,18 @@ drr_cuda_ray_trace_image (
 
     // Invoke ze kernel  \(^_^)/
     kernel_drr<<< dimGrid, dimBlock >>> (
-	state->dev_img, 
-	kargs->img_dim, 
-	state->dev_vol, 
+	state->dev_img,
+	kargs->img_dim,
+	state->dev_vol,
 	kargs->ic,
 	kargs->nrm,
 	kargs->sad,
-	kargs->scale, 
-	kargs->p1, 
-	kargs->ul_room, 
-	kargs->incr_r, 
-	kargs->incr_c, 
-	kargs->image_window, 
+	kargs->scale,
+	kargs->p1,
+	kargs->ul_room,
+	kargs->incr_r,
+	kargs->incr_c,
+	kargs->image_window,
 	kargs->lower_limit,
 	kargs->upper_limit,
 	kargs->vol_origin,
@@ -440,8 +449,8 @@ drr_cuda_ray_trace_image (
     //printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
 
     // Copy reconstructed volume from device to host
-    cudaMemcpy (proj->img, state->dev_img, 
-	proj->dim[0] * proj->dim[1] * sizeof(float), 
+    cudaMemcpy (proj->img, state->dev_img,
+	proj->dim[0] * proj->dim[1] * sizeof(float),
 	cudaMemcpyDeviceToHost);
     CUDA_check_error("Error: Unable to retrieve data volume.");
 }
