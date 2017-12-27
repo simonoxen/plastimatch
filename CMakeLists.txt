@@ -531,6 +531,8 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if (${git_result} EQUAL 0)
+    string (REGEX MATCH "[^-]*-([0-9]+)-.*" junk ${git_result})
+    set (PLM_VERSION_TWEAK "${CMAKE_MATCH_0}")
     set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
   endif ()
   message (STATUS "Plastimatch version is ${git_version}")
@@ -885,12 +887,13 @@ set (CPACK_MONOLITHIC_INSTALL 1)
 set (CPACK_INSTALL_PREFIX "")
 set (CPACK_PACKAGE_CONTACT "plastimatch@googlegroups.com")
 set (CPACK_PACKAGE_NAME "plastimatch")
+set (CPACK_PACKAGE_INSTALL_DIRECTORY "Plastimatch")
 set (CPACK_PACKAGE_DESCRIPTION_SUMMARY "Plastimatch - A Medical Imaging Application")
 set (CPACK_PACKAGE_VENDOR "Plastimatch Dev Team")
 set (CPACK_PACKAGE_VERSION_MAJOR "${PLM_VERSION_MAJOR}")
 set (CPACK_PACKAGE_VERSION_MINOR "${PLM_VERSION_MINOR}")
 set (CPACK_PACKAGE_VERSION_PATCH "${PLM_VERSION_PATCH}")
-set (CPACK_PACKAGE_VERSION_TWEAK ${PLASTIMATCH_REPOSITORY_VERSION})
+set (CPACK_PACKAGE_VERSION_TWEAK "${PLM_VERSION_TWEAK}")
 set (CPACK_SOURCE_IGNORE_FILES
   "/\\\\.git"
   "/\\\\.svn"
@@ -914,9 +917,18 @@ set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 set (CPACK_WIX_EXTRA_SOURCES
     "${PLM_SOURCE_DIR}/extra/wix/cmake_extra_dialog.wxs"
     "${PLM_SOURCE_DIR}/extra/wix/install_dir.wxs"
+    "${PLM_SOURCE_DIR}/extra/wix/start_menu.wxs"
     )
-set (CPACK_WIX_PATCH_FILE "${PLM_SOURCE_DIR}/extra/wix/patch_path_env.xml")
+set (CPACK_WIX_PATCH_FILE 
+    "${PLM_SOURCE_DIR}/extra/wix/patch_path_env.xml"
+#    "${PLM_SOURCE_DIR}/extra/wix/patch_start_menu.xml"
+    )
 set (CPACK_WIX_UI_REF "CMakeUI_InstallDir")
+if (CPACK_GENERATOR STREQUAL "WIX")
+    set (CPACK_PACKAGE_NAME "Plastimatch")
+    set_property (INSTALL "bin/launch_cmd_prompt.bat" 
+	PROPERTY CPACK_START_MENU_SHORTCUTS "Plastimatch Command Prompt")
+endif ()
 
 # ZIP stuff
 if (CPACK_GENERATOR STREQUAL "ZIP")
