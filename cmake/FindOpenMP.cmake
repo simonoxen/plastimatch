@@ -23,28 +23,37 @@ int main() {
 
 # Key: CFLAGS##LDFLAGS#LIBRARIES
 # Neither CFLAGS nor LDFLAGS can be empty.  Use NONE instead.
-set(
-  OPENMP_FLAGS_AND_LIBRARIES
-  # gcc
-  "-fopenmp##-fopenmp#"
-  "-fopenmp##-fopenmp#gomp"
-  "-fopenmp##-fopenmp#gomp pthread"
-  # MSVC
-  "/openmp##NONE#"
-  # clang (??)
-  "-fopenmp=libomp##NONE#gomp"
-  # icc
-  "-openmp##-openmp#"
-  "-openmp -parallel##-openmp -parallel#"
-  # SGI & PGI
-  "-mp##-mp#"
-  # Sun
-  "-xopenmp##-xopenmp#"
-  # Tru64
-  "-omp##-omp#"
-  # AIX
-  "-qsmp=omp##-qsmp=omp#"
-)
+# Limit choices for MSVC to reduce time required for configure
+if (MSVC)
+  set(
+    OPENMP_FLAGS_AND_LIBRARIES
+    # MSVC
+    "/openmp##NONE#"
+  )
+else ()
+  set(
+    OPENMP_FLAGS_AND_LIBRARIES
+    # gcc
+    "-fopenmp##-fopenmp#"
+    "-fopenmp##-fopenmp#gomp"
+    "-fopenmp##-fopenmp#gomp pthread"
+    # MSVC
+    "/openmp##NONE#"
+    # clang (??)
+    "-fopenmp=libomp##NONE#gomp"
+    # icc
+    "-openmp##-openmp#"
+    "-openmp -parallel##-openmp -parallel#"
+    # SGI & PGI
+    "-mp##-mp#"
+    # Sun
+    "-xopenmp##-xopenmp#"
+    # Tru64
+    "-omp##-omp#"
+    # AIX
+    "-qsmp=omp##-qsmp=omp#"
+  )
+endif ()
 
 # Massive hack to workaround CMake limitations
 list (LENGTH OPENMP_FLAGS_AND_LIBRARIES NUM_FLAGS)
