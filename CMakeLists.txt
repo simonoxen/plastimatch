@@ -911,6 +911,13 @@ set (CPACK_WIX_LICENSE_RTF  "${PLM_WINDOWS_INSTALL_DIR}/License.rtf")
 set (CPACK_WIX_UI_BANNER  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo.jpg")
 set (CPACK_WIX_UI_DIALOG  "${PLM_WINDOWS_INSTALL_DIR}/plm_logo_GUI.jpg")
 
+set (CPACK_WIX_EXTRA_SOURCES
+    "${PLM_SOURCE_DIR}/extra/wix/cmake_extra_dialog.wxs"
+    "${PLM_SOURCE_DIR}/extra/wix/install_dir.wxs"
+    )
+set (CPACK_WIX_PATCH_FILE "${PLM_SOURCE_DIR}/extra/wix/patch_path_env.xml")
+set (CPACK_WIX_UI_REF "CMakeUI_InstallDir")
+
 # ZIP stuff
 if (CPACK_GENERATOR STREQUAL "ZIP")
   set (CPACK_SET_DESTDIR ON)
