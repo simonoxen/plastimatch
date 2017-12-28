@@ -37,6 +37,10 @@ Configuration settings::
 
 #. Double check CPACK version number (at bottom of CMakeLists.txt)
 #. Build plastimatch (start with a fresh build directory)
+
+   #. Set CUDA_HOST_COMPILER manually
+      See: https://github.com/opencv/opencv/issues/9908
+
 #. Run test cases, make sure all pass
 #. Build package
 #. Test package for missing dlls, etc.
