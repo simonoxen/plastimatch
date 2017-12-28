@@ -109,7 +109,7 @@ sb_option (PLM_CONFIG_LEGACY_MI_METRIC
 sb_option (PLM_CONFIG_LEGACY_PROJ_GEO
   "Use legacy method for specifying projection geometry" ON)
 sb_option (PLM_CONFIG_LEGACY_RAY_TRACE_EXACT
-  "Use legacy algorithm for exact ray tracing" ON)
+  "Use legacy algorithm for exact ray tracing" OFF)
 
 # Compile and link options
 sb_option (PLM_CUDA_ALL_DEVICES
@@ -138,7 +138,7 @@ sb_option (PLM_CONFIG_INSTALL_LIBRARIES "Include libraries in install" ON)
 option (PLM_PACKAGE_32BIT
     "Set this when building 32-bit packages on a 64-bit machine" OFF)
 option (PLM_PACKAGE_NSIS "Set to ON when packaging binaries with NSIS" OFF)
-option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" OFF)
+option (PLM_PACKAGE_WIX "Set to ON when packaging binaries with WIX" ON)
 sb_option (PLM_PACKAGE_LEGACY_CMAKE_CONFIG
     "Use the old code for creating PlastimatchConfig.cmake and friends" OFF)
 
