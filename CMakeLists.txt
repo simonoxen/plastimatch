@@ -690,10 +690,13 @@ add_subdirectory (src)
 ##  Additional install files
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
-  file (GLOB DLLFILES "${ITK_DIR}/bin/release/*.dll")
-  if (DLLFILES)
-    install (FILES ${DLLFILES} DESTINATION bin)
-  endif ()
+  set (DLL_PATTERNS "ITKCommon*.dll" "ITKIO*.dll" "ITKOptimizers*.dll" "ITKStatistics*.dll" "ITKTransform*.dll")
+  foreach (p ${DLL_PATTERNS})
+    file (GLOB DLLFILES "${ITK_DIR}/bin/release/${p}")
+    if (DLLFILES)
+      install (FILES ${DLLFILES} DESTINATION bin)
+    endif ()
+  endforeach ()
 endif ()
 
 #Add QT dlls to Install
@@ -928,9 +931,18 @@ set (CPACK_WIX_PATCH_FILE
     )
 set (CPACK_WIX_UI_REF "CMakeUI_InstallDir")
 if (CPACK_GENERATOR STREQUAL "WIX")
-    set (CPACK_PACKAGE_NAME "Plastimatch")
-    set_property (INSTALL "bin/launch_cmd_prompt.bat"
-	PROPERTY CPACK_START_MENU_SHORTCUTS "Plastimatch Command Prompt")
+  set (CPACK_PACKAGE_NAME "Plastimatch")
+  if (CPACK_PACKAGE_VERSION_TWEAK AND CPACK_PACKAGE_VERSION_TWEAK GREATER "0")
+    set (CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}.${CPACK_PACKAGE_VERSION_TWEAK}")
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+      set (CPACK_SYSTEM_NAME "win64")
+    else ()
+      set (CPACK_SYSTEM_NAME "win32")
+    endif ()
+    set (CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+  endif ()
+  set_property (INSTALL "bin/launch_cmd_prompt.bat"
+    PROPERTY CPACK_START_MENU_SHORTCUTS "Plastimatch Command Prompt")
 endif ()
 
 # ZIP stuff

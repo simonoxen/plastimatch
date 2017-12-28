@@ -9,7 +9,7 @@ macro (set_compute_capabilities)
     message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
     if (CUDA_VERSION_MAJOR LESS "7")
-      message (STATUS "  >> Compute Cap 1: [X]")
+      message (STATUS " Compute Cap 1: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_11,code=sm_11
 	-gencode arch=compute_12,code=sm_12
@@ -20,55 +20,55 @@ macro (set_compute_capabilities)
 	  -gencode arch=compute_10,code=sm_10)
       endif ()
     else()
-      message (STATUS "  >> Compute Cap 1: [ ]")
+      message (STATUS " Compute Cap 1: [ ]")
     endif()
 
     if (CUDA_VERSION_MAJOR GREATER "2" AND CUDA_VERSION_MAJOR LESS "9")
-      message (STATUS "  >> Compute Cap 2: [X]")
+      message (STATUS " Compute Cap 2: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_20,code=sm_20
 	)
     else()
-      message (STATUS "  >> Compute Cap 2: [ ]")
+      message (STATUS " Compute Cap 2: [ ]")
     endif()
 
     if (CUDA_VERSION_MAJOR GREATER "4")
-      message (STATUS "  >> Compute Cap 3: [X]")
+      message (STATUS " Compute Cap 3: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_30,code=sm_30
 	)
     else()
-      message (STATUS "  >> Compute Cap 3: [ ]")
+      message (STATUS " Compute Cap 3: [ ]")
     endif()
 
     if (CUDA_VERSION_MAJOR GREATER "5")
-      message (STATUS "  >> Compute Cap 5: [X]")
+      message (STATUS " Compute Cap 5: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_50,code=sm_50
 	-gencode arch=compute_50,code=compute_50
 	)
     else()
-      message (STATUS "  >> Compute Cap 5: [ ]")
+      message (STATUS " Compute Cap 5: [ ]")
     endif()
 
     if (CUDA_VERSION_MAJOR GREATER "7")
-      message (STATUS "  >> Compute Cap 6: [X]")
+      message (STATUS " Compute Cap 6: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_60,code=sm_60
 	-gencode arch=compute_60,code=compute_60
 	)
     else()
-      message (STATUS "  >> Compute Cap 6: [ ]")
+      message (STATUS " Compute Cap 6: [ ]")
     endif()
 
     if (CUDA_VERSION_MAJOR GREATER "8")
-      message (STATUS "  >> Compute Cap 7: [X]")
+      message (STATUS " Compute Cap 7: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
 	-gencode arch=compute_70,code=sm_70
 	-gencode arch=compute_70,code=compute_70
 	)
     else()
-      message (STATUS "  >> Compute Cap 7: [ ]")
+      message (STATUS " Compute Cap 7: [ ]")
     endif()
   else ()
     message (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
