@@ -14,8 +14,8 @@ please send an email to our mailing list.  We're friendly people.
 Downloading the code
 --------------------
 
-The recommended method for downloading plastimatch is to use subversion
-to download the source code, and then compile the source.
+The recommended method for downloading plastimatch is to 
+download the source code, and then compile the source.
 To download using subversion, use the following command::
 
   git clone https://gitlab.com/plastimatch/plastimatch.git
@@ -23,6 +23,8 @@ To download using subversion, use the following command::
 If you are using Windows, you will need a git client.
 We recommend cygwin (http://cygwin.com) for command-line users, 
 and TortoiseGit (http://tortoisegit.org) for graphical users.
+Starting with Windows 10, you can use the Ubuntu bash
+shell for git client.
 
 If you have already downloaded a previous version, 
 you can update to the latest version by executing the following command 
@@ -43,10 +45,6 @@ The following command will install all the needed prerequisites.::
      libdcmtk-dev libdlib-dev libfftw3-dev \
      libgdcm2-dev libinsighttoolkit4-dev \
      libpng-dev libtiff-dev uuid-dev zlib1g-dev 
-
-..  sudo apt-get install cmake-curses-gui g++ make \
-    libdcmtk2-dev libinsighttoolkit4-dev libpng12-dev subversion zlib1g-dev
-
 
 Cmake (required)
 ^^^^^^^^^^^^^^^^
@@ -70,10 +68,6 @@ from here:
 On windows, you may use the MinGW compiler, 
 however, ITK does not support cygwin.
 
-On unix systems, g++ and clang are supported.
-If you use ITK 3.20, however, only g++ is supported.  
-The clang compiler will work for newer versions of ITK.
-
 On OSX, you need the Xcode package, and you must also install the 
 command line tools.  
 If you wish to use g++ instead of clang, do something like 
@@ -88,24 +82,11 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We currently support version ITK 3.20.1 and greater, 
-and ITK 4.1 and greater.
-For ITK 4, you will need to install DCMTK if you want DICOM support. ::
+We currently support ITK 4.1 and greater.
+You will need to install DCMTK if you want DICOM support. ::
 
-  ITK < 3.20.1          Not supported
-  ITK 3.20.1            Supported (with caveats)
-  ITK 3.20.2            Recommended
-  ITK < 4.1             Not supported
-  ITK >= 4.1            Recommended (install DCMTK)
-
-ITK 3.20.1 is a decent version, but it has a few bugs 
-that cause problems on recent versions of gcc.  
-These bugs are fixed in the ITK 3.20.2 maintenance release.  
-To get ITK 3.20.2, do the following::
-
-  git clone git://itk.org/ITK.git
-  cd ITK
-  git checkout -b release-3.20 origin/release-3.20
+  ITK < 4.1              Not supported
+  ITK >= 4.1             Supported
 
 When you build ITK, the following settings are recommended or required::
 
@@ -115,47 +96,20 @@ When you build ITK, the following settings are recommended or required::
   BUILD_TESTING                             OFF
   ITK_USE_REVIEW                            ON         # Below ITK 4.5
   Module_ITKReview                          ON         # ITK 4.5 and greater
-  ITK_USE_OPTIMIZED_REGISTRATION_METHODS    ON         # ITK 3.20.X only
 
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
-DCMTK is needed for DICOM-RT support with ITK 4.  
-The supported version is 3.6.  On linux, feel free to 
+DCMTK is needed for DICOM-RT support.
+The recommended version is 3.6.2.  On linux, feel free to 
 use the dcmtk that comes from your package manager (that's what I do).
 
 There are special considerations to building dcmtk:
 
 #. PNG, TIFF, and ZLIB are not required
-#. Set CMAKE_INSTALL_PREFIX to an install directory of your 
-   choice; I use $HOME/build/dcmtk-3.6.0-install
 #. On linux x86_64 platforms, you need to add -fPIC to 
    CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
 #. On windows, you need to set DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS to OFF
-#. After building, you need to install; on linux do "make install", or 
-   on Visual Studio build the INSTALL target
-#. When you run cmake on plastimatch, set DCMTK_DIR to the install directory
-
-
-VTK (optional)
-^^^^^^^^^^^^^^
-VTK is required for compiling reg-2-3, for 2D-3D image registration.  
-You don't need VTK if you only need plastimatch.
-Get VTK from here:
-
-  http://vtk.org/
-
-Only VTK version 5.6.1 is supported.  On linux x86_64 platforms, 
-you will need to adjust the compile flags, and add "-fPIC" to 
-CMAKE_CXX_FLAGS and CMAKE_C_FLAGS.  
-
-In addition, VTK 5.6.1 has a small bug which prevents it from compiling 
-on gcc version 4.6.  You will need to edit the VTK source code.  
-Specifically, you need to 
-edit the file 
-Utilities/vtkmetaio/metaUtils.cxx, and add the following line
-somewhere near the top of the file (for example after line 20)::
-
-  #include <cstddef>
+#. When you run cmake on plastimatch, set DCMTK_DIR to the build directory
 
 CUDA (optional)
 ^^^^^^^^^^^^^^^
@@ -168,10 +122,9 @@ high performance computing features.
 The following table will help you with selecting the
 correct CUDA version to install/upgrade::
 
-  CUDA 2.X              Not supported
-  CUDA 3.X              Supported
-  CUDA 4.X              Supported
-  CUDA 5.0              Supported, Required for Kepler
+  CUDA <= 2.X           Not supported
+  CUDA >= 3.X           Supported
+  CUDA >= 5.0           Supported, Required for Kepler
 
 Download CUDA from here:
 
@@ -273,9 +226,9 @@ example, a user with a dual-core system would type:
 
    make -j 2
 
-whereas a user with a quad-core system would type:
+whereas a user with an eight core system would type:
 
-   make -j 4
+   make -j 8
 
 You can probably get even better performance by increasing the 
 the number of processes (specified by the -j option) 
@@ -283,12 +236,3 @@ beyond the number of cores.  One rule of thumb is to
 use approximately 1.5 times the number of available CPUs (see 
 `[1] <http://developers.sun.com/solaris/articles/parallel_make.html#3>`_,
 `[2] <http://stackoverflow.com/questions/414714/compiling-with-g-using-multiple-cores>`_).
-
-Compiling the 3D Slicer extensions
-----------------------------------
-The 3D Slicer extension is now included in SlicerRT.  Please see 
-the developer instructions on the SlicerRT assembla page for 
-detailed instructions.
-
-https://www.assembla.com/spaces/slicerrt/wiki/SlicerRt_developers_page
-
