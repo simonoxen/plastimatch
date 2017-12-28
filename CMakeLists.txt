@@ -118,12 +118,12 @@ sb_option (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 
 # Choose whether to build against included and/or superbuild libraries
 # instead of system libraries
-sb_option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system" 
+sb_option_enum (PLM_SYSTEM_DCMTK "Prefer DCMTK provided by operating system"
   PREFERRED
   NO PREFERRED YES)
 sb_option (PLM_PREFER_SYSTEM_DLIB
     "Prefer the system dlib over the included dlib" ON)
-sb_option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system" 
+sb_option_enum (PLM_SYSTEM_ITK "Prefer ITK provided by operating system"
   PREFERRED
   NO PREFERRED YES)
 
@@ -160,9 +160,9 @@ sb_set (PLM_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 sb_set (PLM_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Offer the user the choice of overriding the installation directories
-set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH
   "Installation directory for libraries")
-set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH
   "Installation directory for executables")
 set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
   "Installation directory for header files")
@@ -174,15 +174,15 @@ endif()
 set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for CMake files")
 mark_as_advanced (
-  PLM_INSTALL_LIB_DIR 
-  PLM_INSTALL_BIN_DIR 
-  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_LIB_DIR
+  PLM_INSTALL_BIN_DIR
+  PLM_INSTALL_INCLUDE_DIR
   PLM_INSTALL_CMAKE_DIR)
 
 
 # GCS 2015-07-08.  The below workflow is described here:
 #   http://www.cmake.org/Wiki/CMake/Tutorials/How_to_create_a_ProjectConfig.cmake_file
-# However, it creates install targets with absolute paths, which is 
+# However, it creates install targets with absolute paths, which is
 # not allowed for NSIS targets.
 # It is possible this is resolved by newer documentation, which is referred
 # by the above link:
@@ -268,7 +268,7 @@ find_library (LIBDL_FOUND dl)
 ##-----------------------------------------------------------------------------
 ##  DCMTK
 ##-----------------------------------------------------------------------------
-## If it is a modern version of DCMTK, such as found in Slicer build, 
+## If it is a modern version of DCMTK, such as found in Slicer build,
 ## it will have a working version of DCMTKConfig.cmake.
 ## In this case, we can use the modern find_package variant.
 ## Otherwise we use the old hacked version of FindDCMTK.cmake.
@@ -301,7 +301,7 @@ else ()
   set (DCMTK_FOUND FALSE)
 endif ()
 
-# Workaround for CMake bug in FindDCMTK.  This was fixed some time between 
+# Workaround for CMake bug in FindDCMTK.  This was fixed some time between
 # 3.4.3 and 3.7.2
 # if (CMAKE_VERSION VERSION_LESS "3.7.2" AND DCMTK_ofstd_INCLUDE_DIR)
 #   get_filename_component(_tmp ${DCMTK_ofstd_INCLUDE_DIR} PATH)
@@ -427,15 +427,15 @@ find_package (Thrust)
 ##-----------------------------------------------------------------------------
 ## JAS 10.28.2010
 ## nvcc automatically passed the flag -malign-double to gcc when compiling .cu
-## files.  This can be a problem when structs are shared between 
-## .c & .cu files on 32-bit machines.  So, we pass -malign-double to gcc 
-## for .c files as well so that everybody is using the same alignment.  
+## files.  This can be a problem when structs are shared between
+## .c & .cu files on 32-bit machines.  So, we pass -malign-double to gcc
+## for .c files as well so that everybody is using the same alignment.
 ## -malign-double is automatically passed to gcc for 64-bit architectures.
-## 
+##
 ## GCS 2010-10-30
-## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
+## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2
 ## gives an error if it is used on x86_64.
-## 
+##
 ## GCS 2011-07-21
 ## -malign-double is not compatible with ITK.  Need a fix soon...
 ##
@@ -465,7 +465,7 @@ find_package (Doxygen)
 
 ##-----------------------------------------------------------------------------
 ##  For shared libraries, we enable dynamic loading of cuda, opencl
-##  Note: we can't use BUILD_SHARED_LIBS directly, because it conflicts 
+##  Note: we can't use BUILD_SHARED_LIBS directly, because it conflicts
 ##  with the ITK header files
 ##-----------------------------------------------------------------------------
 set (PLM_USE_GPU_PLUGINS OFF)
@@ -483,7 +483,7 @@ if (PLM_INSTALL_RPATH)
 
   # when building, don't use the install RPATH already
   # (but later on when installing)
-  set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+  set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
   # the RPATH to be used when installing
   set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
@@ -520,23 +520,27 @@ set (PLM_BASIC_VERSION_STRING
 set (PLASTIMATCH_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
 if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
+  if (GIT_EXECUTABLE MATCHES "[wW][sS][lL].*")
+    set (GIT_EXECUTABLE "wsl;git")
+  endif ()
   execute_process (
-    COMMAND 
+    COMMAND
     #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
-    ${GIT_EXECUTABLE} describe --always
+    ${GIT_EXECUTABLE} ${GIT_EXECUTABLE_EXTRA} describe --always
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     RESULT_VARIABLE git_result
-    OUTPUT_VARIABLE git_version
+    OUTPUT_VARIABLE git_output
     ERROR_VARIABLE git_error
     OUTPUT_STRIP_TRAILING_WHITESPACE
     )
   if (${git_result} EQUAL 0)
-    string (REGEX MATCH "[^-]*-([0-9]+)-.*" junk ${git_result})
-    set (PLM_VERSION_TWEAK "${CMAKE_MATCH_0}")
-    set (PLASTIMATCH_VERSION_STRING "${PLASTIMATCH_VERSION_STRING} (${git_version})")
+    string (REGEX MATCH "[^-]*-([0-9]+)-.*" junk ${git_output})
+    message (STATUS ">> ${junk} | ${CMAKE_MATCH_1}")
+    set (PLM_VERSION_TWEAK "${CMAKE_MATCH_1}")
+    set (PLASTIMATCH_VERSION_STRING "${git_output}")
   endif ()
-  message (STATUS "Plastimatch version is ${git_version}")
 endif ()
+message (STATUS "Plastimatch version is ${PLASTIMATCH_VERSION_STRING}")
 
 ##-----------------------------------------------------------------------------
 ##  ITK
@@ -559,9 +563,9 @@ endif ()
 ##  GDCM
 ##-----------------------------------------------------------------------------
 if (NOT DCMTK_FOUND AND ITK_FOUND)
-  # The default case is that ITK_USE_SYSTEM_GDCM was used, 
+  # The default case is that ITK_USE_SYSTEM_GDCM was used,
   # the gdcm use file was already loaded from UseITK.cmake, and therefore
-  # GDCM_VERSION is already known.  If this is not the case, we look 
+  # GDCM_VERSION is already known.  If this is not the case, we look
   # in the ITK build dir for the header file which contains the version.
   if (NOT GDCM_VERSION)
     unset (GDCM_CONFIGURE_H CACHE)
@@ -573,8 +577,8 @@ if (NOT DCMTK_FOUND AND ITK_FOUND)
       string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
 	GDCM_VERSION "${GDCM_VERSION}")
     endif ()
-    # When GDCM config file does not configure correctly, the value of 
-    # the version might be "@GDCM_VERSION@".  
+    # When GDCM config file does not configure correctly, the value of
+    # the version might be "@GDCM_VERSION@".
     if ("${GDCM_VERSION}" STREQUAL "\@GDCM_VERSION@")
       set (GDCM_VERSION "2.0")
     endif ()
@@ -621,7 +625,7 @@ if (QT4_FOUND)
     # Debian qtchooser is broken, so we disable.
     # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=730423
     execute_process (
-	COMMAND 
+	COMMAND
 	rcc
 	RESULT_VARIABLE rcc_result
 	OUTPUT_VARIABLE rcc_output
@@ -648,7 +652,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (RAPIDJSON_DIR "${CMAKE_SOURCE_DIR}/libs/rapidjson-2015-03-22")
 if (EXISTS "${RAPIDJSON_DIR}" AND IS_DIRECTORY "${RAPIDJSON_DIR}")
-  set (RAPIDJSON_INCLUDE_DIR 
+  set (RAPIDJSON_INCLUDE_DIR
     "${RAPIDJSON_DIR}/include"
     )
   set (RAPIDJSON_FOUND true)
@@ -697,7 +701,7 @@ endif ()
 if (QT4_FOUND)
   if (UNIX)
     # YKP: should be implemented soon
-  else ()	
+  else ()
     set (QT4_CORE_DLL_WIN "${QT_LIBRARY_DIR}/QtCore4.dll")
     set (QT4_GUI_DLL_WIN "${QT_LIBRARY_DIR}/QtGui4.dll")
     if (EXISTS "${QT4_CORE_DLL_WIN}")
@@ -712,7 +716,7 @@ endif ()
 #Add FFT dlls to Install
 if (FFTW_FOUND)
   if (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
-    install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)	
+    install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
   endif ()
   #YKP 05/27/2016: no need of libfftw3f-3.dll and libfftw3l-3.dll?
 endif ()
@@ -720,7 +724,7 @@ endif ()
 # Add sample directory/files to Install Only for windows users
 if (WIN32 OR WIN64)
   set (PLM_WINDOWS_INSTALL_DIR "${CMAKE_SOURCE_DIR}/extra/windows-install")
-  install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)  
+  install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)
   install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_cmd_prompt.bat" DESTINATION bin)
 endif ()
 
@@ -735,7 +739,7 @@ else ()
   set (DOC_DESTINATION "doc")
 endif ()
 
-install (FILES 
+install (FILES
   README.TXT
   src/plastimatch/COPYRIGHT.TXT
   DESTINATION ${DOC_DESTINATION}
@@ -743,7 +747,7 @@ install (FILES
 
 # Debian doesn't like INSTALL, LICENSE included in documentation
 if (NOT PLM_CONFIG_DEBIAN_BUILD)
-  install (FILES 
+  install (FILES
     INSTALL.TXT
     src/plastimatch/LICENSE.TXT
     DESTINATION ${DOC_DESTINATION}
@@ -759,44 +763,44 @@ if (UNIX)
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
     IMMEDIATE @ONLY)
 
-  add_custom_target (uninstall COMMAND 
+  add_custom_target (uninstall COMMAND
     ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
 ##-----------------------------------------------------------------------------
-##  * Tests need to be launched from a script, because CTest is not able 
-##    to add the ITK DLL directory to the path.  We use CMAKE as scripting 
+##  * Tests need to be launched from a script, because CTest is not able
+##    to add the ITK DLL directory to the path.  We use CMAKE as scripting
 ##    language to avoid requirement of outside package (e.g. python)
-##  * "Release" is hard coded.  There is (apparently) no easy way to 
-##    avoid this (i.e. no good suggestions on CMake/CTest email list.  
+##  * "Release" is hard coded.  There is (apparently) no easy way to
+##    avoid this (i.e. no good suggestions on CMake/CTest email list.
 ##    This is the purpose of the PATH_HACK code below.
 ##-----------------------------------------------------------------------------
 if (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  set (PLM_PLASTIMATCH_PATH 
+  set (PLM_PLASTIMATCH_PATH
     ${PLM_BINARY_DIR}/Release)
-  set (PLM_PLASTIMATCH_TESTING_PATH 
+  set (PLM_PLASTIMATCH_TESTING_PATH
     ${PLM_BINARY_DIR}/Testing/Release)
   set (PLM_FFTW_PATH ${FFTW_DIR})
-  # At some point in time (presumably around ITK 4.1), ITK stopped 
-  # creating the variable ITK_LIBRARY_DIRS.  Therefore, we have to 
+  # At some point in time (presumably around ITK 4.1), ITK stopped
+  # creating the variable ITK_LIBRARY_DIRS.  Therefore, we have to
   # use another method to find the ITK directory needed to run tests.
   if (NOT ITK_FOUND)
-    set (PLM_ITK_LIBRARY_PATH_HACK 
+    set (PLM_ITK_LIBRARY_PATH_HACK
       -DITK_LIBRARY_PATH=${PLM_BINARY_DIR}/ITK-build/bin/Release)
   elseif (${ITK_VERSION} VERSION_LESS "4.1")
-    set (PLM_ITK_LIBRARY_PATH_HACK 
+    set (PLM_ITK_LIBRARY_PATH_HACK
       -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
   else ()
     string (REGEX REPLACE "/[^/]*$" "" ITK_LIBRARY_DIRS_41
       "${ITK_CONFIG_TARGETS_FILE}")
-    set (PLM_ITK_LIBRARY_PATH_HACK 
+    set (PLM_ITK_LIBRARY_PATH_HACK
       -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS_41}/bin/Release)
   endif ()
-  set (PLM_PLASTIMATCH_PATH_HACK 
+  set (PLM_PLASTIMATCH_PATH_HACK
      -DPLM_PLASTIMATCH_PATH=${PLM_PLASTIMATCH_PATH})
-  set (PLM_FFTW_PATH_HACK 
+  set (PLM_FFTW_PATH_HACK
      -DPLM_FFTW_PATH=${PLM_FFTW_PATH})
 else ()
   set (PLM_PLASTIMATCH_PATH ${PLM_BINARY_DIR})
@@ -813,11 +817,11 @@ macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
   # "-DWORKING_DIR=XXX;-DEXPECTED_ERRNO=XXX"
   set (EXTRA_PARMS ${ARGV3})
 
-  # CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute 
-  # with replacement string, which will get substituted back within the 
+  # CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute
+  # with replacement string, which will get substituted back within the
   # cmake script itself
   string (REPLACE "=" "&equal&" TMP_PARMS "${PARMS}")
-  add_test (${PLM_TEST_NAME} ${CMAKE_COMMAND} 
+  add_test (${PLM_TEST_NAME} ${CMAKE_COMMAND}
     -DPLM_TEST_NAME=${PLM_TEST_NAME}
     ${PLM_ITK_LIBRARY_PATH_HACK}
     ${PLM_PLASTIMATCH_PATH_HACK}
@@ -833,7 +837,7 @@ macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
 endmacro ()
 
 # Figure out which tests to ignore
-# Note: we need two copies, because unix users might run "make test" 
+# Note: we need two copies, because unix users might run "make test"
 # in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
 configure_file (
   ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
@@ -851,7 +855,7 @@ if (PLM_BUILD_TESTING)
   # Copy the lconv script
   if (EXISTS "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh")
     configure_file (
-      "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh" 
+      "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh"
       "${CMAKE_BINARY_DIR}/run_lcov.sh"
       COPYONLY)
   endif ()
@@ -919,14 +923,14 @@ set (CPACK_WIX_EXTRA_SOURCES
     "${PLM_SOURCE_DIR}/extra/wix/install_dir.wxs"
     "${PLM_SOURCE_DIR}/extra/wix/start_menu.wxs"
     )
-set (CPACK_WIX_PATCH_FILE 
+set (CPACK_WIX_PATCH_FILE
     "${PLM_SOURCE_DIR}/extra/wix/patch_path_env.xml"
 #    "${PLM_SOURCE_DIR}/extra/wix/patch_start_menu.xml"
     )
 set (CPACK_WIX_UI_REF "CMakeUI_InstallDir")
 if (CPACK_GENERATOR STREQUAL "WIX")
     set (CPACK_PACKAGE_NAME "Plastimatch")
-    set_property (INSTALL "bin/launch_cmd_prompt.bat" 
+    set_property (INSTALL "bin/launch_cmd_prompt.bat"
 	PROPERTY CPACK_START_MENU_SHORTCUTS "Plastimatch Command Prompt")
 endif ()
 
