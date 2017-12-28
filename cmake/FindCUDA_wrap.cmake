@@ -8,11 +8,6 @@ macro (set_compute_capabilities)
   if (PLM_CUDA_ALL_DEVICES)
     message (STATUS "CUDA Build Level: ALL Compute Capabilities")
 
-    if (CUDA_VERSION_MAJOR GREATER "5")
-      set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
-	--Wno-deprecated-gpu-targets)
-    endif ()
-
     if (CUDA_VERSION_MAJOR LESS "7")
       message (STATUS "  >> Compute Cap 1: [X]")
       set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
@@ -179,6 +174,12 @@ if (CUDA_FOUND)
   #   Check to make sure nvcc has gcc-4.3 for compiling.
   #   This script will modify CUDA_NVCC_FLAGS if system default is not gcc-4.3
   include (nvcc-check)
+
+  # Make nvcc less whiny
+  if (CUDA_VERSION_MAJOR GREATER "5")
+    set (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
+      --Wno-deprecated-gpu-targets)
+  endif ()
 
   # GCS 2017-10-24: Let CUDA work with gcc 6 and CUDA 8
   if (CUDA_VERSION_MAJOR EQUAL "8"
