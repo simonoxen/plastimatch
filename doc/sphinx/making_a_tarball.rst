@@ -48,6 +48,6 @@ Step 3: Making the final version
 #. Unpack and test tarball on windows (don't skip this step).
 #. Upload to sourceforge::
 
-     sftp gregsharp,plastimatch@frs.sourceforge.net
+     sftp gregsharp@frs.sourceforge.net
      cd /home/pfs/project/p/pl/plastimatch/Source
      put plastimatch-1.6.4.tar.bz2
