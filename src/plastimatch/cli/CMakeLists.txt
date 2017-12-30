@@ -81,9 +81,7 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 #  ""
 #  "")
 #add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
-plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
-  "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_ALWAYS} ${INSTALL_ALWAYS})
-plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
-  "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
+plm_add_executable_v3 (plastimatch "${PLASTIMATCH_SRC}"
+  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+plm_add_executable_v3 (landmark_warp "${LANDMARK_WARP_SRC}" 
+  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})

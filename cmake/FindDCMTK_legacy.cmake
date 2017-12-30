@@ -247,3 +247,4 @@ if (DCMTK_INCLUDE_DIR
     set (DCMTK_LIBRARIES ${DCMTK_LIBRARIES} netapi32 ws2_32)
   endif ()
 endif ()
+

@@ -14,7 +14,6 @@ endif ()
 
 set (BUILD_NEVER 0)
 set (BUILD_ALWAYS 1)
-set (BUILD_IF_NOT_SLICER_EXT 1)
 
 ##-----------------------------------------------------------------------------
 ##  Create enum options
@@ -54,7 +53,7 @@ endmacro ()
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
-macro (PLM_ADD_LIBRARY 
+macro (PLM_ADD_LIBRARY
     TARGET_NAME
     TARGET_SRC
     TARGET_LIBS
@@ -64,7 +63,7 @@ macro (PLM_ADD_LIBRARY
     )
 
   add_library (${TARGET_NAME} ${TARGET_SRC})
-  set_target_properties (${TARGET_NAME} PROPERTIES 
+  set_target_properties (${TARGET_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
@@ -76,30 +75,30 @@ macro (PLM_ADD_LIBRARY
     endif ()
     install (TARGETS ${TARGET_NAME}
       EXPORT PlastimatchLibraryDepends
-      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
-      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}"
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}"
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}"
       PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}"
       )
   endif ()
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
   if (NOT ${TARGET_LDFLAGS} STREQUAL "")
-    set_target_properties(${TARGET_NAME} 
+    set_target_properties(${TARGET_NAME}
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
 
   # Decorate .so on unix
-  set_target_properties(${TARGET_NAME} 
+  set_target_properties(${TARGET_NAME}
       PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
 
 # Static libraries used when they aren't properly decorated for windows
-macro (PLM_ADD_STATIC_LIBRARY 
+macro (PLM_ADD_STATIC_LIBRARY
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS TARGET_INCLUDES)
 
   add_library (${TARGET_NAME} STATIC ${TARGET_SRC})
 
-  set_target_properties (${TARGET_NAME} PROPERTIES 
+  set_target_properties (${TARGET_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
@@ -108,16 +107,16 @@ macro (PLM_ADD_STATIC_LIBRARY
   if (PLM_CONFIG_INSTALL_LIBRARIES)
     install (TARGETS ${TARGET_NAME}
       EXPORT PlastimatchLibraryDepends
-      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
-      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}"
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}"
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}"
       PUBLIC_HEADER DESTINATION "${PLM_INSTALL_INCLUDE_DIR}"
       )
   endif ()
 
   target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
   if (NOT ${TARGET_LDFLAGS} STREQUAL "")
-    set_target_properties(${TARGET_NAME} 
+    set_target_properties(${TARGET_NAME}
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
 endmacro ()
@@ -127,9 +126,9 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
   # Add library target
   cuda_add_library (${TARGET_NAME} SHARED ${TARGET_SRC})
 
-  # Set output directory.  No PUBLIC_HEADER directory is needed, 
+  # Set output directory.  No PUBLIC_HEADER directory is needed,
   # because they don't have a public API.
-  set_target_properties (${TARGET_NAME} PROPERTIES 
+  set_target_properties (${TARGET_NAME} PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}")
@@ -138,69 +137,39 @@ macro (PLM_ADD_GPU_PLUGIN_LIBRARY TARGET_NAME TARGET_SRC)
   if (PLM_CONFIG_INSTALL_LIBRARIES)
     install (TARGETS ${TARGET_NAME}
       EXPORT PlastimatchLibraryDepends
-      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}" 
-      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}" 
-      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}" 
+      RUNTIME DESTINATION "${PLM_INSTALL_BIN_DIR}"
+      LIBRARY DESTINATION "${PLM_INSTALL_LIB_DIR}"
+      ARCHIVE DESTINATION "${PLM_INSTALL_LIB_DIR}"
       )
   endif ()
 
   # Decorate .so on unix
-  set_target_properties(${TARGET_NAME} 
+  set_target_properties(${TARGET_NAME}
       PROPERTIES SOVERSION "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}")
 endmacro ()
 
-## Legacy version, designed before target_include_directories was
-## implemented in cmake 2.8.12
-macro (PLM_ADD_EXECUTABLE 
-    TARGET_NAME
-    TARGET_SRC
-    TARGET_LIBS
-    TARGET_LDFLAGS 
-    TARGET_BUILD
-    TARGET_INSTALL)
-
-  if (${TARGET_BUILD})
-    add_executable (${TARGET_NAME} ${TARGET_SRC})
-    target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
-    set_target_properties (${TARGET_NAME} 
-      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}")
-    if (NOT ${TARGET_LDFLAGS} STREQUAL "")
-      set_target_properties(${TARGET_NAME} 
-	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-    endif ()
-    # CXX linkage required for nlopt
-    set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-    if (${TARGET_INSTALL})
-      install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
-    endif ()
-  endif ()
-endmacro ()
-
-## New version, uses target_include_directories
-macro (plm_add_executable_v2
+## New version, excludes TARGET_BUILD
+macro (plm_add_executable_v3
     TARGET_NAME
     TARGET_SRC
     TARGET_INCLUDES
     TARGET_LIBS
-    TARGET_LDFLAGS 
-    TARGET_BUILD
+    TARGET_LDFLAGS
     TARGET_INSTALL)
 
-  if (${TARGET_BUILD})
-    add_executable (${TARGET_NAME} ${TARGET_SRC})
-    target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
-    target_include_directories (${TARGET_NAME} PRIVATE ${TARGET_INCLUDES})
-    set_target_properties (${TARGET_NAME} 
-      PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}")
-    if (NOT ${TARGET_LDFLAGS} STREQUAL "")
-      set_target_properties(${TARGET_NAME} 
-	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-    endif ()
-    # CXX linkage required for nlopt
-    set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-    if (${TARGET_INSTALL})
-      install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
-    endif ()
+  add_executable (${TARGET_NAME} ${TARGET_SRC})
+  target_link_libraries (${TARGET_NAME} ${TARGET_LIBS})
+  target_include_directories (${TARGET_NAME} PRIVATE ${TARGET_INCLUDES})
+  set_target_properties (${TARGET_NAME}
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PLM_BINARY_DIR}")
+  if (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    set_target_properties(${TARGET_NAME}
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  endif ()
+  # CXX linkage required for nlopt
+  set_target_properties (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+  if (${TARGET_INSTALL})
+    install (TARGETS ${TARGET_NAME} DESTINATION "${PLM_INSTALL_BIN_DIR}")
   endif ()
 endmacro ()
 
@@ -210,17 +179,17 @@ macro (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
   set (${SRCS} ${${SRCS}} "${PLM_BINARY_DIR}/${CL_FILE}")
   add_custom_command (
     OUTPUT "${PLM_BINARY_DIR}/${CL_FILE}"
-    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}" 
-    "${PLM_BINARY_DIR}/${CL_FILE}" 
+    COMMAND ${CMAKE_COMMAND} "-E" "copy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}"
+    "${PLM_BINARY_DIR}/${CL_FILE}"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}")
   # Need in the testing directory too :(
   set (${SRCS} ${${SRCS}} "${PLM_BUILD_TESTING_DIR}/${CL_FILE}")
   add_custom_command (
     OUTPUT "${PLM_BUILD_TESTING_DIR}/${CL_FILE}"
-    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-    "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}" 
-    "${PLM_BUILD_TESTING_DIR}/${CL_FILE}" 
+    COMMAND ${CMAKE_COMMAND} "-E" "copy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}"
+    "${PLM_BUILD_TESTING_DIR}/${CL_FILE}"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${CL_FILE}")
 endmacro ()
 

@@ -23,10 +23,12 @@ if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
   add_subdirectory (mondoshot)
 endif ()
 
+sb_set (PLM_USING_SUPERBUILD OFF)
 if (PLM_CONFIG_ENABLE_PLASTIMATCH)
   if (NOT ITK_FOUND OR NOT DCMTK_FOUND)
     if (PLM_CONFIG_ENABLE_SUPERBUILD)
       set (proj plastimatch)
+      set (PLM_USING_SUPERBUILD ON)
       if(CMAKE_EXTRA_GENERATOR)
 	set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
       else()
