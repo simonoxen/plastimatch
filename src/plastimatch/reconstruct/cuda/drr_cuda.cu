@@ -187,7 +187,9 @@ ray_trace_uniform (
 		    + 0.5 * vol_spacing) * inv_spacing));
 
 	/* Find linear index within 3D volume */
+#if PLM_CONFIG_LEGACY_DRR_CUDA_TEXTURE
         idx = ((ai.z * vol_dim.y + ai.y) * vol_dim.x) + ai.x;
+#endif
 
 	if (ai.x >= 0 && ai.y >= 0 && ai.z >= 0 &&
 	    ai.x < vol_dim.x && ai.y < vol_dim.y && ai.z < vol_dim.z)
@@ -242,10 +244,6 @@ kernel_drr (
     r_tgt = r_tgt + tmp;
     tmp = c * incr_c;
     p2 = r_tgt + tmp;
-
-    /* Compute output location */
-    //cols = image_window.w - image_window.z + 1;
-    //idx = (c - image_window.z) + (r - image_window.x) * cols;
 
     /* Clip ray to volume */
     if (volume_limit_clip_segment (lower_limit, upper_limit,

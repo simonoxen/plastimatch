@@ -178,9 +178,9 @@ drr_ray_trace_image (
 {
     int r;
 #if defined (DRR_VERBOSE)
-    int rows = options->image_window[1] - options->image_window[0] + 1;
+    int rows = options->image_resolution[1];
 #endif
-    int cols = options->image_window[3] - options->image_window[2] + 1;
+    int cols = options->image_resolution[0];
 
     FILE *details_fp = 0;
     if (options->output_details_fn != "") {
@@ -193,7 +193,7 @@ drr_ray_trace_image (
 
     /* Compute the drr pixels */
 #pragma omp parallel for
-    for (r=options->image_window[0]; r<=options->image_window[1]; r++) {
+    for (r = 0; r < options->image_resolution[1]; r++) {
 	int c;
 	double r_tgt[3];
 	double tmp[3];
@@ -204,10 +204,9 @@ drr_ray_trace_image (
 	vec3_scale3 (tmp, incr_r, (double) r);
 	vec3_add2 (r_tgt, tmp);
 
-	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
+	for (c = 0; c <= options->image_resolution[0]; c++) {
 	    double value = 0.0;
-	    int idx = c - options->image_window[2] 
-		+ (r - options->image_window[0]) * cols;
+	    int idx = c + r * cols;
 
 #if defined (DRR_VERBOSE)
 	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
@@ -281,14 +280,14 @@ drr_render_volume_perspective (
 
     /* Compute incremental change in 3d position for each change 
        in panel row/column. */
-    vec3_scale3 (incr_c, prt, ps[1]);
-    vec3_scale3 (incr_r, pdn, ps[0]);
+    vec3_scale3 (incr_c, prt, ps[0]);
+    vec3_scale3 (incr_r, pdn, ps[1]);
 
     /* Get position of upper left pixel on panel */
     vec3_copy (ul_room, ic_room);
-    vec3_scale3 (tmp, incr_r, - pmat->ic[1]);
-    vec3_add2 (ul_room, tmp);
     vec3_scale3 (tmp, incr_c, - pmat->ic[0]);
+    vec3_add2 (ul_room, tmp);
+    vec3_scale3 (tmp, incr_r, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
 
     /* drr_ray_trace uses p1 & p2, p1 is the camera, p2 is in the 

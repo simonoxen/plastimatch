@@ -97,15 +97,15 @@ set_image_parms (Drr_options* options)
     if (options->have_image_window) {
 	options->image_window[0] = plm_max (0, options->image_window[0]);
 	options->image_window[1] = plm_min (options->image_window[1],
-            options->detector_resolution[1] - 1);
+            options->detector_resolution[0] - 1);
 	options->image_window[2] = plm_max (0, options->image_window[2]);
 	options->image_window[3] = plm_min (options->image_window[3],
-            options->detector_resolution[3] - 1);
+            options->detector_resolution[1] - 1);
     } else {
 	options->image_window[0] = 0;
-	options->image_window[1] = options->detector_resolution[1] - 1;
+	options->image_window[1] = options->detector_resolution[0] - 1;
 	options->image_window[2] = 0;
-	options->image_window[3] = options->detector_resolution[0] - 1;
+	options->image_window[3] = options->detector_resolution[1] - 1;
     }
     options->image_resolution[0] = options->image_window[1]
 	- options->image_window[0] + 1;
@@ -268,17 +268,18 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-w")) {
-	    /* Note: user inputs row start, row end,
-               column start, column end */
+	    /* Note: user inputs row start, row end, column start,
+               column end.  But internally they are stored as column,
+               then row. */
 	    if (++i >= argc) { print_usage(); }
 	    rc = sscanf (argv[i], "%d %d %d %d",
-		&options->image_window[0],
-		&options->image_window[1],
 		&options->image_window[2],
-		&options->image_window[3]);
+		&options->image_window[3],
+		&options->image_window[0],
+		&options->image_window[1]);
 	    if (rc == 2) {
-		options->image_window[2] = options->image_window[0];
-		options->image_window[3] = options->image_window[1];
+		options->image_window[0] = options->image_window[1];
+		options->image_window[2] = options->image_window[3];
 	    } else if (rc != 4) {
 		print_usage ();
 	    }

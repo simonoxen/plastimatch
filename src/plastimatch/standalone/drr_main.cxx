@@ -26,7 +26,7 @@
 
 static void*
 allocate_gpu_memory (
-    Proj_image *proj, 
+    Proj_image *proj,
     Volume *vol,
     Drr_options *options
 )
@@ -92,13 +92,13 @@ free_gpu_memory (
 
 static void
 create_matrix_and_drr (
-    Volume* vol, 
+    Volume* vol,
     Proj_image *proj,
     double cam[3],
     double tgt[3],
     double nrm[3],
-    int a, 
-    void *dev_state, 
+    int a,
+    void *dev_state,
     Drr_options* options
 )
 {
@@ -114,22 +114,26 @@ create_matrix_and_drr (
     Plm_timer* timer = new Plm_timer;
 
     /* Set ic = image center (in pixels), and ps = pixel size (in mm)
-       Note: pixels are numbered from 0 to ires-1 */
-    double ic[2] = { options->image_center[0],
-		     options->image_center[1] };
-
-    /* Set image resolution */
-    plm_long ires[2] = { options->image_resolution[0],
-                         options->image_resolution[1] };
+       Note: pixel is defined relative to the entire detector, not
+       the image window, numbered from 0 to detector_resolution - 1 */
+    double ic[2] = {
+        options->image_center[0] - options->image_window[0],
+        options->image_center[1] - options->image_window[2]
+    };
 
     /* Set physical size of imager in mm */
-    float isize[2];
-    isize[0] = options->image_size[0];
-    isize[1] = options->image_size[1];
+    float isize[2] = {
+        options->image_size[0] * ((float) options->image_resolution[0]
+            / (float) options->detector_resolution[0]),
+        options->image_size[1] * ((float) options->image_resolution[1]
+            / (float) options->detector_resolution[1]),
+    };
 
     /* Set pixel size in mm */
-    double ps[2] = { (double)isize[0]/(double)ires[0], 
-		     (double)isize[1]/(double)ires[1] };
+    double ps[2] = {
+        (double)isize[0] / (double)options->image_resolution[0],
+        (double)isize[1] / (double)options->image_resolution[1],
+    };
 
     /* Create projection matrix */
     sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
@@ -201,7 +205,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	cam[1] = tgt[1] + options->sad * nrm[1];
 	cam[2] = tgt[2] + options->sad * nrm[2];
 
-	create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0, 
+	create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0,
 	    dev_state, options);
     }
 
@@ -218,12 +222,12 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	    cam[0] = tgt[0] + options->sad * cos(angle);
 	    cam[1] = tgt[1] - options->sad * sin(angle);
 	    cam[2] = tgt[2];
-	
+
 	    /* Compute normal vector */
 	    vec3_sub3 (nrm, tgt, cam);
 	    vec3_normalize1 (nrm);
 
-	    create_matrix_and_drr (vol, proj, cam, tgt, nrm, a, 
+	    create_matrix_and_drr (vol, proj, cam, tgt, nrm, a,
 		dev_state, options);
 	}
     }
