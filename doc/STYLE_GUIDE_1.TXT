@@ -11,6 +11,32 @@ Plastimatch can't be properly formatted automatically by GNU indent
 or astyle.  Uncrustify will do a decent job; an uncrustify configuration 
 file is included in the distribution.
 
+Conformance
+-----------
+Plastimatch 1.X series must conform to the C++03 standard.
+
+Plastimatch 2.X series (planned) must conform to a restricted
+subset of the C++11 standard.  This subset is restricted to 
+features available in the stock compilers provided on
+a fully-updated install of the supported platforms.
+
+  Microsoft Windows 7 SP1           Visual Studio 2017 (?)
+  Ubuntu 14.04                      gcc 4.8.4; clang 3.4
+  Debian 9 "Stretch"                gcc 6.3.0; clang 3.8.1
+  CentOS 7                          gcc 4.8.5
+  OSX 10.11 El Capitan              Xcode 8.2.1; clang-800; llvm 3.9.0svn
+
+Support for gcc 4.8.4 gcc/libstdc++ are here:
+  https://gcc.gnu.org/gcc-4.8/cxx0x_status.html
+  https://gcc.gnu.org/onlinedocs/gcc-4.8.4/libstdc++/manual/manual/status.html
+
+Not supported:
+  Microsoft Windows Vista
+  Ubuntu 12.04 LTS
+  Debian 8 "Jessie"
+  CentOS 6
+  OSX 10.10 Yosemite
+
 Files
 -----
 Source code files should use Unix-style end-of-line characters.
