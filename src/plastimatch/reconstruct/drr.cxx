@@ -204,7 +204,7 @@ drr_ray_trace_image (
 	vec3_scale3 (tmp, incr_r, (double) r);
 	vec3_add2 (r_tgt, tmp);
 
-	for (c = 0; c <= options->image_resolution[0]; c++) {
+	for (c = 0; c < options->image_resolution[0]; c++) {
 	    double value = 0.0;
 	    int idx = c + r * cols;
 
