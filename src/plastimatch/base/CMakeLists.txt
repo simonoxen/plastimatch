@@ -15,7 +15,7 @@ include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMBASE_LIBRARY_SRC
-  aperture.cxx aperture.h 
+  aperture.cxx aperture.h
   astroid_dose.cxx astroid_dose.h
   bspline_interpolate.cxx bspline_interpolate.h
   bspline_warp.cxx bspline_warp.h
@@ -31,9 +31,10 @@ set (PLMBASE_LIBRARY_SRC
   direction_matrices.cxx direction_matrices.h
   exchkeys.cxx
   float_pair_list.cxx float_pair_list.h
-  gaussian.cxx gaussian.h 
+  gaussian.cxx gaussian.h
   hnd_io.cxx hnd_io.h
   hnd_io_p.h
+  image_stats.cxx image_stats.h
   interpolate.cxx interpolate.h
   interpolate_macros.h
   itkAndConstantToImageFilter.h
@@ -59,10 +60,10 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_load_uint32.cxx
   itk_image_load_ushort.cxx
   itk_image_load_vec.cxx
-  itk_image_origin.cxx itk_image_origin.h 
-  itk_image_region.cxx itk_image_region.h 
+  itk_image_origin.cxx itk_image_origin.h
+  itk_image_region.cxx itk_image_region.h
   itk_image_save.cxx itk_image_save.h
-  itk_image_scale.cxx itk_image_scale.h 
+  itk_image_scale.cxx itk_image_scale.h
   itk_image_stats.cxx itk_image_stats.h
   itk_image_type.h
   itk_metadata.cxx itk_metadata.h
@@ -78,7 +79,7 @@ set (PLMBASE_LIBRARY_SRC
   nki_io.cxx nki_io.h
   parameter_parser.cxx parameter_parser.h
   plm_file_format.cxx plm_file_format.h
-  plm_image.cxx plm_image.h 
+  plm_image.cxx plm_image.h
   plm_image_p.h
   plm_image_convert.cxx
   plm_image_header.cxx plm_image_header.h
@@ -93,7 +94,7 @@ set (PLMBASE_LIBRARY_SRC
   proj_image_dir.cxx proj_image_dir.h
   proj_matrix.cxx proj_matrix.h
   proj_volume.cxx proj_volume.h
-  pwlut.cxx pwlut.h 
+  pwlut.cxx pwlut.h
   rasterize_slice.cxx rasterize_slice.h
   rasterizer.cxx rasterizer.h
   raw_pointset.cxx raw_pointset.h
@@ -107,17 +108,17 @@ set (PLMBASE_LIBRARY_SRC
   rpl_volume_lut.cxx rpl_volume_lut.h
   rtds_dcmtk.cxx
   rtds_gdcm.cxx
-  rt_study.cxx rt_study.h 
+  rt_study.cxx rt_study.h
   rt_study_p.h
-  rt_study_metadata.cxx rt_study_metadata.h 
+  rt_study_metadata.cxx rt_study_metadata.h
   rtog_io.cxx
-  rtss.cxx rtss.h 
-  rtss_contour.cxx rtss_contour.h 
-  rtss_roi.cxx rtss_roi.h 
-  rtplan.cxx rtplan.h 
-  rtplan_beam.cxx rtplan_beam.h 
+  rtss.cxx rtss.h
+  rtss_contour.cxx rtss_contour.h
+  rtss_roi.cxx rtss_roi.h
+  rtplan.cxx rtplan.h
+  rtplan_beam.cxx rtplan_beam.h
   rtplan_control_pt.cxx rtplan_control_pt.h
-  segmentation.cxx segmentation.h 
+  segmentation.cxx segmentation.h
   slice_extract.cxx slice_extract.h
   slice_list.cxx slice_list.h
   ss_img_extract.cxx ss_img_extract.h
@@ -180,7 +181,7 @@ if (PLM_DCM_USE_DCMTK)
     ${PLMBASE_LIBRARY_SRC}
     dcmtk_config.h
     dcmtk_file.cxx dcmtk_file.h
-    dcmtk_image.cxx 
+    dcmtk_image.cxx
     dcmtk_metadata.cxx dcmtk_metadata.h
     dcmtk_module.cxx dcmtk_module.h
     dcmtk_rdd.cxx dcmtk_rdd.h
@@ -253,7 +254,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 plm_add_library (
   plmbase
-  "${PLMBASE_LIBRARY_SRC}" 
+  "${PLMBASE_LIBRARY_SRC}"
   "${PLMBASE_LIBRARY_DEPENDENCIES}"
   "${PLMBASE_LIBRARY_LDFLAGS}"
   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"

@@ -7,16 +7,23 @@
 #include "plmbase_config.h"
 #include "itk_image.h"
 
+class Image_stats;
+
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
 template<class T> PLMBASE_API void itk_image_stats (
-        T img,
-        double *min_val,
-        double *max_val, 
-        double *avg,
-        int *non_zero,
-        int *num_vox
+    T img,
+    double *min_val,
+    double *max_val, 
+    double *avg,
+    int *non_zero,
+    int *num_vox
+);
+
+template<class T> PLMBASE_API void itk_image_stats (
+    const T& img,
+    Image_stats *
 );
 
 #endif

@@ -17,6 +17,7 @@
 #include "dcmtk_series.h"
 #include "dcmtk_util.h"
 #include "file_util.h"
+#include "image_stats.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -213,6 +214,7 @@ Dcmtk_rt_study::rtdose_load ()
     if (val) {
         /* No need to check for success, let scaling be 1.0 if failure */
         sscanf (val, "%f", &dose_scaling);
+        lprintf ("Load: DoseGridScaling = %f\n", dose_scaling);
     }
 
     printf ("RTDOSE: dim = %d %d %d\n  ipp = %f %f %f\n  spc = %f %f %f\n"
@@ -293,6 +295,8 @@ Dcmtk_rt_study::rtdose_load ()
                 bits_stored, pixel_rep);
         }
     }
+    lprintf (">> At load: ");
+    image_stats_print (dose);
 }
 
 void
@@ -306,7 +310,9 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     }
     const Metadata::Pointer& dose_metadata = rsm->get_dose_metadata ();
     Volume::Pointer dose_volume = d_ptr->dose->get_volume_float ();
-
+    lprintf (">> At save: ");
+    image_stats_print (dose_volume);
+    
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
@@ -435,28 +441,27 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     Volume::Pointer dose_copy = dose_volume->clone();
 
     /* Find the maximum value in the image */
-    double min_val, max_val, avg;
-    int non_zero, num_vox;
     dose_copy->convert (PT_FLOAT);
-    volume_stats (dose_copy, &min_val, &max_val, &avg, &non_zero, &num_vox);
+    Image_stats dose_stats (dose_copy);
 
     /* Find scale factor */
-    float dose_scale;
+    float dose_scaling;
     if (dose_metadata 
         && dose_metadata->get_metadata(0x3004, 0x0004) == "ERROR")
     {
 	/* Dose error is signed integer */
-	float dose_scale_min = min_val / INT32_T_MIN * 1.001;
-	float dose_scale_max = max_val / INT32_T_MAX * 1.001;
-	dose_scale = std::max(dose_scale_min, dose_scale_max);
+	float dose_scale_min = dose_stats.min_val / INT32_T_MIN * 1.001;
+	float dose_scale_max = dose_stats.max_val / INT32_T_MAX * 1.001;
+	dose_scaling = std::max(dose_scale_min, dose_scale_max);
     } else {
         /* Dose is unsigned integer */
-        dose_scale = max_val / UINT32_T_MAX * 1.001;
+        dose_scaling = dose_stats.max_val / UINT32_T_MAX * 1.001;
     }
 
     /* Scale the image and add scale factor to dataset */
-    dose_copy->scale_inplace (1 / dose_scale);
-    s = string_format ("%g", dose_scale);
+    lprintf ("Write: DoseGridScaling = %f\n", dose_scaling);
+    dose_copy->scale_inplace (1 / dose_scaling);
+    s = string_format ("%g", dose_scaling);
     dataset->putAndInsertString (DCM_DoseGridScaling, s.c_str());
 
     /* (300c,0002) ReferencedRTPlanSequence -- for future expansion */

@@ -4,6 +4,7 @@
 #include "plmutil_config.h"
 
 #include "file_util.h"
+#include "image_stats.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_image_type.h"
@@ -30,6 +31,8 @@ load_input_files (Rt_study *rt_study, Plm_file_format file_type,
 {
     if (parms->input_fn != "") {
         rt_study->load (parms->input_fn.c_str(), file_type);
+        lprintf (">> After rt_study->load: ");
+        image_stats_print (rt_study->get_dose());
     }
 
     if (parms->input_cxt_fn != "") {
@@ -52,6 +55,8 @@ load_input_files (Rt_study *rt_study, Plm_file_format file_type,
 
     if (parms->input_dose_img_fn != "") {
         rt_study->load_dose_img (parms->input_dose_img_fn.c_str());
+        lprintf (">> After rt_study->load_dose_img: ");
+        image_stats_print (rt_study->get_dose());
     }
 
     if (parms->input_dose_xio_fn != "") {

@@ -12,6 +12,7 @@
 #endif
 #include "astroid_dose.h"
 #include "file_util.h"
+#include "image_stats.h"
 #include "itk_resample.h"
 #include "logfile.h"
 #include "mc_dose.h"
@@ -335,6 +336,8 @@ Rt_study::load_dose_img (const char *dose_img)
     if (dose_img) {
         d_ptr->m_dose = plm_image_load_native (dose_img);
     }
+    lprintf (">> After plm_image_load_native: ");
+    image_stats_print (d_ptr->m_dose);
 }
 
 void
