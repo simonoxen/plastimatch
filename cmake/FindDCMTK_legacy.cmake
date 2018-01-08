@@ -1,7 +1,7 @@
 # - find DCMTK libraries
 #
 
-#  DCMTK_INCLUDE_DIR   - Directories to include to use DCMTK
+#  DCMTK_INCLUDE_DIRS  - Directories to include to use DCMTK
 #  DCMTK_LIBRARIES     - Files to link against to use DCMTK
 #  DCMTK_FOUND         - If false, don't try to use DCMTK
 #  DCMTK_DIR           - (optional) Source directory for DCMTK
@@ -54,7 +54,7 @@ else ()
   message (STATUS "Looking for SSL - not found")
 endif ()
 
-find_path (DCMTK_INCLUDE_DIR
+find_path (DCMTK_INCLUDE_DIRS
   NAMES dcmtk/config/osconfig.h
   HINTS
   ${DCMTK_DIR}/include
@@ -155,7 +155,7 @@ find_library (DCMTK_ofstd_LIBRARY
   /usr/local/dicom/lib
 )
 
-if (DCMTK_INCLUDE_DIR 
+if (DCMTK_INCLUDE_DIRS
     AND DCMTK_dcmnet_LIBRARY
     AND DCMTK_ofstd_LIBRARY
     AND DCMTK_dcmdata_LIBRARY
@@ -222,8 +222,8 @@ if (DCMTK_INCLUDE_DIR
   # Dcmtk must be linked with libwrap if the original package was 
   # built with libwrap support.  
   set (NEED_LIBWRAP_CHECK TRUE)
-  if (EXISTS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h")
-    file (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
+  if (EXISTS "${DCMTK_INCLUDE_DIRS}/dcmtk/config/osconfig.h")
+    file (STRINGS "${DCMTK_INCLUDE_DIRS}/dcmtk/config/osconfig.h"
       DCMTK_UNDEF_TCPWRAPPER
       REGEX "#undef WITH_TCPWRAPPER")
     if (NOT ${DCMTK_UNDEF_TCPWRAPPER} STREQUAL "")
