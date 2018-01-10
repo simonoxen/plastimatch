@@ -102,6 +102,8 @@ sb_option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND
   "Use legacy code for extending b-spline domain" OFF)
 sb_option (PLM_CONFIG_LEGACY_BSPLINE_XFORM_IO
   "Use legacy code for reading and writing b-spline xform files" OFF)
+sb_option (PLM_CONFIG_LEGACY_CUDA_DELAYLOAD
+  "Use legacy code for verifying CUDA runtime" ON)
 sb_option (PLM_CONFIG_LEGACY_DRR_CUDA_TEXTURE
   "Use legacy 1D texture for CUDA DRR generation" OFF)
 sb_option (PLM_CONFIG_LEGACY_MI_METRIC
