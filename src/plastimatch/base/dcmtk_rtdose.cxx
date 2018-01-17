@@ -295,8 +295,6 @@ Dcmtk_rt_study::rtdose_load ()
                 bits_stored, pixel_rep);
         }
     }
-    lprintf (">> At load: ");
-    image_stats_print (dose);
 }
 
 void
@@ -310,8 +308,6 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
     }
     const Metadata::Pointer& dose_metadata = rsm->get_dose_metadata ();
     Volume::Pointer dose_volume = d_ptr->dose->get_volume_float ();
-    lprintf (">> At save: ");
-    image_stats_print (dose_volume);
     
     /* Prepare dcmtk */
     DcmFileFormat fileformat;
