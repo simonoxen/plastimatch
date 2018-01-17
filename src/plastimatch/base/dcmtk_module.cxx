@@ -29,7 +29,7 @@ Dcmtk_module::set_general_study (
     const Rt_study_metadata::Pointer& rsm)
 {
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        rsm->get_study_uid());
+        rsm->get_study_uid().c_str());
     dataset->putAndInsertOFStringArray (DCM_StudyDate, 
         rsm->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_StudyTime, 
@@ -69,7 +69,7 @@ Dcmtk_module::set_frame_of_reference (
     const Rt_study_metadata::Pointer& rsm)
 {
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        rsm->get_frame_of_reference_uid());
+        rsm->get_frame_of_reference_uid().c_str());
 }
 
 void

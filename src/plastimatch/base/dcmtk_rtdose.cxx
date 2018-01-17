@@ -325,7 +325,7 @@ Dcmtk_rt_study::save_dose (const char *dicom_dir)
 
     /* Frame of reference module */
     dataset->putAndInsertString (DCM_FrameOfReferenceUID, 
-        rsm->get_frame_of_reference_uid());
+        rsm->get_frame_of_reference_uid().c_str());
     dataset->putAndInsertString (DCM_PositionReferenceIndicator, "");
 
     /* General equipment module */

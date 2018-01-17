@@ -80,7 +80,7 @@ Dcmtk_sro::save (
         DCM_RegistrationSequence, reg_item, -2);
     reg_item->putAndInsertString (
         DCM_FrameOfReferenceUID, 
-        rsm_fixed->get_frame_of_reference_uid());
+        rsm_fixed->get_frame_of_reference_uid().c_str());
     DcmItem *mr_item = 0;
     reg_item->findOrCreateSequenceItem (
         DCM_MatrixRegistrationSequence, mr_item, -2);
@@ -103,7 +103,7 @@ Dcmtk_sro::save (
         DCM_RegistrationSequence, reg_item, -2);
     reg_item->putAndInsertString (
         DCM_FrameOfReferenceUID, 
-        rsm_moving->get_frame_of_reference_uid());
+        rsm_moving->get_frame_of_reference_uid().c_str());
     reg_item->findOrCreateSequenceItem (
         DCM_MatrixRegistrationSequence, mr_item, -2);
     mr_item->findOrCreateSequenceItem (
