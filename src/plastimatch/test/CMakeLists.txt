@@ -1,4 +1,4 @@
-##-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
 project (src_plastimatch_test)
@@ -63,7 +63,7 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
       plm_add_executable_v3 (itk_test_directions itk_test_directions.cxx
 	"" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
       plm_add_executable_v3 (itk_test_threads itk_thread_test.cxx
-	"${PLASTIMATCH_LIBS}" "" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+	"" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
     endif ()
 
     # Test executable -- libyaml
