@@ -824,7 +824,7 @@ Segmentation::warp (
 bool
 Segmentation::have_ss_img ()
 {
-    return d_ptr->m_ss_img != 0;
+    return (bool) d_ptr->m_ss_img;
 }
 
 void
@@ -849,7 +849,7 @@ Segmentation::get_ss_img ()
 bool
 Segmentation::have_structure_set ()
 {
-    return d_ptr->m_rtss != 0;
+    return (bool) d_ptr->m_rtss;
 }
 
 Rtss::Pointer&

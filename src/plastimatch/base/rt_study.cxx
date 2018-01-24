@@ -746,7 +746,7 @@ Rt_study::get_image_volume_float (void)
 bool
 Rt_study::has_dose ()
 {
-    return (d_ptr->m_dose != 0);
+    return (bool) d_ptr->m_dose;
 }
 
 Volume::Pointer
