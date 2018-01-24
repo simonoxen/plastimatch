@@ -110,6 +110,8 @@
    which are always true or always false -- usually caused by 
    template expansions */
 #pragma clang diagnostic ignored "-Wtautological-compare"
+/* ITK headers whine about version mismatch on linux */
+#pragma clang diagnostic ignored "-W#warnings"
 #endif
 
 #if defined(_MSC_VER) && _MSC_VER < 1700
