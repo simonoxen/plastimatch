@@ -21,6 +21,7 @@ include (PlmMacros)
 ##-----------------------------------------------------------------------------
 include (CheckCharSign)
 include (CheckEpsilon)
+include (CheckNullptr)
 include (CheckTypeSize)
 include (TestBigEndian)
 
