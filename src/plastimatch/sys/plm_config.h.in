@@ -14,6 +14,7 @@
 #cmakedefine APPLE 1
 
 /* Compiler attributes */
+#cmakedefine HAVE_NULLPTR 1
 #cmakedefine HAVE_SYS_STAT_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_SYS_STAT_H 1
@@ -114,18 +115,21 @@
 #pragma clang diagnostic ignored "-W#warnings"
 #endif
 
-#if defined(_MSC_VER) && _MSC_VER < 1700
-#define inline __inline
+/* Compiler & library support */
+#if !defined(HAVE_NULLPTR)
+# define nullptr 0
 #endif
-
+#if defined(_MSC_VER) && _MSC_VER < 1700
+# define inline __inline
+#endif
 #if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
+# define snprintf _snprintf
 #endif
 
 #ifdef __cplusplus
-#define EXTERNC extern "C"
+# define EXTERNC extern "C"
 #else
-#define EXTERNC
+# define EXTERNC
 #endif
 
 #if ((defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
