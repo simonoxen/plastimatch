@@ -1253,8 +1253,8 @@ input intensity image.
 
 The command line usage is given as follows::
 
-Usage: plastimatch threshold [options]
-Options:
+  Usage: plastimatch threshold [options]
+  Options:
       --above <arg>    value above which output has value high 
       --below <arg>    value below which output has value high 
   -h, --help           display this help message 

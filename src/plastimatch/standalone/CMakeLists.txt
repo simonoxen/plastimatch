@@ -240,145 +240,88 @@ endif()
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
-  plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (landmark_diff "${LANDMARK_DIFF_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (merge_vfs  "${MERGE_VFS_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-  plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v3 (compute_distance "${COMPUTE_DISTANCE_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  plm_add_executable_v3 (dicom_info "${DICOM_INFO_SRC}"
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  plm_add_executable_v3 (landmark_diff "${LANDMARK_DIFF_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  plm_add_executable_v3 (merge_vfs  "${MERGE_VFS_SRC}"
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  plm_add_executable_v3 (shuffle_mha "${SHUFFLE_MHA_SRC}"
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   if (PLM_BUILD_VISCOUS)
-    plm_add_executable (viscous "${VISCOUS_SRC}"
-      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+    plm_add_executable_v3 (viscous "${VISCOUS_SRC}"
+      "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   endif ()
-  plm_add_executable (vf_invert "${VF_INVERT_SRC}"
-      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-  plm_add_executable (wed "${WED_SRC}" 
-      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v3 (vf_invert "${VF_INVERT_SRC}"
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  plm_add_executable_v3 (wed "${WED_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   if (PLM_DCM_USE_DCMTK)
-      plm_add_executable (xvi_archive "${XVI_ARCHIVE_SRC}" 
-	  "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" 
-	  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+    plm_add_executable_v3 (xvi_archive "${XVI_ARCHIVE_SRC}" 
+      "" "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   endif ()
-  plm_add_executable (group_add "${GROUP_ADD_SRC}" 
-      "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-      ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-if (COMMENT_OUT)
-plm_add_executable (gamma_thresh "${GAMMA_THRESH_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
-plm_add_executable (filter "${FILTER_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-if (COMMENT_OUT)
-plm_add_executable (flip_image "${FLIP_IMAGE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (decomp_vector "${DECOMP_VECTOR_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (template "${TEMPLATE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (find_center "${FIND_CENTER_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-endif ()
-#  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-#    ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+  plm_add_executable_v3 (group_add "${GROUP_ADD_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 endif ()
 
 if (QT4_FOUND)
   set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
     ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
   set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
-  plm_add_executable_v2 (nki2mha_converter "${nki2mha_converter_SRC}"
+  plm_add_executable_v3 (nki2mha_converter "${nki2mha_converter_SRC}"
     "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
-    "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
   if (DCMTK_FOUND)
-    plm_add_executable (gamma_gui "${GAMMA_GUI_SRC}"
+    plm_add_executable_v3 (gamma_gui "${GAMMA_GUI_SRC}"
       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
-      "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
-
-    plm_add_executable (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
+      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+    plm_add_executable_v3 (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
-      "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-  plm_add_executable (register_gui "${REGISTER_GUI_SRC}" 
+  plm_add_executable_v3 (register_gui "${REGISTER_GUI_SRC}" 
     "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
-    "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif()
 
-plm_add_executable (cmd_prompt_launcher "${CMD_PROMPT_LAUNCHER_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
+plm_add_executable_v3 (bspline "${BSPLINE_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (check_grad "${CHECK_GRAD_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (demons "${DEMONS_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (dlib_train "${DLIB_TRAIN_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (hnd_to_pfm "${HND_TO_PFM_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (bragg_curve "${BRAGG_CURVE_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+plm_add_executable_v3 (sobp "${SOBP_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 
-plm_add_executable (bspline "${BSPLINE_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-
-plm_add_executable (check_grad "${CHECK_GRAD_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (demons "${DEMONS_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (drr "${DRR_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-plm_add_executable (fdk "${FDK_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_ALWAYS})
-plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
-plm_add_executable (mha_to_raw "${MHA_TO_RAW_SRC}"
-  "" ""
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (raw_to_mha "${RAW_TO_MHA_SRC}"
-  "" "" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-plm_add_executable (sobp "${SOBP_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_NEVER})
-
+plm_add_executable_v3 (drr "${DRR_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+plm_add_executable_v3 (fdk "${FDK_SRC}" 
+  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
 if (CUDA_FOUND)
-  plm_add_executable (cuda_probe "${CUDA_PROBE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable_v3 (cuda_probe "${CUDA_PROBE_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
-if (MATLAB_FOUND)
-  mex_target (mex_drr "${MEX_DRR_SRC}"
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
-endif ()
+# if (MATLAB_FOUND)
+#   mex_target (mex_drr "${MEX_DRR_SRC}"
+#   "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
+# endif ()
 
 if (OPENCL_FOUND)
-  plm_add_executable (opencl_probe "${OPENCL_PROBE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-    ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+  plm_add_executable_v3 (opencl_probe "${OPENCL_PROBE_SRC}"
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 
 # dicom_uid requires dcmtk
-plm_add_executable (dicom_uid "${DICOM_UID_SRC}" 
-  "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" 
-  ${BUILD_IF_NOT_SLICER_EXT} ${INSTALL_IF_NOT_DEBIAN})
+if (DCMTK_FOUND)
+  plm_add_executable_v3 (dicom_uid "${DICOM_UID_SRC}" 
+    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+endif ()

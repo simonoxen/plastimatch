@@ -4,8 +4,8 @@
 project (src_plastimatch_qt)
 
 configure_file (
-    ${CMAKE_CURRENT_SOURCE_DIR}/plmqt_config.h.in
-    ${CMAKE_BINARY_DIR}/plmqt_config.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/plmqt_config.h.in
+  ${CMAKE_BINARY_DIR}/plmqt_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -86,17 +86,17 @@ endif ()
 if (ITK_FOUND AND QT4_FOUND)
   set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
     ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
-  plm_add_executable_v2 (cview "${CRYSTALVIEW_SRC}"
+  plm_add_executable_v3 (cview "${CRYSTALVIEW_SRC}"
     "${QT4_INCLUDE_DIRS}" "${CRYSTALVIEW_LIBRARIES}"
-    "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif ()
 if (ITK_FOUND AND QT4_FOUND AND QT_QTSQL_FOUND)
   if (PLM_CONFIG_ENABLE_PLASTIMATCH_QT)
     set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
-    plm_add_executable_v2 (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
+    plm_add_executable_v3 (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_QT_LIBRARIES}" 
-      "${PLASTIMATCH_LDFLAGS}" ${BUILD_ALWAYS} ${INSTALL_IF_NOT_DEBIAN})
+      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
   endif ()
 endif ()
 

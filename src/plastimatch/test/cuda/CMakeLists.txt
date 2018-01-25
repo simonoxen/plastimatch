@@ -9,9 +9,8 @@ set_directory_properties (PROPERTIES COMPILE_DEFINITIONS "")
 # Test executable -- cuda
 if (CUDA_FOUND)
   cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
-  plm_add_executable (cuda_test "${CUDA_TEST_WRAPPERS}" 
-    "${CUDA_LIBRARIES}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+  plm_add_executable_v3 (cuda_test "${CUDA_TEST_WRAPPERS}" 
+    "" "${CUDA_LIBRARIES}" "" ${INSTALL_NEVER})
   set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 
   # Test executable -- cuda_tex_test

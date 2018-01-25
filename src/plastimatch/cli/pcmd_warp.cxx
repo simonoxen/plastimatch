@@ -175,6 +175,9 @@ parse_fn (
         "series number for structure metadata: integer", 1);
     parser->add_long_option ("", "series-uid",
         "series UID for image metadata: string", 1);
+    parser->add_long_option ("", "regenerate-study-uids",
+        "create new Study Instance UID and Frame of Reference UID"
+        " when using --referenced-ct", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -397,6 +400,9 @@ parse_fn (
         std::string metadata_string = "0020,000e=" + arg;
         parms->m_image_metadata.push_back (metadata_string);
         parms->image_series_uid_forced = true;
+    }
+    if (parser->option ("regenerate-study-uids")) {
+        parms->regenerate_study_uids = true;
     }
 }
 

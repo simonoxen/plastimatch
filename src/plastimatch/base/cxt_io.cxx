@@ -280,13 +280,13 @@ cxt_save (
 	fprintf (fp, "CT_SERIES_UID\n");
     }
     if (rsm) {
-	fprintf (fp, "CT_STUDY_UID %s\n", rsm->get_study_uid());
+	fprintf (fp, "CT_STUDY_UID %s\n", rsm->get_study_uid().c_str());
     } else {
 	fprintf (fp, "CT_STUDY_UID\n");
     }
     if (rsm) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
-	    rsm->get_frame_of_reference_uid());
+	    rsm->get_frame_of_reference_uid().c_str());
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }

@@ -11,7 +11,9 @@
 
 #if PLM_DCM_USE_DCMTK
 #include "dcmtk_rt_study.h"
+#include "dcmtk_rtdose.h"
 #endif
+#include "dicom_util.h"
 #include "file_util.h"
 #include "itk_image_cast.h"
 #include "itk_image_create.h"
@@ -283,6 +285,8 @@ Plm_image::load_native (const char* fname)
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
 	   called plm_file_format_deduce() in warp_main() */
+        /* GCS FIX: It is not redundant, because deduce does not 
+           get called except on --input */
 	return load_native_dicom (fname);
     }
 
@@ -296,6 +300,18 @@ Plm_image::load_native (const char* fname)
         return load_native_nki (fname);
     }
 
+    /* Check for DICOM dose */
+#if PLM_DCM_USE_DCMTK
+    if (dcmtk_dose_probe (fname)) {
+        Dcmtk_rt_study dcmtk_rt_study (fname);
+        Plm_image::Pointer& dose = dcmtk_rt_study.get_dose ();
+        if (dose) {
+            this->set (dose);
+            return true;
+        }
+    }
+#endif
+    
     std::string fn = fname;
     itk_image_get_props (fname, &num_dimensions, &pixel_type, 
 	&component_type, &num_components);

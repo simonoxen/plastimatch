@@ -5,7 +5,11 @@ Plastimatch is an open source software for image computation.
 Our main focus is high-performance 
 volumetric registration of medical images, such as 
 X-ray computed tomography (CT), magnetic resonance imaging (MRI), 
-and positron emission tomography (PET). Software features include:
+and positron emission tomography (PET). 
+
+:ref:`getting_started`
+
+Software features include:
 
 * B-spline method for deformable image registration 
   (GPU and multicore accelerated)

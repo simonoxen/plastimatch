@@ -1,4 +1,47 @@
 ******************************************************************************
+CUDA Wraping, existing version
+
+#define plmcuda_EXPORT(f, ...)                 \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__);
+
+#define DELAYLOAD_WRAP(f, ...)                 \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__);
+
+#define LOAD_LIBRARY_SAFE(lib)                 \
+    if (!delayload_##lib()) { exit (0); }      \
+    void* lib = dlopen_ex (#lib".so");
+
+#define LOAD_SYMBOL(sym, lib)                  \
+    sym##_##t* sym = (sym##_##t*) dlsym (lib, #sym);
+
+#define UNLOAD_LIBRARY(lib)                    \
+    if (lib != NULL) {                         \
+        dlclose (lib);                         \
+    }
+
+This is used as:
+
+    plmcuda_EXPORT (
+    void CUDA_selectgpu,
+        int gpuid
+    );
+    ->
+    typedef void CUDA_selectgpu_t (int gpuid);
+
+    LOAD_LIBRARY_SAFE (libplmcuda);
+    LOAD_SYMBOL (CUDA_selectgpu, libplmcuda);
+    CUDA_selectgpu (parms->gpuid);
+    UNLOAD_LIBRARY (libplmcuda);
+    ->
+    if (!delayload_libplmcuda()) { exit (0); }
+    void* lib = dlopen_ex ("libplmcuda.so");
+    CUDA_selectgpu_t* sym = (CUDA_selectgpu_t*) dlsym (lib, "CUDA_selectgpu");
+    CUDA_selectgpu (parms->gpuid);
+    if (lib != NULL) {
+        dlclose (lib);
+    }
+
+******************************************************************************
 Thoughts on operations of two images
 
 Traditionally, plastimatch has resampled the non-reference image to match

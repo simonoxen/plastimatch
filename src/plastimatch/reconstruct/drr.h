@@ -42,7 +42,7 @@ public:
     int detector_resolution[2];      /* In pixels */
     float image_size[2];             /* In mm */
     int have_image_center;           /* Was image_center spec'd in options? */
-    int image_resolution[2];       /* In pixels */
+    int image_resolution[2];         /* In pixels */
     float image_center[2];           /* In pixels */
     int have_image_window;           /* Was image_window spec'd in options? */
     int image_window[4];             /* In pixels */

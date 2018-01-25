@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 
+#include "image_stats.h"
 #include "print_and_exit.h"
 #include "volume.h"
 #include "volume_stats.h"
@@ -10,6 +11,34 @@
 /* -----------------------------------------------------------------------
    Statistics like min, max, etc.
    ----------------------------------------------------------------------- */
+template<class T> 
+void
+volume_stats_template (const Volume *vol, Image_stats *image_stats)
+{
+    int first = 1;
+    double sum = 0.0;
+    T *img = (T*) vol->img;
+
+    image_stats->num_non_zero = 0;
+    image_stats->num_vox = 0;
+
+    for (plm_long i = 0; i < vol->npix; i++) {
+	double v = (double) img[i];
+	if (first) {
+	    image_stats->min_val = image_stats->max_val = v;
+	    first = 0;
+	}
+	if (image_stats->min_val > v) image_stats->min_val = v;
+	if (image_stats->max_val < v) image_stats->max_val = v;
+	sum += v;
+	image_stats->num_vox ++;
+	if (v != 0.0) {
+	    image_stats->num_non_zero ++;
+	}
+    }
+    image_stats->avg_val = sum / image_stats->num_vox;
+}
+
 template<class T> 
 void
 volume_stats_template (const Volume *vol, double *min_val, double *max_val, 
@@ -37,6 +66,37 @@ volume_stats_template (const Volume *vol, double *min_val, double *max_val,
 	}
     }
     *avg = sum / (*num_vox);
+}
+
+void
+volume_stats (const Volume *vol, Image_stats *image_stats)
+{
+    switch (vol->pix_type) {
+    case PT_UCHAR:
+        volume_stats_template<unsigned char> (
+            vol, image_stats);
+        break;
+    case PT_SHORT:
+        volume_stats_template<short> (
+            vol, image_stats);
+        break;
+    case PT_FLOAT:
+        volume_stats_template<float> (
+            vol, image_stats);
+        break;
+    case PT_UINT16:
+    case PT_UINT32:
+    case PT_INT32:
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
+    default:
+	/* Can't convert this */
+	print_and_exit (
+            "Sorry, unsupported type %d for volume_stats()\n",
+            vol->pix_type);
+	break;
+    }
 }
 
 void

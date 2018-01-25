@@ -307,7 +307,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
 #endif
 
     dataset->putAndInsertString (DCM_StudyInstanceUID, 
-        d_ptr->rt_study_metadata->get_study_uid());
+        d_ptr->rt_study_metadata->get_study_uid().c_str());
     dataset->putAndInsertString (DCM_SeriesInstanceUID, 
         d_ptr->rt_study_metadata->get_rtstruct_series_uid());
     dcmtk_copy_from_metadata (dataset, rtstruct_metadata, DCM_StudyID, "10001");
@@ -328,7 +328,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
     dataset->findOrCreateSequenceItem (
         DCM_ReferencedFrameOfReferenceSequence, rfor_item, -2);
     rfor_item->putAndInsertString (DCM_FrameOfReferenceUID, 
-        d_ptr->rt_study_metadata->get_frame_of_reference_uid());
+        d_ptr->rt_study_metadata->get_frame_of_reference_uid().c_str());
     dataset->findAndGetSequence (
         DCM_ReferencedFrameOfReferenceSequence, rfor_seq);
     DcmItem *rtrstudy_item = 0;
@@ -338,7 +338,8 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         DCM_ReferencedSOPClassUID, 
         UID_RETIRED_StudyComponentManagementSOPClass);
     rtrstudy_item->putAndInsertString (
-        DCM_ReferencedSOPInstanceUID, d_ptr->rt_study_metadata->get_study_uid());
+        DCM_ReferencedSOPInstanceUID,
+        d_ptr->rt_study_metadata->get_study_uid().c_str());
     DcmItem *rtrseries_item = 0;
     rtrstudy_item->findOrCreateSequenceItem (
         DCM_RTReferencedSeriesSequence, rtrseries_item, -2);
@@ -367,7 +368,7 @@ Dcmtk_rt_study::save_rtss (const char *dicom_dir)
         tmp = string_format ("%d", rtss->slist[i]->id);
         ssroi_item->putAndInsertString (DCM_ROINumber, tmp.c_str());
         ssroi_item->putAndInsertString (DCM_ReferencedFrameOfReferenceUID,
-            d_ptr->rt_study_metadata->get_frame_of_reference_uid());
+            d_ptr->rt_study_metadata->get_frame_of_reference_uid().c_str());
         ssroi_item->putAndInsertString (DCM_ROIName, 
             rtss->slist[i]->name.c_str());
         ssroi_item->putAndInsertString (DCM_ROIGenerationAlgorithm, "");

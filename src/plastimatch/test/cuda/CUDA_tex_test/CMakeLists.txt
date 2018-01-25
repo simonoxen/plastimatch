@@ -13,7 +13,6 @@ if (CUDA_FOUND)
     tex_stubs.h
     textures.c
     )
-  plm_add_executable (cuda_tex_test "${CUDA_TEX_TEST_SRC}" 
-    "${CUDA_LIBRARIES}" "" 
-    ${BUILD_ALWAYS} ${INSTALL_NEVER})
+  plm_add_executable_v3 (cuda_tex_test "${CUDA_TEX_TEST_SRC}" 
+    "" "${CUDA_LIBRARIES}" "" ${INSTALL_NEVER})
 endif ()

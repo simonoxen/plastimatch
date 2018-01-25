@@ -21,6 +21,7 @@ include (PlmMacros)
 ##-----------------------------------------------------------------------------
 include (CheckCharSign)
 include (CheckEpsilon)
+include (CheckNullptr)
 include (CheckTypeSize)
 include (TestBigEndian)
 
@@ -86,11 +87,11 @@ endif ()
 ##  dlib
 ##-----------------------------------------------------------------------------
 if (PLM_PREFER_SYSTEM_DLIB)
-  # Use this version if you want to use the internal cmake find. 
+  # Use this version if you want to use the internal cmake find.
   # The internal version has issue finding the correct BLAS library
   # for Debian, so we prefer Debian version.
   # find_package (Dlib)
-  
+
   # However, the Debian cmake find is broken.  Its breakage can
   # be worked around by setting dlib_BINARY_DIR.
   set (dlib_BINARY_DIR 1)
@@ -112,16 +113,18 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  ransac
 ##-----------------------------------------------------------------------------
-set (RANSAC_INCLUDE_DIRS 
-  "${PLM_SOURCE_DIR}/libs/ransac" 
+set (RANSAC_INCLUDE_DIRS
+  "${PLM_SOURCE_DIR}/libs/ransac"
   "${PLM_SOURCE_DIR}/libs/ransac/Common")
 
 ##-----------------------------------------------------------------------------
 ##  ITK
 ##-----------------------------------------------------------------------------
-set (PLM_CONFIG_USE_PATCHED_ITK 0)
-find_package (ITK REQUIRED)
-include (HandleITK)
+if (PLM_USING_SUPERBUILD)
+  set (PLM_CONFIG_USE_PATCHED_ITK 0)
+  find_package (ITK REQUIRED)
+  include (HandleITK)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Hack for superbuild
@@ -225,7 +228,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/reconstruct/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register/cuda)
-# GCS 2013-09-11.  Disable scripting, because it doesn't yet support 
+# GCS 2013-09-11.  Disable scripting, because it doesn't yet support
 #   smart pointers for registration.
 # include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/script)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
@@ -348,9 +351,9 @@ endif ()
 ##  SETUP IMPORTANT LOCATIONS
 ##-----------------------------------------------------------------------------
 # Offer the user the choice of overriding the installation directories
-set (PLM_INSTALL_LIB_DIR lib CACHE PATH 
+set (PLM_INSTALL_LIB_DIR lib CACHE PATH
   "Installation directory for libraries")
-set (PLM_INSTALL_BIN_DIR bin CACHE PATH 
+set (PLM_INSTALL_BIN_DIR bin CACHE PATH
   "Installation directory for executables")
 set (PLM_INSTALL_INCLUDE_DIR include/plastimatch CACHE PATH
   "Installation directory for header files")
@@ -362,9 +365,9 @@ endif()
 set (PLM_INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
   "Installation directory for CMake files")
 mark_as_advanced (
-  PLM_INSTALL_LIB_DIR 
-  PLM_INSTALL_BIN_DIR 
-  PLM_INSTALL_INCLUDE_DIR 
+  PLM_INSTALL_LIB_DIR
+  PLM_INSTALL_BIN_DIR
+  PLM_INSTALL_INCLUDE_DIR
   PLM_INSTALL_CMAKE_DIR)
 
 
@@ -482,7 +485,7 @@ endif ()
 # Create the configuration files used by client applications
 if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
-  export (TARGETS 
+  export (TARGETS
     ${EXPORT_TARGET_LIST}
     FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
 
@@ -495,22 +498,22 @@ if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
   file (RELATIVE_PATH CONF_REL_INCLUDE_DIR "${PLM_INSTALL_CMAKE_DIR}"
     "${PLM_INSTALL_INCLUDE_DIR}")
   configure_file (
-    "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig-Legacy.cmake.in" 
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+    "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig-Legacy.cmake.in"
+    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
     @ONLY)
   configure_file (
     "${PROJECT_SOURCE_DIR}/cmake/PlastimatchBuildTreeSettings.cmake.in"
     "${CMAKE_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
 
   # Install the PlastimatchConfig.cmake file
-  install (FILES 
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+  install (FILES
+    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     # COMPONENT dev
     )
 
   # Install the export set for use with the install-tree
-  install (EXPORT PlastimatchLibraryDepends 
+  install (EXPORT PlastimatchLibraryDepends
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     # COMPONENT dev
     )
@@ -533,18 +536,18 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
       FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake"
       )
   endif ()
-  
+
   # Make the config file
   configure_file (
-    "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in" 
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake" 
+    "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in"
+    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
     @ONLY)
-  
+
   # Install the files
   install (EXPORT PlastimatchLibraryDepends
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     )
-  install (FILES 
+  install (FILES
     "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
@@ -559,8 +562,8 @@ endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 if (DOXYGEN_FOUND)
   file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
   configure_file (
-    ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in 
-    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     @ONLY)
   add_custom_target (doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile

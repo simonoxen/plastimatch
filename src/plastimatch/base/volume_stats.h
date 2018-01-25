@@ -6,11 +6,16 @@
 
 #include "plmbase_config.h"
 
+class Image_stats;
 class Volume;
 
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
+PLMBASE_API void 
+volume_stats (
+    const Volume *vol,
+    Image_stats *image_stats);
 PLMBASE_API void 
 volume_stats (
     const Volume *vol,

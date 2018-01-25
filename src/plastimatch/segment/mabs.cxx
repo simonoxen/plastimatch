@@ -570,7 +570,7 @@ Mabs::run_registration_loop ()
             reg.set_moving_image (moving_image);
             
             /* PAOLO ZAFFINO: align centers of gravity */
-            if (d_ptr->input_roi_for_cog_prealignment != NULL) {
+            if (d_ptr->input_roi_for_cog_prealignment) {
                 
                 /* Add STAGE only if a segment command is executed. Is it needed or we can define it into the configuration file? */
                 std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";

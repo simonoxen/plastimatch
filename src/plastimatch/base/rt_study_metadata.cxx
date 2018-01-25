@@ -21,9 +21,6 @@ public:
     std::string time_string;
     std::string study_id_string;
 
-    std::string study_uid;
-    std::string for_uid;
-
     std::string position_reference_indicator_string;
 
     std::string ct_series_uid;
@@ -61,31 +58,14 @@ public:
         sro_metadata->set_parent (study_metadata);
 
         ct_series_uid_forced = false;
-        this->generate_new_study_uids ();
-        this->generate_new_series_uids ();
-    }
-public:
-    void
-    generate_new_study_uids () {
-        study_uid = dicom_uid (PLM_UID_PREFIX);
-        for_uid = dicom_uid (PLM_UID_PREFIX);
-    }
-    void
-    generate_new_series_uids () {
-        if (!ct_series_uid_forced) {
-            ct_series_uid = dicom_uid (PLM_UID_PREFIX);
-        }
-        dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        dose_series_uid = dicom_uid (PLM_UID_PREFIX);
-        plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        rtstruct_instance_uid = dicom_uid (PLM_UID_PREFIX);
-        rtstruct_series_uid = dicom_uid (PLM_UID_PREFIX);
     }
 };
 
 Rt_study_metadata::Rt_study_metadata ()
 {
     this->d_ptr = new Rt_study_metadata_private;
+    this->generate_new_study_uids ();
+    this->generate_new_series_uids ();
 }
 
 Rt_study_metadata::~Rt_study_metadata ()
@@ -146,17 +126,23 @@ Rt_study_metadata::get_dose_series_uid () const
     return d_ptr->dose_series_uid.c_str();
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_frame_of_reference_uid () const
 {
-    return d_ptr->for_uid.c_str();
+    return get_study_metadata (0x0008, 0x0052);
 }
 
 void
 Rt_study_metadata::set_frame_of_reference_uid (const char* uid)
 {
     if (!uid) return;
-    d_ptr->for_uid = uid;
+    set_study_metadata (0x0008, 0x0052, uid);
+}
+
+void
+Rt_study_metadata::set_frame_of_reference_uid (const std::string& uid)
+{
+    set_frame_of_reference_uid (uid.c_str());
 }
 
 const char*
@@ -300,17 +286,23 @@ Rt_study_metadata::set_study_time (const std::string& time)
     d_ptr->time_string = time;
 }
 
-const char*
+const std::string&
 Rt_study_metadata::get_study_uid () const
 {
-    return d_ptr->study_uid.c_str();
+    return get_study_metadata (0x0020, 0x000d);
 }
 
 void
 Rt_study_metadata::set_study_uid (const char* uid)
 {
     if (!uid) return;
-    d_ptr->study_uid = uid;
+    set_study_metadata (0x0020, 0x000d, uid);
+}
+
+void
+Rt_study_metadata::set_study_uid (const std::string& uid)
+{
+    set_study_uid (uid.c_str());
 }
 
 const char*
@@ -487,6 +479,15 @@ Rt_study_metadata::get_study_metadata () const
     return d_ptr->study_metadata;
 }
 
+const std::string& 
+Rt_study_metadata::get_study_metadata (
+    unsigned short key1, 
+    unsigned short key2
+) const
+{
+    return d_ptr->study_metadata->get_metadata (key1, key2);
+}
+
 void
 Rt_study_metadata::set_study_metadata (
     unsigned short key1, 
@@ -651,11 +652,19 @@ void Rt_study_metadata::set_sro_metadata (
 void
 Rt_study_metadata::generate_new_study_uids () 
 {
-    d_ptr->generate_new_study_uids ();
+    set_study_uid (dicom_uid (PLM_UID_PREFIX));
+    set_frame_of_reference_uid (dicom_uid (PLM_UID_PREFIX));
 }
 
 void
 Rt_study_metadata::generate_new_series_uids () 
 {
-    d_ptr->generate_new_series_uids ();
+    if (!d_ptr->ct_series_uid_forced) {
+        d_ptr->ct_series_uid = dicom_uid (PLM_UID_PREFIX);
+    }
+    d_ptr->dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+    d_ptr->dose_series_uid = dicom_uid (PLM_UID_PREFIX);
+    d_ptr->plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
+    d_ptr->rtstruct_instance_uid = dicom_uid (PLM_UID_PREFIX);
+    d_ptr->rtstruct_series_uid = dicom_uid (PLM_UID_PREFIX);
 }

@@ -6,6 +6,7 @@ User guide
 
    getting_started
    windows_installation
+   building_plastimatch
    image_registration_guidebook
    registration_command_file_reference
    registration_tutorial

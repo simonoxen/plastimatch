@@ -58,6 +58,9 @@ if (OPENCL_FOUND)
   endif ()
 endif ()
 
+# OpenCL tests disabled/issue #30
+set (RUN_OPENCL_TESTS OFF)
+
 # In ITK 3.20.1 (official release), masked registration is broken
 if (NOT ${ITK_VERSION} VERSION_GREATER "3.20.1")
 set (CTEST_CUSTOM_TESTS_IGNORE

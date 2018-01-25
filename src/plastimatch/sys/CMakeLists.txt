@@ -16,7 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##-----------------------------------------------------------------------------
 set (PLMSYS_LIBRARY_SRC
   compiler_warnings.h
-  delayload.c delayload.h
+  delayload.h
   dir_list.cxx dir_list.h
   double_align8.h
   dlib_threads.cxx dlib_threads.h 
@@ -38,6 +38,16 @@ set (PLMSYS_LIBRARY_SRC
   smart_pointer.h
   string_util.cxx string_util.h
   )
+
+if (PLM_CONFIG_LEGACY_CUDA_DELAYLOAD)
+list (APPEND PLMSYS_LIBRARY_SRC
+  delayload_legacy.c delayload_legacy.h
+  )
+else ()
+list (APPEND PLMSYS_LIBRARY_SRC
+  cuda_delayload.cxx cuda_delayload.h
+  )
+endif ()
 
 set (PLMSYS_LIBRARY_HEADERS
   "${CMAKE_BINARY_DIR}/plm_config.h"

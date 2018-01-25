@@ -71,7 +71,7 @@ private:
     void convert_to_itk_uchar ();
     void convert_to_itk_short ();
     void convert_to_itk_ushort ();
-    void convert_to_itk_int32 (void);
+    void convert_to_itk_int32 ();
     void convert_to_itk_uint32 ();
     void convert_to_itk_float ();
     void convert_to_itk_double ();
@@ -123,17 +123,21 @@ public:
     void set_itk (UCharVecImageType::Pointer img);
 
     /* conversion */
-    FloatImageType::Pointer& itk_float () {
-        convert_to_itk_float ();
-        return m_itk_float;
+    UCharImageType::Pointer& itk_uchar () {
+        convert_to_itk_uchar ();
+        return m_itk_uchar;
     }
     ShortImageType::Pointer& itk_short () {
         convert_to_itk_short ();
         return m_itk_short;
     }
-    UCharImageType::Pointer& itk_uchar () {
-        convert_to_itk_uchar ();
-        return m_itk_uchar;
+    UShortImageType::Pointer& itk_ushort () {
+        convert_to_itk_ushort ();
+        return m_itk_ushort;
+    }
+    FloatImageType::Pointer& itk_float () {
+        convert_to_itk_float ();
+        return m_itk_float;
     }
     UCharVecImageType::Pointer& itk_uchar_vec () {
         convert_to_itk_uchar_vec ();

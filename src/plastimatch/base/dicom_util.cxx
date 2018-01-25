@@ -65,6 +65,24 @@ dicom_load_rdd (Rt_study_metadata::Pointer rsm, const char* dicom_dir)
 #endif
 }
 
+bool
+file_is_dicom (const char *filename)
+{
+    FILE *fp = fopen (filename, "rb");
+    if (!fp) return false;
+    char buf[128+4];
+    size_t rc = fread (buf, 1, 128+4, fp);
+    if (rc != 128+4) {
+        fclose (fp);
+        return false;
+    }
+    bool is_dicom
+        = buf[128+0] == 'D' && buf[128+1] == 'I'
+        && buf[128+2] == 'C' && buf[128+3] == 'M';
+    fclose (fp);
+    return is_dicom;
+}
+
 char*
 dicom_uid (char *uid, const char *uid_root)
 {
