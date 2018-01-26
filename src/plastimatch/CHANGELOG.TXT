@@ -1,3 +1,14 @@
+Version 1.7.1 (tag v1.7.1)
+Thu Jan 25 16:44:52 EST 2018
+* Fix build errors on macOS El Capitan
+* Fix build system to enable Windows WXI packaging
+* Fix regression that caused Frame of Reference UID not to match
+  referenced CT
+* Fix incorrect loading of DICOM RTDOSE when using --input-dose-img option
+* Fix DRR image size limitation in CUDA
+* Fix DRR rendering bug in CUDA
+* CUDA build no longer includes all device capabilities by default
+
 Version 1.7.0 (tag v1.7.0)
 Mon Dec 18 17:38:55 EST 2017
 * Remove reg-2-3 and ise from distribution

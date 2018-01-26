@@ -10,6 +10,7 @@ Step 1: Preliminary testing
 #. Download tarball from gitlab.
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
+#. Unpack and test tarball on mac (don't skip this step)
 #. Test parallel regression tests (don't skip this step)::
 
      cd ~/build/plastimatch
@@ -23,7 +24,7 @@ Step 2: Marking the version
 #. Bump version number in doc/sphinx/plastimatch.rst
 #. Regenerate man pages::
 
-     sphinx-build -b man -d ~/work/web-plastimatch/.doctrees  ~/work/plastimatch/doc/sphinx ~/work/plastimatch/doc/man
+     sphinx-build -b man -d ~/shared/web-plastimatch/.doctrees  ~/work/plastimatch/doc/sphinx ~/work/plastimatch/doc/man
 
 #. Push above changes to remote
 #. Tag version::

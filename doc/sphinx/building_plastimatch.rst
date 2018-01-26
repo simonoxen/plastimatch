@@ -105,7 +105,8 @@ There are special considerations to building dcmtk:
 
 #. PNG, TIFF, and ZLIB are not required
 #. On linux x86_64 platforms, you need to add -fPIC to 
-   CMAKE_CXX_FLAGS and CMAKE_C_FLAGS
+   CMAKE_CXX_FLAGS and CMAKE_C_FLAGS, or eqivalently,
+   set DCMTK_FORCE_FPIC_ON_UNIX to ON
 #. On windows, you need to set DCMTK_OVERWRITE_WIN32_COMPILER_FLAGS to OFF
 #. When you run cmake on plastimatch, set DCMTK_DIR to the build directory
 
