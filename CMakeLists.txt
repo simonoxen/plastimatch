@@ -8,7 +8,7 @@ project (plastimatch)
 ## The version here should be equal to the "most recent release"
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "7")
-set (PLM_VERSION_PATCH "1")
+set (PLM_VERSION_PATCH "2")
 
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults

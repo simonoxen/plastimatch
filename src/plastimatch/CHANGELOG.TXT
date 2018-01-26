@@ -1,3 +1,7 @@
+Version 1.7.2 (tag v1.7.2)
+Fri Jan 26 15:22:44 EST 2018
+* Fix error building with superbuild
+
 Version 1.7.1 (tag v1.7.1)
 Thu Jan 25 16:44:52 EST 2018
 * Fix build errors on macOS El Capitan
