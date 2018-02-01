@@ -21,7 +21,9 @@ include (PlmMacros)
 ##-----------------------------------------------------------------------------
 include (CheckCharSign)
 include (CheckEpsilon)
-include (CheckNullptr)
+# No need to check this yet.  Doing so may force C++11 compiler flag,
+# which causes build error on earlier version of ITK.
+#include (CheckNullptr)
 include (CheckTypeSize)
 include (TestBigEndian)
 

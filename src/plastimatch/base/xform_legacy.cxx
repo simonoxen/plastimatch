@@ -172,7 +172,7 @@ xform_legacy_load (Xform *xf, FILE* fp)
 
 	/* Set the BSpline grid to specified parameters */
 	bsp_region.SetSize (bsp_size);
-	xform_itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, 
+	xf->itk_bsp_set_grid (bsp_origin, bsp_spacing, 
 	    bsp_region, bsp_direction);
 
 	/* Read bspline coefficients from file */

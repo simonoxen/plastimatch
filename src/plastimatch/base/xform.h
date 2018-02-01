@@ -51,9 +51,9 @@ typedef itk::BSplineDeformableTransform <
     double, SplineDimension, SplineOrder > BsplineTransformType;
 
 /* itk thin-plate transforms */
-typedef itk::ThinPlateSplineKernelTransform < 
+typedef itk::ThinPlateSplineKernelTransform <
     float, 3 > FloatTpsTransformType;
-typedef itk::ThinPlateSplineKernelTransform < 
+typedef itk::ThinPlateSplineKernelTransform <
     double, 3 > DoubleTpsTransformType;
 typedef DoubleTpsTransformType TpsTransformType;
 
@@ -69,7 +69,7 @@ public:
 
 public:
     Xform_type m_type;
-    
+
     /* The actual xform is one of the following. */
     TranslationTransformType::Pointer m_trn;
     VersorTransformType::Pointer m_vrs;
@@ -117,6 +117,12 @@ public:
     void set_gpuit_bsp (Bspline_xform* xgb);
     void set_gpuit_vf (const Volume::Pointer& vf);
 
+    void itk_bsp_set_grid (
+        const BsplineTransformType::OriginType bsp_origin,
+        const BsplineTransformType::SpacingType bsp_spacing,
+        const BsplineTransformType::RegionType bsp_region,
+        const BsplineTransformType::DirectionType bsp_direction);
+
     Xform_type get_type () const;
     void get_volume_header (Volume_header *vh);
     Plm_image_header get_plm_image_header ();
@@ -158,7 +164,7 @@ PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
     Volume* vf,              /* Input */
     Plm_image_header* pih    /* Input, can be null */
 );
-PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, const Xform *xf_in, 
+PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, const Xform *xf_in,
     Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
@@ -166,7 +172,7 @@ PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::P
 PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih);
 
-PLMBASE_API Xform::Pointer xform_to_itk_bsp (const Xform::Pointer& xf_in, 
+PLMBASE_API Xform::Pointer xform_to_itk_bsp (const Xform::Pointer& xf_in,
     Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API Xform::Pointer xform_to_itk_bsp_nobulk (const Xform::Pointer& xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API Xform::Pointer xform_to_itk_vf (const Xform::Pointer& xf_in, Plm_image_header* pih);

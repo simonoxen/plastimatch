@@ -1,4 +1,59 @@
 ******************************************************************************
+B-spline mismatch
+
+Bug #32 is caused by a mismatch in the way B-spline grid geometry is
+computed for ITK and native data structures.
+
+Ideally, we can move to a form where native data structures are
+deprecated in favor of wrapped ITK data structures (ITK for standard
+stuff + additional info used in native algorithms).  But as a pathway
+toward that, we should unify the method for computing B-spline grid size.
+
+As of 1.7.2.1, native algorihm uses the following:
+  create_gpuit_bxf (pih, grid_spac)
+  -> compute vox per region
+  -> initialize
+     -> convert vpr to grid spacing and rdim/cdim
+
+And the itk algorithm uses the following:
+  bsp_grid_from_img_grid
+  -> compute cdim from image extent and (above computed)
+
+The code in xform_any_to_gpuit_bsp mixes these paradigms.  Currently,
+the only way to convert from arbitrary type to itk_bsp does not
+have capability to clone geometry from bxf.
+  xform_any_to_gpuit_bsp
+  -> create_gpuit_bxf (pih, grid_spac)
+     -> compute vox per region
+     -> initialize
+        -> convert vpr to grid spacing and rdim/cdim
+  -> xform_any_to_itk_bsp_nobulk
+     -> xform_any_to_itk_bsp_nobulk
+        -> itk_bsp_set_grid_img
+           -> bsp_grid_from_img_grid
+        -> bsp_grid_from_img_grid (why is this called twice?)
+
+The following functions have somewhat overlapping purpose
+
+xform::itk_bsp_set_grid
+  Sets grid geometry parameters (origin, spacing, etc) without any interal
+  processing; allocates and initializes itk parameter buffer
+bsp_grid_from_img_grid
+  Uses pih and grid_spacing to set itk grid geometry parameters
+itk_bsp_set_grid_img
+  Calls bsp_grid_from_img_grid to get the itk grid geometry, then calls
+  itk_bsp_set_grid to initialize itk_bsp
+gpuit_bsp_grid_to_itk_bsp_grid
+  Copies/converts bxf geometry to itk geometry
+gpuit_bsp_to_itk_bsp_raw
+  Calls gpuit_bsp_grid_to_itk_bsp_grid, creates itk bsp, calls
+  xform::itk_bsp_set_grid to set itk_bsp geometry, then copies coefficients
+  to itk parameter array
+xform_gpuit_bsp_to_itk_bsp
+  If grid spacing is sent, call gpuit_bsp_to_itk_bsp_raw to convert to
+  itk_bsp, then call xform_itk_bsp_to_itk_bsp to resample
+
+******************************************************************************
 CUDA Wraping, existing version
 
 #define plmcuda_EXPORT(f, ...)                 \
