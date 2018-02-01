@@ -82,7 +82,7 @@ parse_fn (
         "\"danielsson\", "
         " or \"itk-danielsson\" "
         "(default is \"danielsson\")",
-        1, "maurer");
+        1, "danielsson");
     parser->add_long_option ("", "squared-distance",
         "return the squared distance instead of distance", 0);
     parser->add_long_option ("", "inside-positive",
