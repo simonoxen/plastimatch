@@ -29,8 +29,11 @@ if (not -d $dirname) {
     die "Directory not found after unpacking tarball.\n";
 }
 
-$dirname =~ m/(.*)-.*/; $new_dirname = $1; if (-z $new_dirname) { die
-"New directory string was empty.\n"; }
+$dirname =~ m/plastimatch-v?(.*)-.*/;
+$new_dirname = "plastimatch-$1";
+if (-z $new_dirname) {
+    die "New directory string was empty.\n";
+}
 
 move ($dirname, $new_dirname);
 
