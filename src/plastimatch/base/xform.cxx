@@ -836,10 +836,10 @@ xform_aff_to_itk_bsp_bulk (
 /* Convert xf to vector field to bspline */
 static void
 xform_any_to_itk_bsp_nobulk (
-    Xform *xf_out, Xform* xf_in,
-    const Plm_image_header* pih,
-    const float* grid_spac)
+    Xform *xf_out, Xform *xf_in,
+    const Bspline_header *bh)
 {
+#if defined (commentout)
     int d;
     Xform xf_tmp;
     Plm_image_header pih_bsp;
@@ -849,11 +849,6 @@ xform_any_to_itk_bsp_nobulk (
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
     BsplineTransformType::Pointer bsp_out = xf_out->get_itk_bsp();
 
-    /* Create temporary array for output coefficients */
-    const unsigned int num_parms = bsp_out->GetNumberOfParameters();
-    BsplineTransformType::ParametersType bsp_coeff;
-    bsp_coeff.SetSize (num_parms);
-
     /* Compute bspline grid specifications */
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
@@ -861,18 +856,47 @@ xform_any_to_itk_bsp_nobulk (
     BsplineTransformType::DirectionType bsp_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing,
         bsp_region, bsp_direction, pih, grid_spac);
+#endif
 
+    /* Create ITK B-Spline container */
+    xform_itk_bsp_init_default (xf_out);
+    BsplineTransformType::Pointer bsp_out = xf_out->get_itk_bsp();
+
+    /* Copy geometry and allocate coefficients */
+    BsplineTransformType::OriginType bsp_origin;
+    BsplineTransformType::SpacingType bsp_spacing;
+    BsplineTransformType::RegionType bsp_region;
+    BsplineTransformType::DirectionType bsp_direction;
+    BsplineTransformType::RegionType::SizeType bsp_size;
+    for (int d=0; d<3; d++) {
+        bsp_origin[d] = bh->img_origin[d];
+        bsp_spacing[d] = bh->grid_spac[d];
+        bsp_size[d] = bh->cdims[d];
+    }
+    bsp_region.SetSize (bsp_size);
+    itk_direction_from_dc (&bsp_direction, bh->dc);
+    xf_out->itk_bsp_set_grid (bsp_origin, bsp_spacing, bsp_region,
+        bsp_direction);
+    
     /* Make a vector field at bspline grid spacing */
+    Plm_image_header pih_bsp;
     pih_bsp.set (bsp_region, bsp_origin, bsp_spacing, bsp_direction);
+    Xform xf_tmp;
     xform_to_itk_vf (&xf_tmp, xf_in, &pih_bsp);
 
-    /* Vector field is interleaved.  We need planar for decomposition. */
+    /* Vector field is interleaved.  Create temporary images to hold the 
+       non-interleaved images of coefficients */
     FloatImageType::Pointer img = itk_image_create<float> (pih_bsp);
+
+    /* Create temporary array for storing output coefficients */
+    const unsigned int num_parms = bsp_out->GetNumberOfParameters();
+    BsplineTransformType::ParametersType bsp_coeff;
+    bsp_coeff.SetSize (num_parms);
 
     /* Loop through planes */
     unsigned int counter = 0;
     DeformationFieldType::Pointer vf = xf_tmp.get_itk_vf();
-    for (d = 0; d < 3; d++) {
+    for (int d = 0; d < 3; d++) {
         /* Copy a single VF plane into img */
         typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
         typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
@@ -908,6 +932,18 @@ xform_any_to_itk_bsp_nobulk (
 
     /* Finally fixate coefficients into recently created bsp structure */
     bsp_out->SetParametersByValue (bsp_coeff);
+}
+
+/* This function converts to itk_bsp using an unaligned grid */
+static void
+xform_any_to_itk_bsp_nobulk (
+    Xform *xf_out, Xform* xf_in,
+    const Plm_image_header* pih,
+    const float* grid_spac)
+{
+    Bspline_header bh;
+    bh.set_unaligned (pih, grid_spac);
+    xform_any_to_itk_bsp_nobulk (xf_out, xf_in, &bh);
 }
 
 /* This function extends the B-spline grid, padding with zeros,
@@ -1426,7 +1462,7 @@ xform_any_to_gpuit_bsp (
 
         /* Create itk_bsp xf using image specifications */
         Xform xf_tmp;
-        xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
+        xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, bxf_new);
 
         /* Copy from ITK coefficient array to gpuit coefficient array */
         int k = 0;

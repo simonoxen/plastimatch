@@ -58,13 +58,41 @@ public:
         const plm_long vox_per_rgn[3],
         const float direction_cosines[9]
     );
+
     /** Set the internal geometry.  
-        This version of the function gets used when creating a B-Spline 
-        with a specified grid spacing. 
+        This version of the function gets used to calculate the 
+        geometry of an ALIGNED B-Spline with a specified grid spacing. 
         \param pih The image geometry associated with B-spline
         \param grid_spac The B-Spline grid spacing (in mm)
     */
     void set (
+        const Plm_image_header *pih,
+        const float grid_spac[3]
+    );
+
+    /** Set the internal geometry.  
+        This version of the function gets used to calculate the 
+        geometry of an UNALIGNED B-Spline with a specified grid spacing. 
+        \param pih The image geometry associated with B-spline
+        \param grid_spac The B-Spline grid spacing (in mm)
+    */
+    void set_unaligned (
+        const float img_origin[3],
+        const float img_spacing[3],
+        const plm_long img_dim[3],
+        const plm_long roi_offset[3],
+        const plm_long roi_dim[3],
+        const float grid_spac[3],
+        const float direction_cosines[9]
+    );
+
+    /** Set the internal geometry.  
+        This version of the function gets used to calculate the 
+        geometry of an UNALIGNED B-Spline with a specified grid spacing. 
+        \param pih The image geometry associated with B-spline
+        \param grid_spac The B-Spline grid spacing (in mm)
+    */
+    void set_unaligned (
         const Plm_image_header *pih,
         const float grid_spac[3]
     );
