@@ -26,20 +26,6 @@
 
 Bspline_xform::Bspline_xform ()
 {
-    for (int d = 0; d < 3; d++) {
-        this->img_origin[d] = 0.0f;
-        this->img_spacing[d] = 1.0f;
-        this->img_dim[d] = 0;
-        this->roi_offset[d] = 0;
-        this->roi_dim[d] = 0;
-        this->vox_per_rgn[d] = 30;
-        this->grid_spac[d] = 30.0f;
-        this->rdims[d] = 0;
-        this->cdims[d] = 0;
-    }
-    this->dc.set_identity ();
-    this->num_knots = 0;
-    this->num_coeff = 0;
     this->coeff = 0;
 
     this->lut_type = LUT_ALIGNED;
@@ -374,47 +360,12 @@ bspline_xform_dump_luts (Bspline_xform* bxf)
 }
 
 void
-Bspline_xform::initialize 
-(
-    float img_origin[3],          /* Image origin (in mm) */
-    float img_spacing[3],         /* Image spacing (in mm) */
-    plm_long img_dim[3],          /* Image size (in vox) */
-    plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
-    plm_long roi_dim[3],          /* Dimension of ROI (in vox) */
-    plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
-    float direction_cosines[9]    /* Direction cosines */
-)
+Bspline_xform::allocate ()
 {
     plm_long d;
     plm_long i, j, k, p;
     plm_long tx, ty, tz;
     float *A, *B, *C;
-
-    logfile_printf ("bspline_xform_initialize\n");
-
-    this->dc.set (direction_cosines);
-    for (d = 0; d < 3; d++) {
-        /* copy input parameters over */
-        this->img_origin[d] = img_origin[d];
-        this->img_spacing[d] = img_spacing[d];
-        this->img_dim[d] = img_dim[d];
-        this->roi_offset[d] = roi_offset[d];
-        this->roi_dim[d] = roi_dim[d];
-        this->vox_per_rgn[d] = vox_per_rgn[d];
-
-        /* grid spacing is in mm */
-        this->grid_spac[d] = this->vox_per_rgn[d] * fabs (this->img_spacing[d]);
-
-        /* rdims is the number of regions */
-        this->rdims[d] = 1 + (this->roi_dim[d] - 1) / this->vox_per_rgn[d];
-
-        /* cdims is the number of control points */
-        this->cdims[d] = 3 + this->rdims[d];
-    }
-
-    /* total number of control points & coefficients */
-    this->num_knots = this->cdims[0] * this->cdims[1] * this->cdims[2];
-    this->num_coeff = this->cdims[0] * this->cdims[1] * this->cdims[2] * 3;
 
     /* Allocate coefficients */
     this->coeff = (float*) malloc (sizeof(float) * this->num_coeff);
@@ -529,14 +480,50 @@ Bspline_xform::initialize
         }
     }
 
-    //dump_luts (bxf);
-
     logfile_printf ("rdims = (%d,%d,%d)\n", 
         this->rdims[0], this->rdims[1], this->rdims[2]);
     logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", 
         this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
     logfile_printf ("cdims = (%d %d %d)\n", 
         this->cdims[0], this->cdims[1], this->cdims[2]);
+}
+
+void
+Bspline_xform::initialize 
+(
+    float img_origin[3],          /* Image origin (in mm) */
+    float img_spacing[3],         /* Image spacing (in mm) */
+    plm_long img_dim[3],          /* Image size (in vox) */
+    plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
+    plm_long roi_dim[3],          /* Dimension of ROI (in vox) */
+    plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
+    float direction_cosines[9]    /* Direction cosines */
+)
+{
+    logfile_printf ("bspline_xform_initialize\n");
+
+    /* Initialize base class members */
+    this->set (img_origin, img_spacing, img_dim, roi_offset,
+        roi_dim, vox_per_rgn, direction_cosines);
+
+    /* Allocate and initialize coefficients and LUTs */
+    this->allocate ();
+}
+
+void
+Bspline_xform::initialize 
+(
+    const Plm_image_header *pih,
+    const float grid_spac[3]
+)
+{
+    logfile_printf ("bspline_xform_initialize\n");
+
+    /* Initialize base class members */
+    this->set (pih, grid_spac);
+
+    /* Allocate and initialize coefficients and LUTs */
+    this->allocate ();
 }
 
 /* -----------------------------------------------------------------------

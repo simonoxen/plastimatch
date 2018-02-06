@@ -5,21 +5,23 @@
 #define _bspline_xform_h_
 
 #include "plmbase_config.h"
+#include "bspline_header.h"
 #include "direction_cosines.h"
 #include "smart_pointer.h"
 #include "plm_int.h"
 
-//TODO: Change type of dc to Direction_cosines*
-
-//class Direction_cosines;
 class Volume;
 class Volume_header;
 
 /*! \brief 
  * The Bspline_xform class encapsulates the B-spline coefficients 
- * used by native registration and warping algorithms.
+ * used by native registration and warping algorithms.  Information 
+ * describing the B-spline 
+ * geometry is held in the base class: Bspline_header.
  */
-class PLMBASE_API Bspline_xform {
+class PLMBASE_API Bspline_xform
+    : public Bspline_header
+{
 public:
     SMART_POINTER_SUPPORT (Bspline_xform);
 public:
@@ -31,21 +33,11 @@ public:
         LUT_UNALIGNED
     };
 public:
-    float img_origin[3];         /* Image origin (in mm) */
-    float img_spacing[3];        /* Image spacing (in mm) */
-    plm_long img_dim[3];         /* Image size (in vox) */
-    Direction_cosines dc;        /* Image direction cosines */
-    plm_long roi_offset[3];	 /* Position of first vox in ROI (in vox) */
-    plm_long roi_dim[3];	 /* Dimension of ROI (in vox) */
-    plm_long vox_per_rgn[3];	 /* Knot spacing (in vox) */
-    float grid_spac[3];          /* Knot spacing (in mm) */
-    plm_long rdims[3];           /* # of regions in (x,y,z) */
-    plm_long cdims[3];           /* # of knots in (x,y,z) */
-    int num_knots;               /* Total number of knots (= product(cdims)) */
-    int num_coeff;               /* Total number of coefficents (= product(cdims) * 3) */
-    float* coeff;                /* Coefficients.  Vector directions interleaved. */
+    /** Array of B-spline coefficients. */
+    float* coeff;
 
-    Lut_type lut_type;           /* Which kind of LUT is used */
+    /** Choose which kind of LUT is used */
+    Lut_type lut_type;
 
     /* Aligned grid (3D) LUTs */
     plm_long* cidx_lut;          /* Lookup volume for region number */
@@ -64,6 +56,9 @@ public:
     float *uz_lut;               /* LUT for influence multiplier in z dir */
 
 public:
+    /** Initialize B-spline geometry and allocate memory for coefficients.
+        This version of the function gets used when loading a B-Spline 
+        from file. */
     void initialize (
         float img_origin[3],          /* Image origin (in mm) */
         float img_spacing[3],         /* Image spacing (in mm) */
@@ -72,6 +67,16 @@ public:
         plm_long roi_dim[3],	      /* Dimension of ROI (in vox) */
         plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
         float direction_cosines[9]    /* Direction cosines */
+    );
+    /** Initialize B-spline geometry and allocate memory for coefficients.
+        This version of the function gets used when creating a B-Spline 
+        with a specified grid spacing. 
+        \param pih The image geometry associated with B-spline
+        \param grid_spac The B-Spline grid spacing (in mm)
+    */
+    void initialize (
+        const Plm_image_header *pih,
+        const float grid_spac[3]
     );
     void save (const char* filename);
     void fill_coefficients (float val);
@@ -82,6 +87,10 @@ public:
     void jitter_if_zero ();
     void get_volume_header (Volume_header *vh);
     void log_header ();
+protected:
+    /** Allocate and initialize coefficients and LUTs
+     */
+    void allocate ();
 };
 
 PLMBASE_C_API Bspline_xform* bspline_xform_load (const char* filename);

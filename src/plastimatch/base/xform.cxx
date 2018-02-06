@@ -1406,32 +1406,8 @@ create_gpuit_bxf (Plm_image_header* pih, const float* grid_spac)
 {
     int d;
     Bspline_xform* bxf = new Bspline_xform;
-    float img_origin[3];
-    float img_spacing[3];
-    plm_long img_dim[3];
-    plm_long roi_offset[3];
-    plm_long roi_dim[3];
-    plm_long vox_per_rgn[3];
-    float direction_cosines[9];
-
-    pih->get_origin (img_origin);
-    pih->get_dim (img_dim);
-    pih->get_spacing (img_spacing);
-    pih->get_direction_cosines (direction_cosines);
-
-    for (d = 0; d < 3; d++) {
-        /* Old ROI was whole image */
-        roi_offset[d] = 0;
-        roi_dim[d] = img_dim[d];
-        /* Compute vox_per_rgn */
-        vox_per_rgn[d] = ROUND_INT (grid_spac[d] / fabs(img_spacing[d]));
-        if (vox_per_rgn[d] < 4) {
-            lprintf ("Warning: vox_per_rgn was less than 4.\n");
-            vox_per_rgn[d] = 4;
-        }
-    }
-    bxf->initialize (img_origin, img_spacing, img_dim,
-        roi_offset, roi_dim, vox_per_rgn, direction_cosines);
+    bxf->initialize (pih, grid_spac);
+    
     return bxf;
 }
 
@@ -1837,29 +1813,13 @@ xform_to_itk_bsp_nobulk (
         itk_bsp_set_grid_img (xf_out, pih, grid_spac);
         break;
     case XFORM_ITK_TRANSLATION:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_VERSOR:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_QUATERNION:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_AFFINE:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_BSPLINE:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_TPS:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_ITK_VECTOR_FIELD:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_GPUIT_BSPLINE:
-        xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
-        break;
     case XFORM_GPUIT_VECTOR_FIELD:
         xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
         break;

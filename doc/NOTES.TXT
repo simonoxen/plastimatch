@@ -33,6 +33,16 @@ have capability to clone geometry from bxf.
            -> bsp_grid_from_img_grid
         -> bsp_grid_from_img_grid (why is this called twice?)
 
+So the proposed change is:
+
+  a) Compute desired bsp geometry
+     -> Bspline_header::set() does this now (?)
+     	class of Bspline_xform
+  b) Convert to itk_bsp using the computed geometry
+     -> This function would take a Bspline_xform (or Bspline_header if
+     	it exists)
+  c) Convert itk_bsp to bxf
+
 The following functions have somewhat overlapping purpose
 
 xform::itk_bsp_set_grid
