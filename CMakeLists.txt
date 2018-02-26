@@ -538,10 +538,13 @@ message (STATUS "Plastimatch version is ${PLASTIMATCH_VERSION_STRING}")
 ##-----------------------------------------------------------------------------
 ##  ITK
 ##-----------------------------------------------------------------------------
+set (FIND_LIBRARY_USE_LIB64 true)
 if (PLM_SYSTEM_ITK STREQUAL "YES")
-  find_package (ITK REQUIRED)
+  find_package (ITK REQUIRED
+    PATHS "/usr/lib64/cmake/InsightToolkit")
 elseif (PLM_SYSTEM_ITK STREQUAL "PREFERRED")
-  find_package (ITK QUIET)
+  find_package (ITK QUIET
+    PATHS "/usr/lib64/cmake/InsightToolkit")
 endif ()
 if (NOT ITK_FOUND AND NOT PLM_SYSTEM_ITK STREQUAL "YES")
   message (STATUS "ITK will be downloaded and built.")
@@ -550,6 +553,7 @@ endif ()
 
 if (ITK_FOUND)
   include (HandleITK)
+  include (HandleVXL)
 endif ()
 
 ##-----------------------------------------------------------------------------

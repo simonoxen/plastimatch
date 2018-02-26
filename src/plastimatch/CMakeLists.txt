@@ -120,8 +120,10 @@ set (RANSAC_INCLUDE_DIRS
 ##-----------------------------------------------------------------------------
 if (PLM_USING_SUPERBUILD)
   set (PLM_CONFIG_USE_PATCHED_ITK 0)
-  find_package (ITK REQUIRED)
+  find_package (ITK REQUIRED
+    PATHS "/usr/lib64/cmake/InsightToolkit")
   include (HandleITK)
+  include (HandleVXL)
 endif ()
 
 ##-----------------------------------------------------------------------------

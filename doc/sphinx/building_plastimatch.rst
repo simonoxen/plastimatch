@@ -41,8 +41,8 @@ On fedora, all the needed dependencies are already included.
 The following command will install all the needed prerequisites.::
 
    sudo dnf install \
-     cmake git \
-     InsightToolkit-devel dcmtk-devel
+     cmake git InsightToolkit-devel dcmtk-devel gdcm-devel \
+     vxl-devel fftw-devel
 
 Cmake (required)
 ^^^^^^^^^^^^^^^^
