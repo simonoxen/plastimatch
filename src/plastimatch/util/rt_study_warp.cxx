@@ -243,8 +243,11 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     rt_study->set_dose_metadata (parms->m_dose_metadata);
     rt_study->set_rtstruct_metadata (parms->m_rtstruct_metadata);
 
-    // Study UIDs can be ignored when using referenced dicom dir
-    if (parms->regenerate_study_uids) {
+    // Normally, new Study Instance UIDs and Frame of Reference UIDs will be generated
+    // unless a referenced DICOM directory was given.  If new UIDs are desired
+    // when a referenced DICOM directory is given, this behavior can be overridden
+    // by specifying the --regenerate-study-uids option.
+    if (parms->referenced_dicom_dir == "" || parms->regenerate_study_uids) {
         rt_study->generate_new_study_uids ();
     }
     
