@@ -11,10 +11,8 @@
 extern "C" {
 #endif
 
-//int cuda_probe (void);
-
 plmcuda_EXPORT (
-int cuda_probe,
+bool cuda_probe,
     void
 );
 

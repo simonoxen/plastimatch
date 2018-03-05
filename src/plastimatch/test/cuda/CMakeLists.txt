@@ -14,5 +14,5 @@ if (CUDA_FOUND)
   set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 
   # Test executable -- cuda_tex_test
-  add_subdirectory (CUDA_tex_test)
+  # add_subdirectory (CUDA_tex_test)
 endif ()
