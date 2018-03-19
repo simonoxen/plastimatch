@@ -103,6 +103,10 @@ parse_fn (
 	"radial expansion (or contraction)");
     parser->add_long_option ("", "xf-trans",
 	"uniform translation in mm \"x y z\"", 1);
+    parser->add_long_option ("", "xf-vox-num",
+        "voxel number at each position");
+    parser->add_long_option ("", "xf-phys-pos",
+        "position of each voxel center");
     parser->add_long_option ("", "xf-zero", "Null transform");
 
     /* Pattern options */
@@ -133,7 +137,9 @@ parse_fn (
     /* Check that a xf option was given */
     if (!parser->option("xf-gauss") && 
         !parser->option("xf-radial") && 
-	!parser->option("xf-trans") && 
+        !parser->option("xf-trans") && 
+        !parser->option("xf-vox-num") && 
+        !parser->option("xf-phys-pos") && 
 	!parser->option("xf-zero"))
     {
 	std::cout << 
@@ -158,6 +164,10 @@ parse_fn (
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_RADIAL;
     } else if (parser->option("xf-gauss")) {
 	sv_parms->pattern = Synthetic_vf_parms::PATTERN_GAUSSIAN;
+    } else if (parser->option("xf-vox-num")) {
+        sv_parms->pattern = Synthetic_vf_parms::PATTERN_VOX_NUM;
+    } else if (parser->option("xf-phys-pos")) {
+        sv_parms->pattern = Synthetic_vf_parms::PATTERN_POS;
     } else {
 	throw (dlib::error ("Error. Unknown --xf argument."));
     }

@@ -80,6 +80,18 @@ synthetic_vf (Synthetic_vf_parms* parms)
             }
 	    break;
         }
+        case Synthetic_vf_parms::PATTERN_VOX_NUM: {
+            disp[0] = idx[0];
+            disp[1] = idx[1];
+            disp[2] = idx[2];
+            break;
+        }
+        case Synthetic_vf_parms::PATTERN_POS: {
+            disp[0] = phys[0];
+            disp[1] = phys[1];
+            disp[2] = phys[2];
+            break;
+        }
         case Synthetic_vf_parms::PATTERN_ZERO:
         case Synthetic_vf_parms::PATTERN_TRANSLATION:
         default:
