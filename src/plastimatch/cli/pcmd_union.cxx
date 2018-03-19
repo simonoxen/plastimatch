@@ -23,7 +23,7 @@ union_main (Union_parms *parms)
     Plm_image temp (parms->inputs_fn.at(1), PLM_IMG_TYPE_ITK_UCHAR);
     UCharImageType::Pointer itk_out = itk_union (
                 img_1.itk_uchar(), temp.itk_uchar());
-    for (int i = 2; i < parms->inputs_fn.size(); ++i) {
+    for (size_t i = 2; i < parms->inputs_fn.size(); ++i) {
             Plm_image temp (parms->inputs_fn.at(i), PLM_IMG_TYPE_ITK_UCHAR);
             /* Make the union */
             itk_out = itk_union (itk_out, temp.itk_uchar());
@@ -74,7 +74,7 @@ parse_fn (
     if (parser->number_of_arguments() < 2) {
 	throw (dlib::error ("Error.  You must specify at least two input files"));
     }
-    for (int i = 0; i < parser->number_of_arguments(); ++i) {
+    for (size_t i = 0; i < parser->number_of_arguments(); ++i) {
             parms->inputs_fn.push_back((*parser)[i]);
     }
 
