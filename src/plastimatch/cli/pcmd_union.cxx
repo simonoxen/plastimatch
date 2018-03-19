@@ -11,22 +11,24 @@
 
 class Union_parms {
 public:
-    std::string input_1_fn;
-    std::string input_2_fn;
+    std::vector<std::string> inputs_fn;
     std::string output_fn;
 };
 
 void
 union_main (Union_parms *parms)
 {
-    /* Load the inputs */
-    Plm_image img_1 (parms->input_1_fn, PLM_IMG_TYPE_ITK_UCHAR);
-    Plm_image img_2 (parms->input_2_fn, PLM_IMG_TYPE_ITK_UCHAR);
-
-    /* Make the union */
+    /* Load first input and iterate over the others */
+    Plm_image img_1 (parms->inputs_fn.at(0), PLM_IMG_TYPE_ITK_UCHAR);
+    Plm_image temp (parms->inputs_fn.at(1), PLM_IMG_TYPE_ITK_UCHAR);
     UCharImageType::Pointer itk_out = itk_union (
-        img_1.itk_uchar(), img_2.itk_uchar());
-
+                img_1.itk_uchar(), temp.itk_uchar());
+    for (int i = 2; i < parms->inputs_fn.size(); ++i) {
+            Plm_image temp (parms->inputs_fn.at(i), PLM_IMG_TYPE_ITK_UCHAR);
+            /* Make the union */
+            itk_out = itk_union (itk_out, temp.itk_uchar());
+    }
+    
     /* Save it */
     Plm_image img_out (itk_out);
     img_out.save_image (parms->output_fn);
@@ -35,7 +37,7 @@ union_main (Union_parms *parms)
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf ("Usage: plastimatch %s [options] input_1 input_2\n", argv[1]);
+    printf ("Usage: plastimatch %s [options] input_1 input_2 ...\n", argv[1]);
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
@@ -69,11 +71,12 @@ parse_fn (
 
     /* Copy input filenames to parms struct.  Two input files 
        must be specified. */
-    if (parser->number_of_arguments() != 2) {
-	throw (dlib::error ("Error.  You must specify two input files"));
+    if (parser->number_of_arguments() < 2) {
+	throw (dlib::error ("Error.  You must specify at least two input files"));
     }
-    parms->input_1_fn = (*parser)[0];
-    parms->input_2_fn = (*parser)[1];
+    for (int i = 0; i < parser->number_of_arguments(); ++i) {
+            parms->inputs_fn.push_back((*parser)[i]);
+    }
 
     /* Output files */
     parms->output_fn = parser->get_string("output").c_str();
