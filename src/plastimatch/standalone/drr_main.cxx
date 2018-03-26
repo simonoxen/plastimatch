@@ -14,7 +14,7 @@
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
-#include "mha_io.h"
+#include "plm_image.h"
 #include "plm_math.h"
 #include "plm_timer.h"
 #include "proj_image.h"
@@ -69,24 +69,24 @@ free_gpu_memory (
     case THREADING_CUDA: {
         LOAD_LIBRARY_SAFE (libplmreconstructcuda);
         LOAD_SYMBOL (drr_cuda_state_destroy, libplmreconstructcuda);
-	if (dev_state) {
-	    drr_cuda_state_destroy (dev_state);
-	}
-	UNLOAD_LIBRARY (libplmreconstructcuda);
-	return;
+        if (dev_state) {
+            drr_cuda_state_destroy (dev_state);
+        }
+        UNLOAD_LIBRARY (libplmreconstructcuda);
+        return;
     }
 #endif
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-	if (dev_state) {
-	    drr_opencl_state_destroy (dev_state);
-	}
-	return;
+        if (dev_state) {
+            drr_opencl_state_destroy (dev_state);
+        }
+        return;
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
     default:
-	return;
+        return;
     }
 }
 
@@ -107,9 +107,9 @@ create_matrix_and_drr (
     std::string details_fn;
     Proj_matrix *pmat = proj->pmat;
     double vup[3] = {
-	options->vup[0],
-	options->vup[1],
-	options->vup[2] };
+        options->vup[0],
+        options->vup[1],
+        options->vup[2] };
     double sid = options->sid;
     Plm_timer* timer = new Plm_timer;
 
@@ -140,11 +140,11 @@ create_matrix_and_drr (
     pmat->set (cam, tgt, vup, sid, ic, ps);
 
     if (options->output_format == OUTPUT_FORMAT_PFM) {
-	sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);
     } else if (options->output_format == OUTPUT_FORMAT_PGM) {
-	sprintf (img_fn, "%s%04d.pgm", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.pgm", options->output_prefix, a);
     } else {
-	sprintf (img_fn, "%s%04d.raw", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.raw", options->output_prefix, a);
     }
 
     if (options->output_details_prefix != "") {
@@ -153,12 +153,12 @@ create_matrix_and_drr (
     }
 
     if (options->geometry_only) {
-	proj->save (0, mat_fn);
+        proj->save (0, mat_fn);
     } else {
-	drr_render_volume_perspective (proj, vol, ps, dev_state, options);
-	timer->start ();
-	proj->save (img_fn, mat_fn);
-	printf ("I/O time: %f sec\n", timer->report ());
+        drr_render_volume_perspective (proj, vol, ps, dev_state, options);
+        timer->start ();
+        proj->save (img_fn, mat_fn);
+        printf ("I/O time: %f sec\n", timer->report ());
     }
 
     delete timer;
@@ -174,9 +174,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
     /* tgt is isocenter */
     double tgt[3] = {
-	options->isocenter[0],
-	options->isocenter[1],
-	options->isocenter[2] };
+        options->isocenter[0],
+        options->isocenter[1],
+        options->isocenter[2] };
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
@@ -191,45 +191,45 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
     /* If nrm was specified, only create a single image */
     if (options->have_nrm) {
-	double cam[3];
-	double nrm[3] = {
-	    options->nrm[0],
-	    options->nrm[1],
-	    options->nrm[2] };
+        double cam[3];
+        double nrm[3] = {
+            options->nrm[0],
+            options->nrm[1],
+            options->nrm[2] };
 
-	/* Make sure nrm is normal */
-	vec3_normalize1 (nrm);
+        /* Make sure nrm is normal */
+        vec3_normalize1 (nrm);
 
-	/* Place camera at distance "sad" from the volume isocenter */
-	cam[0] = tgt[0] + options->sad * nrm[0];
-	cam[1] = tgt[1] + options->sad * nrm[1];
-	cam[2] = tgt[2] + options->sad * nrm[2];
+        /* Place camera at distance "sad" from the volume isocenter */
+        cam[0] = tgt[0] + options->sad * nrm[0];
+        cam[1] = tgt[1] + options->sad * nrm[1];
+        cam[2] = tgt[2] + options->sad * nrm[2];
 
-	create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0,
-	    dev_state, options);
+        create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0,
+            dev_state, options);
     }
 
     /* Otherwise, loop through camera angles */
     else {
-	for (a = 0; a < options->num_angles; a++) {
-	    double angle = options->start_angle + a * options->angle_diff;
-	    double cam[3];
-	    double nrm[3];
+        for (a = 0; a < options->num_angles; a++) {
+            double angle = options->start_angle + a * options->angle_diff;
+            double cam[3];
+            double nrm[3];
 
-	    printf ("Rendering DRR %d\n", a);
+            printf ("Rendering DRR %d\n", a);
 
-	    /* Place camera at distance "sad" from the volume isocenter */
-	    cam[0] = tgt[0] + options->sad * cos(angle);
-	    cam[1] = tgt[1] - options->sad * sin(angle);
-	    cam[2] = tgt[2];
+            /* Place camera at distance "sad" from the volume isocenter */
+            cam[0] = tgt[0] + options->sad * cos(angle);
+            cam[1] = tgt[1] - options->sad * sin(angle);
+            cam[2] = tgt[2];
 
-	    /* Compute normal vector */
-	    vec3_sub3 (nrm, tgt, cam);
-	    vec3_normalize1 (nrm);
+            /* Compute normal vector */
+            vec3_sub3 (nrm, tgt, cam);
+            vec3_normalize1 (nrm);
 
-	    create_matrix_and_drr (vol, proj, cam, tgt, nrm, a,
-		dev_state, options);
-	}
+            create_matrix_and_drr (vol, proj, cam, tgt, nrm, a,
+                dev_state, options);
+        }
     }
     delete proj;
 
@@ -251,31 +251,32 @@ set_isocenter (Volume* vol, Drr_options* options)
 int
 main (int argc, char* argv[])
 {
+    Plm_image::Pointer plm_image = Plm_image::New();
     Volume* vol = 0;
     Drr_options options;
 
     parse_args (&options, argc, argv);
 
     if (options.geometry_only) {
-	options.threading = THREADING_CPU_SINGLE;
+        options.threading = THREADING_CPU_SINGLE;
     }
     else {
-	vol = read_mha (options.input_file);
-	if (!vol) return -1;
-	volume_convert_to_float (vol);
+        plm_image->load_native (options.input_file);
+        if (!plm_image->have_image()) {
+            return -1;
+        }
+        plm_image->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+        vol = plm_image->get_vol ();
     }
 
     if (options.hu_conversion == PREPROCESS_CONVERSION
         && !options.geometry_only)
     {
-	drr_preprocess_attenuation (vol);
+        drr_preprocess_attenuation (vol);
     }
 
     drr_render_volume (vol, &options);
 
-    if (!options.geometry_only) {
-	delete vol;
-    }
     printf ("Done.\n");
     return 0;
 }
