@@ -50,10 +50,6 @@ set (DICOM_UID_SRC
 set (DLIB_TRAIN_SRC 
   dlib_train.cxx
   )
-set (DRR_SRC
-  drr_main.cxx 
-  drr_opts.cxx
-  )
 set (FDK_SRC
   fdk_main.cxx 
   fdk_opts.cxx
@@ -301,8 +297,6 @@ plm_add_executable_v3 (bragg_curve "${BRAGG_CURVE_SRC}"
 plm_add_executable_v3 (sobp "${SOBP_SRC}" 
   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 
-plm_add_executable_v3 (drr "${DRR_SRC}" 
-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
 plm_add_executable_v3 (fdk "${FDK_SRC}" 
   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
 if (CUDA_FOUND)

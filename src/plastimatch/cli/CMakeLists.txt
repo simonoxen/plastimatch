@@ -70,6 +70,11 @@ set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   )
 
+set (DRR_SRC
+  drr_main.cxx 
+  drr_opts.cxx
+  )
+
 set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 
 ##-----------------------------------------------------------------------------
@@ -84,4 +89,6 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 plm_add_executable_v3 (plastimatch "${PLASTIMATCH_SRC}"
   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
 plm_add_executable_v3 (landmark_warp "${LANDMARK_WARP_SRC}" 
+  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+plm_add_executable_v3 (drr "${DRR_SRC}" 
   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
