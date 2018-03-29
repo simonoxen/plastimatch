@@ -11,7 +11,7 @@
 #include <windows.h>
 #endif
 
-#include "drr.h"
+#include "drr_options.h"
 #include "drr_cuda.h"
 
 void*

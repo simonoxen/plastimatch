@@ -12,7 +12,7 @@
 #include "plmreconstruct_config.h"
 
 #include "bowtie_correction.h"
-#include "drr.h"
+#include "drr_options.h"
 #include "drr_trilin.h"
 #include "fdk.h"
 #include "fdk_util.h"

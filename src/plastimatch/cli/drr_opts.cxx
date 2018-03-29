@@ -7,8 +7,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "drr.h"
 #include "drr_opts.h"
+#include "drr_options.h"
 #include "plm_math.h"
 #include "threading.h"
 

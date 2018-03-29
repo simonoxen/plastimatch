@@ -10,10 +10,10 @@
 #endif
 
 #include "delayload.h"
-#include "drr.h"
 #include "drr_cuda.h"
 #include "drr_opencl.h"
 #include "drr_opts.h"
+#include "drr_options.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "plm_timer.h"
