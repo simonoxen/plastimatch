@@ -873,7 +873,7 @@ endif ()
 ##    ...from within your build directory
 ##-----------------------------------------------------------------------------
 # Choose generator
-if (PLM_PACKAGE_WIX)
+if (WIN32 AND PLM_PACKAGE_WIX)
   set (CPACK_GENERATOR "WIX")
 elseif (PLM_PACKAGE_NSIS)
   set (CPACK_GENERATOR "NSIS")
