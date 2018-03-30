@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _drr_h_
-#define _drr_h_
+#ifndef _drr_options_h_
+#define _drr_options_h_
 
 #include "plmreconstruct_config.h"
 #include <string>
@@ -74,17 +74,5 @@ public:
     std::string output_details_prefix;
     std::string output_details_fn;
 };
-PLMRECONSTRUCT_C_API void drr_render_volume_perspective (
-    Proj_image *proj,
-    Volume *vol, 
-    double ps[2], 
-    void *dev_state, 
-    Drr_options *options
-);
-PLMRECONSTRUCT_C_API void drr_preprocess_attenuation (Volume* vol);
-PLMRECONSTRUCT_C_API void preprocess_attenuation_and_drr_render_volume_cl (
-    Volume* vol,
-    Drr_options* options
-);
 
 #endif

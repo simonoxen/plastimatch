@@ -7,6 +7,7 @@
 #include "drr_options.h"
 #include "pcmd_drr.h"
 #include "plm_clp.h"
+#include "string_util.h"
 
 class Drr_parms {
 public:
@@ -61,7 +62,7 @@ usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 
 static void
 parse_fn (
-    Drr_options* parms, 
+    Drr_options* options,
     dlib::Plm_clp* parser, 
     int argc, 
     char* argv[]
@@ -71,11 +72,11 @@ parse_fn (
     parser->add_default_options ();
 
     parser->add_long_option ("A", "threading",
-	"Threading option, either \"cpu\" or \"cuda\" (default=cpu)", 1, "cpu");
+	"Threading option {cpu,cuda,opencl} (default=cpu)", 1, "cpu");
     parser->add_long_option ("a", "num-images",
 	"Generate this many images at equal gantry spacing", 1, "");
     parser->add_long_option ("N", "gantry-angle-spacing",
-	"Difference in gantry angle spacing (in degrees)", 1, "");
+	"Difference in gantry angle spacing in degrees", 1, "");
     parser->add_long_option ("y", "gantry-angle",
 	"Gantry angle for image source (in degrees)", 1, "");
     parser->add_long_option ("n", "nrm",
@@ -124,36 +125,74 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-#if defined (commentout)
-    /* Check that an input file was given */
+    /* Check that input and output were given */
     parser->check_required ("input");
-    parser->check_required ("output-img");
+    parser->check_required ("output");
 
-    Segment_body *sb = &parms->sb;
+    /* Insert command line values into options array */
+    std::string s;
+    s = make_lowercase (parser->get_string("threading"));
+    if (s == "cuda" || s == "gpu") {
+        options->threading = THREADING_CUDA;
+    }
+    else if (s == "opencl") {
+        options->threading = THREADING_OPENCL;
+    }
+    else {
+        options->threading = THREADING_CPU_OPENMP;
+    }
 
-    /* Copy values into output struct */
-    parms->output_fn = parser->get_string("output-img");
 #if defined (commentout)
-    parms->output_dicom = parser->get_string("output-dicom");
+    parser->add_long_option ("A", "threading",
+	"Threading option, either \"cpu\" or \"cuda\" (default=cpu)", 1, "cpu");
+    parser->add_long_option ("a", "num-images",
+	"Generate this many images at equal gantry spacing", 1, "");
+    parser->add_long_option ("N", "gantry-angle-spacing",
+	"Difference in gantry angle spacing (in degrees)", 1, "");
+    parser->add_long_option ("y", "gantry-angle",
+	"Gantry angle for image source (in degrees)", 1, "");
+    parser->add_long_option ("n", "nrm",
+	"Normal vector of detector in format \"x y z\"", 1, "");
+    parser->add_long_option ("v", "vup",
+	"The vector pointing from the detector center to the top row of "
+        "the detector in format \"x y z\"", 1, "");
+    parser->add_long_option ("", "sad",
+	"The SAD (source-axis-distance) in mm", 1, "");
+    parser->add_long_option ("", "sid",
+	"The SID (source-image-distance) in mm", 1, "");
+    parser->add_long_option ("r", "dim",
+	"The output resolution in format \"row col\" (in mm)", 1, "");
+    parser->add_long_option ("s", "intensity-scale",
+	"Scaling factor for output image intensity", 1, "");
+    parser->add_long_option ("e", "exponential",
+	"Do exponential mapping of output values", 0);
+    parser->add_long_option ("c", "image-center",
+	"The image center in the format \"row col\", in pixels", 1, "");
+    parser->add_long_option ("z", "detector-size",
+	"The physical size of the detector in format \"row col\", in mm",
+        1, "");
+    parser->add_long_option ("w", "subwindow",
+	"Limit DRR output to a subwindow in format \"r1 r2 c1 c2\","
+        "in pixels", 1, "");
+    parser->add_long_option ("t", "output-format",
+	"Select output format, either pgm, pfm, or raw", 1, "");
+    parser->add_long_option ("S", "raytrace-details",
+	"Create output file with complete ray trace details", 1, "");
+    parser->add_long_option ("i", "algorithm",
+	"Choose algorithm {exact,uniform}", 1, "");
+    parser->add_long_option ("o", "isocenter", 
+	"Isocenter position \"x y z\" in DICOM coordinates (mm)", 1, "");
+    parser->add_long_option ("G", "geometry-only",
+	"Create geometry files only", 0);
+    parser->add_long_option ("P", "hu-conversion",
+	"Choose HU conversion type {preprocess,inline,none}", 1, "");
+    parser->add_long_option ("I", "input", 
+	"Input file", 1, "");
+    parser->add_long_option ("O", "output",
+	"Prefix for output file(s)", 1, "");
+
 #endif
-    parms->input_fn = parser->get_string("input");
-    if (parser->option ("lower-threshold")) {
-	sb->m_lower_threshold = parser->get_float("lower-threshold");
-    }
-#if defined (commentout)
-    parms->upper_threshold = parser->get_float("upper-threshold");
-#endif
-    if (parser->option ("bottom")) {
-	sb->m_bot_given = true;
-	sb->m_bot = parser->get_float ("bottom");
-    }
-    if (parser->option ("fast")) {
-	sb->m_fast = true;
-    }
-    if (parser->option ("debug")) {
-	sb->m_debug = true;
-    }
-#endif
+    set_image_parms (options);
 }
 
 void
