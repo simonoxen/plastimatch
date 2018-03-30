@@ -123,6 +123,29 @@ Plm_clp::assign_int_2 (
 }
 
 void 
+Plm_clp::assign_int_4 (
+    int *arr, 
+    const string_type& name)
+{
+    int rc;
+    int a, b, c, d;
+    rc = sscanf (get_string(name).c_str(), "%d %d %d %d", 
+        &a, &b);
+    if (rc == 4) {
+        arr[0] = a;
+        arr[1] = b;
+        arr[2] = c;
+        arr[3] = d;
+    } else {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes four integer arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void 
 Plm_clp::assign_int_6 (
     int *arr, 
     const string_type& name)
@@ -224,6 +247,21 @@ void Plm_clp::assign_float_2 (float *arr, const string_type& name)
             "Error. Option "
             + get_option_string (name) 
             + " takes two float arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
+void Plm_clp::assign_float_3 (float *arr, const string_type& name)
+{
+    float rc;
+    rc = sscanf (get_string(name).c_str(), 
+        "%g %g %g",
+        &arr[0], &arr[1], &arr[2]);
+    if (rc != 3) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes three float arguments.";
         throw dlib::error (error_string);
     }
 }

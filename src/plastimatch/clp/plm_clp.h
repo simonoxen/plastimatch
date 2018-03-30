@@ -161,11 +161,13 @@ class Plm_clp
     /* Shorthand functions for specific well-known types */
     void assign_int13 (int *arr, const string_type& name);
     void assign_int_2 (int *arr, const string_type& name);
+    void assign_int_4 (int *arr, const string_type& name);
     void assign_int_6 (int *arr, const string_type& name);
     void assign_plm_long_13 (plm_long *arr, const string_type& name);
     void assign_plm_long_6 (plm_long *arr, const string_type& name);
     void assign_float_13 (float *arr, const string_type& name);
     void assign_float_2 (float *arr, const string_type& name);
+    void assign_float_3 (float *arr, const string_type& name);
     void assign_float_9 (float *arr, const string_type& name);
     void assign_float_vec (
         std::vector<float>* float_vec, 

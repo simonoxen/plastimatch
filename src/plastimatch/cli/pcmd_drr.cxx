@@ -4,6 +4,7 @@
 #include "plmcli_config.h"
 #include <stdlib.h>
 
+#include "drr.h"
 #include "drr_options.h"
 #include "pcmd_drr.h"
 #include "plm_clp.h"
@@ -19,6 +20,7 @@ public:
 static void
 do_drr (Drr_options *drr_options)
 {
+    drr_compute (drr_options);
 }
 
 void
@@ -72,48 +74,48 @@ parse_fn (
     parser->add_default_options ();
 
     parser->add_long_option ("A", "threading",
-	"Threading option {cpu,cuda,opencl} (default=cpu)", 1, "cpu");
-    parser->add_long_option ("a", "num-images",
-	"Generate this many images at equal gantry spacing", 1, "");
+	"Threading option {cpu,cuda,opencl} (default: cpu)", 1, "cpu");
+    parser->add_long_option ("a", "num-angles",
+	"Generate this many images at equal gantry spacing", 1, "1");
     parser->add_long_option ("N", "gantry-angle-spacing",
 	"Difference in gantry angle spacing in degrees", 1, "");
     parser->add_long_option ("y", "gantry-angle",
-	"Gantry angle for image source (in degrees)", 1, "");
+	"Gantry angle for image source in degrees", 1, "0");
     parser->add_long_option ("n", "nrm",
 	"Normal vector of detector in format \"x y z\"", 1, "");
-    parser->add_long_option ("v", "vup",
+    parser->add_long_option ("", "vup",
 	"The vector pointing from the detector center to the top row of "
-        "the detector in format \"x y z\"", 1, "");
+        "the detector in format \"x y z\"", 1, "0 0 1");
     parser->add_long_option ("", "sad",
-	"The SAD (source-axis-distance) in mm", 1, "");
+	"The SAD (source-axis-distance) in mm (default: 1000)", 1, "1000");
     parser->add_long_option ("", "sid",
-	"The SID (source-image-distance) in mm", 1, "");
+	"The SID (source-image-distance) in mm (default: 1500)", 1, "1500");
     parser->add_long_option ("r", "dim",
-	"The output resolution in format \"row col\" (in mm)", 1, "");
+	"The output resolution in format \"row col\" (in mm)", 1, "128 128");
     parser->add_long_option ("s", "intensity-scale",
-	"Scaling factor for output image intensity", 1, "");
+	"Scaling factor for output image intensity", 1, "1.0");
     parser->add_long_option ("e", "exponential",
 	"Do exponential mapping of output values", 0);
     parser->add_long_option ("c", "image-center",
 	"The image center in the format \"row col\", in pixels", 1, "");
     parser->add_long_option ("z", "detector-size",
 	"The physical size of the detector in format \"row col\", in mm",
-        1, "");
+        1, "600 600");
     parser->add_long_option ("w", "subwindow",
 	"Limit DRR output to a subwindow in format \"r1 r2 c1 c2\","
         "in pixels", 1, "");
     parser->add_long_option ("t", "output-format",
-	"Select output format, either pgm, pfm, or raw", 1, "");
+	"Select output format {pgm, pfm, raw}", 1, "pfm");
     parser->add_long_option ("S", "raytrace-details",
 	"Create output file with complete ray trace details", 1, "");
     parser->add_long_option ("i", "algorithm",
-	"Choose algorithm {exact,uniform}", 1, "");
+	"Choose algorithm {exact,uniform}", 1, "exact");
     parser->add_long_option ("o", "isocenter", 
-	"Isocenter position \"x y z\" in DICOM coordinates (mm)", 1, "");
+	"Isocenter position \"x y z\" in DICOM coordinates (mm)", 1, "0 0 0");
     parser->add_long_option ("G", "geometry-only",
 	"Create geometry files only", 0);
     parser->add_long_option ("P", "hu-conversion",
-	"Choose HU conversion type {preprocess,inline,none}", 1, "");
+	"Choose HU conversion type {preprocess,inline,none}", 1, "preprocess");
     parser->add_long_option ("I", "input", 
 	"Input file", 1, "");
     parser->add_long_option ("O", "output",
@@ -125,73 +127,96 @@ parse_fn (
     /* Handle --help, --version */
     parser->check_default_options ();
 
-    /* Check that input and output were given */
-    parser->check_required ("input");
+    /* Check that input was given */
     parser->check_required ("output");
 
     /* Insert command line values into options array */
     std::string s;
     s = make_lowercase (parser->get_string("threading"));
-    if (s == "cuda" || s == "gpu") {
+    if (s == "cpu" || s == "openmp") {
+        options->threading = THREADING_CPU_OPENMP;
+    } else if (s == "cuda" || s == "gpu") {
         options->threading = THREADING_CUDA;
-    }
-    else if (s == "opencl") {
+    } else if (s == "opencl") {
         options->threading = THREADING_OPENCL;
+    } else {
+        throw (dlib::error ("Error.  Option \"threading\" should be one of "
+                "{cpu,cuda,opencl}"));
+    }
+
+    options->num_angles = parser->get_int ("num-angles");
+    if (parser->have_option ("gantry-angle-spacing")) {
+        options->have_angle_diff = true;
+        options->angle_diff = parser->get_float ("gantry-angle-spacing");
+    }
+    options->start_angle = parser->get_float ("gantry-angle");
+    if (parser->have_option ("nrm")) {
+        options->have_nrm = true;
+        parser->assign_float_3 (options->nrm, "nrm");
+    }
+    parser->assign_float_3 (options->vup, "vup");
+    options->sad = parser->get_float ("sad");
+    options->sid = parser->get_float ("sid");
+    options->sid = parser->get_float ("sid");
+    parser->assign_int_2 (options->image_resolution, "dim");
+    options->scale = parser->get_float ("intensity-scale");
+    if (parser->have_option ("exponential")) {
+        options->exponential_mapping = true;
+    }
+    if (parser->have_option ("image-center")) {
+        options->have_image_center = true;
+        parser->assign_float_2 (options->image_center, "image-center");
+    }
+    parser->assign_float_2 (options->image_size, "detector-size");
+    if (parser->have_option ("subwindow")) {
+        options->have_image_window = true;
+        parser->assign_int_4 (options->image_window, "subwindow");
+    }
+    s = make_lowercase (parser->get_string("output-format"));
+    if (s == "pfm") {
+        options->output_format = OUTPUT_FORMAT_PFM;
+    } else if (s == "pgm") {
+        options->output_format = OUTPUT_FORMAT_PGM;
+    } else if (s == "raw") {
+        options->output_format = OUTPUT_FORMAT_RAW;
     }
     else {
-        options->threading = THREADING_CPU_OPENMP;
+        throw (dlib::error ("Error.  Option \"output-format\" should be one of "
+                "{pfm,pgm,raw}"));
+    }
+    if (parser->have_option ("raytrace-details")) {
+        options->output_details_prefix = parser->get_string("raytrace-details");
+    }
+    s = make_lowercase (parser->get_string("algorithm"));
+    if (s == "exact") {
+        options->algorithm = DRR_ALGORITHM_EXACT;
+    } else if (s == "uniform") {
+        options->algorithm = DRR_ALGORITHM_UNIFORM;
+    } else {
+        throw (dlib::error ("Error.  Option \"algorithm\" should be one of "
+                "{exact,uniform}"));
+    }
+    parser->assign_float_3 (options->isocenter, "isocenter");
+    options->geometry_only = parser->option ("geometry-only");
+    s = make_lowercase (parser->get_string("hu-conversion"));
+    if (s == "preprocess") {
+        options->hu_conversion = PREPROCESS_CONVERSION;
+    } else if (s == "inline") {
+        options->hu_conversion = INLINE_CONVERSION;
+    } else if (s == "none") {
+        options->hu_conversion = NO_CONVERSION;
+    } else {
+        throw (dlib::error ("Error.  Option \"hu-conversion\" should be one of "
+                "{preprocess,inline,none}"));
     }
 
-#if defined (commentout)
-    parser->add_long_option ("A", "threading",
-	"Threading option, either \"cpu\" or \"cuda\" (default=cpu)", 1, "cpu");
-    parser->add_long_option ("a", "num-images",
-	"Generate this many images at equal gantry spacing", 1, "");
-    parser->add_long_option ("N", "gantry-angle-spacing",
-	"Difference in gantry angle spacing (in degrees)", 1, "");
-    parser->add_long_option ("y", "gantry-angle",
-	"Gantry angle for image source (in degrees)", 1, "");
-    parser->add_long_option ("n", "nrm",
-	"Normal vector of detector in format \"x y z\"", 1, "");
-    parser->add_long_option ("v", "vup",
-	"The vector pointing from the detector center to the top row of "
-        "the detector in format \"x y z\"", 1, "");
-    parser->add_long_option ("", "sad",
-	"The SAD (source-axis-distance) in mm", 1, "");
-    parser->add_long_option ("", "sid",
-	"The SID (source-image-distance) in mm", 1, "");
-    parser->add_long_option ("r", "dim",
-	"The output resolution in format \"row col\" (in mm)", 1, "");
-    parser->add_long_option ("s", "intensity-scale",
-	"Scaling factor for output image intensity", 1, "");
-    parser->add_long_option ("e", "exponential",
-	"Do exponential mapping of output values", 0);
-    parser->add_long_option ("c", "image-center",
-	"The image center in the format \"row col\", in pixels", 1, "");
-    parser->add_long_option ("z", "detector-size",
-	"The physical size of the detector in format \"row col\", in mm",
-        1, "");
-    parser->add_long_option ("w", "subwindow",
-	"Limit DRR output to a subwindow in format \"r1 r2 c1 c2\","
-        "in pixels", 1, "");
-    parser->add_long_option ("t", "output-format",
-	"Select output format, either pgm, pfm, or raw", 1, "");
-    parser->add_long_option ("S", "raytrace-details",
-	"Create output file with complete ray trace details", 1, "");
-    parser->add_long_option ("i", "algorithm",
-	"Choose algorithm {exact,uniform}", 1, "");
-    parser->add_long_option ("o", "isocenter", 
-	"Isocenter position \"x y z\" in DICOM coordinates (mm)", 1, "");
-    parser->add_long_option ("G", "geometry-only",
-	"Create geometry files only", 0);
-    parser->add_long_option ("P", "hu-conversion",
-	"Choose HU conversion type {preprocess,inline,none}", 1, "");
-    parser->add_long_option ("I", "input", 
-	"Input file", 1, "");
-    parser->add_long_option ("O", "output",
-	"Prefix for output file(s)", 1, "");
+    if (!parser->have_option ("input") && options->geometry_only) {
+        throw (dlib::error ("Error.  Specify either option \"input\" "
+                "or option \"geometry-only\""));
+    }
+    options->input_file = parser->get_string("input");
+    options->output_prefix = parser->get_string("output");
 
-#endif
     set_image_parms (options);
 }
 

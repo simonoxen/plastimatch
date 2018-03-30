@@ -38,6 +38,8 @@ typedef enum hu_conversion_type Hu_conversion;
 
 class Drr_options {
 public:
+    Drr_options ();
+public:
     Threading threading;
     int detector_resolution[2];      /* In pixels */
     float image_size[2];             /* In mm */
@@ -64,9 +66,9 @@ public:
     int output_format;
     Hu_conversion hu_conversion;
     Drr_algorithm algorithm;
-    char* input_file;
     int geometry_only;
-    char* output_prefix;
+    std::string input_file;
+    std::string output_prefix;
 
     /* The option specified by the user goes in output_details_prefix, 
        and the individual filename for a specific angle goes in 

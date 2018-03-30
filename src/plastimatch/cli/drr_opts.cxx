@@ -82,7 +82,7 @@ drr_opts_init (Drr_options* options)
     options->output_details_prefix = "";
     options->output_details_fn = "";
     options->algorithm = DRR_ALGORITHM_EXACT;
-    options->input_file = 0;
+    options->input_file = "";
     options->geometry_only = 0;
     options->output_prefix = "out_";
 }
@@ -339,15 +339,15 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	}
     }
 
-    if (!options->input_file) {
+    if (options->input_file == "") {
 	if (i < argc) {
-	    options->input_file = strdup (argv[i++]);
+	    options->input_file = std::string (argv[i++]);
 	}
     }
     if (i < argc) {
 	print_usage ();
     }
-    if (!options->input_file && !options->geometry_only) {
+    if (options->input_file == "" && !options->geometry_only) {
 	print_usage ();
     }
 

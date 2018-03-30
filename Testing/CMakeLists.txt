@@ -822,6 +822,7 @@ set_tests_properties (demons-cuda-a-check PROPERTIES DEPENDS demons-cuda-a)
 ##   drr-d       gauss-4.mha (negative spacing), uniform
 ##   drr-cuda    gauss-1.mha, uniform
 ##   drr-opencl  gauss-1.mha, uniform
+##   pcmd-drr-a  same as drr-a, but with plastimatch front end
 ## -------------------------------------------------------------------------
 plm_add_test (
   "drr-a"
@@ -942,6 +943,26 @@ plmtest_check_interval ("drr-opencl-check"
 set_tests_properties (drr-opencl PROPERTIES DEPENDS gauss-1)
 set_tests_properties (drr-opencl-stats PROPERTIES DEPENDS drr-opencl)
 set_tests_properties (drr-opencl-check PROPERTIES DEPENDS drr-opencl-stats)
+
+plm_add_test (
+  "plm-drr-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/plm-drr-a/out_;-I;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
+  )
+plm_add_test (
+  "plm-drr-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-drr-a/out_0010.pfm"
+  )
+plmtest_check_interval ("plm-drr-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-drr-a-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
+  )
+set_tests_properties (plm-drr-a PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-drr-a-stats PROPERTIES DEPENDS drr-a)
+set_tests_properties (plm-drr-a-check PROPERTIES DEPENDS drr-a-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection

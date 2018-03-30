@@ -20,7 +20,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (PLMRECONSTRUCT_LIBRARY_SRC
   bowtie_correction.cxx
-  drr.cxx
+  drr.cxx drr.h
+  drr_options.cxx drr_options.h
   drr_trilin.cxx
   fdk.cxx
   fdk_util.cxx
