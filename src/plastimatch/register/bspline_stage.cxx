@@ -274,10 +274,10 @@ Bspline_stage::initialize ()
         parms->reg_parms->lambda = 0.0f;
         break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
-        if (stage->threading_type == THREADING_CPU_OPENMP) {
-            parms->reg_parms->implementation = 'c';
-        } else {
+        if (stage->threading_type == THREADING_CPU_SINGLE) {
             parms->reg_parms->implementation = 'b';
+        } else {
+            parms->reg_parms->implementation = 'c';
         }
         break;
     case REGULARIZATION_BSPLINE_SEMI_ANALYTIC:
