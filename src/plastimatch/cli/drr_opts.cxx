@@ -74,7 +74,7 @@ drr_opts_init (Drr_options* options)
 
     options->sad = 1000.0f;
     options->sid = 1630.0f;
-    options->scale = 1.0f;
+    options->manual_scale = 1.0f;
 
     options->exponential_mapping = 0;
     options->output_format= OUTPUT_FORMAT_PFM;
@@ -213,7 +213,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-s")) {
 	    if (++i >= argc) { print_usage(); }
-	    rc = sscanf (argv[i], "%g" , &options->scale);
+	    rc = sscanf (argv[i], "%g" , &options->manual_scale);
 	    if (rc != 1) {
 		print_usage ();
 	    }

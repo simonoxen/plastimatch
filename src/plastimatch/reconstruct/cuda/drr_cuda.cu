@@ -393,7 +393,7 @@ drr_cuda_ray_trace_image (
     kargs->image_window = make_int4 (options->image_window);
     kargs->lower_limit = make_float3 (vol_limit->lower_limit);
     kargs->upper_limit = make_float3 (vol_limit->upper_limit);
-    kargs->scale = options->scale;
+    kargs->scale = options->manual_scale;
 
     //cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix),
     //cudaMemcpyHostToDevice);

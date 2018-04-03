@@ -32,15 +32,20 @@ Drr_options::Drr_options ()
 
     this->sad = 1000.0f;
     this->sid = 1630.0f;
-    this->scale = 1.0f;
 
     this->exponential_mapping = 0;
     this->output_format= OUTPUT_FORMAT_PFM;
     this->hu_conversion = PREPROCESS_CONVERSION;
-    this->output_details_prefix = "";
-    this->output_details_fn = "";
     this->algorithm = DRR_ALGORITHM_EXACT;
     this->geometry_only = 0;
     this->input_file = "";
     this->output_prefix = "out_";
+
+    this->autoscale = false;
+    this->autoscale_range[0] = 0.f;
+    this->autoscale_range[1] = 255.f;
+    this->manual_scale = 1.0f;
+
+    this->output_details_prefix = "";
+    this->output_details_fn = "";
 }

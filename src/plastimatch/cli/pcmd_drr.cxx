@@ -75,6 +75,11 @@ parse_fn (
 
     parser->add_long_option ("A", "threading",
 	"Threading option {cpu,cuda,opencl} (default: cpu)", 1, "cpu");
+    parser->add_long_option ("", "autoscale",
+	"Automatically rescale intensity", 0);
+    parser->add_long_option ("", "autoscale-range",
+	"Range used for autoscale in form \"min max\" "
+        "(default: \"0 255\")", 1, "0 255");
     parser->add_long_option ("a", "num-angles",
 	"Generate this many images at equal gantry spacing", 1, "1");
     parser->add_long_option ("N", "gantry-angle-spacing",
@@ -159,7 +164,7 @@ parse_fn (
     options->sid = parser->get_float ("sid");
     options->sid = parser->get_float ("sid");
     parser->assign_int_2 (options->image_resolution, "dim");
-    options->scale = parser->get_float ("intensity-scale");
+    options->manual_scale = parser->get_float ("intensity-scale");
     if (parser->have_option ("exponential")) {
         options->exponential_mapping = true;
     }
@@ -197,7 +202,7 @@ parse_fn (
                 "{exact,uniform}"));
     }
     parser->assign_float_3 (options->isocenter, "isocenter");
-    options->geometry_only = parser->option ("geometry-only");
+    options->geometry_only = parser->have_option ("geometry-only");
     s = make_lowercase (parser->get_string("hu-conversion"));
     if (s == "preprocess") {
         options->hu_conversion = PREPROCESS_CONVERSION;
@@ -210,6 +215,9 @@ parse_fn (
                 "{preprocess,inline,none}"));
     }
 
+    options->autoscale = parser->have_option ("autoscale");
+    parser->assign_float_2 (options->autoscale_range, "autoscale-range");
+    
     if (!parser->have_option ("input") && options->geometry_only) {
         throw (dlib::error ("Error.  Specify either option \"input\" "
                 "or option \"geometry-only\""));

@@ -61,7 +61,6 @@ public:
 
     float sad;			     /* In mm */
     float sid;			     /* In mm */
-    float scale;
     int exponential_mapping;
     int output_format;
     Hu_conversion hu_conversion;
@@ -69,6 +68,10 @@ public:
     int geometry_only;
     std::string input_file;
     std::string output_prefix;
+
+    bool autoscale;
+    float autoscale_range[2];
+    float manual_scale;
 
     /* The option specified by the user goes in output_details_prefix, 
        and the individual filename for a specific angle goes in 

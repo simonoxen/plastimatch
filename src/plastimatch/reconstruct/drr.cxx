@@ -77,6 +77,31 @@ attenuation_lookup (float pix_density)
 }
 
 void
+autoscale_image (Proj_image *proj, float range[2])
+{
+    float *img = proj->img;
+    plm_long nvox = (plm_long) proj->dim[0] * (plm_long) proj->dim[1];
+    float img_min = FLT_MAX;
+    float img_max = -FLT_MAX;
+    for (plm_long i = 0; i < nvox; i++) {
+        if (img[i] > img_max) { img_max = img[i]; }
+        if (img[i] < img_min) { img_min = img[i]; }
+    }
+    float offset = range[0] - img_min;
+    float slope = 0;
+    if (img_max - img_min > 1e-6) {
+        slope = (range[1] - range[0]) / (img_max - img_min);
+    }
+    printf ("Src range = %f %f\n", img_min, img_max);
+    printf ("Dst range = %f %f\n", range[0], range[1]);
+    printf ("Slope = %f, Offset = %f\n", slope, offset);
+    for (plm_long i = 0; i < nvox; i++) {
+        img[i] = offset + slope * (img[i] - img_min);
+    }
+}
+
+
+void
 drr_preprocess_attenuation (Volume* vol)
 {
     plm_long i;
@@ -245,7 +270,7 @@ drr_ray_trace_image (
 	    if (options->exponential_mapping) {
 		value = exp(-value);
 	    }
-	    value = value * options->scale;   /* User requested scaling */
+	    value = value * options->manual_scale;   /* User requested scaling */
 
 	    proj->img[idx] = (float) value;
 	}
@@ -459,15 +484,15 @@ create_matrix_and_drr (
     };
 
     /* Create projection matrix */
-    sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
+    sprintf (mat_fn, "%s%04d.txt", options->output_prefix.c_str(), a);
     pmat->set (cam, tgt, vup, sid, ic, ps);
 
     if (options->output_format == OUTPUT_FORMAT_PFM) {
-        sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.pfm", options->output_prefix.c_str(), a);
     } else if (options->output_format == OUTPUT_FORMAT_PGM) {
-        sprintf (img_fn, "%s%04d.pgm", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.pgm", options->output_prefix.c_str(), a);
     } else {
-        sprintf (img_fn, "%s%04d.raw", options->output_prefix, a);
+        sprintf (img_fn, "%s%04d.raw", options->output_prefix.c_str(), a);
     }
 
     if (options->output_details_prefix != "") {
@@ -479,6 +504,9 @@ create_matrix_and_drr (
         proj->save (0, mat_fn);
     } else {
         drr_render_volume_perspective (proj, vol, ps, dev_state, options);
+        if (options->autoscale) {
+            autoscale_image (proj, options->autoscale_range);
+        }
         timer->start ();
         proj->save (img_fn, mat_fn);
         printf ("I/O time: %f sec\n", timer->report ());

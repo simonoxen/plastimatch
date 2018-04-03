@@ -164,7 +164,7 @@ drr_opencl_ray_trace_image (
 	sizeof (cl_float4), &ocl_lower_limit,
 	sizeof (cl_float4), &ocl_upper_limit,
 	sizeof (cl_float), &ocl_sad, 
-	sizeof (cl_float), &options->scale,
+	sizeof (cl_float), &options->manual_scale,
 	(size_t) 0
     );
 
