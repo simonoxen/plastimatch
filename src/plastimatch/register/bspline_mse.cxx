@@ -1012,7 +1012,6 @@ bspline_score_mse (
         /* Be sure we loaded the CUDA plugin */
         LOAD_LIBRARY_SAFE (libplmregistercuda);
         LOAD_SYMBOL (CUDA_bspline_mse_j, libplmregistercuda);
-
         switch (parms->implementation) {
         case 'j':
             CUDA_bspline_mse_j (
@@ -1027,7 +1026,6 @@ bspline_score_mse (
                 bod->get_bspline_xform());
             break;
         }
-
         /* Unload plugin when done */
         UNLOAD_LIBRARY (libplmregistercuda);
     }

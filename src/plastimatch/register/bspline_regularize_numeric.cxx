@@ -107,9 +107,9 @@ compute_score_numeric_internal (
     timer->start ();
 
     S = 0.0f;
-    for (k = 1; k < vol->dim[2]-1; k++) {
-        for (j = 1; j < vol->dim[1]-1; j++) {
-            for (i = 1; i < vol->dim[0]-1; i++) {
+    for (k = 0; k < vol->dim[2]; k++) {
+        for (j = 0; j < vol->dim[1]; j++) {
+            for (i = 0; i < vol->dim[0]; i++) {
 		float dc_dv[3] = { 0, 0, 0 };
 		float dc_dv_in[3] = { 0, 0, 0 };
 		float dc_dv_ip[3] = { 0, 0, 0 };
@@ -130,28 +130,51 @@ compute_score_numeric_internal (
 		float dc_dv_jpkn[3] = { 0, 0, 0 };
 		float dc_dv_jpkp[3] = { 0, 0, 0 };
 
+		/* Compute indices of neighbors. Pixels at volume boundary 
+                   will be calculated to have zero curvature in the 
+                   direction of the boundary */
+                plm_long in, ip, jn, jp, kn, kp;
+                if (i == 0 || i == vol->dim[0]-1) {
+                    in = ip = i;
+                } else {
+                    in = i - 1;
+                    ip = i + 1;
+                }
+                if (j == 0 || j == vol->dim[1]-1) {
+                    jn = jp = j;
+                } else {
+                    jn = j - 1;
+                    jp = j + 1;
+                }
+                if (k == 0 || k == vol->dim[2]-1) {
+                    kn = kp = k;
+                } else {
+                    kn = k - 1;
+                    kp = k + 1;
+                }
+
 		/* Load indicies relevant to current POI */
                 idx_poi = volume_index (vol->dim, i, j, k);
 
-                idx_in = volume_index (vol->dim, i-1,   j,   k);
-                idx_ip = volume_index (vol->dim, i+1,   j,   k);
-                idx_jn = volume_index (vol->dim,   i, j-1,   k);
-                idx_jp = volume_index (vol->dim,   i, j+1,   k);
-                idx_kn = volume_index (vol->dim,   i,   j, k-1);
-                idx_kp = volume_index (vol->dim,   i,   j, k+1);
+                idx_in = volume_index (vol->dim, in,  j,  k);
+                idx_ip = volume_index (vol->dim, ip,  j,  k);
+                idx_jn = volume_index (vol->dim,  i, jn,  k);
+                idx_jp = volume_index (vol->dim,  i, jp,  k);
+                idx_kn = volume_index (vol->dim,  i,  j, kn);
+                idx_kp = volume_index (vol->dim,  i,  j, kp);
 
-                idx_injn = volume_index (vol->dim, i-1, j-1,   k);
-                idx_injp = volume_index (vol->dim, i-1, j+1,   k);
-                idx_ipjn = volume_index (vol->dim, i+1, j-1,   k);
-                idx_ipjp = volume_index (vol->dim, i+1, j+1,   k);
-                idx_inkn = volume_index (vol->dim, i-1,   j, k-1);
-                idx_inkp = volume_index (vol->dim, i-1,   j, k+1);
-                idx_ipkn = volume_index (vol->dim, i+1,   j, k-1);
-                idx_ipkp = volume_index (vol->dim, i+1,   j, k+1);
-                idx_jnkn = volume_index (vol->dim,   i, j-1, k-1);
-                idx_jnkp = volume_index (vol->dim,   i, j-1, k+1);
-                idx_jpkn = volume_index (vol->dim,   i, j+1, k-1);
-                idx_jpkp = volume_index (vol->dim,   i, j+1, k+1);
+                idx_injn = volume_index (vol->dim, in, jn,  k);
+                idx_injp = volume_index (vol->dim, in, jp,  k);
+                idx_ipjn = volume_index (vol->dim, ip, jn,  k);
+                idx_ipjp = volume_index (vol->dim, ip, jp,  k);
+                idx_inkn = volume_index (vol->dim, in,  j, kn);
+                idx_inkp = volume_index (vol->dim, in,  j, kp);
+                idx_ipkn = volume_index (vol->dim, ip,  j, kn);
+                idx_ipkp = volume_index (vol->dim, ip,  j, kp);
+                idx_jnkn = volume_index (vol->dim,  i, jn, kn);
+                idx_jnkp = volume_index (vol->dim,  i, jn, kp);
+                idx_jpkn = volume_index (vol->dim,  i, jp, kn);
+                idx_jpkp = volume_index (vol->dim,  i, jp, kp);
 
                 /* Load vectors relevant to current POI */
                 vec_poi = &img[3*idx_poi];
@@ -262,64 +285,64 @@ compute_score_numeric_internal (
 
 		/* Update gradient */
 		int pidx, qidx;
-		pidx = get_region_index  (i  , j  , k  , bxf);
-		qidx = get_region_offset (i  , j  , k  , bxf);
+		pidx = get_region_index  (i , j , k , bxf);
+		qidx = get_region_offset (i , j , k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv);
 
-		pidx = get_region_index  (i-1, j  , k  , bxf);
-		qidx = get_region_offset (i-1, j  , k  , bxf);
+		pidx = get_region_index  (in, j , k , bxf);
+		qidx = get_region_offset (in, j , k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_in);
-		pidx = get_region_index  (i+1, j  , k  , bxf);
-		qidx = get_region_offset (i+1, j  , k  , bxf);
+		pidx = get_region_index  (ip, j , k , bxf);
+		qidx = get_region_offset (ip, j , k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_ip);
-		pidx = get_region_index  (i  , j-1, k  , bxf);
-		qidx = get_region_offset (i  , j-1, k  , bxf);
+		pidx = get_region_index  (i , jn, k , bxf);
+		qidx = get_region_offset (i , jn, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jn);
-		pidx = get_region_index  (i  , j+1, k  , bxf);
-		qidx = get_region_offset (i  , j+1, k  , bxf);
+		pidx = get_region_index  (i , jp, k , bxf);
+		qidx = get_region_offset (i , jp, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jp);
-		pidx = get_region_index  (i  , j  , k-1, bxf);
-		qidx = get_region_offset (i  , j  , k-1, bxf);
+		pidx = get_region_index  (i , j , kn, bxf);
+		qidx = get_region_offset (i , j , kn, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_kn);
-		pidx = get_region_index  (i  , j  , k+1, bxf);
-		qidx = get_region_offset (i  , j  , k+1, bxf);
+		pidx = get_region_index  (i , j , kp, bxf);
+		qidx = get_region_offset (i , j , kp, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_kp);
 
-		pidx = get_region_index  (i-1, j-1, k  , bxf);
-		qidx = get_region_offset (i-1, j-1, k  , bxf);
+		pidx = get_region_index  (in, jn, k , bxf);
+		qidx = get_region_offset (in, jn, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_injn);
-		pidx = get_region_index  (i-1, j+1, k  , bxf);
-		qidx = get_region_offset (i-1, j+1, k  , bxf);
+		pidx = get_region_index  (in, jp, k , bxf);
+		qidx = get_region_offset (in, jp, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_injp);
-		pidx = get_region_index  (i+1, j-1, k  , bxf);
-		qidx = get_region_offset (i+1, j-1, k  , bxf);
+		pidx = get_region_index  (ip, jn, k , bxf);
+		qidx = get_region_offset (ip, jn, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_ipjn);
-		pidx = get_region_index  (i+1, j+1, k  , bxf);
-		qidx = get_region_offset (i+1, j+1, k  , bxf);
+		pidx = get_region_index  (ip, jp, k , bxf);
+		qidx = get_region_offset (ip, jp, k , bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_ipjp);
-		pidx = get_region_index  (i-1, j  , k-1, bxf);
-		qidx = get_region_offset (i-1, j  , k-1, bxf);
+		pidx = get_region_index  (in, j , kn, bxf);
+		qidx = get_region_offset (in, j , kn, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_inkn);
-		pidx = get_region_index  (i-1, j  , k+1, bxf);
-		qidx = get_region_offset (i-1, j  , k+1, bxf);
+		pidx = get_region_index  (in, j , kp, bxf);
+		qidx = get_region_offset (in, j , kp, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_inkp);
-		pidx = get_region_index  (i+1, j  , k-1, bxf);
-		qidx = get_region_offset (i+1, j  , k-1, bxf);
+		pidx = get_region_index  (ip, j , kn, bxf);
+		qidx = get_region_offset (ip, j , kn, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_ipkn);
-		pidx = get_region_index  (i+1, j  , k+1, bxf);
-		qidx = get_region_offset (i+1, j  , k+1, bxf);
+		pidx = get_region_index  (ip, j , kp, bxf);
+		qidx = get_region_offset (ip, j , kp, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_ipkp);
-		pidx = get_region_index  (i  , j-1, k-1, bxf);
-		qidx = get_region_offset (i  , j-1, k-1, bxf);
+		pidx = get_region_index  (i , jn, kn, bxf);
+		qidx = get_region_offset (i , jn, kn, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jnkn);
-		pidx = get_region_index  (i  , j-1, k+1, bxf);
-		qidx = get_region_offset (i  , j-1, k+1, bxf);
+		pidx = get_region_index  (i , jn, kp, bxf);
+		qidx = get_region_offset (i , jn, kp, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jnkp);
-		pidx = get_region_index  (i  , j+1, k-1, bxf);
-		qidx = get_region_offset (i  , j+1, k-1, bxf);
+		pidx = get_region_index  (i , jp, kn, bxf);
+		qidx = get_region_offset (i , jp, kn, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jpkn);
-		pidx = get_region_index  (i  , j+1, k+1, bxf);
-		qidx = get_region_offset (i  , j+1, k+1, bxf);
+		pidx = get_region_index  (i , jp, kp, bxf);
+		qidx = get_region_offset (i , jp, kp, bxf);
 		bscore->update_total_grad_b (bxf, pidx, qidx, dc_dv_jpkp);
             }
         }
