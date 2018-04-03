@@ -57,18 +57,30 @@ CUDA_listgpu ()
             cores_per_sm = 32;
         } else if (props.major == 3) {
             cores_per_sm = 192;
+        } else if (props.major == 4) {
+            cores_per_sm = 128;
+        } else if (props.major == 5) {
+            cores_per_sm = 192;
+        } else if (props.major == 6 && props.minor == 0) {
+            cores_per_sm = 64;
+        } else if (props.major == 6) {
+            cores_per_sm = 128;
+        } else if (props.major == 7) {
+            cores_per_sm = 168; // Mixed types
         } else {
-            printf ("GPU Compute Capability: Unknown to Platimatch!\n");
-            return;
+            cores_per_sm = -1;
         }
 
         printf ("GPU ID %i:\n", i);
         printf ("              Name: %s (%.2f GB)\n", props.name, props.totalGlobalMem / (float)(1024 * 1024 * 1024));
-        printf ("Compute Capability: %d.%d\n", props.major, props.minor);
-        printf ("     Shared Memory: %.1f MB\n", props.sharedMemPerBlock / (float)1024);
+        printf ("Compute capability: %d.%d\n", props.major, props.minor);
+        printf ("     Shared memory: %.1f MB\n", props.sharedMemPerBlock / (float)1024);
         printf ("         Registers: %i\n", props.regsPerBlock);
-        printf ("        Clock Rate: %.2f MHz\n", props.clockRate / (float)(1024));
-        printf ("           # Cores: %d\n", props.multiProcessorCount * cores_per_sm);
+        printf ("        Clock rate: %.2f MHz\n", props.clockRate / (float)(1024));
+        printf ("         Warp size: %d\n", props.warpSize);
+        if (cores_per_sm != -1) {
+            printf ("           # Cores: %d\n", props.multiProcessorCount * cores_per_sm);
+        }
         printf ("\n");
     }
 }
@@ -79,28 +91,9 @@ void
 CUDA_selectgpu (int gpuid)
 {
     int num_gpus;
-    int cores_per_sm;
-    cudaDeviceProp props;
 
     cudaGetDeviceCount(&num_gpus);
-
     if (gpuid < num_gpus) {
-        cudaGetDeviceProperties(&props, gpuid);
-        if (props.major == 1) {
-            cores_per_sm = 8;
-        } else if (props.major == 2) {
-            cores_per_sm = 32;
-        } else if (props.major == 3) {
-            cores_per_sm = 192;
-        } else {
-            printf ("Compute Capability: Unknown to Platimatch!\n");
-            return;
-        }
-
-        printf ("Using %s (%.2f GB)\n", props.name, props.totalGlobalMem / (float)(1024 * 1024 * 1024));
-        printf ("  - Compute Capability: %d.%d\n", props.major, props.minor);
-        printf ("  - # Multi-Processors: %d\n", props.multiProcessorCount);
-        printf ("  -    Number of Cores: %d\n", props.multiProcessorCount * cores_per_sm);
         cudaSetDevice (gpuid);
     } else {
         printf ("\nInvalid GPU ID specified.  Choices are:\n\n");
@@ -132,4 +125,3 @@ CUDA_getarch (int gpuid)
         return -1;
     }
 }
-
