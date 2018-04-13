@@ -27,8 +27,8 @@ Dcmtk_rt_study::Dcmtk_rt_study ()
 {
     this->d_ptr = new Dcmtk_rt_study_private;
 
-    /* GCS FIX: Need a way to turn this on via configuration. 
-       But for now, just unilaterally disable logging. 
+    /* GCS FIX: Need a way to turn this on via configuration.
+       But for now, just unilaterally disable logging.
        http://support.dcmtk.org/wiki/dcmtk/howto/logprogram */
     OFLog::configure (OFLogger::FATAL_LOG_LEVEL);
 }
@@ -37,8 +37,8 @@ Dcmtk_rt_study::Dcmtk_rt_study (const char* dicom_path)
 {
     this->d_ptr = new Dcmtk_rt_study_private;
 
-    /* GCS FIX: Need a way to turn this on via configuration. 
-       But for now, just unilaterally disable logging. 
+    /* GCS FIX: Need a way to turn this on via configuration.
+       But for now, just unilaterally disable logging.
        http://support.dcmtk.org/wiki/dcmtk/howto/logprogram */
     OFLog::configure (OFLogger::FATAL_LOG_LEVEL);
 
@@ -110,7 +110,7 @@ Dcmtk_rt_study::get_study_uid () const
     return d_ptr->study_uid;
 }
 
-std::vector<Dcmtk_slice_data>* 
+std::vector<Dcmtk_slice_data>*
 Dcmtk_rt_study::get_slice_data ()
 {
     return d_ptr->slice_data;
@@ -128,7 +128,7 @@ Dcmtk_rt_study::get_image_volume_float ()
     return d_ptr->img->get_volume_float ();
 }
 
-void 
+void
 Dcmtk_rt_study::set_image (const Plm_image::Pointer& image)
 {
     d_ptr->img = image;
@@ -140,7 +140,7 @@ Dcmtk_rt_study::get_rtss ()
     return d_ptr->rtss;
 }
 
-void 
+void
 Dcmtk_rt_study::set_rtss (const Rtss::Pointer& rtss)
 {
     d_ptr->rtss = rtss;
@@ -164,26 +164,26 @@ Dcmtk_rt_study::get_dose ()
     return d_ptr->dose;
 }
 
-void 
+void
 Dcmtk_rt_study::set_dose (const Plm_image::Pointer& image)
 {
     d_ptr->dose = image;
 }
 
-void 
+void
 Dcmtk_rt_study::set_rt_study_metadata (
     const Rt_study_metadata::Pointer& rt_study_metadata)
 {
     d_ptr->rt_study_metadata = rt_study_metadata;
 }
 
-void 
+void
 Dcmtk_rt_study::set_filenames_with_uid (bool filenames_with_uid)
 {
     d_ptr->filenames_with_uid = filenames_with_uid;
 }
 
-void 
+void
 Dcmtk_rt_study::load (const char *dicom_path)
 {
     if (is_directory (dicom_path)) {
@@ -194,12 +194,23 @@ Dcmtk_rt_study::load (const char *dicom_path)
     this->parse_directory ();
 }
 
-void 
+void
 Dcmtk_rt_study::save (const char *dicom_dir)
 {
+    if (d_ptr->rtss) {
+        d_ptr->rt_study_metadata->generate_new_rtstruct_instance_uid ();
+    }
+    if (d_ptr->dose) {
+        d_ptr->rt_study_metadata->generate_new_dose_instance_uid ();
+    }
+    if (d_ptr->rtplan) {
+        d_ptr->rt_study_metadata->generate_new_plan_instance_uid ();
+    }
+
     if (d_ptr->img) {
         d_ptr->rt_study_metadata->generate_new_series_uids ();
     }
+
     if (d_ptr->img) {
         this->save_image (dicom_dir);
     }
@@ -231,7 +242,7 @@ Dcmtk_rt_study::insert_file (const char* fn)
     if (c) {
         series_uid = std::string (c);
     } else {
-	/* 2014-12-17.  Oncentra data missing SeriesInstanceUID? 
+	/* 2014-12-17.  Oncentra data missing SeriesInstanceUID?
            If that happens, make something up. */
         series_uid = dicom_uid ();
     }
@@ -242,8 +253,8 @@ Dcmtk_rt_study::insert_file (const char* fn)
 
     /* If we didn't find the UID, add a new entry into the map */
     if (it == d_ptr->m_smap.end()) {
-	std::pair<Dcmtk_series_map::iterator,bool> ret 
-	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (series_uid, 
+	std::pair<Dcmtk_series_map::iterator,bool> ret
+	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (series_uid,
 		    new Dcmtk_series()));
 	if (ret.second == false) {
 	    print_and_exit (
@@ -263,7 +274,7 @@ Dcmtk_rt_study::insert_directory (const char* dir)
     OFBool recurse = OFFalse;
     OFList<OFString> input_files;
 
-    /* On windows, searchDirectoryRecursively doesn't work 
+    /* On windows, searchDirectoryRecursively doesn't work
        if the path is like c:/dir/dir; instead it must be c:\dir\dir */
     std::string fixed_path = make_windows_slashes (std::string(dir));
 
@@ -279,7 +290,7 @@ Dcmtk_rt_study::insert_directory (const char* dir)
 }
 
 void
-Dcmtk_rt_study::sort_all (void) 
+Dcmtk_rt_study::sort_all (void)
 {
     Dcmtk_series_map::iterator it;
     for (it = d_ptr->m_smap.begin(); it != d_ptr->m_smap.end(); ++it) {
@@ -366,7 +377,7 @@ Dcmtk_rt_study::parse_directory (void)
 	}
     }
 
-    /* GCS FIX: need additional logic that checks if ss & dose 
+    /* GCS FIX: need additional logic that checks if ss & dose
        refer to the image.  The below logic doesn't do anything. */
     std::string referenced_uid = "";
     if (d_ptr->ds_rtss) {
@@ -390,8 +401,7 @@ Dcmtk_rt_study::parse_directory (void)
     }
 
     /* Load plan */
-    if (d_ptr->ds_rtplan) {        
+    if (d_ptr->ds_rtplan) {
         this->rtplan_load();
     }
 }
-

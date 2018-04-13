@@ -150,8 +150,11 @@ public:
     const std::string& get_sro_metadata (const DcmTagKey& key) const;
     void set_sro_metadata (const DcmTagKey& key, const std::string& val);
 #endif
-    void generate_new_study_uids ();
+    void generate_new_dose_instance_uid ();
+    void generate_new_plan_instance_uid ();
+    void generate_new_rtstruct_instance_uid ();
     void generate_new_series_uids ();
+    void generate_new_study_uids ();
 };
 
 #endif

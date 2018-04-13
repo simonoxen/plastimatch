@@ -650,10 +650,21 @@ void Rt_study_metadata::set_sro_metadata (
 #endif
 
 void
-Rt_study_metadata::generate_new_study_uids () 
+Rt_study_metadata::generate_new_dose_instance_uid ()
 {
-    set_study_uid (dicom_uid (PLM_UID_PREFIX));
-    set_frame_of_reference_uid (dicom_uid (PLM_UID_PREFIX));
+    d_ptr->dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
+}
+
+void
+Rt_study_metadata::generate_new_plan_instance_uid ()
+{
+    d_ptr->plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
+}
+
+void
+Rt_study_metadata::generate_new_rtstruct_instance_uid ()
+{
+    d_ptr->rtstruct_instance_uid = dicom_uid (PLM_UID_PREFIX);
 }
 
 void
@@ -662,9 +673,13 @@ Rt_study_metadata::generate_new_series_uids ()
     if (!d_ptr->ct_series_uid_forced) {
         d_ptr->ct_series_uid = dicom_uid (PLM_UID_PREFIX);
     }
-    d_ptr->dose_instance_uid = dicom_uid (PLM_UID_PREFIX);
     d_ptr->dose_series_uid = dicom_uid (PLM_UID_PREFIX);
-    d_ptr->plan_instance_uid = dicom_uid (PLM_UID_PREFIX);
-    d_ptr->rtstruct_instance_uid = dicom_uid (PLM_UID_PREFIX);
     d_ptr->rtstruct_series_uid = dicom_uid (PLM_UID_PREFIX);
+}
+
+void
+Rt_study_metadata::generate_new_study_uids () 
+{
+    set_study_uid (dicom_uid (PLM_UID_PREFIX));
+    set_frame_of_reference_uid (dicom_uid (PLM_UID_PREFIX));
 }
