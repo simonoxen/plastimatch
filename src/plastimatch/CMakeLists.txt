@@ -90,9 +90,10 @@ if (PLM_PREFER_SYSTEM_DLIB)
   # for Debian, so we prefer Debian version.
   # find_package (Dlib)
 
-  # However, the Debian cmake find is broken.  Its breakage can
-  # be worked around by setting dlib_BINARY_DIR.
-  set (dlib_BINARY_DIR 1)
+  # A previous version of the Debian cmake find was broken in a way that 
+  # could be worked around by setting dlib_BINARY_DIR.  However, modern
+  # dlibConfig.cmake scripts do not have this problem.
+  ##  set (dlib_BINARY_DIR 1)
   find_package (dlib QUIET)
 endif ()
 set (DLIB_HAVE_LIBRARY FALSE)
