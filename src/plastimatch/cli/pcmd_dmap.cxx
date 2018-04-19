@@ -79,6 +79,7 @@ parse_fn (
         "a string that specifies the algorithm used for distance "
         "map calculation, either "
         "\"maurer\", "
+        "\"itk-maurer\", "
         "\"danielsson\", "
         " or \"itk-danielsson\" "
         "(default is \"danielsson\")",

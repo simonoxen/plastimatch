@@ -36,6 +36,7 @@ public:
     FloatImageType::Pointer output;
 public:
     void run_native_danielsson ();
+    void run_native_maurer ();
     void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
     void run_itk_signed_native ();
@@ -345,6 +346,12 @@ Distance_map_private::run_native_danielsson ()
     this->output = dmap->itk_float ();
 }
 
+
+void
+Distance_map_private::run_native_maurer ()
+{
+}
+
 void
 Distance_map_private::run_itk_signed_danielsson ()
 {
@@ -373,6 +380,11 @@ Distance_map_private::run ()
     case Distance_map::ITK_DANIELSSON:
         this->run_itk_signed_danielsson ();
         break;
+    case Distance_map::MAURER:
+#if defined (commentout)
+        this->run_native_maurer ();
+        break;
+#endif
     case Distance_map::ITK_MAURER:
     default:
         this->run_itk_signed_maurer ();

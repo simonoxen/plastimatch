@@ -23,6 +23,7 @@ public:
     /*! \brief Different distance map algorithms. */
     enum Algorithm {
         DANIELSSON,
+        MAURER,
         ITK_DANIELSSON,
         ITK_MAURER,
     };
