@@ -574,7 +574,7 @@ Plm_image_header::print (void) const
 
     lprintf ("Origin =");
     for (unsigned int d = 0; d < 3; d++) {
-	lprintf (" %g", m_origin[d]);
+	lprintf (" %0.4f", m_origin[d]);
     }
     lprintf ("\nSize =");
     for (unsigned int d = 0; d < 3; d++) {
@@ -582,12 +582,12 @@ Plm_image_header::print (void) const
     }
     lprintf ("\nSpacing =");
     for (unsigned int d = 0; d < 3; d++) {
-	lprintf (" %g", m_spacing[d]);
+	lprintf (" %0.4f", m_spacing[d]);
     }
     lprintf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    lprintf (" %g", dc[d1*3+d2]);
+	    lprintf (" %0.4f", dc[d1*3+d2]);
 	}
     }
 
