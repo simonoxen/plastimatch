@@ -181,6 +181,13 @@ if (CUDA_FOUND)
       --Wno-deprecated-gpu-targets)
   endif ()
 
+  if (CUDA_VERSION_MAJOR EQUAL "9"
+      AND CMAKE_COMPILER_IS_GNUCC
+      AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7.0)
+    list (APPEND CUDA_NVCC_FLAGS
+      --compiler-options -D__GNUC__=6)
+  endif ()
+  
   # GCS 2017-10-24: Let CUDA work with gcc 6 and CUDA 8
   if (CUDA_VERSION_MAJOR EQUAL "8"
       AND CMAKE_COMPILER_IS_GNUCC
