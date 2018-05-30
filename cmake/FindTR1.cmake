@@ -17,9 +17,8 @@ cmake_policy(POP)
 
 include (CheckCXXSourceCompiles)
 
-# ---------------------------------------------------------------------------
-# std::tr1::shared_ptr<T>
-# ---------------------------------------------------------------------------
+push_var (CMAKE_REQUIRED_FLAGS)
+set (CMAKE_REQUIRED_FLAGS ${CMAKE_CXX_FLAGS})
 
 check_cxx_source_compiles(
     "
@@ -59,6 +58,8 @@ endif ()
 if (TR1_SHARED_PTR_USE_MEMORY)
   set (SHARED_PTR_FOUND TRUE)
 endif ()
+
+pop_var (CMAKE_REQUIRED_FLAGS)
 
 mark_as_advanced (SHARED_PTR_FOUND)
 mark_as_advanced (SHARED_PTR_USE_MEMORY)
