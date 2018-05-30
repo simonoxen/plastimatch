@@ -68,6 +68,7 @@ Acknowledgments:
   can be obtained from http://nihroadmap.nih.gov/bioinformatics
 * NSF ERC Innovation Award EEC-0946463
 * NSF / CISE 1642345
+* NSF / SMOR 1662852
 
 For more information:
 
