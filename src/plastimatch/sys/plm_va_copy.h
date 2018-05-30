@@ -10,4 +10,10 @@
 #endif
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#ifndef va_copy
+#define va_copy(dest, src) __builtin_va_copy(dest, src)
+#endif
+#endif
+
 #endif
