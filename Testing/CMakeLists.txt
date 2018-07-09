@@ -961,8 +961,8 @@ plmtest_check_interval ("plm-drr-a-check"
   "0.055"
   )
 set_tests_properties (plm-drr-a PROPERTIES DEPENDS gauss-1)
-set_tests_properties (plm-drr-a-stats PROPERTIES DEPENDS drr-a)
-set_tests_properties (plm-drr-a-check PROPERTIES DEPENDS drr-a-stats)
+set_tests_properties (plm-drr-a-stats PROPERTIES DEPENDS plm-drr-a)
+set_tests_properties (plm-drr-a-check PROPERTIES DEPENDS plm-drr-a-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection
