@@ -1,3 +1,11 @@
+Version 1.7.3 (tag v1.7.3)
+Mon Jul  9 14:24:13 EDT 2018
+* Implement command "plastimatch drr" as prefered method of creating DRRs
+* Implement automatic scaling of output DRRs
+* Default distance map algorithm is now native Danielsson
+* Numeric regularization now works on 2D images
+* Several DICOM fixes
+
 Version 1.7.2 (tag v1.7.2)
 Fri Jan 26 15:22:44 EST 2018
 * Fix error building with superbuild
