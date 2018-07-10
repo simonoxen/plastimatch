@@ -8,6 +8,7 @@
 
 class Drr_options;
 
+PLMRECONSTRUCT_API
 void drr_compute (Drr_options *options);
 
 #endif

@@ -36,7 +36,7 @@ enum hu_conversion_type {
 };
 typedef enum hu_conversion_type Hu_conversion;
 
-class Drr_options {
+class PLMRECONSTRUCT_API Drr_options {
 public:
     Drr_options ();
 public:
