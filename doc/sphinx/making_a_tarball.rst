@@ -26,10 +26,11 @@ Step 2: Marking the version
 
      sphinx-build -b man -d ~/shared/web-plastimatch/.doctrees  ~/work/plastimatch/doc/sphinx ~/work/plastimatch/doc/man
 
-#. Push above changes to remote
-#. Tag version::
+#. Push above changes to remote and tag version::
 
-     git tag -a "v1.6.5" -m "Version 1.6.5"
+     git commit -am "Version 1.6.5"
+     git push origin master
+     git tag -a "1.6.5" -m "Version 1.6.5"
      git push origin --tags
 
 #. Edit changelog on gitlab site.
@@ -45,10 +46,15 @@ Step 3: Making the final version
      tar cjvf plastimatch-1.7.0.tar.bz2 plastimatch-1.7.0
      rm -rf plastimatch-1.7.0
 
+   The above procedure should no longer be needed, as gitlab no longer gives
+   hash-based version for tagged download.  Also using "1.7.4" instead of "v1.7.4"
+   for the tag should solve the problem of directory name.  Test this for 1.7.4, and
+   if all is working well, remove this step from the procedure.
+     
 #. Unpack and test tarball on linux (don't skip this step).
 #. Unpack and test tarball on windows (don't skip this step).
 #. Upload to sourceforge::
 
      sftp gregsharp@frs.sourceforge.net
-     cd /home/pfs/project/p/pl/plastimatch/Source
+     cd /home/pfs/project/plastimatch/Source
      put plastimatch-1.6.4.tar.bz2

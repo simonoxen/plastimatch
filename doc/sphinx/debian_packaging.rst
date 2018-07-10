@@ -30,7 +30,8 @@ Setting up a build system for the first time
 
 #. Make and register ssh keys::
 
-     ssh-keygen -f ~/.ssh/id_rsa_alioth
+     #ssh-keygen -f ~/.ssh/id_rsa_alioth  ## Old way
+     ssh-keygen -t rsa -C "gregsharp.geo@yahoo.com" -b 4096 -f ~/.ssh/id_rsa_salsa
 
    Be sure to set up your ~/.ssh/config file to tell it where to find the key::
 
@@ -42,20 +43,8 @@ Setting up a build system for the first time
 
 #. Download the relevant directory from the debian-med repository::
 
-     debcheckout --git-track='*' --user <username> git://git.debian.org/debian-med/plastimatch.git
-
-   There may be other ways to do this, such as::
-
-     gbp clone --all --pristine-tar ssh://<username>@git.debian.org/git/debian-med/plastimatch.git
-
-   What is the difference between the above?
-
-#. Link the helper scripts to the debian plastimatch directory::
-
-     # This may not be needed any longer
-     cd debian-med/plastimatch
-     ln -s ~/work/plastimatch/extra/debian/* .
-
+     gbp clone --all --pristine-tar git@salsa.debian.org:med-team/plastimatch.git
+     
 #. Initial setup of pbuilder environment::
 
      sudo apt-get install debian-archive-keyring
@@ -107,7 +96,7 @@ the version in the debian changelog.
 
 #. Run lintian on package::
 
-     lintian -i *.changes
+   lintian -i *.changes
    
 Step 2: Build the tarball
 -------------------------
@@ -139,9 +128,11 @@ Step 3: Build the debian package
      dch -v 1.6.6+dfsg.1-1
      git commit -a -m "Update changelog"
 
+   Don't forget to change release status to "unstable"
+     
 #. Test::
 
-     gbp buildpackage --git-pbuilder --git-ignore-new -j16
+     gbp buildpackage --git-pbuilder --git-ignore-new -j16 --git-postbuild='lintian -i $GBP_CHANGES_FILE'
    
 #. If you need select a patch from git, do somthing like this::
 
@@ -149,7 +140,7 @@ Step 3: Build the debian package
 
 #. Push changes to server::
 
-     git push --all --tags origin
+     git push --all origin && git push --tags origin
 
 Various hints
 -------------
