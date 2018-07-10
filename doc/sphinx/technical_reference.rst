@@ -7,6 +7,7 @@ Technical reference
    making_a_tarball
    debian_packaging
    windows_packaging
+   windows_vm
    special_builds
    api
    filters
