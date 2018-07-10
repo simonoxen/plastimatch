@@ -30,14 +30,13 @@ Setting up a build system for the first time
 
 #. Make and register ssh keys::
 
-     #ssh-keygen -f ~/.ssh/id_rsa_alioth  ## Old way
      ssh-keygen -t rsa -C "gregsharp.geo@yahoo.com" -b 4096 -f ~/.ssh/id_rsa_salsa
 
    Be sure to set up your ~/.ssh/config file to tell it where to find the key::
 
      # Add this to ~/.ssh/config
-     Host *.debian.org
-             IdentityFile ~/.ssh/id_rsa_alioth
+     Host salsa.debian.org
+             IdentityFile ~/.ssh/id_rsa_salsa
 
    Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
 
