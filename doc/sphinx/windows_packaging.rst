@@ -3,7 +3,7 @@ Windows packaging
 This section describes the recommended build configuration for 
 building official plastimatch windows binaries.
 
-You should have a working virtual machine, as described in :ref:`_windows_vm`.
+You should have a working virtual machine, as described in :ref:`windows_vm`.
 
 As of plastimatch 1.7.3, the following build tools are used::
 
