@@ -38,7 +38,7 @@ Setting up a build system for the first time
      Host salsa.debian.org
              IdentityFile ~/.ssh/id_rsa_salsa
 
-   Then go to https://alioth.debian.org/account/editsshkeys.php to register the public key.  Wait up to one hour for the key to be registered.
+   Then go to https://salsa.debian.org/profile/keys to register the public key.  Wait up to one hour for the key to be registered.
 
 #. Download the relevant directory from the debian-med repository::
 
