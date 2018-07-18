@@ -21,6 +21,8 @@ Gregory Sharp, Nagarajan Kandasamy, Harman Singh, and Michael Folkert, “GPU-ba
 
 The following references describe how plastimatch has been used in retrospective studies to answer medical physics questions.
 
+Paolo Zaffino, Delia Ciardo, Patrik Raudaschl, Karl Fritscher, Rosalinda Ricotti, Daniela Alterio, Giulia Marvaso, Cristiana Fodor, Guido Baroni, Francesco Amato, Roberto Orecchia, Barbara Alicja Jereczek-Fossa, Gregory C Sharp, Maria Francesca Spadea, "Multi atlas based segmentation: Should we prefer the best atlas group over the group of best atlases?", Physics in Medicine & Biology, Vol 63, Issue 12, 12NT01, 2018.
+
 Paolo Zaffino, Delia Ciardo, Gaia Piperno, Laura Lavinia Travaini, Stefania Comi, Annamaria Ferrari, Daniela Alterio, Barbara Alicja Jereczek-Fossa, Roberto Orecchia, Guido Baroni, Maria Francesca Spadea, "Radiotherapy of Hodgkin and Non-Hodgkin Lymphoma: A Nonrigid Image-Based Registration Method for Automatic Localization of Prechemotherapy Gross Tumor Volume", Technology in Cancer Research and Treatment, Vol 15, Issue 2, pp 355-364, April 1, 2016.
 
 Shinichiro Mori, Nobuyuki Kanematsu, Hiroshi Asakura, Gregory C Sharp, Motoki Kumagai, Suguru Dobashi, Mio Nakajima, Naoyoshi Yamamoto, Susumu Kandatsu, Masayuki Baba, “Four-Dimensional Lung Treatment Planning in Layer-Stacking Carbon Ion Beam Treatment: Comparison of Layer-Stacking and Conventional Ungated/Gated Irradiation,” International Journal of Radiation Oncology, Biology, Physics, To appear.
