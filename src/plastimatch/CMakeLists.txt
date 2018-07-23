@@ -216,6 +216,8 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
+set (INCLUDE_THESE_TWICE false)
+
 include_directories (BEFORE ${CMAKE_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
@@ -235,9 +237,10 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/register/cuda)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/segment)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/sys)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/util)
-
 include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-include_directories (AFTER ${ITK_INCLUDE_DIRS})
+if (INCLUDE_THESE_TWICE)
+  include_directories (AFTER ${ITK_INCLUDE_DIRS})
+endif ()
 include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight)
 include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight/DiffeomorphicDemons)
 include_directories (AFTER ${PLM_SOURCE_DIR}/libs/demons_itk_insight/FastSymmetricForces)
