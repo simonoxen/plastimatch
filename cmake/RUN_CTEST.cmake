@@ -3,7 +3,7 @@
 ## Apparently this is how to make the CMake script return status
 ##   http://www.cmake.org/Wiki/CMake/C_Plugins_for_Loadable_Commands
 
-set (ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};${PLM_PLASTIMATCH_PATH};${PLM_FFTW_PATH}")
+set (ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};${PLM_PLASTIMATCH_PATH};${PLM_DCMTK_PATH};${PLM_FFTW_PATH}")
 
 message ("PLM_TEST_COMMAND is ${PLM_TEST_COMMAND}")
 message ("PARMS is ${PARMS}")

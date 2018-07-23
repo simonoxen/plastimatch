@@ -690,7 +690,19 @@ add_subdirectory (src)
 if (ITK_FOUND)
   set (DLL_PATTERNS "ITKCommon*.dll" "ITKIO*.dll" "ITKOptimizers*.dll" "ITKStatistics*.dll" "ITKTransform*.dll")
   foreach (p ${DLL_PATTERNS})
-    file (GLOB DLLFILES "${ITK_DIR}/bin/release/${p}")
+    # .../bin/release/*.dll for build tree, .../bin/*.dll for install tree
+    file (GLOB DLLFILES "${ITK_DLL_DIR}/${p}")
+    if (DLLFILES)
+      install (FILES ${DLLFILES} DESTINATION bin)
+    endif ()
+  endforeach ()
+endif ()
+
+if (DCMTK_FOUND)
+  set (DLL_PATTERNS "oflog.dll" "ofstd.dll" "dcmdata.dll")
+  foreach (p ${DLL_PATTERNS})
+    # .../bin/release/*.dll for build tree, .../bin/*.dll for install tree
+    file (GLOB DLLFILES "${DCMTK_DIR}/bin/release/${p}")
     if (DLLFILES)
       install (FILES ${DLLFILES} DESTINATION bin)
     endif ()
@@ -783,23 +795,15 @@ if (WIN32 AND NOT CYGWIN AND NOT MINGW)
   set (PLM_PLASTIMATCH_TESTING_PATH
     ${PLM_BINARY_DIR}/Testing/Release)
   set (PLM_FFTW_PATH ${FFTW_DIR})
-  # At some point in time (presumably around ITK 4.1), ITK stopped
-  # creating the variable ITK_LIBRARY_DIRS.  Therefore, we have to
-  # use another method to find the ITK directory needed to run tests.
-  if (NOT ITK_FOUND)
-    set (PLM_ITK_LIBRARY_PATH_HACK
-      -DITK_LIBRARY_PATH=${PLM_BINARY_DIR}/ITK-build/bin/Release)
-  elseif (${ITK_VERSION} VERSION_LESS "4.1")
-    set (PLM_ITK_LIBRARY_PATH_HACK
-      -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
+
+  if (NOT "${ITK_DLL_DIR}" STREQUAL "")
+    set (PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_DLL_DIR})
   else ()
-    string (REGEX REPLACE "/[^/]*$" "" ITK_LIBRARY_DIRS_41
-      "${ITK_CONFIG_TARGETS_FILE}")
-    set (PLM_ITK_LIBRARY_PATH_HACK
-      -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS_41}/bin/Release)
+    set (PLM_ITK_LIBRARY_PATH_HACK "")
   endif ()
   set (PLM_PLASTIMATCH_PATH_HACK
      -DPLM_PLASTIMATCH_PATH=${PLM_PLASTIMATCH_PATH})
+  set (PLM_DCMTK_PATH_HACK -DPLM_DCMTK_PATH=${DCMTK_DIR}/bin/Release)
   set (PLM_FFTW_PATH_HACK
      -DPLM_FFTW_PATH=${PLM_FFTW_PATH})
 else ()
@@ -808,6 +812,7 @@ else ()
   set (PLM_FFTW_PATH "${FFTW_DIR}")
   set (PLM_ITK_LIBRARY_PATH_HACK "")
   set (PLM_PLASTIMATCH_PATH_HACK "")
+  set (PLM_DCMTK_PATH_HACK "")
   set (PLM_FFTW_PATH_HACK "")
 endif ()
 
@@ -825,6 +830,7 @@ macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
     -DPLM_TEST_NAME=${PLM_TEST_NAME}
     ${PLM_ITK_LIBRARY_PATH_HACK}
     ${PLM_PLASTIMATCH_PATH_HACK}
+    ${PLM_DCMTK_PATH_HACK}
     ${PLM_FFTW_PATH_HACK}
     -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND}
     -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR}
@@ -833,7 +839,7 @@ macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
     ${EXTRA_PARMS}
     -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake
     )
-#  message (STATUS "${CMAKE_COMMAND} -DPLM_TEST_NAME=${PLM_TEST_NAME} ${PLM_ITK_LIBRARY_PATH_HACK} ${PLM_PLASTIMATCH_PATH_HACK} ${PLM_FFTW_PATH_HACK} -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND} -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR} -DPLM_BUILD_TESTING_DIR=${PLM_BUILD_TESTING_DIR} \"-DPARMS=${TMP_PARMS}\" ${EXTRA_PARMS} -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake")
+# message (STATUS "${CMAKE_COMMAND} -DPLM_TEST_NAME=${PLM_TEST_NAME} ${PLM_ITK_LIBRARY_PATH_HACK} ${PLM_PLASTIMATCH_PATH_HACK} ${PLM_FFTW_PATH_HACK} -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND} -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR} -DPLM_BUILD_TESTING_DIR=${PLM_BUILD_TESTING_DIR} \"-DPARMS=${TMP_PARMS}\" ${EXTRA_PARMS} -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake")
 endmacro ()
 
 # Figure out which tests to ignore
