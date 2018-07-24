@@ -17,24 +17,25 @@ virtual machine for development.
    #. Reboot
    #. Visit https://aka.ms/wslstore to install
    #. Edit /etc/passwd, change home directory to /mnt/c/Users/IEUser or whatever
-   #. Update packages with sudo apt-get update && sudo apt-get dist-upgrade
-#. In virtual box settings, export host shared folder
-   
-   #. Settings -> Shared Folders -> Add Folder icon
-   #. Folder Path: /home/gcs6/shared/vb-share
-   #. Folder Name: vb-share
-   #. Make Permanent: Yes
-#. Connect shared folder (VBox shared folder method)
-   
-#. Connect shared folder (VBox shared folder method)
-   
-   #. On linux host, create shared folder::
+   #. Edit /etc/wsl.conf and add the following::
 	
-	Folder Path: /PHShome/gcs6/shared/vb-share
-	Folder Name: vb-share
-	Make Permanent
-      
-   #. On linux subsystem::
+	[automount]
+	options = case=off
+
+      See https://blogs.msdn.microsoft.com/commandline/2018/02/28/per-directory-case-sensitivity-and-wsl
+
+   #. Update packages with sudo apt-get update && sudo apt-get dist-upgrade
+
+#. Connect shared folder (VBox shared folder method)
+   
+   #. In virtual box settings of host computer, export folder
+   
+      #. Settings -> Shared Folders -> Add Folder icon
+      #. Folder Path: /home/gcs6/shared/vb-share
+      #. Folder Name: vb-share
+      #. Make Permanent: Yes
+
+   #. On wsl command prompt, one could do this::
 
 	sudo mount -t drvfs x: /mnt/x
 
@@ -42,25 +43,23 @@ virtual machine for development.
       
       #. https://github.com/Microsoft/WSL/issues/2988
 
-   #. On windows::
+   #. On windows command prompt, one could do this::
 
 	net use x: \\vboxsvr\vb-share
 
    #. However, existing files do not have read permission
-      
+
       #. https://github.com/Microsoft/WSL/issues/2896
-	 
+
 #. Connect shared folder (Samba method)
 
    #. On linux host, add vb-share to samba exports
    #. On windows::
 
 	net use x: \\sherbert\vb-share /user:gcs6
-	
+
 #. When installing visual studio, you need to choose "custom" install, 
    because "recommended" install does not include C++.
-#. Because there is no way to directly access the shared folders,
-   they will need to be copied in Windows instead of WSL.
 #. Several of the "exe" programs cannot be run from the shared drive.
    You need to copy  them onto the local drive (Desktop) before running.
 #. Enable .net 3.5.1 in control panel (needed by WiX)
