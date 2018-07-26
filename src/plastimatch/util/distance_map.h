@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include "itk_image_type.h"
 #include "plm_image.h"
+#include "threading.h"
 #include "volume_boundary_behavior.h"
 
 class Distance_map_private;
@@ -52,6 +53,8 @@ public:
     /*! \brief Set the volume boundary behavior, either 
       ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
     void set_volume_boundary_behavior (Volume_boundary_behavior vbb);
+    /*! \brief Set threading to THREADING_CPU_OPENMP or THREADING_CUDA */
+    void set_threading (Threading threading);
     ///@}
 
     /*! \name Execution */

@@ -24,6 +24,7 @@ public:
         maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
         vbb = ADAPTIVE_PADDING;
+        threading = THREADING_CPU_OPENMP;
     }
 public:
     Distance_map::Algorithm algorithm;
@@ -31,6 +32,7 @@ public:
     bool use_squared_distance;
     float maximum_distance;
     Volume_boundary_behavior vbb;
+    Threading threading;
 
     UCharImageType::Pointer input;
     FloatImageType::Pointer output;
@@ -346,10 +348,15 @@ Distance_map_private::run_native_danielsson ()
     this->output = dmap->itk_float ();
 }
 
-
 void
 Distance_map_private::run_native_maurer ()
 {
+#if CUDA_FOUND
+    if (threading == THREADING_CUDA) {
+        
+        return;
+    }
+#endif
 }
 
 void
@@ -443,6 +450,12 @@ void
 Distance_map::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
 {
     d_ptr->vbb = vbb;
+}
+
+void
+Distance_map::set_threading (Threading threading)
+{
+    d_ptr->threading = threading;
 }
 
 void 
