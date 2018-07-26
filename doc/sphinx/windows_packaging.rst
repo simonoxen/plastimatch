@@ -36,6 +36,8 @@ binary download.
    #. Use fresh build directory
    #. Set BUILD_SHARED_LIBS to ON
    #. Set Module_ITKReview to ON
+   #. Set CMAKE_INSTALL_DIR c:/Users/grego/install/{32,64}/ITK-{version}
+   #. Make and install
 
 #. Build plastimatch
 
