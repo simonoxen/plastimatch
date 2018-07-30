@@ -11,6 +11,11 @@ configure_file (
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (AFTER ${DEVILLARD_INCLUDE_DIR})
 
+if (CUDA_FOUND)
+  add_subdirectory (cuda)
+  include_directories (BEFORE "${CMAKE_CURRENT_SOURCE_DIR}/cuda")
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------

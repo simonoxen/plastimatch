@@ -124,7 +124,7 @@ set (PLMBASE_LIBRARY_SRC
   slice_list.cxx slice_list.h
   ss_img_extract.cxx ss_img_extract.h
   ss_list_io.cxx ss_list_io.h
-  threading.h
+  threading.cxx threading.h
   thumbnail.cxx thumbnail.h
   vf.cxx vf.h
   vf_convolve.cxx vf_convolve.h

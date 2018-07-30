@@ -14,9 +14,18 @@
 #   define PLMUTIL_C_API EXTERNC __declspec(dllimport)
 #   define PLMUTIL_API __declspec(dllimport)
 # endif
+# ifdef plmutilcuda_EXPORTS
+#   define PLMUTILCUDA_C_API EXTERNC __declspec(dllexport)
+#   define PLMUTILCUDA_API __declspec(dllexport)
+# else
+#   define PLMUTILCUDA_C_API EXTERNC __declspec(dllimport)
+#   define PLMUTILCUDA_API __declspec(dllimport)
+# endif
 #else
 # define PLMUTIL_C_API EXTERNC 
 # define PLMUTIL_API
+# define PLMUTILCUDA_C_API EXTERNC 
+# define PLMUTILCUDA_API
 #endif
 
 #endif

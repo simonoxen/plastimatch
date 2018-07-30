@@ -84,6 +84,8 @@ parse_fn (
         " or \"itk-danielsson\" "
         "(default is \"danielsson\")",
         1, "danielsson");
+    parser->add_long_option ("A", "threading",
+	"Threading option {cpu,cuda} (default: cpu)", 1, "cpu");
     parser->add_long_option ("", "squared-distance",
         "return the squared distance instead of distance", 0);
     parser->add_long_option ("", "inside-positive",

@@ -10,6 +10,7 @@
 
 #include "image_boundary.h"
 #include "distance_map.h"
+#include "distance_map_cuda.h"
 #include "itk_distance_map.h"
 #include "itk_image_type.h"
 #include "plm_image.h"
@@ -353,7 +354,7 @@ Distance_map_private::run_native_maurer ()
 {
 #if CUDA_FOUND
     if (threading == THREADING_CUDA) {
-        
+        distance_map_cuda (0);
         return;
     }
 #endif
@@ -388,10 +389,8 @@ Distance_map_private::run ()
         this->run_itk_signed_danielsson ();
         break;
     case Distance_map::MAURER:
-#if defined (commentout)
         this->run_native_maurer ();
         break;
-#endif
     case Distance_map::ITK_MAURER:
     default:
         this->run_itk_signed_maurer ();
