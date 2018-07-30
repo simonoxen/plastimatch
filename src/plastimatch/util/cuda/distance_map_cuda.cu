@@ -72,5 +72,5 @@ distance_map_cuda (void *dummy_var)
     // If the program makes it this far, then the results are correct and
     // there are no run-time errors.  Good work!
     printf("Correct!\n");
-
+    exit (0);
 }

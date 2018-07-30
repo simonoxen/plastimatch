@@ -475,6 +475,9 @@ Distance_map::set_algorithm (const std::string& algorithm)
     else if (algorithm == "maurer") {
         d_ptr->algorithm = Distance_map::ITK_MAURER;
     }
+    else if (algorithm == "native_maurer") {
+        d_ptr->algorithm = Distance_map::MAURER;
+    }
     else if (algorithm == "itk-maurer" || algorithm == "itk_maurer") {
         d_ptr->algorithm = Distance_map::ITK_MAURER;
     }

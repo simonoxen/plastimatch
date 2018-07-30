@@ -20,12 +20,14 @@ public:
     bool have_maximum_distance;
     float maximum_distance;
     bool inside_positive;
+    Threading threading;
 public:
     Dmap_parms () {
         inside_positive = false;
         have_maximum_distance = false;
         maximum_distance = FLT_MAX;
         squared_distance = false;
+        threading = THREADING_CPU_OPENMP;
     }
 };
 
@@ -41,7 +43,7 @@ dmap_main (Dmap_parms* parms)
     if (parms->have_maximum_distance) {
         dmap.set_maximum_distance (parms->maximum_distance);
     }
-
+    dmap.set_threading (parms->threading);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image();
     itk_image_save (dmap_image, parms->img_out_fn.c_str());
@@ -130,6 +132,10 @@ parse_fn (
     if (parser->option("maximum-distance")) {
         parms->have_maximum_distance = true;
         parms->maximum_distance = parser->get_float ("maximum-distance");
+    }
+    if (parser->option("threading")) {
+        parms->threading = threading_parse (parser->get_string("threading"));
+        printf ("Parsed as: %d\n", parms->threading);
     }
 }
 
