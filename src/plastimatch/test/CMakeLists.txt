@@ -25,6 +25,8 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
       "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 
     # Test executable -- c++ properties
+    plm_add_executable_v3 (cpp_bitfield_test cpp_bitfield_test.cxx
+      "" "" "" ${INSTALL_NEVER})
     plm_add_executable_v3 (cpp_eps_test cpp_eps_test.cxx
       "" "" "" ${INSTALL_NEVER})
     plm_add_executable_v3 (cpp_floating_point_test cpp_floating_point_test.cxx
