@@ -81,6 +81,17 @@ set (PLMUTIL_LIBRARY_DEPENDENCIES
   plmsys
   )
 
+if (CUDA_FOUND)
+  set (PLMUTIL_LIBRARY_DEPENDENCIES 
+    ${PLMUTIL_LIBRARY_DEPENDENCIES}
+    plmcuda
+    )
+  set (PLMUTIL_LIBRARY_DEPENDENCIES 
+    ${PLMUTIL_LIBRARY_DEPENDENCIES}
+    plmutilcuda
+    )
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  SPECIAL BUILD RULES: OpenMP & SSE2
 ##-----------------------------------------------------------------------------
@@ -104,3 +115,10 @@ plm_add_library (
   "${PLMUTIL_LIBRARY_LDFLAGS}"
   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
   "${PLMUTIL_LIBRARY_HEADERS}")
+
+# because plmutilcuda is dynamically loaded (not linked)
+# CMake needs to be told explicitly that plmutil
+# depends on it, so we tell it explicitly here
+if (CUDA_FOUND)
+  add_dependencies (plmutil plmutilcuda)
+endif ()
