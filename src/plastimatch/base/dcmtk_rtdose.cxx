@@ -298,7 +298,7 @@ Dcmtk_rt_study::rtdose_load ()
 }
 
 void
-Dcmtk_rt_study::save_dose (const char *dicom_dir)
+Dcmtk_rt_study::dose_save (const char *dicom_dir)
 {
     OFCondition ofc;
     std::string s;

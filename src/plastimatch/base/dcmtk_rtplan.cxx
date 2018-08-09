@@ -66,7 +66,6 @@ Dcmtk_rt_study::rtplan_load(void)
 
     d_ptr->rtplan = Rtplan::New();
 
-    /* Modality -- better be RTSTRUCT */
     std::string modality = ds_rtplan->get_modality();
     if (modality == "RTPLAN") {
         lprintf("Trying to load rt plan.\n");
@@ -76,10 +75,8 @@ Dcmtk_rt_study::rtplan_load(void)
     }
 
     /* FIX: load metadata such as patient name, etc. */
-
     /*const char *val2 = ds_rtplan->get_cstr(DCM_PatientName);
       const char *val3 = ds_rtplan->get_cstr(DCM_PatientID);*/
-
 
     /* Load Beam sequence */
 
@@ -159,7 +156,7 @@ Dcmtk_rt_study::rtplan_load(void)
 }
 
 void
-Dcmtk_rt_study::save_rtplan (const char *dicom_dir)
+Dcmtk_rt_study::rtplan_save (const char *dicom_dir)
 {
     /* Required modules (ref DICOM PS3.3 2016c)
        Patient

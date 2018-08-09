@@ -28,6 +28,7 @@ Rt_study::load_dcmtk (const char *dicom_path)
         d_ptr->m_seg->set_structure_set (drs.get_rtss ());
     }
     d_ptr->m_dose = drs.get_dose ();
+    d_ptr->m_rtplan = drs.get_rtplan ();
 #endif
 }
 
@@ -50,6 +51,7 @@ Rt_study::save_dcmtk (const char *dicom_dir, bool filenames_with_uid)
         drs.set_rtss (d_ptr->m_seg->get_structure_set());
     }
     drs.set_dose (d_ptr->m_dose);
+    drs.set_rtplan (d_ptr->m_rtplan);
 
     drs.set_filenames_with_uid (filenames_with_uid);
     drs.save (dicom_dir);

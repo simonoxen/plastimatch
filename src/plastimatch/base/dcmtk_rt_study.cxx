@@ -191,7 +191,7 @@ Dcmtk_rt_study::load (const char *dicom_path)
     } else {
         this->insert_file (dicom_path);
     }
-    this->parse_directory ();
+    this->load_directory ();
 }
 
 void
@@ -212,16 +212,16 @@ Dcmtk_rt_study::save (const char *dicom_dir)
     }
 
     if (d_ptr->img) {
-        this->save_image (dicom_dir);
+        this->image_save (dicom_dir);
     }
     if (d_ptr->rtss) {
-        this->save_rtss (dicom_dir);
+        this->rtss_save (dicom_dir);
     }
     if (d_ptr->dose) {
-        this->save_dose (dicom_dir);
+        this->dose_save (dicom_dir);
     }
     if (d_ptr->rtplan) {
-        this->save_rtplan (dicom_dir);
+        this->rtplan_save (dicom_dir);
     }
 }
 
@@ -318,7 +318,7 @@ Volume *
 Dcmtk_rt_study::get_volume ()
 {
     if (!d_ptr->img) {
-        this->parse_directory ();
+        this->load_directory ();
     }
     if (!d_ptr->img) {
         return 0;
@@ -326,8 +326,9 @@ Dcmtk_rt_study::get_volume ()
     return d_ptr->img->get_vol();
 }
 
+/* This loads the files specified in d_ptr->m_smap */
 void
-Dcmtk_rt_study::parse_directory (void)
+Dcmtk_rt_study::load_directory (void)
 {
     Dcmtk_series_map::iterator it;
     d_ptr->ds_image = 0;

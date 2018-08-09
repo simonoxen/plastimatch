@@ -586,7 +586,7 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
 }
 
 void
-Dcmtk_rt_study::save_image (
+Dcmtk_rt_study::image_save (
     const char *dicom_dir)
 {
     Dcmtk_slice_data dsd;

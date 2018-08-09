@@ -402,7 +402,7 @@ Plm_image::load_native_dicom (const char* fname)
 #if PLM_DCM_USE_DCMTK
 
     Dcmtk_rt_study drs (fname);
-    drs.parse_directory ();
+    drs.load_directory ();
     this->set (drs.get_image ());
 
     /* GCS FIX: Here we need to set the metadata loaded from 

@@ -247,7 +247,7 @@ Dcmtk_rt_study::rtss_load (void)
 }
 
 void
-Dcmtk_rt_study::save_rtss (const char *dicom_dir)
+Dcmtk_rt_study::rtss_save (const char *dicom_dir)
 {
     OFCondition ofc;
     Rtss::Pointer& rtss = d_ptr->rtss;

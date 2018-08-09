@@ -63,11 +63,12 @@ public:
     void set_filenames_with_uid (bool filenames_with_uid);
 
 public:
-    void save_image (const char *dicom_path);
-    void save_dose (const char *dicom_path);
-    void save_rtss (const char *dicom_path);
-    void save_rtplan(const char *dicom_path);
+    void image_save (const char *dicom_path);
+    void dose_save (const char *dicom_path);
+    void rtss_save (const char *dicom_path);
+    void rtplan_save (const char *dicom_path);
 
+    void load_directory (void);
     void image_load ();
     void rtss_load ();
     void rtdose_load ();
@@ -75,10 +76,10 @@ public:
 
     void insert_file (const char* fn);
     void insert_directory (const char* fn);
-    void parse_directory (void);
     void sort_all (void);
 
     void debug (void) const;
+
 };
 
 #endif

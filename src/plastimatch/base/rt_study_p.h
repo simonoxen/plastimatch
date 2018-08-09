@@ -7,6 +7,7 @@
 #include "plmbase_config.h"
 #include "metadata.h"
 #include "rt_study_metadata.h"
+#include "rtplan.h"
 #include "segmentation.h"
 #include "xio_ct_transform.h"
 
@@ -20,6 +21,7 @@ public:
     Plm_image::Pointer m_img;          /* CT image */
     Plm_image::Pointer m_dose;         /* RT dose */
     Segmentation::Pointer m_seg;       /* RT structure set */
+    Rtplan::Pointer m_rtplan;          /* RT plan */
 
 public:
     Rt_study_private () {
