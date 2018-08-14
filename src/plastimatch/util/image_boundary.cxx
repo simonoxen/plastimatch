@@ -19,15 +19,19 @@ class Image_boundary_private {
 public:
     Image_boundary_private () {
         vbb = ADAPTIVE_PADDING;
+        vbt = INTERIOR_EDGE_VOXELS;
     }
 public:
     UCharImageType::Pointer input_image;
     UCharImageType::Pointer output_image;
     Volume_boundary_behavior vbb;
+    Volume_boundary_type vbt;
 public:
+    void run_vbt_iev ();
+    void run_vbt_feac ();
     void run ();
 protected:
-    unsigned char classify_zp (
+    unsigned char classify_zp_iev (
         const Volume::Pointer& vol_in,
         const unsigned char *img_in,
         plm_long i, plm_long j, plm_long k, plm_long v)
@@ -67,7 +71,7 @@ protected:
         return 0;
     }
 
-    unsigned char classify_ep (
+    unsigned char classify_ep_iev (
         const Volume::Pointer& vol_in,
         const unsigned char *img_in,
         plm_long i, plm_long j, plm_long k, plm_long v)
@@ -77,10 +81,42 @@ protected:
             return 0;
         }
 
+        /* Look for neighboring zero voxel in six-neighborhood,
+           ignoring voxels beyond boundary */
+        if (i != 0 
+            && img_in[volume_index (vol_in->dim, i-1, j, k)] == 0)
+        {
+            return 1;
+        }
+        if (i != vol_in->dim[0]-1 
+            && img_in[volume_index (vol_in->dim, i+1, j, k)] == 0)
+        {
+            return 1;
+        }
+        if (j != 0 
+            && img_in[volume_index (vol_in->dim, i, j-1, k)] == 0)
+        {
+            return 1;
+        }
+        if (j != vol_in->dim[1]-1
+            && img_in[volume_index (vol_in->dim, i, j+1, k)] == 0)
+        {
+            return 1;
+        }
+        if (k != 0 
+            && img_in[volume_index (vol_in->dim, i, j, k-1)] == 0)
+        {
+            return 1;
+        }
+        if (k != vol_in->dim[2]-1
+            && img_in[volume_index (vol_in->dim, i, j, k+1)] == 0)
+        {
+            return 1;
+        }
         return 0;
     }
 
-    unsigned char classify_ap (
+    unsigned char classify_ap_iev (
         const Volume::Pointer& vol_in,
         const unsigned char *img_in,
         plm_long i, plm_long j, plm_long k, plm_long v)
@@ -133,10 +169,85 @@ protected:
         }
         return 0;
     }
+    
+    unsigned char classify_iev (
+        const Volume::Pointer& vol_in,
+        const unsigned char *img_in,
+        const bool zero_pad[3],
+        plm_long i, plm_long j, plm_long k, plm_long v)
+    {
+        unsigned char value = classify_feac (vol_in, img_in, zero_pad,
+            i, j, k, v);
+        return value == 0 ? 0 : 1;
+    }
+
+    unsigned char classify_feac (
+        const Volume::Pointer& vol_in,
+        const unsigned char *img_in,
+        const bool zero_pad[3],
+        plm_long i, plm_long j, plm_long k, plm_long v)
+    {
+        unsigned char value = 0;
+
+        /* If not inside volume, then not on boundary */
+        unsigned char this_vox = img_in[v];
+        if (!img_in[v]) {
+            return value;
+        }
+
+        /* Find boundary faces in i direction */
+        if (i == 0 && zero_pad[0]) {
+            value |= VBB_MASK_NEG_I;
+        } else {
+            if (img_in[vol_in->index (i-1, j, k)] == 0) {
+                value |= VBB_MASK_NEG_I;
+            }
+        }
+        if (i == vol_in->dim[0]-1 && zero_pad[0]) {
+            value |= VBB_MASK_POS_I;
+        } else {
+            if (img_in[vol_in->index (i+1, j, k)] == 0) {
+                value |= VBB_MASK_POS_I;
+            }
+        }
+
+        /* Find boundary faces in j direction */
+        if (j == 0 && zero_pad[1]) {
+            value |= VBB_MASK_NEG_J;
+        } else {
+            if (img_in[vol_in->index (i, j-1, k)] == 0) {
+                value |= VBB_MASK_NEG_J;
+            }
+        }
+        if (j == vol_in->dim[1]-1 && zero_pad[1]) {
+            value |= VBB_MASK_POS_J;
+        } else {
+            if (img_in[vol_in->index (i, j+1, k)] == 0) {
+                value |= VBB_MASK_POS_J;
+            }
+        }
+
+        /* Find boundary faces in i direction */
+        if (k == 0 && zero_pad[2]) {
+            value |= VBB_MASK_NEG_K;
+        } else {
+            if (img_in[vol_in->index (i, j, k-1)] == 0) {
+                value |= VBB_MASK_NEG_K;
+            }
+        }
+        if (k == vol_in->dim[2]-1 && zero_pad[2]) {
+            value |= VBB_MASK_POS_K;
+        } else {
+            if (img_in[vol_in->index (i, j, k+1)] == 0) {
+                value |= VBB_MASK_POS_K;
+            }
+        }
+        return value;
+    }
 };
 
 void 
-Image_boundary_private::run ()
+Image_boundary_private::run_vbt_iev ()
 {
     /* Convert to Plm_image type */
     Plm_image pli_in (this->input_image);
@@ -148,28 +259,71 @@ Image_boundary_private::run ()
     Volume::Pointer vol_out = pli_out->get_volume_uchar ();
     unsigned char *img_out = (unsigned char*) vol_out->img;
 
+    /* Figure out padding strategy for each of the three dimensions */
+    bool zero_pad[3];
+    for (int d = 0; d < 3; d++) {
+        zero_pad[d] = (vbb == ZERO_PADDING
+            || (vbb == ADAPTIVE_PADDING && vol_in->dim[d] > 1));
+    }
+    
     /* Compute the boundary */
     for (plm_long k = 0, v = 0; k < vol_in->dim[2]; k++) {
         for (plm_long j = 0; j < vol_in->dim[1]; j++) {
             for (plm_long i = 0; i < vol_in->dim[0]; i++, v++) {
-                switch (this->vbb) {
-                case ZERO_PADDING:
-                    img_out[v] = classify_zp (vol_in, img_in, i, j, k, v);
-                    break;
-                case EDGE_PADDING:
-                    img_out[v] = classify_ep (vol_in, img_in, i, j, k, v);
-                    break;
-                case ADAPTIVE_PADDING:
-                default:
-                    img_out[v] = classify_ap (vol_in, img_in, i, j, k, v);
-                    break;
-                }
+                img_out[v] = classify_iev (vol_in, img_in, zero_pad, i, j, k, v);
             }
         }
     }
 
     /* Save the output image */
     this->output_image = pli_out->itk_uchar ();
+}
+
+void 
+Image_boundary_private::run_vbt_feac ()
+{
+    /* Convert to Plm_image type */
+    Plm_image pli_in (this->input_image);
+    Volume::Pointer vol_in = pli_in.get_volume_uchar ();
+    unsigned char *img_in = (unsigned char*) vol_in->img;
+
+    /* Allocate output image */
+    Plm_image::Pointer pli_out = pli_in.clone ();
+    Volume::Pointer vol_out = pli_out->get_volume_uchar ();
+    unsigned char *img_out = (unsigned char*) vol_out->img;
+
+    /* Figure out padding strategy for each of the three dimensions */
+    bool zero_pad[3];
+    for (int d = 0; d < 3; d++) {
+        zero_pad[d] = (vbb == ZERO_PADDING
+            || (vbb == ADAPTIVE_PADDING && vol_in->dim[d] > 1));
+    }
+
+    /* Compute the boundary */
+    for (plm_long k = 0, v = 0; k < vol_in->dim[2]; k++) {
+        for (plm_long j = 0; j < vol_in->dim[1]; j++) {
+            for (plm_long i = 0; i < vol_in->dim[0]; i++, v++) {
+                img_out[v] = classify_feac (vol_in, img_in, zero_pad, i, j, k, v);
+            }
+        }
+    }
+
+    /* Save the output image */
+    this->output_image = pli_out->itk_uchar ();
+}
+
+void 
+Image_boundary_private::run ()
+{
+    switch (vbt) {
+    case INTERIOR_EDGE_VOXELS:
+        run_vbt_iev ();
+        break;
+    case FACE_EDGE_AND_CORNER:
+    default:
+        run_vbt_feac ();
+        break;
+    }
 }
 
 Image_boundary::Image_boundary ()

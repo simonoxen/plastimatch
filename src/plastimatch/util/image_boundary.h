@@ -7,6 +7,7 @@
 #include "plmutil_config.h"
 #include "itk_image.h"
 #include "volume_boundary_behavior.h"
+#include "volume_boundary_type.h"
 
 class Plm_image;
 class Image_boundary_private;
@@ -34,6 +35,9 @@ public:
     void set_input_image (const char* image_fn);
     /*! \brief Set the input image as an ITK image. */
     void set_input_image (const UCharImageType::Pointer image);
+    /*! \brief Set the volume boundary type, either 
+      INTERIOR_EDGE_VOXELS or EDGE_FACE_AND_CORNER */
+    void set_boundary_type (Volume_boundary_type vbt);
     /*! \brief Set the volume boundary behavior, either 
       ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
     void set_volume_boundary_behavior (Volume_boundary_behavior vbb);

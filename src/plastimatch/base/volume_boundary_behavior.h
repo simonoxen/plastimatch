@@ -21,4 +21,11 @@ enum Volume_boundary_behavior {
     ADAPTIVE_PADDING
 };
 
+const unsigned char VBB_MASK_NEG_I = 0x01;
+const unsigned char VBB_MASK_NEG_J = 0x02;
+const unsigned char VBB_MASK_NEG_K = 0x04;
+const unsigned char VBB_MASK_POS_I = 0x08;
+const unsigned char VBB_MASK_POS_J = 0x10;
+const unsigned char VBB_MASK_POS_K = 0x20;
+
 #endif
