@@ -131,7 +131,7 @@ set (PLMBASE_LIBRARY_SRC
   vf_jacobian.cxx vf_jacobian.h
   vf_stats.cxx vf_stats.h
   volume.cxx volume.h
-  volume_boundary_behavior.h
+  volume_boundary_behavior.cxx volume_boundary_behavior.h
   volume_conv.cxx volume_conv.h
   volume_fill.cxx volume_fill.h
   volume_gaussian.cxx volume_gaussian.h

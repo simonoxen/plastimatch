@@ -28,4 +28,9 @@ const unsigned char VBB_MASK_POS_I = 0x08;
 const unsigned char VBB_MASK_POS_J = 0x10;
 const unsigned char VBB_MASK_POS_K = 0x20;
 
+PLMBASE_API Volume_boundary_behavior
+volume_boundary_behavior_parse (const std::string& string);
+PLMBASE_API Volume_boundary_behavior
+volume_boundary_behavior_parse (const char* string);
+
 #endif

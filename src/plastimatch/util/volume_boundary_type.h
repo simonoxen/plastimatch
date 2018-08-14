@@ -4,12 +4,13 @@
 #ifndef _volume_boundary_type_h_
 #define _volume_boundary_type_h_
 
-#include "plmbase_config.h"
+#include "plmutil_config.h"
+#include <string>
 
 /*! \brief This enum is used to control the output type for 
-  volume bounary detection.  If INTERIOR_EDGE_VOXELS, the 
+  volume bounary detection.  If INTERIOR_EDGE, the 
   boundary will be the set of voxels within the image region that 
-  lie on the border of the region.  If FACE_EDGE_AND_CORNER, 
+  lie on the border of the region.  If INTERIOR_FACE,
   the output image has dimension one larger than the input image, 
   and each voxel is a bitmask of size seven, which correspond to a 
   boundary at the voxel corner where all three dimensions have 
@@ -20,8 +21,10 @@
   are not guaranteed to be correct, since these are not used 
   by the downstream distance map code. */
 enum Volume_boundary_type {
-    INTERIOR_EDGE_VOXELS,
-    FACE_EDGE_AND_CORNER
+    INTERIOR_EDGE,
+    INTERIOR_FACE
 };
+PLMUTIL_API Volume_boundary_type volume_boundary_type_parse (const std::string& string);
+PLMUTIL_API Volume_boundary_type volume_boundary_type_parse (const char* string);
 
 #endif

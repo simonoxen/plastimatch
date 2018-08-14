@@ -11,8 +11,14 @@
 
 class Boundary_parms {
 public:
+    Volume_boundary_behavior vbb;
+    Volume_boundary_type vbt;
     std::string output_fn;
     std::string input_fn;
+    Boundary_parms () {
+        vbb = ADAPTIVE_PADDING;
+        vbt = INTERIOR_EDGE;
+    }
 };
 
 static void
@@ -37,6 +43,22 @@ parse_fn (
     /* Output files */
     parser->add_long_option ("", "output", 
         "filename for output image", 1, "");
+
+    /* Algorithm options */
+    parser->add_long_option ("", "boundary-behavior",
+        "algorithm behavior at the image boundary: {zero-pad, edge-pad,"
+        " adaptive}, default is adaptive; specify zero-pad if voxels"
+        " outside image are zero, edge-pad if voxels outside image"
+        " are equal to closest edge voxel, adaptive for zero-pad"
+        " except for dimensions of a single slice",
+        1, "adaptive");
+    parser->add_long_option ("", "boundary-type",
+        "algorithm behavior controlling boundary detection: {interior-edge,"
+        " interior-face}, default is interior-edge; specify interior-edge"
+        " to create an image that has value 1 for segment boundary voxels "
+        " or interior-face to create an image that "
+        " encodes the presence of face boundaries for segment boundary voxels",
+        1, "interior-edge");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -64,6 +86,12 @@ parse_fn (
 
     /* Output files */
     parms->output_fn = parser->get_string("output");
+
+    /* Algorithm options */
+    parms->vbb = volume_boundary_behavior_parse(parser->get_string(
+            "boundary-behavior"));
+    parms->vbt = volume_boundary_type_parse(parser->get_string(
+            "boundary-type"));
 }
 
 void
@@ -74,8 +102,18 @@ do_command_boundary (int argc, char *argv[])
     /* Parse command line parameters */
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
+    /* Load input image */
     UCharImageType::Pointer input_image = itk_image_load_uchar (
         parms.input_fn, 0);
-    UCharImageType::Pointer output_image = do_image_boundary (input_image);
+
+    /* Find image boundary */
+    Image_boundary ib;
+    ib.set_input_image (input_image);
+    ib.set_volume_boundary_type (parms.vbt);
+    ib.set_volume_boundary_behavior (parms.vbb);
+    ib.run ();
+    
+    /* Save output image */
+    UCharImageType::Pointer output_image = ib.get_output_image ();
     itk_image_save (output_image, parms.output_fn);
 }

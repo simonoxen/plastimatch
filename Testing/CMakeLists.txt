@@ -284,6 +284,10 @@ add_custom_target (speedtest
 ##   sphere-2          Standard sphere, centered
 ##   sphere-3          Standard, bg=0, fg=1
 ##   sphere-4          Standard, radius = 150
+##   sphere-5          Uchar sphere, bg=0, fg=1, abutting image boundary
+##   xramp-1           X ramp
+##   yramp-1           Y ramp
+##   zramp-1           Z ramp
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
 
@@ -585,6 +589,11 @@ plm_add_test (
     ${PLM_PLASTIMATCH_PATH}/plastimatch
     "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-4.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;150 150 150"
     )
+plm_add_test (
+  "sphere-5"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-5.mha;--output-type;uchar;--pattern;sphere;--origin;-19 -19 -19;--dim;20 20 20;--spacing;2 2 2;--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;21"
+  )
 plm_add_test (
   "xramp-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1355,12 +1364,16 @@ set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
 
 ## -------------------------------------------------------------------------
 ## plastimatch boundary
-##  plm-boundary-a:   sphere
+##  plm-boundary-a: sphere against image boundary, edge type, adaptive pad
+##  plm-boundary-b: sphere against image boundary, edge type, zero pad
+##  plm-boundary-c: sphere against image boundary, edge type, edge pad
+##  plm-boundary-d: sphere against image boundary, face type, adaptive pad
+##  plm-boundary-e: sphere against image boundary, face type, edge pad
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-boundary-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "boundary;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-a.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-1.mha"
+  "boundary;--boundary-behavior;adaptive;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-a.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-5.mha"
   )
 plm_add_test (
   "plm-boundary-a-stats"
@@ -1370,13 +1383,98 @@ plm_add_test (
 plmtest_check_interval ("plm-boundary-a-check"
   "${PLM_BUILD_TESTING_DIR}/plm-boundary-a-stats.stdout.txt"
   "NONZERO *([-0-9.]*)"
-  "546"
-  "546"
+  "1056"
+  "1056"
   )
-set_tests_properties (plm-boundary-a PROPERTIES DEPENDS sphere-1)
+set_tests_properties (plm-boundary-a PROPERTIES DEPENDS sphere-5)
 set_tests_properties (plm-boundary-a-stats PROPERTIES DEPENDS plm-boundary-a)
 set_tests_properties (plm-boundary-a-check 
   PROPERTIES DEPENDS plm-boundary-a-stats)
+
+plm_add_test (
+  "plm-boundary-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "boundary;--boundary-behavior;zero-pad;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-b.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-5.mha"
+  )
+plm_add_test (
+  "plm-boundary-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-boundary-b.nrrd"
+  )
+plmtest_check_interval ("plm-boundary-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-boundary-b-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "1056"
+  "1056"
+  )
+set_tests_properties (plm-boundary-b PROPERTIES DEPENDS sphere-5)
+set_tests_properties (plm-boundary-b-stats PROPERTIES DEPENDS plm-boundary-b)
+set_tests_properties (plm-boundary-b-check 
+  PROPERTIES DEPENDS plm-boundary-b-stats)
+
+plm_add_test (
+  "plm-boundary-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "boundary;--boundary-behavior;edge-pad;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-c.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-5.mha"
+  )
+plm_add_test (
+  "plm-boundary-c-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-boundary-c.nrrd"
+  )
+plmtest_check_interval ("plm-boundary-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-boundary-c-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "840"
+  "840"
+  )
+set_tests_properties (plm-boundary-c PROPERTIES DEPENDS sphere-5)
+set_tests_properties (plm-boundary-c-stats PROPERTIES DEPENDS plm-boundary-c)
+set_tests_properties (plm-boundary-c-check 
+  PROPERTIES DEPENDS plm-boundary-c-stats)
+
+plm_add_test (
+  "plm-boundary-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "boundary;--boundary-behavior;adaptive;--boundary-type;interior-face;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-d.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-5.mha"
+  )
+plm_add_test (
+  "plm-boundary-d-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-boundary-d.nrrd"
+  )
+plmtest_check_interval ("plm-boundary-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-boundary-d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "2.614"
+  "2.615"
+  )
+set_tests_properties (plm-boundary-d PROPERTIES DEPENDS sphere-5)
+set_tests_properties (plm-boundary-d-stats PROPERTIES DEPENDS plm-boundary-d)
+set_tests_properties (plm-boundary-d-check 
+  PROPERTIES DEPENDS plm-boundary-d-stats)
+
+plm_add_test (
+  "plm-boundary-e"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "boundary;--boundary-behavior;edge-pad;--boundary-type;interior-face;--output;${PLM_BUILD_TESTING_DIR}/plm-boundary-e.nrrd;${PLM_BUILD_TESTING_DIR}/sphere-5.mha"
+  )
+plm_add_test (
+  "plm-boundary-e-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-boundary-e.nrrd"
+  )
+plmtest_check_interval ("plm-boundary-e-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-boundary-e-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "2.141"
+  "2.143"
+  )
+set_tests_properties (plm-boundary-e PROPERTIES DEPENDS sphere-5)
+set_tests_properties (plm-boundary-e-stats PROPERTIES DEPENDS plm-boundary-e)
+set_tests_properties (plm-boundary-e-check 
+  PROPERTIES DEPENDS plm-boundary-e-stats)
+
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)

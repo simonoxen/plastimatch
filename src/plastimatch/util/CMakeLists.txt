@@ -51,7 +51,7 @@ set (PLMUTIL_LIBRARY_SRC
   synthetic_vf.cxx
   threshbox.cxx
   volume_adjust.cxx volume_adjust.h
-  volume_boundary_type.h
+  volume_boundary_type.cxx volume_boundary_type.h
   vf_invert.cxx
   )
 if (FFTW_FOUND)

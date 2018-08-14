@@ -19,7 +19,7 @@ class Image_boundary_private {
 public:
     Image_boundary_private () {
         vbb = ADAPTIVE_PADDING;
-        vbt = INTERIOR_EDGE_VOXELS;
+        vbt = INTERIOR_EDGE;
     }
 public:
     UCharImageType::Pointer input_image;
@@ -27,161 +27,22 @@ public:
     Volume_boundary_behavior vbb;
     Volume_boundary_type vbt;
 public:
-    void run_vbt_iev ();
-    void run_vbt_feac ();
+    void run_vbt_edge ();
+    void run_vbt_face ();
     void run ();
 protected:
-    unsigned char classify_zp_iev (
-        const Volume::Pointer& vol_in,
-        const unsigned char *img_in,
-        plm_long i, plm_long j, plm_long k, plm_long v)
-    {
-        /* If not inside volume, then not on boundary */
-        if (!img_in[v]) {
-            return 0;
-        }
-
-        /* Non-zero edge pixels are boundary */
-        if (k == 0 || k == vol_in->dim[2]-1
-            || j == 0 || j == vol_in->dim[1]-1
-            || i == 0 || i == vol_in->dim[0]-1)
-        {
-            return 1;
-        }
-
-        /* Look for neighboring zero voxel in six-neighborhood */
-        if (img_in[volume_index (vol_in->dim, i-1, j, k)] == 0) {
-            return 1;
-        }
-        if (img_in[volume_index (vol_in->dim, i+1, j, k)] == 0) {
-            return 1;
-        }
-        if (img_in[volume_index (vol_in->dim, i, j-1, k)] == 0) {
-            return 1;
-        }
-        if (img_in[volume_index (vol_in->dim, i, j+1, k)] == 0) {
-            return 1;
-        }
-        if (img_in[volume_index (vol_in->dim, i, j, k-1)] == 0) {
-            return 1;
-        }
-        if (img_in[volume_index (vol_in->dim, i, j, k+1)] == 0) {
-            return 1;
-        }
-        return 0;
-    }
-
-    unsigned char classify_ep_iev (
-        const Volume::Pointer& vol_in,
-        const unsigned char *img_in,
-        plm_long i, plm_long j, plm_long k, plm_long v)
-    {
-        /* If not inside volume, then not on boundary */
-        if (!img_in[v]) {
-            return 0;
-        }
-
-        /* Look for neighboring zero voxel in six-neighborhood,
-           ignoring voxels beyond boundary */
-        if (i != 0 
-            && img_in[volume_index (vol_in->dim, i-1, j, k)] == 0)
-        {
-            return 1;
-        }
-        if (i != vol_in->dim[0]-1 
-            && img_in[volume_index (vol_in->dim, i+1, j, k)] == 0)
-        {
-            return 1;
-        }
-        if (j != 0 
-            && img_in[volume_index (vol_in->dim, i, j-1, k)] == 0)
-        {
-            return 1;
-        }
-        if (j != vol_in->dim[1]-1
-            && img_in[volume_index (vol_in->dim, i, j+1, k)] == 0)
-        {
-            return 1;
-        }
-        if (k != 0 
-            && img_in[volume_index (vol_in->dim, i, j, k-1)] == 0)
-        {
-            return 1;
-        }
-        if (k != vol_in->dim[2]-1
-            && img_in[volume_index (vol_in->dim, i, j, k+1)] == 0)
-        {
-            return 1;
-        }
-        return 0;
-    }
-
-    unsigned char classify_ap_iev (
-        const Volume::Pointer& vol_in,
-        const unsigned char *img_in,
-        plm_long i, plm_long j, plm_long k, plm_long v)
-    {
-        /* If not inside volume, then not on boundary */
-        if (!img_in[v]) {
-            return 0;
-        }
-
-        /* Check for non-zero edge pixels; these are boundary if 
-           dimension > 1 */
-        if (vol_in->dim[2] > 1 && (k == 0 || k == vol_in->dim[2]-1)
-            || vol_in->dim[1] > 1 && (j == 0 || j == vol_in->dim[1]-1)
-            || vol_in->dim[0] > 1 && (i == 0 || i == vol_in->dim[0]-1))
-        {
-            return 1;
-        }
-
-        /* Look for neighboring zero voxel in six-neighborhood,
-           ignoring voxels beyond boundary */
-        if (i != 0 
-            && img_in[volume_index (vol_in->dim, i-1, j, k)] == 0)
-        {
-            return 1;
-        }
-        if (i != vol_in->dim[0]-1 
-            && img_in[volume_index (vol_in->dim, i+1, j, k)] == 0)
-        {
-            return 1;
-        }
-        if (j != 0 
-            && img_in[volume_index (vol_in->dim, i, j-1, k)] == 0)
-        {
-            return 1;
-        }
-        if (j != vol_in->dim[1]-1
-            && img_in[volume_index (vol_in->dim, i, j+1, k)] == 0)
-        {
-            return 1;
-        }
-        if (k != 0 
-            && img_in[volume_index (vol_in->dim, i, j, k-1)] == 0)
-        {
-            return 1;
-        }
-        if (k != vol_in->dim[2]-1
-            && img_in[volume_index (vol_in->dim, i, j, k+1)] == 0)
-        {
-            return 1;
-        }
-        return 0;
-    }
-    
-    unsigned char classify_iev (
+    unsigned char classify_edge (
         const Volume::Pointer& vol_in,
         const unsigned char *img_in,
         const bool zero_pad[3],
         plm_long i, plm_long j, plm_long k, plm_long v)
     {
-        unsigned char value = classify_feac (vol_in, img_in, zero_pad,
+        unsigned char value = classify_face (vol_in, img_in, zero_pad,
             i, j, k, v);
-        return value == 0 ? 0 : 1;
+        return (value == 0) ? 0 : 1;
     }
 
-    unsigned char classify_feac (
+    unsigned char classify_face (
         const Volume::Pointer& vol_in,
         const unsigned char *img_in,
         const bool zero_pad[3],
@@ -196,15 +57,19 @@ protected:
         }
 
         /* Find boundary faces in i direction */
-        if (i == 0 && zero_pad[0]) {
-            value |= VBB_MASK_NEG_I;
+        if (i == 0) {
+            if (zero_pad[0]) {
+                value |= VBB_MASK_NEG_I;
+            }
         } else {
             if (img_in[vol_in->index (i-1, j, k)] == 0) {
                 value |= VBB_MASK_NEG_I;
             }
         }
-        if (i == vol_in->dim[0]-1 && zero_pad[0]) {
-            value |= VBB_MASK_POS_I;
+        if (i == vol_in->dim[0]-1) {
+            if (zero_pad[0]) {
+                value |= VBB_MASK_POS_I;
+            }
         } else {
             if (img_in[vol_in->index (i+1, j, k)] == 0) {
                 value |= VBB_MASK_POS_I;
@@ -212,15 +77,19 @@ protected:
         }
 
         /* Find boundary faces in j direction */
-        if (j == 0 && zero_pad[1]) {
-            value |= VBB_MASK_NEG_J;
+        if (j == 0) {
+            if (zero_pad[1]) {
+                value |= VBB_MASK_NEG_J;
+            }
         } else {
             if (img_in[vol_in->index (i, j-1, k)] == 0) {
                 value |= VBB_MASK_NEG_J;
             }
         }
-        if (j == vol_in->dim[1]-1 && zero_pad[1]) {
-            value |= VBB_MASK_POS_J;
+        if (j == vol_in->dim[1]-1) {
+            if (zero_pad[1]) {
+                value |= VBB_MASK_POS_J;
+            }
         } else {
             if (img_in[vol_in->index (i, j+1, k)] == 0) {
                 value |= VBB_MASK_POS_J;
@@ -228,15 +97,19 @@ protected:
         }
 
         /* Find boundary faces in i direction */
-        if (k == 0 && zero_pad[2]) {
-            value |= VBB_MASK_NEG_K;
+        if (k == 0) {
+            if (zero_pad[2]) {
+                value |= VBB_MASK_NEG_K;
+            }
         } else {
             if (img_in[vol_in->index (i, j, k-1)] == 0) {
                 value |= VBB_MASK_NEG_K;
             }
         }
-        if (k == vol_in->dim[2]-1 && zero_pad[2]) {
-            value |= VBB_MASK_POS_K;
+        if (k == vol_in->dim[2]-1) {
+            if (zero_pad[2]) {
+                value |= VBB_MASK_POS_K;
+            }
         } else {
             if (img_in[vol_in->index (i, j, k+1)] == 0) {
                 value |= VBB_MASK_POS_K;
@@ -247,7 +120,7 @@ protected:
 };
 
 void 
-Image_boundary_private::run_vbt_iev ()
+Image_boundary_private::run_vbt_edge ()
 {
     /* Convert to Plm_image type */
     Plm_image pli_in (this->input_image);
@@ -265,12 +138,12 @@ Image_boundary_private::run_vbt_iev ()
         zero_pad[d] = (vbb == ZERO_PADDING
             || (vbb == ADAPTIVE_PADDING && vol_in->dim[d] > 1));
     }
-    
+
     /* Compute the boundary */
     for (plm_long k = 0, v = 0; k < vol_in->dim[2]; k++) {
         for (plm_long j = 0; j < vol_in->dim[1]; j++) {
             for (plm_long i = 0; i < vol_in->dim[0]; i++, v++) {
-                img_out[v] = classify_iev (vol_in, img_in, zero_pad, i, j, k, v);
+                img_out[v] = classify_edge (vol_in, img_in, zero_pad, i, j, k, v);
             }
         }
     }
@@ -280,7 +153,7 @@ Image_boundary_private::run_vbt_iev ()
 }
 
 void 
-Image_boundary_private::run_vbt_feac ()
+Image_boundary_private::run_vbt_face ()
 {
     /* Convert to Plm_image type */
     Plm_image pli_in (this->input_image);
@@ -303,7 +176,7 @@ Image_boundary_private::run_vbt_feac ()
     for (plm_long k = 0, v = 0; k < vol_in->dim[2]; k++) {
         for (plm_long j = 0; j < vol_in->dim[1]; j++) {
             for (plm_long i = 0; i < vol_in->dim[0]; i++, v++) {
-                img_out[v] = classify_feac (vol_in, img_in, zero_pad, i, j, k, v);
+                img_out[v] = classify_face (vol_in, img_in, zero_pad, i, j, k, v);
             }
         }
     }
@@ -316,12 +189,12 @@ void
 Image_boundary_private::run ()
 {
     switch (vbt) {
-    case INTERIOR_EDGE_VOXELS:
-        run_vbt_iev ();
+    case INTERIOR_EDGE:
+        run_vbt_edge ();
         break;
-    case FACE_EDGE_AND_CORNER:
+    case INTERIOR_FACE:
     default:
-        run_vbt_feac ();
+        run_vbt_face ();
         break;
     }
 }
@@ -353,6 +226,12 @@ void
 Image_boundary::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
 {
     d_ptr->vbb = vbb;
+}
+
+void
+Image_boundary::set_volume_boundary_type (Volume_boundary_type vbt)
+{
+    d_ptr->vbt = vbt;
 }
 
 void 
