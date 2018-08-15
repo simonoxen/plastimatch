@@ -21,6 +21,8 @@ public:
     float maximum_distance;
     bool inside_positive;
     Threading threading;
+    Volume_boundary_behavior vbb;
+    Volume_boundary_type vbt;
 public:
     Dmap_parms () {
         inside_positive = false;
@@ -28,6 +30,8 @@ public:
         maximum_distance = FLT_MAX;
         squared_distance = false;
         threading = THREADING_CPU_OPENMP;
+        vbb = ADAPTIVE_PADDING;
+        vbt = INTERIOR_EDGE;
     }
 };
 
@@ -43,6 +47,8 @@ dmap_main (Dmap_parms* parms)
     if (parms->have_maximum_distance) {
         dmap.set_maximum_distance (parms->maximum_distance);
     }
+    dmap.set_volume_boundary_behavior (parms->vbb);
+    dmap.set_volume_boundary_type (parms->vbt);
     dmap.set_threading (parms->threading);
     dmap.run ();
     FloatImageType::Pointer dmap_image = dmap.get_output_image();
@@ -96,6 +102,21 @@ parse_fn (
     parser->add_long_option ("", "maximum-distance",
         "voxels with distances greater than this number will have the "
         "distance truncated to this number", 1, "");
+    /* Algorithm options */
+    parser->add_long_option ("", "boundary-behavior",
+        "algorithm behavior at the image boundary: {zero-pad, edge-pad,"
+        " adaptive}, default is adaptive; specify zero-pad if voxels"
+        " outside image are zero, edge-pad if voxels outside image"
+        " are equal to closest edge voxel, adaptive for zero-pad"
+        " except for dimensions of a single slice",
+        1, "adaptive");
+    parser->add_long_option ("", "boundary-type",
+        "algorithm behavior controlling boundary detection: {interior-edge,"
+        " interior-face}, default is interior-edge; specify interior-edge"
+        " to create an image that has value 1 for segment boundary voxels "
+        " or interior-face to create an image that "
+        " encodes the presence of face boundaries for segment boundary voxels",
+        1, "interior-edge");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -137,6 +158,10 @@ parse_fn (
         parms->threading = threading_parse (parser->get_string("threading"));
         printf ("Parsed as: %d\n", parms->threading);
     }
+    parms->vbb = volume_boundary_behavior_parse(parser->get_string(
+            "boundary-behavior"));
+    parms->vbt = volume_boundary_type_parse(parser->get_string(
+            "boundary-type"));
 }
 
 void

@@ -9,6 +9,7 @@
 #include "plm_image.h"
 #include "threading.h"
 #include "volume_boundary_behavior.h"
+#include "volume_boundary_type.h"
 
 class Distance_map_private;
 class Plm_image;
@@ -53,6 +54,9 @@ public:
     /*! \brief Set the volume boundary behavior, either 
       ZERO_PADDING, EDGE_PADDING, or ADAPTIVE_PADDING */
     void set_volume_boundary_behavior (Volume_boundary_behavior vbb);
+    /*! \brief Set the volume boundary type, either 
+      INTERIOR_EDGE or INTERIOR_FACE */
+    void set_volume_boundary_type (Volume_boundary_type vbt);
     /*! \brief Set threading to THREADING_CPU_OPENMP or THREADING_CUDA */
     void set_threading (Threading threading);
     ///@}

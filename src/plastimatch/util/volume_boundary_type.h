@@ -24,6 +24,14 @@ enum Volume_boundary_type {
     INTERIOR_EDGE,
     INTERIOR_FACE
 };
+
+const unsigned char VBB_MASK_NEG_I = 0x01;
+const unsigned char VBB_MASK_NEG_J = 0x02;
+const unsigned char VBB_MASK_NEG_K = 0x04;
+const unsigned char VBB_MASK_POS_I = 0x08;
+const unsigned char VBB_MASK_POS_J = 0x10;
+const unsigned char VBB_MASK_POS_K = 0x20;
+
 PLMUTIL_API Volume_boundary_type volume_boundary_type_parse (const std::string& string);
 PLMUTIL_API Volume_boundary_type volume_boundary_type_parse (const char* string);
 

@@ -25,6 +25,7 @@ public:
         maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
         vbb = ADAPTIVE_PADDING;
+        vbt = INTERIOR_EDGE;
         threading = THREADING_CPU_OPENMP;
     }
 public:
@@ -33,6 +34,7 @@ public:
     bool use_squared_distance;
     float maximum_distance;
     Volume_boundary_behavior vbb;
+    Volume_boundary_type vbt;
     Threading threading;
 
     UCharImageType::Pointer input;
@@ -45,6 +47,8 @@ public:
     void run_itk_signed_native ();
     void run ();
 protected:
+    void native_danielsson_initialize_face_distances (
+        Volume::Pointer& vb, float *dm);
     void forward_propagate_i (
         float *dm,
         const Volume::Pointer& vb,
@@ -123,6 +127,9 @@ Distance_map_private::forward_propagate_i (
         float odist = SQ_DIST_I(vo,sp2);
         float ndist = SQ_DIST(vn,sp2);
         if (odist < ndist) {
+            if (i == 14 && j == 19 && k == 20) {
+                printf (">>> %f %f\n", odist, ndist);
+            }
             COPY_I (vn, vo);
         }
     }
@@ -150,6 +157,9 @@ Distance_map_private::backward_propagate_i (
         float odist = SQ_DIST_I(vo,sp2);
         float ndist = SQ_DIST(vn,sp2);
         if (odist < ndist) {
+            if (i == 14 && j == 19 && k == 20) {
+                printf ("<<< %f %f\n", odist, ndist);
+            }
             COPY_I (vn, vo);
         }
     }
@@ -224,11 +234,130 @@ Distance_map_private::backward_propagate_j (
 }
 
 void
+Distance_map_private::native_danielsson_initialize_face_distances (
+    Volume::Pointer& vb, float *dm
+)
+{
+    unsigned char *imgb = (unsigned char*) vb->img;
+
+    float sp2[3] = {
+        vb->spacing[0] * vb->spacing[0],
+        vb->spacing[1] * vb->spacing[1],
+        vb->spacing[2] * vb->spacing[2]
+    };
+
+    /* Yuck.  Loop through face image, and initialize voxels that have 
+       faces abutting the segment.  Initialize the distance to the 
+       nearest face, keeping in mind that a voxel may abut a segment 
+       on multiple faces. */
+    for (plm_long k = 0, v = 0; k < vb->dim[2]; k++) {
+        for (plm_long j = 0; j < vb->dim[1]; j++) {
+            for (plm_long i = 0; i < vb->dim[0]; i++, v++) {
+                /* I */
+                if (imgb[v] & VBB_MASK_NEG_I) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[0] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0.5;
+                        dm[3*v+1] = 0;
+                        dm[3*v+2] = 0;
+                    }
+                    if (i != 0) {
+                        int v2 = vb->index (i-1, j, k);
+                        if (dm[3*v2] == FLT_MAX || sp2[0] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0.5;
+                            dm[3*v2+1] = 0;
+                            dm[3*v2+2] = 0;
+                        }
+                    }
+                }
+                if (imgb[v] & VBB_MASK_POS_I) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[0] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0.5;
+                        dm[3*v+1] = 0;
+                        dm[3*v+2] = 0;
+                    }
+                    if (i != vb->dim[0]-1) {
+                        int v2 = vb->index (i+1, j, k);
+                        if (dm[3*v2] == FLT_MAX || sp2[0] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0.5;
+                            dm[3*v2+1] = 0;
+                            dm[3*v2+2] = 0;
+                        }
+                    }
+                }
+                /* J */
+                if (imgb[v] & VBB_MASK_NEG_J) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[1] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0;
+                        dm[3*v+1] = 0.5;
+                        dm[3*v+2] = 0;
+                    }
+                    if (j != 0) {
+                        int v2 = vb->index (i, j-1, k);
+                        if (dm[3*v2] == FLT_MAX || sp2[1] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0;
+                            dm[3*v2+1] = 0.5;
+                            dm[3*v2+2] = 0;
+                        }
+                    }
+                }
+                if (imgb[v] & VBB_MASK_POS_J) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[1] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0;
+                        dm[3*v+1] = 0.5;
+                        dm[3*v+2] = 0;
+                    }
+                    if (j != vb->dim[1]-1) {
+                        int v2 = vb->index (i+1, j, k);
+                        if (dm[3*v2] == FLT_MAX || sp2[1] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0;
+                            dm[3*v2+1] = 0.5;
+                            dm[3*v2+2] = 0;
+                        }
+                    }
+                }
+                /* K */
+                if (imgb[v] & VBB_MASK_NEG_K) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[2] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0;
+                        dm[3*v+1] = 0;
+                        dm[3*v+2] = 0.5;
+                    }
+                    if (k != 0) {
+                        int v2 = vb->index (i, j, k-1);
+                        if (dm[3*v2] == FLT_MAX || sp2[2] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0;
+                            dm[3*v2+1] = 0;
+                            dm[3*v2+2] = 0.5;
+                        }
+                    }
+                }
+                if (imgb[v] & VBB_MASK_POS_K) {
+                    if (SQ_DIST(v,sp2) == 0 || sp2[2] < SQ_DIST(v,sp2)) {
+                        dm[3*v+0] = 0;
+                        dm[3*v+1] = 0;
+                        dm[3*v+2] = 0.5;
+                    }
+                    if (k != vb->dim[2]-1) {
+                        int v2 = vb->index (i, j, k+1);
+                        if (dm[3*v2] == FLT_MAX || sp2[2] < SQ_DIST(v2,sp2)) {
+                            dm[3*v2+0] = 0;
+                            dm[3*v2+1] = 0;
+                            dm[3*v2+2] = 0.5;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
 Distance_map_private::run_native_danielsson ()
 {
     /* Compute boundary of image
        vb = volume of boundary, imgb = img of boundary */
     Image_boundary ib;
+    ib.set_volume_boundary_type (vbt);
     ib.set_volume_boundary_behavior (vbb);
     ib.set_input_image (this->input);
     ib.run ();
@@ -236,13 +365,31 @@ Distance_map_private::run_native_danielsson ()
     Plm_image pib (itk_ib);
     Volume::Pointer vb = pib.get_volume_uchar();
     unsigned char *imgb = (unsigned char*) vb->img;
-
+    
     /* Convert image to native volume 
        vs = volume of set, imgs = img of set */
     Plm_image pi (this->input);
     Volume::Pointer vs = pi.get_volume_uchar();
     unsigned char *imgs = (unsigned char*) vs->img;
 
+    /* Sort dimensions by voxel spacing (bubble sort) */
+    int spacing_order[3] = { 0, 1, 2 };
+    if (vb->spacing[spacing_order[0]] > vb->spacing[spacing_order[1]]) {
+        std::swap (spacing_order[0], spacing_order[1]);
+    }
+    if (vb->spacing[spacing_order[1]] > vb->spacing[spacing_order[2]]) {
+        std::swap (spacing_order[1], spacing_order[2]);
+    }
+    if (vb->spacing[spacing_order[0]] > vb->spacing[spacing_order[1]]) {
+        std::swap (spacing_order[0], spacing_order[1]);
+    }
+
+    float sp2[3] = {
+        vb->spacing[0] * vb->spacing[0],
+        vb->spacing[1] * vb->spacing[1],
+        vb->spacing[2] * vb->spacing[2]
+    };
+    
     /* Allocate and initialize "Danielsson array" */
     float *dm = new float[3*vb->npix];
     for (plm_long v = 0; v < vb->npix; v++) {
@@ -257,11 +404,9 @@ Distance_map_private::run_native_danielsson ()
             dm[3*v+2] = FLT_MAX;
         }
     }
-    float sp2[3] = {
-        vb->spacing[0] * vb->spacing[0],
-        vb->spacing[1] * vb->spacing[1],
-        vb->spacing[2] * vb->spacing[2]
-    };
+    if (vbt == INTERIOR_FACE) {
+        native_danielsson_initialize_face_distances (vb, dm);
+    }
 
     /* GCS FIX -- I'm not entirely sure if it is required to scan 
        both forward and backward for j direction.  Need to test. */
@@ -449,6 +594,12 @@ void
 Distance_map::set_volume_boundary_behavior (Volume_boundary_behavior vbb)
 {
     d_ptr->vbb = vbb;
+}
+
+void
+Distance_map::set_volume_boundary_type (Volume_boundary_type vbt)
+{
+    d_ptr->vbt = vbt;
 }
 
 void
