@@ -76,7 +76,7 @@ Rtplan::add_beam (
 {
     Rtplan_beam* new_beam;
 
-    new_beam = this->find_beam_by_id(beam_id);
+    new_beam = this->find_beam_by_id (beam_id);
     if (new_beam) {
         return new_beam;
     }

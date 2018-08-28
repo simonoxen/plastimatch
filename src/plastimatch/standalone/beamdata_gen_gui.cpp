@@ -1311,7 +1311,7 @@ void beamdata_gen_gui::RenameFileByDCMInfo(QStringList& filenameList)
         //1) contructor
         Dcmtk_rt_study dss(crntFilePath.toLocal8Bit().constData());
         //2) parse directory: this will link dicome seriese to proper one (e.g. ds_dose)
-        dss.parse_directory();       
+        dss.load_directory();       
 
         Dcmtk_series *pDcmSeries = dss.d_ptr->ds_rtdose; 
 

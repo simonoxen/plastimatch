@@ -80,6 +80,8 @@ public:
 
     void debug (void) const;
 
+protected:
+    void rt_ion_plan_load ();
 };
 
 #endif

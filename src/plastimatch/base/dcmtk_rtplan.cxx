@@ -60,19 +60,31 @@ dcmtk_rtplan_probe(const char *rtplan_fn)
 }
 
 void
-Dcmtk_rt_study::rtplan_load(void)
+Dcmtk_rt_study::rtplan_load (void)
+{
+    Dcmtk_series *ds_rtplan = d_ptr->ds_rtplan;
+    std::string modality = ds_rtplan->get_modality();
+    if (modality != "RTPLAN") {
+        print_and_exit("Object modality not RTPLAN; should never happen.\n");
+    }
+    
+    std::string class_uid = ds_rtplan->get_string (DCM_SOPClassUID);
+    if (class_uid == UID_RTIonPlanStorage) {
+        this->rt_ion_plan_load ();
+    } else {
+        lprintf ("Warning. Load of rt plan (photon) not supported.\n");
+    }
+}
+
+void
+Dcmtk_rt_study::rt_ion_plan_load (void)
 {
     Dcmtk_series *ds_rtplan = d_ptr->ds_rtplan;    
 
     d_ptr->rtplan = Rtplan::New();
 
-    std::string modality = ds_rtplan->get_modality();
-    if (modality == "RTPLAN") {
-        lprintf("Trying to load rt plan.\n");
-    }
-    else {
-        print_and_exit("Oops.\n");
-    }
+    lprintf("Trying to load rt plan.\n");
+
 
     /* FIX: load metadata such as patient name, etc. */
     /*const char *val2 = ds_rtplan->get_cstr(DCM_PatientName);
@@ -81,78 +93,111 @@ Dcmtk_rt_study::rtplan_load(void)
     /* Load Beam sequence */
 
     DcmSequenceOfItems *seq = 0;
-    bool rc = ds_rtplan->get_sequence(DCM_BeamSequence, seq);
+    bool rc = ds_rtplan->get_sequence (DCM_IonBeamSequence, seq);
     if (!rc) {
         return;
     }
-    unsigned long iNumOfBeam = seq->card();
-    for (unsigned long i = 0; i < iNumOfBeam; i++) {
+    unsigned long num_beams = seq->card();
+    printf (">> Num beams = %d\n", num_beams);
+    for (unsigned long i = 0; i < num_beams; i++) {
         Rtplan_beam *curr_beam;
         OFCondition orc;
-        const char *strVal = 0;
-        long int iVal = 0;
-
-        int beam_id = 0;
-        std::string strBeamName;
+        long int beam_id = 0;
+        const char *beam_name;
 
         DcmItem *item = seq->getItem(i);
-        orc = item->findAndGetLongInt(DCM_BeamNumber, iVal);
-        if (!orc.good()){
-            continue;
-        }
-        beam_id = iVal;
-
-
-        orc = item->findAndGetString(DCM_BeamName, strVal);
-        if (!orc.good()){
+        orc = item->findAndGetLongInt(DCM_BeamNumber, beam_id);
+        if (!orc.good()) {
             continue;
         }
 
-        strBeamName = strVal;            
-        strVal = 0;
-
-        curr_beam = d_ptr->rtplan->add_beam(strBeamName, beam_id);
+        orc = item->findAndGetString(DCM_BeamName, beam_name);
+        if (!orc.good()) {
+            continue;
+        }
+        curr_beam = d_ptr->rtplan->add_beam (std::string(beam_name), beam_id);
 
         DcmSequenceOfItems *cp_seq = 0;
-        orc = item->findAndGetSequence(DCM_ControlPointSequence, cp_seq);
-
-        unsigned long iNumOfCP = cp_seq->card();
-
-        for (unsigned long j = 0; j <iNumOfCP; j++) {                
+        orc = item->findAndGetSequence (DCM_IonControlPointSequence, cp_seq);
+        if (!orc.good()) {
+            break;
+        }
+        unsigned long num_cp = cp_seq->card();
+        printf (">> Adding beam (%d cp)\n", num_cp);
+        for (unsigned long j = 0; j <num_cp; j++) {
             DcmItem *c_item = cp_seq->getItem(j);
-
-            c_item->findAndGetLongInt(DCM_ControlPointIndex, iVal);
-            //std::string strIsocenter;
             Rtplan_control_pt* curr_cp = curr_beam->add_control_pt ();
 
-            /* ContourGeometricType */
-            orc = c_item->findAndGetString(DCM_IsocenterPosition,strVal);
-            if (!orc.good()){
-                continue;
-            }
-
             float iso_pos[3];
-            int rc = parse_dicom_float3 (iso_pos, strVal);
-            if (!rc) {
+            orc = dcmtk_get_ds_float3 (c_item, DCM_IsocenterPosition, iso_pos);
+            if (orc.good()) {
+                lprintf (">> Isocenter: %f %f %f\n", iso_pos[0], iso_pos[1],
+                    iso_pos[2]);
                 curr_cp->set_isocenter (iso_pos);
             }
-            strVal = 0;
 
-            /*to be implemented*/
-            //Get Beam Energy
-            //Get Gantry Angle
-            //Get Collimator openning
-            //GetTable positions
-            //Get MLC positions
-            //Get CumulativeMetersetWeight
-        }
-
-        if (iNumOfCP > 0){                
-            if (!curr_beam->check_isocenter_identical()){
-                /* action: isonceter of the control points are not same. */
+            orc = dcmtk_get_ds_float (c_item, DCM_NominalBeamEnergy,
+                &curr_cp->nominal_beam_energy);
+            if (orc.good()) {
+                lprintf (">> Energy: %f\n", curr_cp->nominal_beam_energy);
+                curr_cp->set_isocenter (iso_pos);
             }
-        }            
-    }    
+            
+            orc = dcmtk_get_ds_float (c_item, DCM_GantryAngle,
+                &curr_cp->gantry_angle);
+            orc = dcmtk_get_ds_float (c_item, DCM_CumulativeMetersetWeight,
+                &curr_cp->cumulative_meterset_weight);
+
+            long int num_spots;
+            orc = c_item->findAndGetLongInt (DCM_NumberOfScanSpotPositions,
+                num_spots);
+            if (!orc.good()) {
+                print_and_exit ("DCM_NumberOfScanSpotPositions not found\n");
+            }
+            lprintf (">> %d spots\n", num_spots);
+
+            unsigned long count;
+            const float *ss_size;
+            orc = c_item->findAndGetFloat32Array (DCM_ScanningSpotSize,
+                ss_size, &count);
+            if (orc.good()) {
+                if (count >= 2) {
+                    curr_cp->set_scanning_spot_size (ss_size);
+                } else {
+                    print_and_exit ("DCM_ScanningSpotSize has wrong multiplicity\n");
+                }
+            }
+
+            const float *spot_positions;
+            const float *spot_weights;
+
+
+            const char *s;
+            orc = c_item->findAndGetFloat32Array (DCM_ScanSpotPositionMap,
+                spot_positions, &count);
+            if (!orc.good()) {
+                lprintf (">> Error: %s\n", orc.text());
+                print_and_exit ("DCM_ScanSpotPositionMap not found\n");
+                break;
+            }
+            if (count != 2 * num_spots) {
+                print_and_exit ("Mismatch in spot position map size\n");
+            }
+
+            c_item->findAndGetFloat32Array (DCM_ScanSpotMetersetWeights,
+                spot_weights, &count);
+            if (!orc.good()) {
+                print_and_exit ("DCM_ScanSpotMetersetWeights not found\n");
+                break;
+            }
+            if (count != num_spots) {
+                print_and_exit ("Mismatch in spot meterset weight size\n");
+            }
+            printf (">> Adding cp (%d spots)\n", num_spots);
+            curr_cp->scan_spot_position_map.assign (spot_positions, spot_positions + 2*num_spots);
+            curr_cp->scan_spot_meterset_weights.assign (spot_weights, spot_weights + num_spots);
+        }
+    }
 }
 
 void
@@ -464,6 +509,7 @@ Dcmtk_rt_study::rtplan_save (const char *dicom_dir)
             /* Dcmtk has no putAndInsertFloat32Array, so we must 
                use more primitive methods */
             size_t num_spots = cp->scan_spot_position_map.size() / 2;
+            lprintf (">> Writing %d spots\n", num_spots);
 	    s = PLM_to_string (num_spots);
             cp_item->putAndInsertString (DCM_NumberOfScanSpotPositions,
                 s.c_str());

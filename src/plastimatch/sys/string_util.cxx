@@ -122,44 +122,64 @@ parse_float13 (float *arr, const std::string& string)
     return parse_float13 (arr, string.c_str());
 }
 
-int
+Plm_return_code
 parse_dicom_float2 (float *arr, const char *string)
 {
     int rc;
     rc = sscanf (string, "%f\\%f", &arr[0], &arr[1]);
     if (rc == 2) {
-        return 0;
+        return PLM_SUCCESS;
     } else {
-        /* Failure */
-        return 1;
+        return PLM_ERROR;
     }
 }
 
-int
+Plm_return_code
 parse_dicom_float3 (float *arr, const char *string)
 {
     int rc;
     rc = sscanf (string, "%f\\%f\\%f", &arr[0], &arr[1], &arr[2]);
     if (rc == 3) {
-        return 0;
+        return PLM_SUCCESS;
     } else {
-        /* Failure */
-        return 1;
+        return PLM_ERROR;
     }
 }
 
-int
+Plm_return_code
 parse_dicom_float6 (float *arr, const char *string)
 {
     int rc;
     rc = sscanf (string, "%f\\%f\\%f\\%f\\%f\\%f", 
         &arr[0], &arr[1], &arr[2], &arr[3], &arr[4], &arr[5]);
     if (rc == 6) {
-        return 0;
+        return PLM_SUCCESS;
     } else {
-        /* Failure */
-        return 1;
+        return PLM_ERROR;
     }
+}
+
+/* Parse a string of the form "3\-22.22\-1.3e-2\3.\...\3.5" */
+std::vector<float>
+parse_dicom_float_vec (const char *string)
+{
+    std::vector<float> float_list;
+    int rc = 1;
+    int n = 0;
+    while (true) {
+        /* Skip \\ */
+        if (n > 0 && string[n] == '\\') {
+            n++;
+        }
+        float f;
+        int this_n;
+        if (1 != sscanf (&string[n], "%f%n", &f, &this_n)) {
+            break;
+        }
+        n += this_n;
+        float_list.push_back (f);
+    }
+    return float_list;
 }
 
 /* Parse a string of the form "3 22 -1; 3 4 66; 3 1 0" */

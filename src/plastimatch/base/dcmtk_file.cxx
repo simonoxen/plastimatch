@@ -205,8 +205,8 @@ Dcmtk_file::load_header (const char *fn) {
     float origin[3];
     ofrc = dset->findAndGetString (DCM_ImagePositionPatient, c);
     if (ofrc.good() && c) {
-	int rc = parse_dicom_float3 (origin, c);
-	if (!rc) {
+	Plm_return_code rc = parse_dicom_float3 (origin, c);
+	if (rc == PLM_SUCCESS) {
 	    d_ptr->m_vh.set_origin (origin);
 	}
     }
@@ -228,8 +228,8 @@ Dcmtk_file::load_header (const char *fn) {
     float direction_cosines[9];
     ofrc = dset->findAndGetString (DCM_ImageOrientationPatient, c);
     if (ofrc.good() && c) {
-	int rc = parse_dicom_float6 (direction_cosines, c);
-	if (!rc) {
+	Plm_return_code rc = parse_dicom_float6 (direction_cosines, c);
+	if (rc == PLM_SUCCESS) {
 	    direction_cosines[6] 
 		= direction_cosines[1]*direction_cosines[5] 
 		- direction_cosines[2]*direction_cosines[4];
@@ -247,8 +247,8 @@ Dcmtk_file::load_header (const char *fn) {
     ofrc = dset->findAndGetString (DCM_PixelSpacing, c);
     if (ofrc.good() && c) {
 	float dcm_spacing[2];
-	int rc = parse_dicom_float2 (dcm_spacing, c);
-	if (!rc) {
+	Plm_return_code rc = parse_dicom_float2 (dcm_spacing, c);
+	if (rc == PLM_SUCCESS) {
             float spacing[3] = {
                 dcm_spacing[1], dcm_spacing[0], 0.0
             };

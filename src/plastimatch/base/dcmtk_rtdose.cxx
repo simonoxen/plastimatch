@@ -111,8 +111,8 @@ Dcmtk_rt_study::rtdose_load ()
         1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 1.f };
     val = d_ptr->ds_rtdose->get_cstr (DCM_ImageOrientationPatient);
     if (val) {
-	int rc = parse_dicom_float6 (direction_cosines, val);
-	if (!rc) {
+	Plm_return_code rc = parse_dicom_float6 (direction_cosines, val);
+	if (rc == PLM_SUCCESS) {
 	    direction_cosines[6] 
 		= direction_cosines[1]*direction_cosines[5] 
 		- direction_cosines[2]*direction_cosines[4];

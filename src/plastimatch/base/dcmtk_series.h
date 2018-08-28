@@ -21,6 +21,10 @@ class Plm_image;
 
 typedef std::list<Dcmtk_file::Pointer> Dcmtk_file_list;
 
+/*! \brief 
+ * The Dcmtk_series object encapsulates a set of Dcmtk_file objects 
+ * which belong to a single series.
+ */
 class PLMBASE_API Dcmtk_series 
 {
 public:
@@ -42,6 +46,9 @@ public:
     bool get_uint16_array (const DcmTagKey& tag_key, 
         const uint16_t** val, unsigned long* count) const;
 
+    /*! \brief Return the DCMTK DcmDataset associated with the first 
+      file in the series */
+    DcmDataset* get_dataset (void) const;
     std::string get_modality (void) const;
     std::string get_referenced_uid (void) const;
 

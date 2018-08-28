@@ -94,6 +94,12 @@ Dcmtk_series::get_modality (void) const
     return get_string (DCM_Modality);
 }
 
+DcmDataset* 
+Dcmtk_series::get_dataset (void) const
+{
+    return d_ptr->m_flist.front()->get_dataset ();
+}
+
 std::string 
 Dcmtk_series::get_referenced_uid (void) const
 {

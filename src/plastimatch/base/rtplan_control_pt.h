@@ -47,10 +47,15 @@ public:
     Rtplan_control_pt();
     ~Rtplan_control_pt();
     float* get_isocenter () { return isocenter_position; }
-    void set_isocenter (float *iso) {
+    void set_isocenter (const float *iso) {
         isocenter_position[0] = iso[0];
         isocenter_position[1] = iso[1];
         isocenter_position[2] = iso[2];
+    }
+    float* get_scanning_spot_size () { return scanning_spot_size; }
+    void set_scanning_spot_size (const float *ss_size) {
+        scanning_spot_size[0] = ss_size[0];
+        scanning_spot_size[1] = ss_size[1];
     }
 };
 

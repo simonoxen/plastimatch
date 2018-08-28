@@ -22,9 +22,10 @@ PLMSYS_API Plm_return_code parse_int13 (int *arr, const std::string& string);
 PLMSYS_API Plm_return_code parse_float13 (float *arr, const char *string);
 PLMSYS_API Plm_return_code parse_float13 (float *arr,
     const std::string& string);
-PLMSYS_API int parse_dicom_float2 (float *arr, const char *string);
-PLMSYS_API int parse_dicom_float3 (float *arr, const char *string);
-PLMSYS_API int parse_dicom_float6 (float *arr, const char *string);
+PLMSYS_API Plm_return_code parse_dicom_float2 (float *arr, const char *string);
+PLMSYS_API Plm_return_code parse_dicom_float3 (float *arr, const char *string);
+PLMSYS_API Plm_return_code parse_dicom_float6 (float *arr, const char *string);
+PLMSYS_API std::vector<float> parse_dicom_float_vec (const char *string);
 PLMSYS_API std::vector<int> parse_int3_string (const char* s);
 PLMSYS_API std::vector<float> parse_float3_string (const char* s);
 PLMSYS_API std::vector<float> parse_float3_string (const std::string& s);
