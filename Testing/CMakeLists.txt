@@ -4487,7 +4487,7 @@ set_tests_properties (bragg-curve-check PROPERTIES DEPENDS bragg-curve)
 plm_add_test (
     "proton-dose-1"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-1.txt"
     )
 plm_add_test (
   "proton-dose-1-stats"
@@ -4509,7 +4509,7 @@ set_tests_properties (proton-dose-1-check
 plm_add_test (
     "proton-dose-5a"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-5a.txt"
     )
 plm_add_test (
   "proton-dose-5a-stats"
@@ -4532,7 +4532,7 @@ set_tests_properties (proton-dose-5a-check
 plm_add_test (
     "proton-dose-5d"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-5d.txt"
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-5d.txt"
     )
 plm_add_test (
   "proton-dose-5d-stats"
@@ -4555,7 +4555,7 @@ set_tests_properties (proton-dose-5d-check
 plm_add_test (
     "proton-dose-6a"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "dose;${PLM_BUILD_TESTING_DIR}/proton-dose-6a.txt"
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-6a.txt"
     )
 plm_add_test (
   "proton-dose-6a-stats"
