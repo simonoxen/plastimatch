@@ -69,6 +69,7 @@ Acknowledgments:
 * NSF ERC Innovation Award EEC-0946463
 * NSF / CISE 1642345
 * NSF / SMOR 1662852
+* Hardware grant from NVIDIA Corporation
 
 For more information:
 
