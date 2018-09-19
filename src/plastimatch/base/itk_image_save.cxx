@@ -12,7 +12,9 @@
 #include "itkOrientImageFilter.h"
 
 #include "file_util.h"
+#if defined (commentout)
 #include "itk_dicom_save.h"
+#endif
 #include "itk_image_cast.h"
 #include "itk_image_save.h"
 #include "logfile.h"
@@ -124,6 +126,7 @@ itk_image_save_ushort (T image, const char* fname)
     itk_image_save (ushort_img, fname);
 }
 
+#if defined (commentout)
 template<class T> 
 void
 itk_image_save_short_dicom (
@@ -135,7 +138,7 @@ itk_image_save_short_dicom (
     ShortImageType::Pointer short_img = cast_short (image);
     itk_dicom_save (short_img, dir_name, rsm);
 }
-
+#endif
 
 template<class T> 
 void
@@ -205,8 +208,10 @@ template PLMBASE_API void itk_image_save_uint32 (FloatImageType::Pointer, const 
 template PLMBASE_API void itk_image_save_float (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_double (FloatImageType::Pointer, const char*);
 
+#if defined (commentout)
 template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Rt_study_metadata *rsm);
 template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
 template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
 template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Rt_study_metadata *rsm);
 template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Rt_study_metadata *rsm);
+#endif

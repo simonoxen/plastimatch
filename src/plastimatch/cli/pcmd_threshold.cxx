@@ -23,17 +23,16 @@ threshold_main (Pcmd_threshold* parms)
 
     if (parms->range_string != "") {
         img_out = itk_threshold (img_in, parms->range_string);
+        plm_image->set_itk (img_out);
     }
 
     if (parms->output_dicom) {
-	itk_image_save_short_dicom (
-	    img_out, parms->img_out_fn.c_str(), 0);
+	plm_image->save_short_dicom (parms->img_out_fn.c_str(), 0);
     } else {
-        Plm_image pli (img_out);
 	if (parms->output_type) {
-	    pli.convert (parms->output_type);
+	    plm_image->convert (parms->output_type);
 	}
-	pli.save_image (parms->img_out_fn);
+	plm_image->save_image (parms->img_out_fn);
     }
 }
 

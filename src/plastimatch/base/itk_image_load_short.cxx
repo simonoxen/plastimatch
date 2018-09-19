@@ -12,7 +12,10 @@ itk_image_load_short (const char* fname, Plm_image_type* original_type)
 
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
+#if defined (commentout)
 	img = load_dicom_short (fname);
+#endif
+        print_and_exit ("Error: attempt to load DICOM using ITK reader.\n");
     } else {
 	img = itk_image_load_any (fname, original_type, static_cast<short>(0));
     }

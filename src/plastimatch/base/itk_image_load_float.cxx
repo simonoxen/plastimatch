@@ -12,7 +12,10 @@ itk_image_load_float (const char* fname, Plm_image_type* original_type)
 
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
+#if defined (commentout)
 	img = load_dicom_float (fname);
+#endif
+        print_and_exit ("Error: attempt to load DICOM using ITK reader.\n");
     } else {
 	img = itk_image_load_any (fname, original_type, static_cast<float>(0));
     }

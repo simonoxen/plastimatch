@@ -12,7 +12,9 @@
 #include "itkOrientImageFilter.h"
 
 #include "file_util.h"
+#if defined (commentout)
 #include "itk_dicom_load.h"
+#endif
 #include "itk_image.h"
 #include "itk_image_load.h"
 #include "plm_image_type.h"

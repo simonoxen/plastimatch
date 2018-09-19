@@ -443,6 +443,7 @@ Plm_image::save_short_dicom (
     Rt_study_metadata *rsm
 )
 {
+#if defined (commentout)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	itk_image_save_short_dicom (this->m_itk_uchar, fname, rsm);
@@ -481,6 +482,18 @@ Plm_image::save_short_dicom (
 			" (type = %d)\n", this->m_type);
 	break;
     }
+#endif
+    
+#if PLM_DCM_USE_DCMTK
+    Dcmtk_rt_study drs;
+    Rt_study_metadata::Pointer this_rsm = Rt_study_metadata::New (rsm);
+    drs.set_rt_study_metadata (this_rsm);
+    Plm_image::Pointer this_image = Plm_image::New (this);
+    drs.set_image (this_image);
+    drs.save (fname);
+#else
+    print_and_exit ("Error: tried to save dicom without DCMTK\n");
+#endif
 }
 
 void
