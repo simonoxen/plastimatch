@@ -41,8 +41,6 @@ set (PLMBASE_LIBRARY_SRC
   itkAndConstantToImageFilter.h
   itkClampCastImageFilter.txx itkClampCastImageFilter.h
   itk_bbox.cxx itk_bbox.h
-#  itk_dicom_load.cxx itk_dicom_load.h
-#  itk_dicom_save.cxx itk_dicom_save.h
   itk_directions.cxx itk_directions.h
   itk_image.cxx itk_image.h
   itk_image_accumulate.cxx itk_image_accumulate.h
@@ -108,7 +106,6 @@ set (PLMBASE_LIBRARY_SRC
   rpl_volume.cxx rpl_volume.h
   rpl_volume_lut.cxx rpl_volume_lut.h
   rtds_dcmtk.cxx
-  rtds_gdcm.cxx
   rt_study.cxx rt_study.h
   rt_study_p.h
   rt_study_metadata.cxx rt_study_metadata.h
@@ -156,26 +153,6 @@ set (PLMBASE_LIBRARY_SRC
   xio_studyset.cxx xio_studyset.h
   xpm.cxx xpm.h xpm_p.h
   )
-
-if (PLM_DCM_USE_GDCM1)
-  set (PLMBASE_LIBRARY_SRC
-    ${PLMBASE_LIBRARY_SRC}
-    gdcm1_dose.cxx gdcm1_dose.h
-    gdcm1_file.cxx gdcm1_file.h
-    gdcm1_rdd.cxx gdcm1_rdd.h
-    gdcm1_rtss.cxx gdcm1_rtss.h
-    gdcm1_series.cxx gdcm1_series.h
-    gdcm1_series_helper_2.cxx gdcm1_series_helper_2.h
-    gdcm1_util.cxx gdcm1_util.h
-    )
-endif ()
-
-if (PLM_DCM_USE_GDCM2)
-  set (PLMBASE_LIBRARY_SRC
-    ${PLMBASE_LIBRARY_SRC}
-    gdcm2_util.cxx gdcm2_util.h
-    )
-endif ()
 
 if (PLM_DCM_USE_DCMTK)
   set (PLMBASE_LIBRARY_SRC

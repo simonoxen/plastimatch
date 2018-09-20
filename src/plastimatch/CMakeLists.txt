@@ -55,30 +55,12 @@ check_include_files ("stdint.h" HAVE_STDINT_H)
 check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
-##  Figure out if we should use gdcm or dcmtk
+##  DCMTK
 ##-----------------------------------------------------------------------------
 find_package (DCMTK_wrap)
-
 set (PLM_DCM_USE_DCMTK 0)
-set (PLM_DCM_USE_GDCM1 0)
-set (PLM_DCM_USE_GDCM2 0)
-
 if (DCMTK_FOUND)
   set (PLM_DCM_USE_DCMTK 1)
-elseif (GDCM_VERSION_2)
-  set (PLM_DCM_USE_GDCM2 1)
-else ()
-  set (PLM_DCM_USE_GDCM1 1)
-endif ()
-
-##-----------------------------------------------------------------------------
-##  Give a warning for obsolete dicom libraries
-##-----------------------------------------------------------------------------
-# If the user only has gdcm 2.x, give a warning
-if (PLM_DCM_USE_GDCM2)
-  message (WARNING "Plastimatch is being built with GDCM 2.X.  DICOM-RT functions are disabled.")
-elseif (PLM_DCM_USE_GDCM1)
-  message (WARNING "Plastimatch is being built with GDCM 1.X.  Certain features of DICOM-RT are disabled.")
 endif ()
 
 ##-----------------------------------------------------------------------------

@@ -36,7 +36,6 @@ public:
     void load_prefix (const char *prefix_dir);
     void load_prefix (const std::string& prefix_dir);
     void load_xio (const Xio_studyset& xio_studyset);
-    void load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm);
 
     size_t get_num_structures ();
 
@@ -48,8 +47,6 @@ public:
     void save_colormap (const std::string& colormap_fn);
     void save_cxt (const Rt_study_metadata::Pointer& rsm, 
         const std::string& cxt_fn, bool prune_empty);
-    void save_gdcm_rtss (const char *output_dir, 
-        const Rt_study_metadata::Pointer& rsm);
     void save_fcsv (const Rtss_roi *curr_structure, const std::string& fn);
     void save_prefix_fcsv (const std::string& output_prefix);
     void save_ss_image (const std::string& ss_img_fn);

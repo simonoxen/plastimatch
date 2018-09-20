@@ -35,7 +35,7 @@
 #cmakedefine DLIB_FOUND 1
 #cmakedefine DLIB_HAVE_LIBRARY 1
 #cmakedefine FFTW_FOUND 1
-#cmakedefine GDCM_FOUND 1
+#cmakedefine ITK_FOUND 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1
@@ -62,12 +62,6 @@
 
 /* Dicom attributes.  One and only one of these will be true. */
 #cmakedefine PLM_DCM_USE_DCMTK 1
-#cmakedefine PLM_DCM_USE_GDCM1 1
-#cmakedefine PLM_DCM_USE_GDCM2 1
-
-/* ITK attributes */
-#cmakedefine ITK_FOUND 1
-#cmakedefine ITK_USE_SYSTEM_GDCM 1
 
 /* Make Microsoft compiler less whiny */
 #if _MSC_VER >= 1400

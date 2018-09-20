@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
-#include "gdcm1_dose.h"
 #include "itk_image_load.h"
 #include "itk_image_stats.h"
 #include "logfile.h"
@@ -141,17 +140,6 @@ stats_dicom_dose (Stats_parms* parms, const std::string& current_fn)
 {
 #if PLM_DCM_USE_DCMTK
     /* Sorry, not yet supported */
-#elif PLM_DCM_USE_GDCM1
-    Plm_image *dose = gdcm1_dose_load (0, current_fn.c_str());
-    FloatImageType::Pointer img = dose->itk_float ();
-    double min_val, max_val, avg;
-    int non_zero, num_vox;
-    itk_image_stats (img, &min_val, &max_val, &avg, &non_zero, &num_vox);
-
-    printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
-	(float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
-
-    delete dose;
 #endif
 }
 

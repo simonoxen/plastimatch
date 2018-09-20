@@ -15,12 +15,3 @@ RTOG format routines (exchkeys.h)
 
   http://itc.wustl.edu/Exchcode.html
 
-------------------------------------------------------------------------
-GDCM (gdcm_series_helper_2.cxx gdcm_series_helper_2.h)
-
-  Starting with gdcm 2.0.11, GDCM, Grassroots DICOM is distributed
-  under the new simplified BSD license, approved by the Open Source 
-  Initiative (OSI)
-  * http://www.opensource.org/licenses/bsd-license.php
-
-  Presumably the new BSD license can be used with the 1.x series as well.

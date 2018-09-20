@@ -11,7 +11,6 @@
 
 #include "dicom_probe.h"
 #include "file_util.h"
-#include "gdcm1_dose.h"
 #include "itk_image.h"
 #include "path_util.h"
 #include "plm_file_format.h"

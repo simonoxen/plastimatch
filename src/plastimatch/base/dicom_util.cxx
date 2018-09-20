@@ -13,11 +13,8 @@
 #include "dcmtk_rdd.h"
 #include "dcmtk_uid.h"
 #include "dcmtk_util.h"
-#elif PLM_DCM_USE_GDCM1
-#include "gdcm1_rdd.h"
-#include "gdcm1_util.h"
 #else
-#include "gdcm2_util.h"
+/* Nothing */
 #endif
 #include "plm_uid_prefix.h"
 
@@ -29,10 +26,6 @@ dicom_get_date_time (
 {
 #if PLM_DCM_USE_DCMTK
     dcmtk_get_date_time (date, time);
-#elif PLM_DCM_USE_GDCM1
-    gdcm1_get_date_time (date, time);
-#else
-    gdcm2_get_date_time (date, time);
 #endif
 }
 
@@ -58,10 +51,6 @@ dicom_load_rdd (Rt_study_metadata::Pointer rsm, const char* dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     dcmtk_load_rdd (rsm, dicom_dir);
-#elif PLM_DCM_USE_GDCM1
-    gdcm1_load_rdd (rsm.get(), dicom_dir);
-#else
-    /* Do nothing */
 #endif
 }
 
@@ -89,7 +78,7 @@ dicom_uid (char *uid, const char *uid_root)
 #if PLM_DCM_USE_DCMTK
     return dcmtk_uid (uid, uid_root);
 #else
-    return gdcm_uid (uid, uid_root);
+    return "";
 #endif
 }
 

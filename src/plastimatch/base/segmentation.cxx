@@ -5,10 +5,6 @@
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
 
-#if PLM_DCM_USE_GDCM1
-#include "gdcm1_dose.h"
-#include "gdcm1_rtss.h"
-#endif
 #include "cxt_extract.h"
 #include "cxt_io.h"
 #include "dir_list.h"
@@ -329,18 +325,6 @@ Segmentation::load_cxt (const std::string& input_fn, Rt_study_metadata *rsm)
 }
 
 void
-Segmentation::load_gdcm_rtss (const char *input_fn, Rt_study_metadata *rsm)
-{
-#if PLM_DCM_USE_GDCM1
-    d_ptr->m_rtss = Rtss::New();
-    gdcm_rtss_load (d_ptr->m_rtss.get(), rsm, input_fn);
-
-    d_ptr->m_rtss_valid = true;
-    d_ptr->m_ss_img_valid = false;
-#endif
-}
-
-void
 Segmentation::load_xio (const Xio_studyset& studyset)
 {
     d_ptr->m_rtss = Rtss::New();
@@ -418,36 +402,6 @@ Segmentation::save_cxt (
 )
 {
     cxt_save (d_ptr->m_rtss.get(), rsm, cxt_fn.c_str(), prune_empty);
-}
-
-void
-Segmentation::save_gdcm_rtss (
-    const char *output_dir, 
-    const Rt_study_metadata::Pointer& rsm
-)
-{
-    std::string fn;
-
-    /* Perform destructive keyholization of the cxt.  This is necessary 
-       because DICOM-RT requires that structures with holes be defined 
-       using a single structure */
-    d_ptr->m_rtss->keyholize ();
-
-    /* Some systems (GE ADW) do not allow special characters in 
-       structure names.  */
-    d_ptr->m_rtss->adjust_structure_names ();
-
-    if (rsm) {
-        this->apply_dicom_dir (rsm);
-    }
-
-    fn = string_format ("%s/%s", output_dir, "rtss.dcm");
-
-#if PLM_DCM_USE_GDCM1
-    gdcm_rtss_save (d_ptr->m_rtss.get(), rsm, fn.c_str());
-#else
-    /* GDCM 2 not implemented -- you're out of luck. */
-#endif
 }
 
 void

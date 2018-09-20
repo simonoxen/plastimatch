@@ -6,19 +6,7 @@
 
 #include "plmsys_config.h"
 
-#if defined (GDCMCOMMON_H)
-/* Gdcm 1.x has a broken header file gdcmCommon.h, which defines C99 types 
-   (e.g. int32_t) when missing on MSVC.  It conflicts with plm_int.h 
-   (which also fixes missing C99 types).  Here is a workaround for 
-   this issue. */
-#if !defined (CMAKE_HAVE_STDINT_H) && !defined (CMAKE_HAVE_INTTYPES_H) \
-    && (defined(_MSC_VER)                                              \
-        || defined(__BORLANDC__) && (__BORLANDC__ < 0x0560)            \
-        || defined(__MINGW32__))
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#endif /* GDCMCOMMON_H */
-#elif defined (_MSC_VER) && (_MSC_VER < 1600)
+#if defined (_MSC_VER) && (_MSC_VER < 1600)
 #include "msinttypes/stdint.h"
 #else
 #include <stdint.h>

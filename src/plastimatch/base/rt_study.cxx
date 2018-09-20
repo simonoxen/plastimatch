@@ -6,10 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if PLM_DCM_USE_GDCM1
-#include "gdcm1_dose.h"
-#include "gdcm1_series.h"
-#endif
 #include "astroid_dose.h"
 #include "file_util.h"
 #include "image_stats.h"
@@ -143,7 +139,7 @@ Rt_study::load_dicom (const char *dicom_dir)
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_dir);
 #else
-    this->load_gdcm (dicom_dir);
+    /* Do nothing */
 #endif
 }
 
@@ -153,9 +149,6 @@ Rt_study::load_dicom_rtss (const char *dicom_path)
     d_ptr->m_seg.reset ();
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
-#elif PLM_DCM_USE_GDCM1
-    d_ptr->m_seg = Segmentation::New ();
-    d_ptr->m_seg->load_gdcm_rtss (dicom_path, d_ptr->m_drs.get());
 #else
     /* Do nothing */
 #endif
@@ -166,8 +159,6 @@ Rt_study::load_dicom_rtplan(const char *dicom_path)
 {    
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk(dicom_path);
-#elif PLM_DCM_USE_GDCM1
-    //not yet implemented
 #else
     /* Do nothing */
 #endif
@@ -179,8 +170,6 @@ Rt_study::load_dicom_dose (const char *dicom_path)
 {
 #if PLM_DCM_USE_DCMTK
     this->load_dcmtk (dicom_path);
-#elif PLM_DCM_USE_GDCM1
-    d_ptr->m_dose.reset (gdcm1_dose_load (0, dicom_path));
 #else
     /* Do nothing */
 #endif
@@ -446,7 +435,7 @@ Rt_study::save_dicom (const char *dicom_dir, bool filenames_with_uid)
 #if PLM_DCM_USE_DCMTK
     this->save_dcmtk (dicom_dir, filenames_with_uid);
 #else
-    this->save_gdcm (dicom_dir);
+    /* Do nothing */
 #endif
 }
 
@@ -466,8 +455,7 @@ Rt_study::save_dicom_dose (const char *dicom_dir)
 #if PLM_DCM_USE_DCMTK
     this->save_dcmtk_dose (dicom_dir);
 #else
-    /* Not yet supported -- this function is only used by topas, 
-       which uses dcmtk. */
+    /* Do nothing */
 #endif
 }
 
