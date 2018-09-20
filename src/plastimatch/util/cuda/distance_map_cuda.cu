@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <cuda.h>
 #include "cuda_util.h"
+#include "distance_map_cuda.h"
 
 __global__ void 
 myFirstKernel(int *d_a)

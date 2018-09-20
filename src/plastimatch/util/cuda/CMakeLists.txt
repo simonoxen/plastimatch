@@ -46,8 +46,6 @@ if (CUDA_FOUND)
     plm_add_gpu_plugin_library (plmutilcuda 
       "${PLMUTILCUDA_LIBRARY_SRC}")
 
-    # GCS 2013-03-21.  Why can't we link plmutilcuda against plmbase?
-    # I'm going to try it and see.
     target_link_libraries (plmutilcuda 
       ${PLMUTILCUDA_LIBRARY_DEPENDENCIES})
 
