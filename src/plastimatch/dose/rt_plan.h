@@ -27,9 +27,9 @@ public:
     ~Rt_plan ();
 
 public:
-    Plm_return_code parse_args (int argc, char* argv[]);
-    Plm_return_code load_command_file (const char *command_file);
     Plm_return_code load_beam_model (const char *beam_model);
+    Plm_return_code load_command_file (const char *command_file);
+    Plm_return_code load_dicom_plan (const char *dicom_input_dir);
 
     /* Set the CT volume for dose calculation.
        The Rt_plan takes ownership of this CT/Patient. */
@@ -49,10 +49,6 @@ public:
     void set_target (FloatImageType::Pointer&);
     Plm_image::Pointer& get_target ();
     void load_target ();
-
-    /* Set/Get Rt_study */
-    void set_rt_study(Rt_study* rt_study);
-    Rt_study* get_rt_study();
 
     /* Get/Set Rt_beam(s) */
     Rt_beam* append_beam ();
@@ -104,6 +100,7 @@ public:
     Plm_image::Pointer get_dose ();
     FloatImageType::Pointer get_dose_itk ();
     void set_output_dose_fn (const std::string& output_dose_fn);
+    void set_output_dicom (const std::string& output_dicom);
     void set_output_psp_fn (const std::string& output_psp_fn);
     void set_dose(Plm_image::Pointer& dose);
 

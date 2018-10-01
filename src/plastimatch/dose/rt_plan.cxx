@@ -49,6 +49,7 @@ public:
     std::string patient_fn;
     std::string target_fn;
     std::string output_dose_fn;
+    std::string output_dicom;
     std::string output_psp_fn;
 
     /* Patient (hu), patient (ed or sp) , target, output dose volume */
@@ -58,7 +59,7 @@ public:
     Plm_image::Pointer dose;
 
     Rt_parms::Pointer rt_parms;
-    Rt_study* rt_study;
+    Rt_study::Pointer rt_study;
 
     Rt_dose_timing::Pointer rt_dose_timing;
 
@@ -85,6 +86,7 @@ public:
         target = Plm_image::Pointer();
         dose = Plm_image::New();
         rt_parms = Rt_parms::New ();
+        rt_study = Rt_study::New ();
         rt_dose_timing = Rt_dose_timing::New ();
     }
 
@@ -105,12 +107,6 @@ Rt_plan::~Rt_plan ()
 }
 
 Plm_return_code
-Rt_plan::parse_args (int argc, char* argv[])
-{
-    return d_ptr->rt_parms->parse_args (argc, argv);
-}
-
-Plm_return_code
 Rt_plan::load_command_file (const char *command_file)
 {
     return d_ptr->rt_parms->load_command_file (command_file);
@@ -119,7 +115,17 @@ Rt_plan::load_command_file (const char *command_file)
 Plm_return_code
 Rt_plan::load_beam_model (const char *beam_model)
 {
-    //return d_ptr->rt_parms->set_command_file (command_file);
+    return PLM_SUCCESS;
+}
+
+Plm_return_code
+Rt_plan::load_dicom_plan (const char *dicom_input_dir)
+{
+    d_ptr->rt_dose_timing->timer_io.resume ();
+    d_ptr->rt_study = Rt_study::New ();
+    d_ptr->rt_study->load (dicom_input_dir);
+    d_ptr->rt_dose_timing->timer_io.stop ();
+    return PLM_SUCCESS;
 }
 
 void
@@ -217,18 +223,6 @@ Plm_image::Pointer&
 Rt_plan::get_target ()
 {
     return d_ptr->target;
-}
-
-void 
-Rt_plan::set_rt_study(Rt_study* rt_study) 
-{
-    d_ptr->rt_study = rt_study;
-}
-
-Rt_study*
-Rt_plan::get_rt_study()
-{
-    return d_ptr->rt_study;
 }
 
 Rt_beam*
@@ -578,23 +572,25 @@ Rt_plan::compute_plan ()
         print_and_exit ("Error: cannot compute_plan without an Rt_parms\n");
     }
 
-    if (d_ptr->output_dose_fn == "") {
-        print_and_exit ("Error: Output dose filename "
-            "not specified in configuration file!\n");
+    if (d_ptr->output_dose_fn == "" && d_ptr->output_dicom == "") {
+        print_and_exit ("Error: No output dose file specified\n");
     }
-    if (d_ptr->patient_fn == "") {
-        print_and_exit ("Error: Patient image "
-            "not specified in configuration file!\n");
+    if (d_ptr->patient_fn == "" && !d_ptr->rt_study->have_image()) {
+        print_and_exit ("Error: No input CT image specified\n");
     }
 
     /* Load the patient CT image */
     d_ptr->rt_dose_timing->timer_io.resume ();
-    Plm_image::Pointer ct = Plm_image::New (d_ptr->patient_fn,
-        PLM_IMG_TYPE_ITK_FLOAT);
-    if (!ct) {
-        print_and_exit ("Error: Unable to load patient volume.\n");
+    if (d_ptr->patient_fn != "") {
+        Plm_image::Pointer ct = Plm_image::New (d_ptr->patient_fn,
+            PLM_IMG_TYPE_ITK_FLOAT);
+        if (!ct) {
+            print_and_exit ("Error: Unable to load patient volume.\n");
+        }
+        this->set_patient (ct);
+    } else if (d_ptr->rt_study->have_image()) {
+        this->set_patient (d_ptr->rt_study->get_image());
     }
-    this->set_patient (ct);
 
     /* Load the patient target structure */
     this->load_target ();
@@ -669,6 +665,12 @@ void
 Rt_plan::set_output_dose_fn (const std::string& output_dose_fn)
 {
     d_ptr->output_dose_fn = output_dose_fn;
+}
+
+void 
+Rt_plan::set_output_dicom (const std::string& output_dicom)
+{
+    d_ptr->output_dicom = output_dicom;
 }
 
 void 

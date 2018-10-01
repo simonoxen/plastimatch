@@ -4522,8 +4522,7 @@ plmtest_check_interval ("proton-dose-5a-check"
   "0.26"
   "0.27"
   )
-set_tests_properties (proton-dose-5a PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-5a PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-5a PROPERTIES DEPENDS "rect-17;ptv-1")
 set_tests_properties (proton-dose-5a-stats
     PROPERTIES DEPENDS proton-dose-5a)
 set_tests_properties (proton-dose-5a-check
@@ -4545,8 +4544,7 @@ plmtest_check_interval ("proton-dose-5d-check"
   "0.38"
   "0.39"
   )
-set_tests_properties (proton-dose-5d PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-5d PROPERTIES DEPENDS ptv-1)
+set_tests_properties (proton-dose-5d PROPERTIES DEPENDS "rect-17;ptv-1")
 set_tests_properties (proton-dose-5d-stats
     PROPERTIES DEPENDS proton-dose-5d)
 set_tests_properties (proton-dose-5d-check
@@ -4568,8 +4566,7 @@ plmtest_check_interval ("proton-dose-6a-check"
   "0.26"
   "0.27"
   )
-set_tests_properties (proton-dose-6a PROPERTIES DEPENDS rect-17)
-set_tests_properties (proton-dose-6a PROPERTIES DEPENDS ptv-2)
+set_tests_properties (proton-dose-6a PROPERTIES DEPENDS "rect-17;ptv2")
 set_tests_properties (proton-dose-6a-stats
     PROPERTIES DEPENDS proton-dose-6a)
 set_tests_properties (proton-dose-6a-check
@@ -4592,16 +4589,14 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/wed
   "${PLM_BUILD_TESTING_DIR}/wed-b.txt"
   )
-set_tests_properties (wed-b PROPERTIES DEPENDS lung-1)
-set_tests_properties (wed-b PROPERTIES DEPENDS wed-a)
+set_tests_properties (wed-b PROPERTIES DEPENDS "lung-1;wed-a")
 
 plm_add_test (
   "wed-c"
   ${PLM_PLASTIMATCH_PATH}/wed
   "${PLM_BUILD_TESTING_DIR}/wed-c.txt"
   )
-set_tests_properties (wed-c PROPERTIES DEPENDS lung-1)
-set_tests_properties (wed-c PROPERTIES DEPENDS wed-a)
+set_tests_properties (wed-c PROPERTIES DEPENDS "lung-1;wed-a")
 
 ## -------------------------------------------------------------------------
 ## i hate myself

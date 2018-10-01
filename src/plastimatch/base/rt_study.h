@@ -108,7 +108,7 @@ public:
     void set_image (FloatImageType::Pointer& itk_image);
     void set_image (Plm_image* pli);
     void set_image (const Plm_image::Pointer& pli);
-    Plm_image::Pointer get_image ();
+    Plm_image::Pointer& get_image ();
 
     bool have_dose ();
     void set_dose (Plm_image *pli);

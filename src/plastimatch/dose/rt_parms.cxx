@@ -522,26 +522,3 @@ Rt_parms::load_command_file (const char *command_file)
     Rt_parms_parser rpp (this);
     return rpp.parse_config_file (command_file);
 }
-
-Plm_return_code
-Rt_parms::parse_args (int argc, char** argv)
-{
-    int i;
-    for (i=1; i<argc; i++) {
-        if (argv[i][0] != '-') break;
-
-        if (!strcmp (argv[i], "--debug")) {
-            d_ptr->rt_plan->set_debug (true);
-        }
-        else {
-            print_usage ();
-            break;
-        }
-    }
-
-    if (!argv[i]) {
-        print_usage ();
-    }
-
-    return this->load_command_file (argv[i]);
-}

@@ -38,6 +38,18 @@ do_dose (Dose_parms *parms)
             return;
         }
     }
+    if (parms->input_fn != "") {
+        if (plan.load_dicom_plan (parms->input_fn.c_str()) != PLM_SUCCESS) {
+            lprintf ("Error parsing input dicom files.\n");
+            return;
+        }
+    }
+    if (parms->output_image_fn != "") {
+        plan.set_output_dose_fn (parms->output_image_fn);
+    }
+    if (parms->output_dicom != "") {
+        plan.set_output_dicom (parms->output_dicom);
+    }
     plan.compute_plan ();
     lprintf ("Total execution time : %f seconds.\n", timer.report ());
 }
