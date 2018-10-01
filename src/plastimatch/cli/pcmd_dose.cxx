@@ -27,13 +27,19 @@ do_dose (Dose_parms *parms)
     Rt_plan plan;
     timer.start ();
     if (parms->command_fn != "") {
-        if (plan.set_command_file (parms->command_fn.c_str()) != PLM_SUCCESS) {
+        if (plan.load_command_file (parms->command_fn.c_str()) != PLM_SUCCESS) {
             lprintf ("Error parsing command file.\n");
             return;
         }
     }
+    if (parms->beam_model_fn != "") {
+        if (plan.load_beam_model (parms->beam_model_fn.c_str()) != PLM_SUCCESS) {
+            lprintf ("Error parsing beam model file.\n");
+            return;
+        }
+    }
     plan.compute_plan ();
-    lprintf ("Total execution time : %f secondes.\n", timer.report ());
+    lprintf ("Total execution time : %f seconds.\n", timer.report ());
 }
 
 static void

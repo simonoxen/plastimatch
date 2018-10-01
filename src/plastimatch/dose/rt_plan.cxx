@@ -62,7 +62,7 @@ public:
 
     Rt_dose_timing::Pointer rt_dose_timing;
 
-    Rt_beam_model::Pointer beam_model;
+    Rt_beam_model beam_model;
 
     /* Storage of beams */
     std::vector<Rt_beam*> beam_storage;
@@ -111,9 +111,15 @@ Rt_plan::parse_args (int argc, char* argv[])
 }
 
 Plm_return_code
-Rt_plan::set_command_file (const char *command_file)
+Rt_plan::load_command_file (const char *command_file)
 {
-    return d_ptr->rt_parms->set_command_file (command_file);
+    return d_ptr->rt_parms->load_command_file (command_file);
+}
+
+Plm_return_code
+Rt_plan::load_beam_model (const char *beam_model)
+{
+    //return d_ptr->rt_parms->set_command_file (command_file);
 }
 
 void

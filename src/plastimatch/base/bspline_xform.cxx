@@ -142,7 +142,7 @@ Bspline_xform::save (const char* filename)
         for (int j = 0; j < this->num_coeff / 3; j++) {
             fprintf (fp, "%.20f\n", this->coeff[j*3 + i]);
         }
-    }           
+    }
 
     fclose (fp);
 }

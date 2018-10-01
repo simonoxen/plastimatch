@@ -5,6 +5,7 @@
 #define _rt_beam_model_h_
 
 #include "plmdose_config.h"
+#include "plm_return_code.h"
 #include "smart_pointer.h"
 
 class Rt_beam_model_private;
@@ -16,6 +17,8 @@ public:
 public:
     Rt_beam_model ();
     ~Rt_beam_model ();
+public:
+    Plm_return_code load_beam_model (const char *beam_model);
 };
 
 #endif
