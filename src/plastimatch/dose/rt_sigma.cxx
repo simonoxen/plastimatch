@@ -3,15 +3,15 @@
    ----------------------------------------------------------------------- */
 #include "plmdose_config.h"
 
+#include "beam_calc.h"
 #include "ray_data.h"
 #include "rpl_volume.h"
-#include "rt_beam.h"
 #include "rt_lut.h"
 #include "rt_sigma.h"
 
 void
 compute_sigmas (
-    const Rt_beam* beam,
+    const Beam_calc* beam,
     float energy,
     float* sigma_max, 
     std::string size, 
@@ -86,7 +86,7 @@ void compute_sigma_pt (
     Rpl_volume* sigma_vol,
     Rpl_volume* rpl_volume,
     Rpl_volume* ct_vol,
-    const Rt_beam* beam,
+    const Beam_calc* beam,
     float energy)
 {
     float sigma_max = 0;
@@ -340,7 +340,7 @@ float compute_sigma_pt_hetero (
 void
 compute_sigma_source (
     Rpl_volume* sigma_vol, Rpl_volume* rpl_volume,
-    const Rt_beam *beam, float energy)
+    const Beam_calc *beam, float energy)
 {
     /* Method of the Hong's algorithm - See Hong's paper */
     float* sigma_img = (float*) sigma_vol->get_vol()->img;
@@ -395,7 +395,7 @@ compute_sigma_source (
 void
 compute_sigma_range_compensator (
     Rpl_volume* sigma_vol, Rpl_volume* rpl_volume, 
-    const Rt_beam *beam, float energy, int* margins)
+    const Beam_calc *beam, float energy, int* margins)
 {
     /* There are two methods for computing the beam spread due to a range compensator */
     /* Method1 rc_MC_model:  Hong's algorithm (Highland)- See Hong's paper */

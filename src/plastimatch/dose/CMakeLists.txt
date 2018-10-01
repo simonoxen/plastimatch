@@ -14,10 +14,10 @@ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 ##  SOURCE FILES
 ##-----------------------------------------------------------------------------
 set (PLMDOSE_LIBRARY_SRC
+  beam_calc.cxx beam_calc.h
   bragg_curve.cxx bragg_curve.h
   dose_volume_functions.cxx dose_volume_functions.h
   particle_type.cxx particle_type.h
-  rt_beam.cxx rt_beam.h
   rt_beam_model.cxx rt_beam_model.h
   rt_depth_dose.cxx rt_depth_dose.h
   rt_dij.cxx rt_dij.h
@@ -27,7 +27,7 @@ set (PLMDOSE_LIBRARY_SRC
   rt_spot_map.cxx rt_spot_map.h 
   rt_mebs.cxx rt_mebs.h
   rt_parms.cxx rt_parms.h
-  rt_plan.cxx rt_plan.h
+  plan_calc.cxx plan_calc.h
   rt_sigma.cxx rt_sigma.h
   wed_parms.cxx wed_parms.h
   )

@@ -1,30 +1,31 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rt_plan_h_
-#define _rt_plan_h_
+#ifndef _plan_calc_h_
+#define _plan_calc_h_
 
 #include "plmdose_config.h"
 #include "plm_image.h"
 #include "plm_return_code.h"
-#include "rt_beam.h"
+#include "rtplan.h"
+#include "beam_calc.h"
 #include "smart_pointer.h"
 #include "threading.h"
 
 class Plm_image;
 class Proj_matrix;
 class Rpl_volume;
-class Rt_plan_private;
+class Plan_calc_private;
 class Rt_study;
 class Volume;
 
-class PLMDOSE_API Rt_plan {
+class PLMDOSE_API Plan_calc {
 public:
-    SMART_POINTER_SUPPORT (Rt_plan);
-    Rt_plan_private *d_ptr;
+    SMART_POINTER_SUPPORT (Plan_calc);
+    Plan_calc_private *d_ptr;
 public:
-    Rt_plan ();
-    ~Rt_plan ();
+    Plan_calc ();
+    ~Plan_calc ();
 
 public:
     Plm_return_code load_beam_model (const char *beam_model);
@@ -32,7 +33,7 @@ public:
     Plm_return_code load_dicom_plan (const char *dicom_input_dir);
 
     /* Set the CT volume for dose calculation.
-       The Rt_plan takes ownership of this CT/Patient. */
+       The Plan_calc takes ownership of this CT/Patient. */
     void set_patient (const std::string& patient_fn);
     void set_patient (Plm_image::Pointer&);
     void set_patient (ShortImageType::Pointer&);
@@ -50,9 +51,12 @@ public:
     Plm_image::Pointer& get_target ();
     void load_target ();
 
-    /* Get/Set Rt_beam(s) */
-    Rt_beam* append_beam ();
-    Rt_beam* get_last_rt_beam ();
+    /* Get/Set Rtplan */
+    void set_rtplan (const Rtplan::Pointer& rtplan);
+
+    /* Get/Set Beam_calc objects */
+    Beam_calc* append_beam ();
+    Beam_calc* get_last_rt_beam ();
 
     /* Return the state of the debug flag, which generates debug 
        information on the console */
@@ -92,9 +96,9 @@ public:
     /* Compute dose */
     void create_patient_psp ();
     void propagate_target_to_beams ();
-    void compute_dose (Rt_beam *beam);
+    void compute_dose (Beam_calc *beam);
     Plm_return_code compute_plan ();
-    void normalize_beam_dose (Rt_beam *beam);
+    void normalize_beam_dose (Beam_calc *beam);
 
     /* Getting outputs and creating output files */
     Plm_image::Pointer get_dose ();

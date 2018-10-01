@@ -11,11 +11,12 @@
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "rt_study_metadata.h"
+#include "rtplan.h"
 #include "segmentation.h"
 
 class Metadata;
 class Plm_image;
-class Rt_plan;
+class Rtplan;
 class Rt_study_private;
 class Volume;
 class Xio_ct_transform;
@@ -120,11 +121,13 @@ public:
     bool have_segmentation ();
     Segmentation::Pointer get_segmentation ();
     void set_segmentation (Segmentation::Pointer seg);
-
     void add_structure (
         const UCharImageType::Pointer& itk_image, 
         const char *structure_name = 0,
         const char *structure_color = 0);
+
+    bool have_plan ();
+    Rtplan::Pointer& get_plan ();
 
     const std::string& get_xio_dose_filename () const;
     Xio_ct_transform* get_xio_ct_transform ();

@@ -6,14 +6,14 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include "plan_calc.h"
 #include "plm_return_code.h"
-#include "rt_plan.h"
 #include "smart_pointer.h"
 #include "threading.h"
 
+class Plan_calc;
 class Plm_image;
 class Rt_parms_private;
-class Rt_plan;
 
 class PLMDOSE_API Rt_parms
 {
@@ -22,11 +22,11 @@ public:
     Rt_parms_private *d_ptr;
 public:
     Rt_parms ();
-    Rt_parms (Rt_plan* rt_plan);
+    Rt_parms (Plan_calc* plan_calc);
     ~Rt_parms ();
 
 public:
-    void set_rt_plan (Rt_plan *rt_plan);
+    void set_plan_calc (Plan_calc* plan_calc);
     Plm_return_code load_command_file (const char *command_file);
     Plm_return_code set_key_value (
         const std::string& section,

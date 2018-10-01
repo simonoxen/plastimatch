@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rt_beam_h_
-#define _rt_beam_h_
+#ifndef _beam_calc_h_
+#define _beam_calc_h_
 
 #include "file_util.h"
 #include "plmdose_config.h"
@@ -16,21 +16,21 @@
 #include "rt_mebs.h"
 #include "smart_pointer.h"
 
-class Rt_beam_private;
+class Beam_calc_private;
 class Rt_mebs;
 
 /*! \brief 
- * The Rt_beam class encapsulates a single SOBP Rt beam, including 
- * its associated aperture and range compensator.
+ * The Beam_calc class encapsulates all data needed to calculate dose for 
+ * a single Rt beam.
  */
-class PLMDOSE_API Rt_beam {
+class PLMDOSE_API Beam_calc {
 public:
-    SMART_POINTER_SUPPORT (Rt_beam);
-    Rt_beam_private *d_ptr;
+    SMART_POINTER_SUPPORT (Beam_calc);
+    Beam_calc_private *d_ptr;
 public:
-    Rt_beam ();
-    Rt_beam (const Rt_beam* rt_beam);
-    ~Rt_beam ();
+    Beam_calc ();
+    Beam_calc (const Beam_calc* beam_calc);
+    ~Beam_calc ();
 
 public:
     /*! \name Inputs */

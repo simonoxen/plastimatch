@@ -13,8 +13,6 @@
 #include "proj_volume.h"
 #include "ray_trace_probe.h"
 #include "rpl_volume.h"
-#include "rt_beam.h"
-#include "rt_plan.h"
 #include "volume.h"
 #include "volume_limit.h"
 #include "wed_parms.h"

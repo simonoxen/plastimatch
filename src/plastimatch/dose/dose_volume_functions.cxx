@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmdose_config.h"
+
+#include "beam_calc.h"
 #include "dose_volume_functions.h"
 #include "proj_volume.h"
 #include "ray_data.h"
@@ -240,7 +242,7 @@ double get_off_axis(double radius, double dr, double sigma)
 }
 
 /* MD Fix: don't consider any cosines directions */
-void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_beam* beam)
+void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Beam_calc* beam)
 {
     int idx = 0;
     double norm = 0;
@@ -283,7 +285,7 @@ void dose_normalization_to_dose(Volume::Pointer dose_volume, double dose, Rt_bea
 }
 
 /* MD Fix: don't consider any cosines directions */
-void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Rt_beam* beam)
+void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double dose, const float* rdp_ijk, const float* rdp, Beam_calc* beam)
 {
     double norm = dose_volume->get_ijk_value(rdp_ijk);
     float* img = (float*) dose_volume->img;

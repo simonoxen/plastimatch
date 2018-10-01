@@ -6,10 +6,10 @@
 
 #include "logfile.h"
 #include "pcmd_dose.h"
+#include "plan_calc.h"
 #include "plm_clp.h"
 #include "plm_return_code.h"
 #include "plm_timer.h"
-#include "rt_plan.h"
 
 class Dose_parms {
 public:
@@ -24,33 +24,33 @@ static void
 do_dose (Dose_parms *parms)
 {
     Plm_timer timer;
-    Rt_plan plan;
+    Plan_calc plan_calc;
     timer.start ();
-    if (parms->command_fn != "") {
-        if (plan.load_command_file (parms->command_fn.c_str()) != PLM_SUCCESS) {
-            lprintf ("Error parsing command file.\n");
-            return;
-        }
+    if (parms->command_fn != ""
+        && plan_calc.load_command_file (parms->command_fn.c_str()) != PLM_SUCCESS)
+    {
+        lprintf ("Error parsing command file.\n");
+        return;
     }
-    if (parms->beam_model_fn != "") {
-        if (plan.load_beam_model (parms->beam_model_fn.c_str()) != PLM_SUCCESS) {
-            lprintf ("Error parsing beam model file.\n");
-            return;
-        }
+    if (parms->beam_model_fn != ""
+        && plan_calc.load_beam_model (parms->beam_model_fn.c_str()) != PLM_SUCCESS)
+    {
+        lprintf ("Error parsing beam model file.\n");
+        return;
     }
-    if (parms->input_fn != "") {
-        if (plan.load_dicom_plan (parms->input_fn.c_str()) != PLM_SUCCESS) {
-            lprintf ("Error parsing input dicom files.\n");
-            return;
-        }
+    if (parms->input_fn != ""
+        && plan_calc.load_dicom_plan (parms->input_fn.c_str()) != PLM_SUCCESS)
+    {
+        lprintf ("Error parsing input dicom files.\n");
+        return;
     }
     if (parms->output_image_fn != "") {
-        plan.set_output_dose_fn (parms->output_image_fn);
+        plan_calc.set_output_dose_fn (parms->output_image_fn);
     }
     if (parms->output_dicom != "") {
-        plan.set_output_dicom (parms->output_dicom);
+        plan_calc.set_output_dicom (parms->output_dicom);
     }
-    plan.compute_plan ();
+    plan_calc.compute_plan ();
     lprintf ("Total execution time : %f seconds.\n", timer.report ());
 }
 

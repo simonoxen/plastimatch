@@ -7,8 +7,10 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "beam_calc.h"
 #include "dose_volume_functions.h"
 #include "float_pair_list.h"
+#include "plan_calc.h"
 #include "plm_image.h"
 #include "plm_exception.h"
 #include "plm_timer.h"
@@ -17,14 +19,12 @@
 #include "proj_volume.h"
 #include "ray_data.h"
 #include "rpl_volume.h"
-#include "rt_beam.h"
 #include "rt_beam_model.h"
 #include "rt_depth_dose.h"
 #include "rt_dose.h"
 #include "rt_dose_timing.h"
 #include "rt_lut.h"
 #include "rt_parms.h"
-#include "rt_plan.h"
 #include "rt_sigma.h"
 #include "rt_mebs.h"
 #include "rt_study.h"
@@ -34,7 +34,7 @@
 #include "volume_macros.h"
 #include "volume_resample.h"
 
-class Rt_plan_private {
+class Plan_calc_private {
 
 public:
     bool debug;
@@ -66,10 +66,10 @@ public:
     Rt_beam_model beam_model;
 
     /* Storage of beams */
-    std::vector<Rt_beam*> beam_storage;
+    std::vector<Beam_calc*> beam_storage;
 
 public: 
-    Rt_plan_private ()
+    Plan_calc_private ()
     {
         debug = false;
         this->rdp[0] = 0.f;
@@ -90,52 +90,58 @@ public:
         rt_dose_timing = Rt_dose_timing::New ();
     }
 
-    ~Rt_plan_private ()
+    ~Plan_calc_private ()
     {
     }
 };
 
-Rt_plan::Rt_plan ()
+Plan_calc::Plan_calc ()
 {
-    this->d_ptr = new Rt_plan_private;
-    d_ptr->rt_parms->set_rt_plan (this);
+    this->d_ptr = new Plan_calc_private;
+    d_ptr->rt_parms->set_plan_calc (this);
 }
 
-Rt_plan::~Rt_plan ()
+Plan_calc::~Plan_calc ()
 {
     delete d_ptr;
 }
 
 Plm_return_code
-Rt_plan::load_command_file (const char *command_file)
+Plan_calc::load_command_file (const char *command_file)
 {
     return d_ptr->rt_parms->load_command_file (command_file);
 }
 
 Plm_return_code
-Rt_plan::load_beam_model (const char *beam_model)
+Plan_calc::load_beam_model (const char *beam_model)
 {
     return PLM_SUCCESS;
 }
 
 Plm_return_code
-Rt_plan::load_dicom_plan (const char *dicom_input_dir)
+Plan_calc::load_dicom_plan (const char *dicom_input_dir)
 {
     d_ptr->rt_dose_timing->timer_io.resume ();
     d_ptr->rt_study = Rt_study::New ();
     d_ptr->rt_study->load (dicom_input_dir);
+    if (d_ptr->rt_study->have_image()) {
+        this->set_patient (d_ptr->rt_study->get_image());
+    }
+    if (d_ptr->rt_study->have_plan()) {
+        this->set_rtplan (d_ptr->rt_study->get_plan());
+    }
     d_ptr->rt_dose_timing->timer_io.stop ();
     return PLM_SUCCESS;
 }
 
 void
-Rt_plan::set_patient (const std::string& patient_fn)
+Plan_calc::set_patient (const std::string& patient_fn)
 {
     d_ptr->patient_fn = patient_fn;
 }
 
 void
-Rt_plan::set_patient (Plm_image::Pointer& ct_vol)
+Plan_calc::set_patient (Plm_image::Pointer& ct_vol)
 {
     d_ptr->patient_hu = ct_vol;
     d_ptr->patient_hu->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
@@ -143,7 +149,7 @@ Rt_plan::set_patient (Plm_image::Pointer& ct_vol)
 }
 
 void
-Rt_plan::set_patient (ShortImageType::Pointer& ct_vol)
+Plan_calc::set_patient (ShortImageType::Pointer& ct_vol)
 {
     /* compute_segdepth_volume assumes float, so convert here */
     d_ptr->patient_hu->set_itk (ct_vol);
@@ -152,7 +158,7 @@ Rt_plan::set_patient (ShortImageType::Pointer& ct_vol)
 }
 
 void
-Rt_plan::set_patient (FloatImageType::Pointer& ct_vol)
+Plan_calc::set_patient (FloatImageType::Pointer& ct_vol)
 {
     d_ptr->patient_hu->set_itk (ct_vol);
     d_ptr->patient_hu->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
@@ -160,31 +166,31 @@ Rt_plan::set_patient (FloatImageType::Pointer& ct_vol)
 }
 
 void
-Rt_plan::set_patient (Volume* ct_vol)
+Plan_calc::set_patient (Volume* ct_vol)
 {
     d_ptr->patient_hu->set_volume (ct_vol);
 }
 
 Volume::Pointer
-Rt_plan::get_patient_volume ()
+Plan_calc::get_patient_volume ()
 {
     return d_ptr->patient_hu->get_volume_float ();
 }
 
 Plm_image *
-Rt_plan::get_patient ()
+Plan_calc::get_patient ()
 {
     return d_ptr->patient_hu.get();
 }
 
 void
-Rt_plan::set_target (const std::string& target_fn)
+Plan_calc::set_target (const std::string& target_fn)
 {
     d_ptr->target_fn = target_fn;
 }
 
 void
-Rt_plan::set_target (UCharImageType::Pointer& target_vol)
+Plan_calc::set_target (UCharImageType::Pointer& target_vol)
 {
     d_ptr->target = Plm_image::New (target_vol);
 
@@ -195,7 +201,7 @@ Rt_plan::set_target (UCharImageType::Pointer& target_vol)
 }
 
 void
-Rt_plan::set_target (FloatImageType::Pointer& target_vol)
+Plan_calc::set_target (FloatImageType::Pointer& target_vol)
 {
     d_ptr->target = Plm_image::New (target_vol);
 
@@ -206,7 +212,7 @@ Rt_plan::set_target (FloatImageType::Pointer& target_vol)
 }
 
 void
-Rt_plan::load_target ()
+Plan_calc::load_target ()
 {
     if (d_ptr->target_fn == "") {
         return;
@@ -220,20 +226,26 @@ Rt_plan::load_target ()
 }
 
 Plm_image::Pointer&
-Rt_plan::get_target ()
+Plan_calc::get_target ()
 {
     return d_ptr->target;
 }
 
-Rt_beam*
-Rt_plan::append_beam ()
+void
+Plan_calc::set_rtplan (const Rtplan::Pointer& rtplan)
 {
-    Rt_beam* last_beam = get_last_rt_beam ();
-    Rt_beam* new_beam;
+    /* Do something */
+}
+
+Beam_calc*
+Plan_calc::append_beam ()
+{
+    Beam_calc* last_beam = get_last_rt_beam ();
+    Beam_calc* new_beam;
     if (last_beam) {
-        new_beam = new Rt_beam (last_beam);
+        new_beam = new Beam_calc (last_beam);
     } else {
-        new_beam = new Rt_beam;
+        new_beam = new Beam_calc;
     }
     d_ptr->beam_storage.push_back (new_beam);
     new_beam->set_rt_dose_timing (d_ptr->rt_dose_timing);
@@ -241,8 +253,8 @@ Rt_plan::append_beam ()
     return new_beam;
 }
 
-Rt_beam*
-Rt_plan::get_last_rt_beam ()
+Beam_calc*
+Plan_calc::get_last_rt_beam ()
 {
     if (d_ptr->beam_storage.empty()) {
         return 0;
@@ -251,49 +263,49 @@ Rt_plan::get_last_rt_beam ()
 }
 
 bool
-Rt_plan::get_debug (void) const
+Plan_calc::get_debug (void) const
 {
     return d_ptr->debug;
 }
 
 void
-Rt_plan::set_debug (bool debug)
+Plan_calc::set_debug (bool debug)
 {
     d_ptr->debug = debug;
 }
 
 void
-Rt_plan::set_threading (Threading threading)
+Plan_calc::set_threading (Threading threading)
 {
     /* Not used yet */
 }
 
 void
-Rt_plan::set_normalization_dose (float normalization_dose)
+Plan_calc::set_normalization_dose (float normalization_dose)
 {
     d_ptr->normalization_dose = normalization_dose;
 }
 
 float
-Rt_plan::get_normalization_dose()
+Plan_calc::get_normalization_dose()
 {
     return d_ptr->normalization_dose;
 }
 
 const float*
-Rt_plan::get_ref_dose_point () const
+Plan_calc::get_ref_dose_point () const
 {
     return d_ptr->rdp;
 }
 
 float
-Rt_plan::get_ref_dose_point (int dim) const
+Plan_calc::get_ref_dose_point (int dim) const
 {
     return d_ptr->rdp[dim];
 }
 
 void
-Rt_plan::set_ref_dose_point (const float* rdp)
+Plan_calc::set_ref_dose_point (const float* rdp)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->rdp[d] = rdp[d];
@@ -301,7 +313,7 @@ Rt_plan::set_ref_dose_point (const float* rdp)
 }
 
 void
-Rt_plan::set_ref_dose_point (const double* rdp)
+Plan_calc::set_ref_dose_point (const double* rdp)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->rdp[d] = rdp[d];
@@ -309,43 +321,43 @@ Rt_plan::set_ref_dose_point (const double* rdp)
 }
 
 void 
-Rt_plan::set_have_ref_dose_point(bool have_rdp)
+Plan_calc::set_have_ref_dose_point(bool have_rdp)
 {
     d_ptr->have_rdp = have_rdp;
 }
 
 bool
-Rt_plan::get_have_ref_dose_point()
+Plan_calc::get_have_ref_dose_point()
 {
     return d_ptr->have_rdp;
 }
 
 void 
-Rt_plan::set_have_dose_norm (bool have_dose_norm)
+Plan_calc::set_have_dose_norm (bool have_dose_norm)
 {
     d_ptr->have_dose_norm = have_dose_norm;
 }
 
 bool
-Rt_plan::get_have_dose_norm()
+Plan_calc::get_have_dose_norm()
 {
     return d_ptr->have_dose_norm;
 }
 
 char 
-Rt_plan::get_non_norm_dose () const
+Plan_calc::get_non_norm_dose () const
 {
     return d_ptr->non_norm_dose;
 }
     
 void 
-Rt_plan::set_non_norm_dose (char non_norm_dose)
+Plan_calc::set_non_norm_dose (char non_norm_dose)
 {
     d_ptr->non_norm_dose = non_norm_dose;
 }
 
 void
-Rt_plan::propagate_target_to_beams ()
+Plan_calc::propagate_target_to_beams ()
 {
     /* Loop through beams, and reset target on them */
     for (size_t i = 0; i < d_ptr->beam_storage.size(); i++) {
@@ -354,7 +366,7 @@ Rt_plan::propagate_target_to_beams ()
 }
 
 void
-Rt_plan::create_patient_psp ()
+Plan_calc::create_patient_psp ()
 {
     Float_pair_list lookup;
     lookup.push_back (std::pair<float,float> (NLMIN(float), 0));
@@ -369,7 +381,7 @@ Rt_plan::create_patient_psp ()
 }
 
 void
-Rt_plan::normalize_beam_dose (Rt_beam *beam)
+Plan_calc::normalize_beam_dose (Beam_calc *beam)
 {
     Plm_image::Pointer dose = beam->get_dose ();
     Volume::Pointer dose_vol = dose->get_volume ();
@@ -439,7 +451,7 @@ Rt_plan::normalize_beam_dose (Rt_beam *beam)
 }
 
 void
-Rt_plan::compute_dose (Rt_beam *beam)
+Plan_calc::compute_dose (Beam_calc *beam)
 {
     printf ("-- compute_dose entry --\n");
     d_ptr->rt_dose_timing->timer_misc.resume ();
@@ -564,7 +576,7 @@ Rt_plan::compute_dose (Rt_beam *beam)
 }
 
 Plm_return_code
-Rt_plan::compute_plan ()
+Plan_calc::compute_plan ()
 {
     d_ptr->rt_dose_timing->reset ();
     
@@ -588,8 +600,6 @@ Rt_plan::compute_plan ()
             print_and_exit ("Error: Unable to load patient volume.\n");
         }
         this->set_patient (ct);
-    } else if (d_ptr->rt_study->have_image()) {
-        this->set_patient (d_ptr->rt_study->get_image());
     }
 
     /* Load the patient target structure */
@@ -609,7 +619,7 @@ Rt_plan::compute_plan ()
     for (size_t i = 0; i < d_ptr->beam_storage.size(); i++)
     {
         printf ("\nStart dose calculation Beam %d\n", (int) i + 1);
-        Rt_beam *beam = d_ptr->beam_storage[i];
+        Beam_calc *beam = d_ptr->beam_storage[i];
 
         /* Generate dose */
         this->set_debug (true);
@@ -650,43 +660,43 @@ Rt_plan::compute_plan ()
 }
 
 Plm_image::Pointer
-Rt_plan::get_dose ()
+Plan_calc::get_dose ()
 {
     return d_ptr->dose;
 }
 
 FloatImageType::Pointer
-Rt_plan::get_dose_itk ()
+Plan_calc::get_dose_itk ()
 {
     return d_ptr->dose->itk_float();
 }
 
 void 
-Rt_plan::set_output_dose_fn (const std::string& output_dose_fn)
+Plan_calc::set_output_dose_fn (const std::string& output_dose_fn)
 {
     d_ptr->output_dose_fn = output_dose_fn;
 }
 
 void 
-Rt_plan::set_output_dicom (const std::string& output_dicom)
+Plan_calc::set_output_dicom (const std::string& output_dicom)
 {
     d_ptr->output_dicom = output_dicom;
 }
 
 void 
-Rt_plan::set_output_psp_fn (const std::string& output_psp_fn)
+Plan_calc::set_output_psp_fn (const std::string& output_psp_fn)
 {
     d_ptr->output_psp_fn = output_psp_fn;
 }
 
 void 
-Rt_plan::set_dose (Plm_image::Pointer& dose)
+Plan_calc::set_dose (Plm_image::Pointer& dose)
 {
     d_ptr->dose = dose;
 }
 
 void
-Rt_plan::print_verif ()
+Plan_calc::print_verif ()
 {
     printf("\n [PLAN]");
     printf("\n patient : %s", d_ptr->patient_fn.c_str());

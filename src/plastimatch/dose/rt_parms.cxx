@@ -10,15 +10,14 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "beam_calc.h"
 #include "parameter_parser.h"
 #include "plm_image.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "rpl_volume.h"
-#include "rt_beam.h"
 #include "rt_depth_dose.h"
 #include "rt_parms.h"
-#include "rt_plan.h"
 #include "rt_mebs.h"
 #include "string_util.h"
 
@@ -34,8 +33,8 @@ public:
     std::string bragg_curve;
     
     /* Other parameters not directly defined by config the config file but necessary for the beam creation */
-    Rt_plan* rt_plan;
-    int beam_number; /* contains the number of the beam in the vector<Rt_beam*> beam_storage */
+    Plan_calc* plan_calc;
+    int beam_number; /* contains the number of the beam in the vector<Beam_calc*> beam_storage */
     Rt_mebs::Pointer mebs;
     bool have_prescription;
     bool ap_have_origin;
@@ -54,7 +53,7 @@ public:
 
         /* Other parameters not directly defined by config the config 
            file but necessary for the beam creation */
-        this->rt_plan = 0;
+        this->plan_calc = 0;
         this->beam_number = -1;
         this->mebs = Rt_mebs::New();
         this->have_prescription = false;
@@ -68,10 +67,10 @@ Rt_parms::Rt_parms ()
     d_ptr = new Rt_parms_private;
 }
 
-Rt_parms::Rt_parms (Rt_plan* rt_plan)
+Rt_parms::Rt_parms (Plan_calc* plan_calc)
 {
     d_ptr = new Rt_parms_private;
-    d_ptr->rt_plan = rt_plan;
+    d_ptr->plan_calc = plan_calc;
 }
 
 Rt_parms::~Rt_parms ()
@@ -143,21 +142,21 @@ public:
 };
 
 void 
-Rt_parms::set_rt_plan (Rt_plan *rt_plan)
+Rt_parms::set_plan_calc (Plan_calc *plan_calc)
 {
-    d_ptr->rt_plan = rt_plan;
+    d_ptr->plan_calc = plan_calc;
 }
 
 void 
 Rt_parms::append_beam ()
 {
-    d_ptr->rt_plan->append_beam ();
+    d_ptr->plan_calc->append_beam ();
 }
 
 void 
 Rt_parms::append_peak ()
 {
-    Rt_beam *rt_beam = d_ptr->rt_plan->get_last_rt_beam ();
+    Beam_calc *rt_beam = d_ptr->plan_calc->get_last_rt_beam ();
     if (!rt_beam) {
         return;
     }
@@ -179,10 +178,10 @@ Rt_parms::set_key_value (
     /* **** PLAN **** */
     if (section == "PLAN") {
         if (key == "patient") {
-            d_ptr->rt_plan->set_patient (val);
+            d_ptr->plan_calc->set_patient (val);
         }
         else if (key == "target") {
-            d_ptr->rt_plan->set_target (val);
+            d_ptr->plan_calc->set_target (val);
         }
         else if (key == "threading") {
             Threading threading = THREADING_CPU_OPENMP;
@@ -208,16 +207,16 @@ Rt_parms::set_key_value (
             else {
                 goto error_exit;
             }
-            d_ptr->rt_plan->set_threading (threading);
+            d_ptr->plan_calc->set_threading (threading);
         }
         else if (key == "dose_out") {
-            d_ptr->rt_plan->set_output_dose_fn (val);
+            d_ptr->plan_calc->set_output_dose_fn (val);
         }
         else if (key == "psp_out") {
-            d_ptr->rt_plan->set_output_psp_fn (val);
+            d_ptr->plan_calc->set_output_psp_fn (val);
         }
         else if (key == "debug") {
-            d_ptr->rt_plan->set_debug (string_value_true (val));
+            d_ptr->plan_calc->set_debug (string_value_true (val));
         }
         else if (key == "dose_prescription") {
             float norm_dose;
@@ -227,8 +226,8 @@ Rt_parms::set_key_value (
             if (norm_dose <= 0) {
                 goto error_exit;
             }
-            d_ptr->rt_plan->set_normalization_dose (norm_dose);
-            d_ptr->rt_plan->set_have_dose_norm(true);
+            d_ptr->plan_calc->set_normalization_dose (norm_dose);
+            d_ptr->plan_calc->set_have_dose_norm(true);
         }
         else if (key == "ref_dose_point") {
             float rdp[3];
@@ -237,12 +236,12 @@ Rt_parms::set_key_value (
             if (rc != 3) {
                 goto error_exit;
             }
-            d_ptr->rt_plan->set_ref_dose_point (rdp);
-            d_ptr->rt_plan->set_have_ref_dose_point(true);
+            d_ptr->plan_calc->set_ref_dose_point (rdp);
+            d_ptr->plan_calc->set_have_ref_dose_point(true);
         }
         else if (key == "non_normalized_dose") {
             if (val.length() >= 1) {
-                d_ptr->rt_plan->set_non_norm_dose (val[0]);
+                d_ptr->plan_calc->set_non_norm_dose (val[0]);
             } else {
                 goto error_exit;
             } 
@@ -255,7 +254,7 @@ Rt_parms::set_key_value (
 
     /* **** BEAM **** */
     if (section == "BEAM") {
-        Rt_beam *rt_beam = d_ptr->rt_plan->get_last_rt_beam ();
+        Beam_calc *rt_beam = d_ptr->plan_calc->get_last_rt_beam ();
 
         if (key == "flavor") {
             if (val.length() >= 1) {
@@ -498,7 +497,7 @@ Rt_parms::set_key_value (
         }
         else if (key == "bragg_curve") {
 #if defined (commentout_TODO)
-            d_ptr->rt_plan->beam->load (val);
+            d_ptr->plan_calc->beam->load (val);
 #endif
         }
         else {

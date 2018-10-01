@@ -701,6 +701,18 @@ Rt_study::add_structure (
     d_ptr->m_seg->add_structure (itk_image, structure_name, structure_color);
 }
 
+bool
+Rt_study::have_plan ()
+{
+    return (bool) d_ptr->m_rtplan;
+}
+
+Rtplan::Pointer&
+Rt_study::get_plan ()
+{
+    return d_ptr->m_rtplan;
+}
+
 Xio_ct_transform*
 Rt_study::get_xio_ct_transform ()
 {

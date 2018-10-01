@@ -11,9 +11,8 @@
 #include "bragg_curve.h"
 #include "plm_math.h"
 #include "proj_volume.h"
-#include "rt_beam.h"
+#include "beam_calc.h"
 #include "rt_dose_timing.h"
-#include "rt_plan.h"
 #include "rt_spot_map.h"
 
 static void
@@ -43,7 +42,7 @@ save_vector_as_image (
 }
 
 
-class Rt_beam_private {
+class Beam_calc_private {
 public:
 
     /* dose volume */
@@ -91,7 +90,7 @@ public:
     std::string beam_line_type;
 
 public:
-    Rt_beam_private ()
+    Beam_calc_private ()
     {
         this->dose_vol = Plm_image::New();
 
@@ -129,7 +128,7 @@ public:
         this->wed_out = "";
         this->beam_line_type = "active";
     }
-    Rt_beam_private (const Rt_beam_private* rtbp)
+    Beam_calc_private (const Beam_calc_private* rtbp)
     {
         this->dose_vol = Plm_image::New();
 
@@ -173,9 +172,9 @@ public:
     }
 };
 
-Rt_beam::Rt_beam ()
+Beam_calc::Beam_calc ()
 {
-    this->d_ptr = new Rt_beam_private();
+    this->d_ptr = new Beam_calc_private();
 
     /* Creation of the volumes useful for dose calculation */
     this->rsp_accum_vol = new Rpl_volume();
@@ -187,10 +186,10 @@ Rt_beam::Rt_beam ()
     this->dose_rv = 0;
 }
 
-Rt_beam::Rt_beam (const Rt_beam* rt_beam)
+Beam_calc::Beam_calc (const Beam_calc* rt_beam)
 {
     /* Copy all the private settings (?) */
-    this->d_ptr = new Rt_beam_private (rt_beam->d_ptr);
+    this->d_ptr = new Beam_calc_private (rt_beam->d_ptr);
     
     /* The below calculation volumes don't need to be copied 
        from input beam */
@@ -203,13 +202,13 @@ Rt_beam::Rt_beam (const Rt_beam* rt_beam)
     this->dose_rv = 0;
 }
 
-Rt_beam::~Rt_beam ()
+Beam_calc::~Beam_calc ()
 {
     delete this->d_ptr;
 }
 
 bool
-Rt_beam::load (const char* fn)
+Beam_calc::load (const char* fn)
 {
     FILE* fp = fopen (fn, "r");
     char linebuf[128];
@@ -229,19 +228,19 @@ Rt_beam::load (const char* fn)
 }
 
 const double*
-Rt_beam::get_source_position () const
+Beam_calc::get_source_position () const
 {
     return d_ptr->source;
 }
 
 double
-Rt_beam::get_source_position (int dim) const
+Beam_calc::get_source_position (int dim) const
 {
     return d_ptr->source[dim];
 }
 
 void
-Rt_beam::set_source_position (const float* position)
+Beam_calc::set_source_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -249,7 +248,7 @@ Rt_beam::set_source_position (const float* position)
 }
 
 void
-Rt_beam::set_source_position (const double* position)
+Beam_calc::set_source_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
@@ -257,19 +256,19 @@ Rt_beam::set_source_position (const double* position)
 }
 
 const double*
-Rt_beam::get_isocenter_position () const
+Beam_calc::get_isocenter_position () const
 {
     return d_ptr->isocenter;
 }
 
 double
-Rt_beam::get_isocenter_position (int dim) const
+Beam_calc::get_isocenter_position (int dim) const
 {
     return d_ptr->isocenter[dim];
 }
 
 void
-Rt_beam::set_isocenter_position (const float* position)
+Beam_calc::set_isocenter_position (const float* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -277,7 +276,7 @@ Rt_beam::set_isocenter_position (const float* position)
 }
 
 void
-Rt_beam::set_isocenter_position (const double* position)
+Beam_calc::set_isocenter_position (const double* position)
 {
     for (int d = 0; d < 3; d++) {
         d_ptr->isocenter[d] = position[d];
@@ -285,97 +284,97 @@ Rt_beam::set_isocenter_position (const double* position)
 }
 
 double 
-Rt_beam::get_source_distance () const
+Beam_calc::get_source_distance () const
 {
     return vec3_dist (d_ptr->isocenter, d_ptr->source);
 }
 
 const std::string&
-Rt_beam::get_flavor (void) const
+Beam_calc::get_flavor (void) const
 {
     return d_ptr->flavor;
 }
 
 void
-Rt_beam::set_flavor (const std::string& flavor)
+Beam_calc::set_flavor (const std::string& flavor)
 {
     d_ptr->flavor = flavor;
 }
 
 char 
-Rt_beam::get_homo_approx () const
+Beam_calc::get_homo_approx () const
 {
     return d_ptr->homo_approx;
 }
     
 void 
-Rt_beam::set_homo_approx (char homo_approx)
+Beam_calc::set_homo_approx (char homo_approx)
 {
     d_ptr->homo_approx = homo_approx;
 }
 
 Rt_mebs::Pointer
-Rt_beam::get_mebs()
+Beam_calc::get_mebs()
 {
     return d_ptr->mebs;
 }
 
 float
-Rt_beam::get_beam_weight (void) const
+Beam_calc::get_beam_weight (void) const
 {
     return d_ptr->beamWeight;
 }
 
 void
-Rt_beam::set_beam_weight (float beamWeight)
+Beam_calc::set_beam_weight (float beamWeight)
 {
     d_ptr->beamWeight = beamWeight;
 }
 
 void
-Rt_beam::set_rc_MC_model (char rc_MC_model)
+Beam_calc::set_rc_MC_model (char rc_MC_model)
 {
     d_ptr->rc_MC_model = rc_MC_model;
 }
 
 char
-Rt_beam::get_rc_MC_model (void) const
+Beam_calc::get_rc_MC_model (void) const
 {
     return d_ptr->rc_MC_model;
 }
 
 void
-Rt_beam::set_source_size(float source_size)
+Beam_calc::set_source_size(float source_size)
 {
     d_ptr->source_size = source_size;
 }
 
 float
-Rt_beam::get_source_size() const
+Beam_calc::get_source_size() const
 {
     return d_ptr->source_size;
 }
 
 void
-Rt_beam::set_debug (const std::string& dir)
+Beam_calc::set_debug (const std::string& dir)
 {
     d_ptr->debug_dir = dir;
 }
 
 void
-Rt_beam::dump (const char* dir)
+Beam_calc::dump (const char* dir)
 {
     d_ptr->mebs->dump (dir);
 }
 
 void
-Rt_beam::dump (const std::string& dir)
+Beam_calc::dump (const std::string& dir)
 {
     this->dump (dir.c_str());
 }
 
 void 
-Rt_beam::add_spot (
+Beam_calc::add_spot (
     float xpos,
     float ypos,
     float energy,
@@ -386,7 +385,7 @@ Rt_beam::add_spot (
 }
 
 bool
-Rt_beam::prepare_for_calc (
+Beam_calc::prepare_for_calc (
     Plm_image::Pointer& ct_hu,
     Plm_image::Pointer& ct_psp,
     Plm_image::Pointer& target)
@@ -538,7 +537,7 @@ Rt_beam::prepare_for_calc (
 }
 
 void
-Rt_beam::compute_beam_data_from_beamlet_map()
+Beam_calc::compute_beam_data_from_beamlet_map()
 {
     this->get_mebs()->clear_depth_dose ();
     this->get_mebs()->load_beamlet_map (this->get_aperture());
@@ -549,13 +548,13 @@ Rt_beam::compute_beam_data_from_beamlet_map()
 }
 
 void
-Rt_beam::compute_beam_data_from_spot_map()
+Beam_calc::compute_beam_data_from_spot_map()
 {
     this->get_mebs()->set_from_spot_map (d_ptr->spot_map);
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
+Beam_calc::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
     const plm_long* ap_dim = this->get_aperture()->get_dim();
@@ -583,7 +582,7 @@ Rt_beam::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 }
 
 void
-Rt_beam::compute_beam_data_from_manual_peaks()
+Beam_calc::compute_beam_data_from_manual_peaks()
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
     const plm_long *ap_dim = this->get_aperture()->get_dim();
@@ -594,7 +593,7 @@ Rt_beam::compute_beam_data_from_manual_peaks()
 }
 
 void
-Rt_beam::compute_beam_data_from_prescription(Plm_image::Pointer& target)
+Beam_calc::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
     /* Identic to compute from manual peaks, with a preliminary optimization */
@@ -603,7 +602,7 @@ Rt_beam::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 }
 
 void
-Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
+Beam_calc::compute_beam_data_from_target(Plm_image::Pointer& target)
 {
     /* Compute beam aperture, range compensator 
        + SOBP for passively scattered beam lines */
@@ -630,7 +629,7 @@ Rt_beam::compute_beam_data_from_target(Plm_image::Pointer& target)
 }
 
 void 
-Rt_beam::compute_default_beam()
+Beam_calc::compute_default_beam()
 {
     /* Computes a default 100 MeV peak */
     this->get_mebs()->add_peak (100, 1, 1);
@@ -638,7 +637,7 @@ Rt_beam::compute_default_beam()
 }
 
 void 
-Rt_beam::compute_beam_modifiers (Volume *seg_vol)
+Beam_calc::compute_beam_modifiers (Volume *seg_vol)
 {
     if (d_ptr->beam_line_type == "active")
     {
@@ -658,7 +657,7 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol)
 }
 
 void 
-Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
+Beam_calc::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
 {
     if (d_ptr->beam_line_type == "active")
     {
@@ -678,7 +677,7 @@ Rt_beam::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_m
 }
 
 void 
-Rt_beam::compute_beam_modifiers_active_scanning (
+Beam_calc::compute_beam_modifiers_active_scanning (
     Volume *seg_vol, float smearing, float proximal_margin,
     float distal_margin)
 {
@@ -689,7 +688,7 @@ Rt_beam::compute_beam_modifiers_active_scanning (
 }
 
 void 
-Rt_beam::compute_beam_modifiers_passive_scattering (
+Beam_calc::compute_beam_modifiers_passive_scattering (
     Volume *seg_vol, float smearing, float proximal_margin, 
     float distal_margin)
 {
@@ -700,7 +699,7 @@ Rt_beam::compute_beam_modifiers_passive_scattering (
 }
 
 void 
-Rt_beam::compute_beam_modifiers_active_scanning (
+Beam_calc::compute_beam_modifiers_active_scanning (
     Volume *seg_vol, float smearing, float proximal_margin,
     float distal_margin, std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
@@ -710,7 +709,7 @@ Rt_beam::compute_beam_modifiers_active_scanning (
 }
 
 void 
-Rt_beam::compute_beam_modifiers_passive_scattering (
+Beam_calc::compute_beam_modifiers_passive_scattering (
     Volume *seg_vol, float smearing, float proximal_margin, 
     float distal_margin, std::vector<double>& map_wed_min, 
     std::vector<double>& map_wed_max)
@@ -720,7 +719,7 @@ Rt_beam::compute_beam_modifiers_passive_scattering (
 }
 
 void
-Rt_beam::compute_beam_modifiers_core (
+Beam_calc::compute_beam_modifiers_core (
     Volume *seg_vol,
     bool active,
     float smearing,
@@ -863,7 +862,7 @@ Rt_beam::compute_beam_modifiers_core (
 }
 
 void
-Rt_beam::compute_target_wepl_min_max (
+Beam_calc::compute_target_wepl_min_max (
     std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
 {
@@ -902,7 +901,7 @@ Rt_beam::compute_target_wepl_min_max (
 }
 
 void 
-Rt_beam::apply_smearing_to_target (
+Beam_calc::apply_smearing_to_target (
     float smearing,
     std::vector <double>& map_min_distance,
     std::vector <double>& map_max_distance)
@@ -1020,7 +1019,7 @@ Rt_beam::apply_smearing_to_target (
 }
 
 void
-Rt_beam::update_aperture_and_range_compensator ()
+Beam_calc::update_aperture_and_range_compensator ()
 {
     // GCS FIX.  The below logic is no longer valid
 #if defined (commentout)
@@ -1064,301 +1063,301 @@ Rt_beam::update_aperture_and_range_compensator ()
 }
 
 Plm_image::Pointer&
-Rt_beam::get_ct_psp ()
+Beam_calc::get_ct_psp ()
 {
     return d_ptr->ct_psp;
 }
 
 const Plm_image::Pointer&
-Rt_beam::get_ct_psp () const 
+Beam_calc::get_ct_psp () const 
 {
     return d_ptr->ct_psp;
 }
 
 void 
-Rt_beam::set_ct_psp (Plm_image::Pointer& ct_psp)
+Beam_calc::set_ct_psp (Plm_image::Pointer& ct_psp)
 {
     d_ptr->ct_psp = ct_psp;
 }
 
 Plm_image::Pointer&
-Rt_beam::get_target ()
+Beam_calc::get_target ()
 {
     return d_ptr->target;
 }
 
 const Plm_image::Pointer&
-Rt_beam::get_target () const 
+Beam_calc::get_target () const 
 {
     return d_ptr->target;
 }
 
 void 
-Rt_beam::set_target (Plm_image::Pointer& target)
+Beam_calc::set_target (Plm_image::Pointer& target)
 {
     d_ptr->target = target;
 }
 
 void 
-Rt_beam::set_rt_dose_timing (Rt_dose_timing::Pointer& rt_dose_timing)
+Beam_calc::set_rt_dose_timing (Rt_dose_timing::Pointer& rt_dose_timing)
 {
     d_ptr->rt_dose_timing = rt_dose_timing;
 }
 
 Rt_dose_timing::Pointer& 
-Rt_beam::get_rt_dose_timing ()
+Beam_calc::get_rt_dose_timing ()
 {
     return d_ptr->rt_dose_timing;
 }
 
 Plm_image::Pointer&
-Rt_beam::get_dose ()
+Beam_calc::get_dose ()
 {
     return d_ptr->dose_vol;
 }
 
 const Plm_image::Pointer&
-Rt_beam::get_dose () const 
+Beam_calc::get_dose () const 
 {
     return d_ptr->dose_vol;
 }
 
 void 
-Rt_beam::set_dose(Plm_image::Pointer& dose)
+Beam_calc::set_dose(Plm_image::Pointer& dose)
 {
     d_ptr->dose_vol = dose;
 }
 
 Aperture::Pointer&
-Rt_beam::get_aperture () 
+Beam_calc::get_aperture () 
 {
     return d_ptr->aperture;
 }
 
 const Aperture::Pointer&
-Rt_beam::get_aperture () const
+Beam_calc::get_aperture () const
 {
     return d_ptr->aperture;
 }
 
 Plm_image::Pointer&
-Rt_beam::get_aperture_image () 
+Beam_calc::get_aperture_image () 
 {
     return d_ptr->aperture->get_aperture_image ();
 }
 
 const Plm_image::Pointer&
-Rt_beam::get_aperture_image () const
+Beam_calc::get_aperture_image () const
 {
     return d_ptr->aperture->get_aperture_image ();
 }
 
 const plm_long*
-Rt_beam::get_aperture_dim () const
+Beam_calc::get_aperture_dim () const
 {
     return d_ptr->aperture->get_dim ();
 }
 
 Plm_image::Pointer&
-Rt_beam::get_range_compensator_image () 
+Beam_calc::get_range_compensator_image () 
 {
     return d_ptr->aperture->get_range_compensator_image ();
 }
 
 const Plm_image::Pointer&
-Rt_beam::get_range_compensator_image () const
+Beam_calc::get_range_compensator_image () const
 {
     return d_ptr->aperture->get_range_compensator_image ();
 }
 
 void
-Rt_beam::set_aperture_vup (const float vup[])
+Beam_calc::set_aperture_vup (const float vup[])
 {
     d_ptr->aperture->set_vup (vup);
 }
 
 void
-Rt_beam::set_aperture_distance (float ap_distance)
+Beam_calc::set_aperture_distance (float ap_distance)
 {
     d_ptr->aperture->set_distance (ap_distance);
 }
 
 void
-Rt_beam::set_aperture_origin (const float ap_origin[])
+Beam_calc::set_aperture_origin (const float ap_origin[])
 {
     this->get_aperture()->set_origin (ap_origin);
 }
 
 void
-Rt_beam::set_aperture_resolution (const plm_long ap_resolution[])
+Beam_calc::set_aperture_resolution (const plm_long ap_resolution[])
 {
     this->get_aperture()->set_dim (ap_resolution);
 }
 
 void
-Rt_beam::set_aperture_spacing (const float ap_spacing[])
+Beam_calc::set_aperture_spacing (const float ap_spacing[])
 {
     this->get_aperture()->set_spacing (ap_spacing);
 }
 
 void 
-Rt_beam::set_step_length(float step)
+Beam_calc::set_step_length(float step)
 {
     d_ptr->step_length = step;
 }
 
 float 
-Rt_beam::get_step_length()
+Beam_calc::get_step_length()
 {
     return d_ptr->step_length;
 }
 
 void
-Rt_beam::set_smearing (float smearing)
+Beam_calc::set_smearing (float smearing)
 {
     d_ptr->smearing = smearing;
 }
 
 float 
-Rt_beam::get_smearing()
+Beam_calc::get_smearing()
 {
     return d_ptr->smearing;
 }
 
 void 
-Rt_beam::set_aperture_in (const std::string& str)
+Beam_calc::set_aperture_in (const std::string& str)
 {
     d_ptr->aperture_in = str;
 }
 
 std::string 
-Rt_beam::get_aperture_in()
+Beam_calc::get_aperture_in()
 {
     return d_ptr->aperture_in;
 }
 
 void 
-Rt_beam::set_range_compensator_in (const std::string& str)
+Beam_calc::set_range_compensator_in (const std::string& str)
 {
     d_ptr->range_compensator_in = str;
 }
 
 std::string 
-Rt_beam::get_range_compensator_in()
+Beam_calc::get_range_compensator_in()
 {
     return d_ptr->range_compensator_in;
 }
 
 void 
-Rt_beam::set_aperture_out(std::string str)
+Beam_calc::set_aperture_out(std::string str)
 {
     d_ptr->aperture_out = str;
 }
 
 std::string 
-Rt_beam::get_aperture_out()
+Beam_calc::get_aperture_out()
 {
     return d_ptr->aperture_out;
 }
 
 void 
-Rt_beam::set_proj_dose_out(std::string str)
+Beam_calc::set_proj_dose_out(std::string str)
 {
     d_ptr->proj_dose_out = str;
 }
 
 std::string 
-Rt_beam::get_proj_dose_out()
+Beam_calc::get_proj_dose_out()
 {
     return d_ptr->proj_dose_out;
 }
 
 void 
-Rt_beam::set_proj_img_out(std::string str)
+Beam_calc::set_proj_img_out(std::string str)
 {
     d_ptr->proj_img_out = str;
 }
 
 std::string 
-Rt_beam::get_proj_img_out()
+Beam_calc::get_proj_img_out()
 {
     return d_ptr->proj_img_out;
 }
 
 void 
-Rt_beam::set_range_compensator_out(std::string str)
+Beam_calc::set_range_compensator_out(std::string str)
 {
     d_ptr->range_compensator_out = str;
 }
 
 std::string 
-Rt_beam::get_range_compensator_out()
+Beam_calc::get_range_compensator_out()
 {
     return d_ptr->range_compensator_out;
 }
 
 void 
-Rt_beam::set_sigma_out(std::string str)
+Beam_calc::set_sigma_out(std::string str)
 {
     d_ptr->sigma_out = str;
 }
 
 std::string 
-Rt_beam::get_sigma_out()
+Beam_calc::get_sigma_out()
 {
     return d_ptr->sigma_out;
 }
 
 void 
-Rt_beam::set_beam_dump_out(std::string str)
+Beam_calc::set_beam_dump_out(std::string str)
 {
     d_ptr->beam_dump_out = str;
 }
 
 std::string 
-Rt_beam::get_beam_dump_out()
+Beam_calc::get_beam_dump_out()
 {
     return d_ptr->beam_dump_out;
 }
 
 void 
-Rt_beam::set_dij_out (const std::string& str)
+Beam_calc::set_dij_out (const std::string& str)
 {
     d_ptr->dij_out = str;
 }
 
 const std::string&
-Rt_beam::get_dij_out()
+Beam_calc::get_dij_out()
 {
     return d_ptr->dij_out;
 }
 
 void 
-Rt_beam::set_wed_out(std::string str)
+Beam_calc::set_wed_out(std::string str)
 {
     d_ptr->wed_out = str;
 }
 
 std::string 
-Rt_beam::get_wed_out()
+Beam_calc::get_wed_out()
 {
     return d_ptr->wed_out;
 }
 
 void 
-Rt_beam::set_proj_target_out(std::string str)
+Beam_calc::set_proj_target_out(std::string str)
 {
     d_ptr->proj_target_out = str;
 }
 
 std::string 
-Rt_beam::get_proj_target_out()
+Beam_calc::get_proj_target_out()
 {
     return d_ptr->proj_target_out;
 }
 
 void 
-Rt_beam::set_beam_line_type(std::string str)
+Beam_calc::set_beam_line_type(std::string str)
 {
     if (str == "active")
     {
@@ -1371,13 +1370,13 @@ Rt_beam::set_beam_line_type(std::string str)
 }
 
 std::string
-Rt_beam::get_beam_line_type()
+Beam_calc::get_beam_line_type()
 {
     return d_ptr->beam_line_type;
 }
 
 bool
-Rt_beam::load_xio (const char* fn)
+Beam_calc::load_xio (const char* fn)
 {
 #if defined (commentout)
     int i, j;
@@ -1430,7 +1429,7 @@ Rt_beam::load_xio (const char* fn)
 }
 
 bool
-Rt_beam::load_txt (const char* fn)
+Beam_calc::load_txt (const char* fn)
 {
 #if defined (commentout)
     char linebuf[128];
@@ -1462,7 +1461,7 @@ Rt_beam::load_txt (const char* fn)
 }
 
 bool
-Rt_beam::get_intersection_with_aperture (
+Beam_calc::get_intersection_with_aperture (
     double* idx_ap, plm_long* idx, double* rest, double* ct_xyz)
 {
     double ray[3] = {0,0,0};
@@ -1492,7 +1491,7 @@ Rt_beam::get_intersection_with_aperture (
 }
 
 bool 
-Rt_beam::is_ray_in_the_aperture (
+Beam_calc::is_ray_in_the_aperture (
     const plm_long* idx, const unsigned char* ap_img)
 {
     if ((float) ap_img[idx[0] + idx[1] * this->get_aperture()->get_dim(0)] == 0) {return false;}
@@ -1512,7 +1511,7 @@ Rt_beam::is_ray_in_the_aperture (
 }
 
 float 
-Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
+Beam_calc::compute_minimal_target_distance(Volume* target_vol, float background)
 {
     float* target_img = (float*) target_vol->img;
 
@@ -1547,43 +1546,43 @@ Rt_beam::compute_minimal_target_distance(Volume* target_vol, float background)
     return min;
 }
 
-void Rt_beam::set_energy_resolution (float eres)
+void Beam_calc::set_energy_resolution (float eres)
 {
     d_ptr->mebs->set_energy_resolution (eres);
 }
 
-float Rt_beam::get_energy_resolution () const
+float Beam_calc::get_energy_resolution () const
 {
     return d_ptr->mebs->get_energy_resolution ();
 }
 
-void Rt_beam::set_proximal_margin (float proximal_margin)
+void Beam_calc::set_proximal_margin (float proximal_margin)
 {
     d_ptr->mebs->set_proximal_margin (proximal_margin);
 }
 
-float Rt_beam::get_proximal_margin () const
+float Beam_calc::get_proximal_margin () const
 {
     return d_ptr->mebs->get_proximal_margin ();
 }
 
-void Rt_beam::set_distal_margin (float distal_margin)
+void Beam_calc::set_distal_margin (float distal_margin)
 {
     d_ptr->mebs->set_distal_margin (distal_margin);
 }
 
-float Rt_beam::get_distal_margin () const
+float Beam_calc::get_distal_margin () const
 {
     return d_ptr->mebs->get_distal_margin ();
 }
 
-void Rt_beam::set_prescription (float prescription_min, float prescription_max)
+void Beam_calc::set_prescription (float prescription_min, float prescription_max)
 {
     d_ptr->mebs->set_prescription (prescription_min, prescription_max);
 }
 
 void
-Rt_beam::save_beam_output ()
+Beam_calc::save_beam_output ()
 {
     /* Save beam modifiers */
     if (this->get_aperture_out() != "") {

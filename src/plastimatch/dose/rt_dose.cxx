@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "aperture.h"
+#include "beam_calc.h"
 #include "dose_volume_functions.h"
 #include "interpolate.h"
 #include "plm_image.h"
@@ -18,13 +19,11 @@
 #include "ray_trace.h"
 #include "rpl_volume.h"
 #include "rpl_volume_lut.h"
-#include "rt_beam.h"
 #include "rt_depth_dose.h"
 #include "rt_dij.h"
 #include "rt_dose.h"
 #include "rt_lut.h"
 #include "rt_mebs.h"
-#include "rt_plan.h"
 #include "rt_sigma.h"
 #include "string_util.h"
 #include "threading.h"
@@ -34,7 +33,7 @@
 double
 energy_direct (
     float rgdepth,          /* voxel to dose */
-    Rt_beam* beam,
+    Beam_calc* beam,
     int beam_idx
 )
 {
@@ -50,7 +49,7 @@ energy_direct (
 void
 compute_dose_a (
     Volume::Pointer dose_vol, 
-    Rt_beam* beam, 
+    Beam_calc* beam, 
     const Volume::Pointer ct_vol
 )
 {
@@ -134,7 +133,7 @@ compute_dose_a (
 
 void
 compute_dose_b (
-    Rt_beam* beam,
+    Beam_calc* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol
 )
@@ -184,7 +183,7 @@ compute_dose_b (
 
 void
 compute_dose_ray_trace_dij_a (
-    Rt_beam* beam,
+    Beam_calc* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol,
     Volume::Pointer& dose_vol
@@ -264,7 +263,7 @@ compute_dose_ray_trace_dij_a (
 
 void
 compute_dose_ray_trace_dij_b (
-    Rt_beam* beam,
+    Beam_calc* beam,
     const Volume::Pointer ct_vol,
     Volume::Pointer& dose_vol
 )
@@ -345,7 +344,7 @@ compute_dose_ray_trace_dij_b (
 
 void
 compute_dose_d (
-    Rt_beam* beam,
+    Beam_calc* beam,
     size_t energy_index,
     const Volume::Pointer ct_vol
 )
@@ -533,7 +532,7 @@ compute_dose_d (
 }
 
 void
-add_rcomp_length_to_rpl_volume (Rt_beam* beam)
+add_rcomp_length_to_rpl_volume (Beam_calc* beam)
 {
     const plm_long *dim = beam->rsp_accum_vol->get_vol()->dim;
     float* rpl_img = (float*) beam->rsp_accum_vol->get_vol()->img;
