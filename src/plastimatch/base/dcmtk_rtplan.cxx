@@ -100,10 +100,11 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
     unsigned long num_beams = seq->card();
     printf (">> Num beams = %d\n", num_beams);
     for (unsigned long i = 0; i < num_beams; i++) {
-        Rtplan_beam *curr_beam;
         OFCondition orc;
+        unsigned long count;
+
         long int beam_id = 0;
-        const char *beam_name;
+        Rtplan_beam *curr_beam;
 
         DcmItem *item = seq->getItem(i);
         orc = item->findAndGetLongInt(DCM_BeamNumber, beam_id);
@@ -111,11 +112,26 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
             continue;
         }
 
+        const char *beam_name;
         orc = item->findAndGetString(DCM_BeamName, beam_name);
         if (!orc.good()) {
             continue;
         }
         curr_beam = d_ptr->rtplan->add_beam (std::string(beam_name), beam_id);
+
+        const float *vsad;
+        orc = item->findAndGetFloat32Array (DCM_VirtualSourceAxisDistances,
+            vsad, &count);
+        if (!orc.good()) {
+            lprintf (">> Error: %s\n", orc.text());
+            print_and_exit ("DCM_VirtualSourceAxisDistances not found\n");
+        }
+        if (count != 2) {
+            print_and_exit ("DCM_VirtualSourceAxisDistances"
+                " should have two entries\n");
+        }
+        curr_beam->virtual_source_axis_distances[0] = vsad[0];
+        curr_beam->virtual_source_axis_distances[1] = vsad[1];
 
         DcmSequenceOfItems *cp_seq = 0;
         orc = item->findAndGetSequence (DCM_IonControlPointSequence, cp_seq);
@@ -156,7 +172,6 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
             }
             lprintf (">> %d spots\n", num_spots);
 
-            unsigned long count;
             const float *ss_size;
             orc = c_item->findAndGetFloat32Array (DCM_ScanningSpotSize,
                 ss_size, &count);
@@ -170,9 +185,7 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
 
             const float *spot_positions;
             const float *spot_weights;
-
-
-            const char *s;
+//            const char *s;
             orc = c_item->findAndGetFloat32Array (DCM_ScanSpotPositionMap,
                 spot_positions, &count);
             if (!orc.good()) {
@@ -382,8 +395,10 @@ Dcmtk_rt_study::rtplan_save (const char *dicom_dir)
 	if (rtplan->patient_position != "") {
             dcmtk_put (ib_item, DCM_ReferencedPatientSetupNumber, 1);
 	}
-        ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances,
-	    beam->virtual_source_axis_distances.c_str());
+        s = string_format ("%f\\%f", 
+            beam->virtual_source_axis_distances[0],
+            beam->virtual_source_axis_distances[1]);
+        ib_item->putAndInsertString (DCM_VirtualSourceAxisDistances, s.c_str());
         ib_item->putAndInsertString (DCM_TreatmentDeliveryType,
 	    beam->treatment_delivery_type.c_str());
         ib_item->putAndInsertString (DCM_NumberOfWedges, "0");
@@ -491,7 +506,7 @@ Dcmtk_rt_study::rtplan_save (const char *dicom_dir)
 		    beam->isocenter_position[0],
 		    beam->isocenter_position[1],
 		    beam->isocenter_position[2]);
-	        cp_item->putAndInsertString (DCM_IsocenterPosition, s.c_str());		
+	        cp_item->putAndInsertString (DCM_IsocenterPosition, s.c_str());
 	    }
             s = PLM_to_string (cp->nominal_beam_energy);
             cp_item->putAndInsertString (DCM_NominalBeamEnergy, s.c_str());

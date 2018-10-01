@@ -274,6 +274,11 @@ plm_min (T v1, T v2) {
     return (v1 < v2) ? v1 : v2;
 }
 
+template<class T> T
+radians_from_degrees (T degrees) {
+    return degrees * M_PI / 180.;
+}
+
 // Cf. http://realtimecollisiondetection.net/blog/?p=89
 // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 static inline bool

@@ -4,7 +4,6 @@
 #ifndef _beam_calc_h_
 #define _beam_calc_h_
 
-#include "file_util.h"
 #include "plmdose_config.h"
 #include <string>
 #include <vector>
@@ -12,6 +11,7 @@
 #include "aperture.h"
 #include "particle_type.h"
 #include "rpl_volume.h"
+#include "rtplan_beam.h"
 #include "rt_dose_timing.h"
 #include "rt_mebs.h"
 #include "smart_pointer.h"
@@ -37,6 +37,9 @@ public:
     /*! \brief Load PDD from XiO or txt file */
     bool load (const char* fn);
 
+    /*! \brief Copy information from Rtplan_beam object into Beam_calc object */
+    void set_rtplan_beam (const Rtplan_beam *rtplan_beam);
+
     /*! \brief Get the position of the beam source in world coordinates. */
     const double* get_source_position () const;
     /*! \brief Get the x, y, or z coordinate of the beam source 
@@ -46,6 +49,11 @@ public:
     void set_source_position (const float position[3]);
     /*! \brief Set the position of the beam source in world coordinates. */
     void set_source_position (const double position[3]);
+    /*! \brief Compute the position of the beam source in world coordinates. */
+    void compute_source_position (
+        float gantry_angle,
+        float patient_support_angle,
+        const float *virtual_source_axis_distances);
 
     /*! \brief Get the position of the beam isocenter in world coordinates. */
     const double* get_isocenter_position () const;

@@ -26,7 +26,7 @@ public:
     std::string institution_address;
     std::string institutional_department_name;
     std::string manufacturer_model_name;
-    std::string virtual_source_axis_distances;
+    float virtual_source_axis_distances[2];
 
     /*! \brief Meterset at end of all control points */
     float final_cumulative_meterset_weight;

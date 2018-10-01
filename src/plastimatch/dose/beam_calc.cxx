@@ -8,6 +8,7 @@
 #include <string_util.h>
 #include <math.h>
 
+#include "beam_calc.h"
 #include "bragg_curve.h"
 #include "plm_math.h"
 #include "proj_volume.h"
@@ -227,6 +228,15 @@ Beam_calc::load (const char* fn)
     }
 }
 
+void
+Beam_calc::set_rtplan_beam (const Rtplan_beam *rtplan_beam)
+{
+    this->set_isocenter_position (rtplan_beam->isocenter_position);
+    this->compute_source_position (rtplan_beam->gantry_angle,
+        rtplan_beam->patient_support_angle,
+        rtplan_beam->virtual_source_axis_distances);
+}
+
 const double*
 Beam_calc::get_source_position () const
 {
@@ -253,6 +263,30 @@ Beam_calc::set_source_position (const double* position)
     for (int d = 0; d < 3; d++) {
         d_ptr->source[d] = position[d];
     }
+}
+
+void
+Beam_calc::compute_source_position (
+    float gantry_angle,
+    float patient_support_angle,
+    const float *virtual_source_axis_distances)
+{
+    float gantry_radians = radians_from_degrees (gantry_angle);
+    float couch_radians = radians_from_degrees (patient_support_angle);
+    /* GCS FIX: Need to handle X and Y separately */
+    float vsad = virtual_source_axis_distances[0];
+
+    float source[3] = { 0, -vsad, 0 };
+    float gantry_mat[9] = {
+        cosf(gantry_radians), sinf(gantry_radians), 0.,
+        -sinf(gantry_radians), cosf(gantry_radians), 0.,
+        0., 0., 1.
+    };
+    float couch_mat[9] = {
+        cosf(gantry_radians), 0, -sinf(gantry_radians),
+        0., 1., 0.,
+        sinf(gantry_radians), 0., cosf(gantry_radians)
+    };
 }
 
 const double*

@@ -28,6 +28,8 @@
 #include "rt_sigma.h"
 #include "rt_mebs.h"
 #include "rt_study.h"
+#include "rtplan.h"
+#include "rtplan_beam.h"
 #include "volume.h"
 #include "volume_adjust.h"
 #include "volume_header.h"
@@ -234,7 +236,14 @@ Plan_calc::get_target ()
 void
 Plan_calc::set_rtplan (const Rtplan::Pointer& rtplan)
 {
-    /* Do something */
+    /* Copy information from Rtplan object into Plan_calc object */
+    std::vector<Rtplan_beam*>::const_iterator it = rtplan->beamlist.begin();
+    while (it != rtplan->beamlist.end()) {
+        printf ("Beam name = %s\n", (*it)->name.c_str());
+        Beam_calc *beam_calc = append_beam ();
+        beam_calc->set_rtplan_beam (*it);
+        ++it;
+    }
 }
 
 Beam_calc*
