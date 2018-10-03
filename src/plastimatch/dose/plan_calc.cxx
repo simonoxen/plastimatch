@@ -656,12 +656,20 @@ Plan_calc::compute_plan ()
     }
     
     /* Save dose output */
-    Plm_image::Pointer dose = Plm_image::New();
-    dose->set_volume (dose_vol);
-    this->set_dose(dose);
-    this->get_dose()->save_image (d_ptr->output_dose_fn.c_str());
-    d_ptr->rt_dose_timing->timer_io.stop ();
+    if (d_ptr->output_dose_fn != "" || d_ptr->output_dicom != "") {
+        Plm_image::Pointer dose = Plm_image::New();
+        dose->set_volume (dose_vol);
+        this->set_dose(dose);
 
+        if (d_ptr->output_dose_fn != "") {
+            this->get_dose()->save_image (d_ptr->output_dose_fn.c_str());
+        }
+        if (d_ptr->output_dicom != "") {
+            d_ptr->rt_study->set_dose (dose);
+            d_ptr->rt_study->save_dicom_dose (d_ptr->output_dicom.c_str());
+        }
+    }
+    d_ptr->rt_dose_timing->timer_io.stop ();
     d_ptr->rt_dose_timing->report ();
     
     printf ("done.  \n\n");

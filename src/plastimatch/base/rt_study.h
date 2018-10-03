@@ -143,7 +143,6 @@ public:
 protected:
     void save_dcmtk (const char *dicom_dir, bool filenames_with_uid);
     void save_dcmtk_dose (const char *dicom_dir);
-    void save_gdcm (const char *dicom_dir);
     void convert_ss_img_to_cxt ();
 };
 

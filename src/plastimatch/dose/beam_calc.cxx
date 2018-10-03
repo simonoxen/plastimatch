@@ -12,9 +12,9 @@
 #include "bragg_curve.h"
 #include "plm_math.h"
 #include "proj_volume.h"
-#include "beam_calc.h"
 #include "rt_dose_timing.h"
 #include "rt_spot_map.h"
+#include "rtplan_control_pt.h"
 
 static void
 save_vector_as_image (
@@ -235,6 +235,33 @@ Beam_calc::set_rtplan_beam (const Rtplan_beam *rtplan_beam)
     this->compute_source_position (rtplan_beam->gantry_angle,
         rtplan_beam->patient_support_angle,
         rtplan_beam->virtual_source_axis_distances);
+
+    for (std::vector<Rtplan_control_pt*>::const_iterator it
+             = rtplan_beam->cplist.begin();
+         it != rtplan_beam->cplist.end();
+         ++it)
+    {
+        const Rtplan_control_pt *cp = *it;
+        float energy = cp->nominal_beam_energy;
+        size_t num_spots = cp->scan_spot_meterset_weights.size();
+        const std::vector<float>& map = cp->scan_spot_position_map;
+        const std::vector<float>& met = cp->scan_spot_meterset_weights;
+
+        /* GCS FIX: Separate (x,y) for sigma */
+        float sigma = cp->scanning_spot_size[0];
+
+        for (size_t i = 0; i < num_spots; i++) {
+            float xpos = cp->scan_spot_position_map[2*i+0];
+            float ypos = cp->scan_spot_position_map[2*i+1];
+            float weight = cp->scan_spot_meterset_weights[i];
+            if (weight == 0) {
+                continue;
+            }
+            printf (" >> Adding spot: %f %f %f %f %f\n",
+                xpos, ypos, energy, sigma, weight);
+            this->add_spot (xpos, ypos, energy, sigma, weight);
+        }
+    }
 }
 
 const double*
