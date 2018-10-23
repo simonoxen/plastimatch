@@ -64,6 +64,7 @@ Rtplan_beam::add_control_pt ()
     return new_control_pt;
 }
 
+#if defined (commentout)
 bool 
 Rtplan_beam::check_isocenter_identical()
 {
@@ -94,4 +95,13 @@ Rtplan_beam::check_isocenter_identical()
         }
     }
     return bSame;
+}
+#endif
+
+void
+Rtplan_beam::set_isocenter_from_control_points ()
+{
+    if (cplist.size() > 0) {
+        vec3_copy (isocenter_position, cplist[0]->isocenter_position);
+    }
 }

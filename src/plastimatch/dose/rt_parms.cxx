@@ -296,7 +296,7 @@ Rt_parms::set_key_value (
             rt_beam->set_range_compensator_out (val);
         }
         else if (key == "particle_number_out") {
-            rt_beam->get_mebs()->set_particle_number_out (val);
+            rt_beam->set_mebs_out (val);
         }
         else if (key == "sigma_out") {
             rt_beam->set_sigma_out (val);

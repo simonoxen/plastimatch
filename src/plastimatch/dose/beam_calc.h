@@ -157,6 +157,7 @@ public:
     void compute_target_wepl_min_max (
         std::vector<double>& map_wed_min,
         std::vector<double>& map_wed_max);
+    void add_rcomp_length_to_rpl_volume ();
 
     /* copy the aperture and range compensator from the rpl_vol if not 
        defined in the input file */
@@ -224,6 +225,9 @@ public:
 
     void set_sigma_out(std::string str);
     std::string get_sigma_out();
+
+    void set_mebs_out (const std::string& str);
+    const std::string& get_mebs_out ();
 
     void set_beam_dump_out(std::string str);
     std::string get_beam_dump_out();

@@ -84,6 +84,7 @@ public:
     std::string proj_target_out;
     std::string range_compensator_out;
     std::string sigma_out;
+    std::string mebs_out;
     std::string wed_out;
     std::string beam_dump_out;
     std::string dij_out;
@@ -231,6 +232,8 @@ Beam_calc::load (const char* fn)
 void
 Beam_calc::set_rtplan_beam (const Rtplan_beam *rtplan_beam)
 {
+    printf ("ISO = %f %f %f\n", rtplan_beam->isocenter_position[0],
+        rtplan_beam->isocenter_position[1], rtplan_beam->isocenter_position[2]);
     this->set_isocenter_position (rtplan_beam->isocenter_position);
     this->compute_source_position (rtplan_beam->gantry_angle,
         rtplan_beam->patient_support_angle,
@@ -257,7 +260,7 @@ Beam_calc::set_rtplan_beam (const Rtplan_beam *rtplan_beam)
             if (weight == 0) {
                 continue;
             }
-            printf (" >> Adding spot: %f %f %f %f %f\n",
+            printf (" >> Adding spot (xyesw): %f %f %f %f %f\n",
                 xpos, ypos, energy, sigma, weight);
             this->add_spot (xpos, ypos, energy, sigma, weight);
         }
@@ -1123,6 +1126,23 @@ Beam_calc::update_aperture_and_range_compensator ()
 #endif
 }
 
+void
+Beam_calc::add_rcomp_length_to_rpl_volume ()
+{
+    const plm_long *dim = this->rsp_accum_vol->get_vol()->dim;
+    float* rpl_img = (float*) this->rsp_accum_vol->get_vol()->img;
+    float* rc_img = (float*) this->rsp_accum_vol->get_aperture()->get_range_compensator_volume()->img;
+    int idx = 0;
+
+    for(int i = 0; i < dim[0] * dim[1]; i++) {
+        for (int k = 0; k < dim[2]; k++) {
+            idx = i + k * dim[0] * dim[1];
+            // Lucite material : d * rho * WER
+            rpl_img[idx] += rc_img[i] * PMMA_DENSITY*PMMA_STPR;
+        }
+    }
+}
+
 Plm_image::Pointer&
 Beam_calc::get_ct_psp ()
 {
@@ -1367,6 +1387,18 @@ std::string
 Beam_calc::get_sigma_out()
 {
     return d_ptr->sigma_out;
+}
+
+void 
+Beam_calc::set_mebs_out (const std::string& str)
+{
+    d_ptr->mebs_out = str;
+}
+
+const std::string&
+Beam_calc::get_mebs_out()
+{
+    return d_ptr->mebs_out;
 }
 
 void 
@@ -1693,8 +1725,8 @@ Beam_calc::save_beam_output ()
     }
 
     /* Save the beamlet map */
-    if (this->get_mebs()->get_particle_number_out() != "") {
-        this->get_mebs()->export_as_txt (this->get_aperture());
+    if (d_ptr->mebs_out != "") {
+        d_ptr->mebs->export_as_txt (d_ptr->mebs_out, this->get_aperture());
     }
 
     /* Dump beam information */

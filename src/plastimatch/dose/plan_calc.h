@@ -106,7 +106,8 @@ public:
     void set_output_dose_fn (const std::string& output_dose_fn);
     void set_output_dicom (const std::string& output_dicom);
     void set_output_psp_fn (const std::string& output_psp_fn);
-    void set_dose(Plm_image::Pointer& dose);
+    void set_debug_directory (const std::string& debug_dir);
+    void set_dose (Plm_image::Pointer& dose);
 
     void print_verif ();
 };

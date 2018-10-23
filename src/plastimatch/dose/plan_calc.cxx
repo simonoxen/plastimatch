@@ -30,6 +30,7 @@
 #include "rt_study.h"
 #include "rtplan.h"
 #include "rtplan_beam.h"
+#include "string_util.h"
 #include "volume.h"
 #include "volume_adjust.h"
 #include "volume_header.h"
@@ -53,6 +54,7 @@ public:
     std::string output_dose_fn;
     std::string output_dicom;
     std::string output_psp_fn;
+    std::string debug_dir;
 
     /* Patient (hu), patient (ed or sp) , target, output dose volume */
     Plm_image::Pointer patient_hu;
@@ -462,7 +464,7 @@ Plan_calc::normalize_beam_dose (Beam_calc *beam)
 void
 Plan_calc::compute_dose (Beam_calc *beam)
 {
-    printf ("-- compute_dose entry --\n");
+    printf ("Plan_calc::compute_dose(beam) entry --\n");
     d_ptr->rt_dose_timing->timer_misc.resume ();
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
@@ -515,7 +517,7 @@ Plan_calc::compute_dose (Beam_calc *beam)
         // Add range compensator to rpl volume
         if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
         {
-            add_rcomp_length_to_rpl_volume(beam);
+            beam->add_rcomp_length_to_rpl_volume ();
         }
         
         // Loop through energies
@@ -552,7 +554,7 @@ Plan_calc::compute_dose (Beam_calc *beam)
         // Add range compensator to rpl volume
         if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
         {
-            add_rcomp_length_to_rpl_volume(beam);
+            beam->add_rcomp_length_to_rpl_volume ();
         }
         
         // Loop through energies
@@ -636,6 +638,16 @@ Plan_calc::compute_plan ()
 
         /* Save beam data */
         d_ptr->rt_dose_timing->timer_io.resume ();
+        if (d_ptr->debug_dir != "") {
+            beam->set_proj_img_out (string_format ("%s/%02d_proj_img",
+                    d_ptr->debug_dir.c_str(), i));
+            beam->set_proj_dose_out (string_format ("%s/%02d_proj_dose.nrrd",
+                    d_ptr->debug_dir.c_str(), i));
+            beam->set_wed_out (string_format ("%s/%02d_wed.nrrd",
+                    d_ptr->debug_dir.c_str(), i));
+            beam->set_mebs_out (string_format ("%s/%02d_mebs.txt",
+                    d_ptr->debug_dir.c_str(), i));
+        }
         beam->save_beam_output ();
         d_ptr->rt_dose_timing->timer_io.stop ();
 
@@ -704,6 +716,12 @@ void
 Plan_calc::set_output_psp_fn (const std::string& output_psp_fn)
 {
     d_ptr->output_psp_fn = output_psp_fn;
+}
+
+void 
+Plan_calc::set_debug_directory (const std::string& debug_dir)
+{
+    d_ptr->debug_dir = debug_dir;
 }
 
 void 

@@ -78,6 +78,7 @@ set (CONFIG_FILE_LIST
   "proton-dose-5a.txt"
   "proton-dose-5d.txt"
   "proton-dose-6a.txt"
+  "proton-dose-7a.txt"
   "speedtest-a.txt"
   "wed-a.txt"
   "wed-b.txt"
@@ -4473,6 +4474,7 @@ set_tests_properties (vf-invert-trans-1-check
 ## proton-dose-5a   Flavor a, sobp target with aperture and rgc
 ## proton-dose-5d   Flavor d, sobp target with aperture and rgc
 ## proton-dose-6a   Flavor a, target geometry differs from CT geometry
+## proton-dose-7a   Flavor a, spot map
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -4571,6 +4573,13 @@ set_tests_properties (proton-dose-6a-stats
     PROPERTIES DEPENDS proton-dose-6a)
 set_tests_properties (proton-dose-6a-check
     PROPERTIES DEPENDS proton-dose-6a-stats)
+
+plm_add_test (
+    "proton-dose-7a"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-7a.txt"
+    )
+set_tests_properties (proton-dose-7a PROPERTIES DEPENDS "rect-17")
 
 ## -------------------------------------------------------------------------
 ## wed-a           ct to proj-wed, proj-ct, and wed-ct

@@ -62,7 +62,7 @@ public:
 
     void clear ();
     Rtplan_control_pt* add_control_pt ();
-    bool check_isocenter_identical ();
+    void set_isocenter_from_control_points ();
 };
 
 

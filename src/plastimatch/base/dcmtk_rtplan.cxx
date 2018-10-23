@@ -185,7 +185,6 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
 
             const float *spot_positions;
             const float *spot_weights;
-//            const char *s;
             orc = c_item->findAndGetFloat32Array (DCM_ScanSpotPositionMap,
                 spot_positions, &count);
             if (!orc.good()) {
@@ -210,6 +209,10 @@ Dcmtk_rt_study::rt_ion_plan_load (void)
             curr_cp->scan_spot_position_map.assign (spot_positions, spot_positions + 2*num_spots);
             curr_cp->scan_spot_meterset_weights.assign (spot_weights, spot_weights + num_spots);
         }
+
+        /* Rtplan_beam has an isocenter field.  We copy the isocenter 
+           from the first control point into it. */
+        curr_beam->set_isocenter_from_control_points();
     }
 }
 

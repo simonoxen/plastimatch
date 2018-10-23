@@ -164,7 +164,7 @@ public:
     void set_from_spot_map (const Rt_spot_map::Pointer& rsm);
 
     void load_beamlet_map (Aperture::Pointer& ap);
-    void export_as_txt (Aperture::Pointer ap);
+    void export_as_txt (const std::string& fn, Aperture::Pointer ap);
 
     /* Debugging */
     void set_debug (bool);

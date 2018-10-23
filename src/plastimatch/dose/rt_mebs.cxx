@@ -74,7 +74,6 @@ public:
 
     /* particle number file paths */
     std::string particle_number_in;
-    std::string particle_number_out;
 
     /* debug */
     bool debug;
@@ -116,7 +115,6 @@ public:
         this->have_particle_number_map = false;
 
         this->particle_number_in ="";
-        this->particle_number_out ="";
 
         this->debug = false;
     }
@@ -154,7 +152,6 @@ public:
         this->have_particle_number_map = false;
 
         this->particle_number_in ="";
-        this->particle_number_out ="";
     }
     Rt_mebs_private (const Rt_mebs_private* rsp)
     {
@@ -192,7 +189,6 @@ public:
         this->have_particle_number_map = rsp->have_particle_number_map;
 
         this->particle_number_in = rsp->particle_number_in;
-        this->particle_number_out = rsp->particle_number_out;
 
         /* copy the associated depth dose and update the dept dose curve */
         for (size_t i = 0; i < rsp->depth_dose.size(); i++)
@@ -1125,18 +1121,6 @@ Rt_mebs::get_particle_number_in ()
 }
 
 void
-Rt_mebs::set_particle_number_out (const std::string& str)
-{
-    d_ptr->particle_number_out = str;
-}
-
-std::string
-Rt_mebs::get_particle_number_out ()
-{
-    return d_ptr->particle_number_out;
-}
-
-void
 Rt_mebs::add_depth_dose_weight(float weight)
 {
     d_ptr->depth_dose_weight.push_back(weight);
@@ -1334,7 +1318,6 @@ Rt_mebs::set_from_spot_map (const Rt_spot_map::Pointer& rsm)
     this->clear_depth_dose ();
 
     const std::list<Rt_spot>& spot_list = rsm->get_spot_list();
-
 }
 
 void
@@ -1633,28 +1616,26 @@ Rt_mebs::get_optimized_peaks (
 }
 
 void
-Rt_mebs::export_as_txt(Aperture::Pointer ap)
+Rt_mebs::export_as_txt (const std::string& fn, Aperture::Pointer ap)
 {
-    make_parent_directories (d_ptr->particle_number_out.c_str());
+    make_parent_directories (fn.c_str());
 
-    printf("Trying to write mebs in %s\n", d_ptr->particle_number_out.c_str());
+    printf ("Trying to write mebs in %s\n", fn.c_str());
+    printf ("Ap %d %d\n", ap->get_dim(0), ap->get_dim(1));
 
-    std::ofstream fichier(d_ptr->particle_number_out.c_str());
+    std::ofstream fichier (fn.c_str());
 
-    if ( !fichier ){
+    if (!fichier) {
         std::cerr << "Erreur de creation du fichier beamlet_map" << std::endl;
         return;
     }
 
     int idx = 0;
-    for (int e = 0; e < d_ptr->energy_number; e++)
-    {
+    for (int e = 0; e < d_ptr->energy_number; e++) {
         fichier << "[ENERGY] ";
         fichier << d_ptr->energies[e] << std::endl;
-        for (int i = 0; i < ap->get_dim(0); i++)
-        {
-            for (int j = 0; j < ap->get_dim(1); j++)
-            {
+        for (int i = 0; i < ap->get_dim(0); i++) {
+            for (int j = 0; j < ap->get_dim(1); j++) {
                 idx = (e * ap->get_dim(0) + i) * ap->get_dim(1) +j;
                 fichier << d_ptr->num_particles[idx] << " ";
             }

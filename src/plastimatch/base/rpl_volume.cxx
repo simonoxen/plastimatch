@@ -179,7 +179,7 @@ Rpl_volume::clone_geometry (const Rpl_volume *rv)
 void
 Rpl_volume::set_ray_trace_start (Rpl_volume_ray_trace_start rvrts)
 {
-    printf ("Setting RVRTS = %d\n", (int) rvrts);
+    lprintf ("Setting RVRTS = %d\n", (int) rvrts);
     d_ptr->rvrts = rvrts;
 }
 

@@ -66,7 +66,7 @@ compute_dose_a (
     /* Dose D(POI) = Dose(z_POI) but z_POI =  rg_comp + depth in CT, 
        if there is a range compensator */
     if (ap->have_range_compensator_image()) {
-        add_rcomp_length_to_rpl_volume(beam);
+        beam->add_rcomp_length_to_rpl_volume ();
     }
 
     /* scan through patient CT Volume */
@@ -195,7 +195,7 @@ compute_dose_ray_trace_dij_a (
        if there is a range compensator */
     if (beam->get_aperture()->have_range_compensator_image())
     {
-        add_rcomp_length_to_rpl_volume(beam);
+        beam->add_rcomp_length_to_rpl_volume ();
     }
 
     /* scan through patient CT Volume */
@@ -529,22 +529,4 @@ compute_dose_d (
     // Free temporary memory
     delete cax_dose_rv;
     beam->get_rt_dose_timing()->timer_dose_calc.stop ();
-}
-
-void
-add_rcomp_length_to_rpl_volume (Beam_calc* beam)
-{
-    const plm_long *dim = beam->rsp_accum_vol->get_vol()->dim;
-    float* rpl_img = (float*) beam->rsp_accum_vol->get_vol()->img;
-    float* rc_img = (float*) beam->rsp_accum_vol->get_aperture()->get_range_compensator_volume()->img;
-    int idx = 0;
-
-    for(int i = 0; i < dim[0] * dim[1]; i++)
-    {
-        for (int k = 0; k < dim[2]; k++)
-        {
-            idx = i + k * dim[0] * dim[1];
-            rpl_img[idx] += rc_img[i] * PMMA_DENSITY*PMMA_STPR; // Lucite material : d * rho * WER
-        }
-    }
 }
