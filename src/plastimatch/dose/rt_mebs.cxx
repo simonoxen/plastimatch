@@ -438,45 +438,6 @@ Rt_mebs::add_peak (double E0, double spread, double weight)
     }
 }
 
-float
-Rt_mebs::lookup_energy (
-    float depth)
-{
-    int i = 0;
-    float energy = 0.0f;
-
-    /* Sanity check */
-    if (depth < 0 || depth > d_ptr->depth_end) {
-        return 0.0f;
-    }
-
-    /* Find index into profile arrays */
-    for (i = (int) floor(depth / d_ptr->depth_res); i < d_ptr->num_samples-1; i++) {
-        if (d_ptr->d_lut[i] > depth) {
-            i--;
-            break;
-        }
-    }
-
-    /* Clip input depth to maximum in lookup table */
-    if (i == d_ptr->num_samples-1) {
-        depth = d_ptr->d_lut[i];
-    }
-
-    /* Use index to lookup and interpolate energy */
-    if (i >= 0 || i < d_ptr->num_samples-1) {
-        // linear interpolation
-        energy = d_ptr->e_lut[i]
-            + (depth - d_ptr->d_lut[i])
-            * ((d_ptr->e_lut[i+1] - d_ptr->e_lut[i])
-                / (d_ptr->d_lut[i+1] - d_ptr->d_lut[i]));
-    } else {
-        // we went past the end of the lookup table
-        energy = 0.0f;
-    }
-    return energy;
-}
-
 bool
 Rt_mebs::generate ()
 {

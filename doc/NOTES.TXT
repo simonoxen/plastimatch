@@ -1,4 +1,16 @@
 ******************************************************************************
+Dose calc notes
+
+Rt_mebs
+  - add_peak() may be simplified to call add_depth_dose()
+  - generate() seems to add together several pristine peaks, stored in
+    the depth_dose array, and put the results into e_lut and f_lut.
+Rt_depth_dose
+  - lookup_energy() gets an interpolated value from the lut
+  
+    
+
+******************************************************************************
 B-spline mismatch
 
 Bug #32 is caused by a mismatch in the way B-spline grid geometry is

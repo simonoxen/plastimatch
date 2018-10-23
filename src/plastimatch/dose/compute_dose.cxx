@@ -8,6 +8,7 @@
 
 #include "aperture.h"
 #include "beam_calc.h"
+#include "compute_dose.h"
 #include "dose_volume_functions.h"
 #include "interpolate.h"
 #include "plm_image.h"
@@ -21,7 +22,6 @@
 #include "rpl_volume_lut.h"
 #include "rt_depth_dose.h"
 #include "rt_dij.h"
-#include "rt_dose.h"
 #include "rt_lut.h"
 #include "rt_mebs.h"
 #include "rt_sigma.h"

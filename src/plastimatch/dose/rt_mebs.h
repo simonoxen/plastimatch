@@ -42,9 +42,6 @@ public:
     void add_depth_dose (Rt_depth_dose* depth_dose);
     void add_peak (double E0, double spread, double weight);
 
-    /* Return simple depth dose result at depth */
-    float lookup_energy (float depth);
-
     /* use manually weighted peaks */
     bool generate ();
 

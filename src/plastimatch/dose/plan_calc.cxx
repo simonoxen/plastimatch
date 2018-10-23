@@ -8,6 +8,7 @@
 
 #include "aperture.h"
 #include "beam_calc.h"
+#include "compute_dose.h"
 #include "dose_volume_functions.h"
 #include "float_pair_list.h"
 #include "plan_calc.h"
@@ -21,7 +22,6 @@
 #include "rpl_volume.h"
 #include "rt_beam_model.h"
 #include "rt_depth_dose.h"
-#include "rt_dose.h"
 #include "rt_dose_timing.h"
 #include "rt_lut.h"
 #include "rt_parms.h"
