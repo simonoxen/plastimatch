@@ -39,11 +39,7 @@ public:
     void clear_depth_dose ();
 
     /* Add a pristine peak to a mebs */
-    void add_depth_dose (Rt_depth_dose* depth_dose);
     void add_peak (double E0, double spread, double weight);
-
-    /* use manually weighted peaks */
-    bool generate ();
 
     /* Save the depth dose to a file */
     void dump (const char* dir);

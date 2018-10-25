@@ -89,7 +89,9 @@ int main (int argc, char* argv[])
     {
         mebs.add_peak(energy[i], mebs.get_spread(), weight[i]);
     }
+#if defined (commentout)
     mebs.generate();
+#endif
     mebs.printparameters();
 
     return 0;

@@ -10,7 +10,7 @@ class Rt_depth_dose;
 
 class PLMDOSE_API Beam_map {
 public:
-    int i;
+    
 public:
     Beam_map ();
     ~Beam_map ();

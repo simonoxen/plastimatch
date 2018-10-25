@@ -1,14 +1,81 @@
 ******************************************************************************
+Dose calc notes #2
+
+(A1) Aperture
+(A2) Range compensator
+(B1) Allowed energies (e.g. energy res)
+(B2) Energy min/max
+(B3) Energy weights (passive)
+(C) Target
+(D1) Spot map
+(D2) Beamlet map
+
+What combinations are acceptable?
+
+D alone
+D + A
+C alone
+C + A
+C + B
+B + A
+B alone
+
+To wit:
+
+A is a modifier, can be added to anything
+D defines B
+C may be used to compute A and/or B through optimization
+What about manually specified energy weights?
+
+
+A possible strategy
+
+1) Evaluate which items (A-E) need computed
+2) Compute them
+3) Create MEBS structure
+4) Optimize
+5) Fill in
+
+
+******************************************************************************
 Dose calc notes
 
 Rt_mebs
-  - add_peak() may be simplified to call add_depth_dose()
+  - add_peak()
+    - Create depth dose curve (ensuring all curves have same start/stop)
+    - Appends to depth_dose
+    - Appends to depth_dose_weight
+    - Appends to energies
   - generate() seems to add together several pristine peaks, stored in
     the depth_dose array, and put the results into e_lut and f_lut.
+    It is only used in the sobp_main() standalone.
+  - add_peak() is called from:
+    - Beam_calc::compute_default_beam()
+    - Rt_parms::append_peak() -- while interpreting [PEAK] sections
+    - Rt_mebs::optimize_sobp()
+    - Rt_mebs::load_beamlet_map()
+    - Rt_mebs::compute_particle_number_matrix_from_target_active()
 Rt_depth_dose
   - lookup_energy() gets an interpolated value from the lut
-  
-    
+
+Overview of beam preparation tasks
+
+- Beam_calc::prepare_for_calc 
+  (1) Beam_calc::compute_beam_data_from_beamlet_map
+    - Rt_mebs::load_beamlet_map
+  (2) Beam_calc::compute_beam_data_from_spot_map
+    - Rt_mebs::set_from_spot_map
+  (3) Beam_calc::compute_beam_data_from_manual_peaks
+    - Beam_calc::compute_beam_modifiers_active_scanning
+  (4) Beam_calc::compute_beam_data_from_prescription
+    - Beam_calc::compute_beam_modifiers_active_scanning
+  (5) Beam_calc::compute_beam_data_from_target
+    (5a) Beam_calc::compute_beam_data_from_prescription
+    (5b) Beam_calc::compute_beam_modifiers_active_scanning
+           Beam_calc::compute_beam_modifiers_core
+         Rt_mebs::compute_particle_number_matrix_from_target_active
+  (6) Beam_calc::compute_default_beam
+
 
 ******************************************************************************
 B-spline mismatch

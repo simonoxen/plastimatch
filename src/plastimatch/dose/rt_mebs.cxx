@@ -19,8 +19,6 @@
 
 class Rt_mebs_private {
 public:
-    std::vector<Rt_depth_dose*> depth_dose;
-
     float* d_lut;               /* depth array (mm) */
     float* e_lut;               /* energy array (MeV) */
     float* f_lut;		/* integrated energy array (MeV) */
@@ -61,7 +59,8 @@ public:
     bool have_prescription;
     bool have_particle_number_map;
 
-    /* passive scattering: weights of the mono-energetic beams */
+    /* vectors of depth doses */
+    std::vector<Rt_depth_dose*> depth_dose;
     std::vector<float> depth_dose_weight;
     std::vector<float> energies;
 
@@ -342,30 +341,6 @@ Rt_mebs::clear_depth_dose ()
 }
 
 void
-Rt_mebs::add_depth_dose (Rt_depth_dose* depth_dose)
-{
-    if (d_ptr->have_copied_peaks == true) {
-        d_ptr->clear_depth_dose ();
-        d_ptr->have_copied_peaks = false;
-    }
-    if (depth_dose->dres != d_ptr->depth_res) {
-        printf("*** ERROR: the depth dose added must have the same resolution than the depth_dose set.\n");
-        printf("depth dose set - resolution: dres = %lf.\n", d_ptr->depth_res);
-        printf("depth dose to be added - resolution: dres = %lf.\n", depth_dose->dres);
-        return;
-    }
-    d_ptr->depth_dose.push_back (depth_dose);
-    d_ptr->energy_number = d_ptr->depth_dose.size();
-    d_ptr->depth_dose_weight.push_back(1);
-    d_ptr->energies.push_back(depth_dose->E0);
-
-    /* update the mebs depth dose length if this one is longer */
-    if (depth_dose->num_samples > d_ptr->num_samples) {
-        d_ptr->num_samples = depth_dose->num_samples;
-    }
-}
-
-void
 Rt_mebs::add_peak (double E0, double spread, double weight)
 {
     if (d_ptr->have_copied_peaks == true) {
@@ -438,6 +413,7 @@ Rt_mebs::add_peak (double E0, double spread, double weight)
     }
 }
 
+#if defined (commentout)
 bool
 Rt_mebs::generate ()
 {
@@ -484,6 +460,7 @@ Rt_mebs::generate ()
     }
     return true;
 }
+#endif
 
 void
 Rt_mebs::dump (const char* dir)
@@ -1279,6 +1256,15 @@ Rt_mebs::set_from_spot_map (const Rt_spot_map::Pointer& rsm)
     this->clear_depth_dose ();
 
     const std::list<Rt_spot>& spot_list = rsm->get_spot_list();
+
+#if defined (commentout)
+    int dim[2] = {
+        static_cast<int>(rpl_vol->get_aperture()->get_dim()[0]),
+        static_cast<int>(rpl_vol->get_aperture()->get_dim()[1])
+    };
+    printf ("AP DIM = %d %d\n", dim[0], dim[1]);
+    exit (0);
+#endif
 }
 
 void

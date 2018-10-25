@@ -117,7 +117,6 @@ public:
     /* Different strategies preparation */
     void compute_beam_data_from_beamlet_map();
     void compute_beam_data_from_spot_map();
-    void compute_beam_data_from_manual_peaks();
     void compute_beam_data_from_manual_peaks(Plm_image::Pointer& target);
     void compute_beam_data_from_prescription(Plm_image::Pointer& target);
     void compute_beam_data_from_target(Plm_image::Pointer& target);
@@ -158,10 +157,6 @@ public:
         std::vector<double>& map_wed_min,
         std::vector<double>& map_wed_max);
     void add_rcomp_length_to_rpl_volume ();
-
-    /* copy the aperture and range compensator from the rpl_vol if not 
-       defined in the input file */
-    void update_aperture_and_range_compensator();
 
     /* Set/ Get ct_psp */
     Plm_image::Pointer& get_ct_psp ();

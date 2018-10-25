@@ -232,8 +232,6 @@ Beam_calc::load (const char* fn)
 void
 Beam_calc::set_rtplan_beam (const Rtplan_beam *rtplan_beam)
 {
-    printf ("ISO = %f %f %f\n", rtplan_beam->isocenter_position[0],
-        rtplan_beam->isocenter_position[1], rtplan_beam->isocenter_position[2]);
     this->set_isocenter_position (rtplan_beam->isocenter_position);
     this->compute_source_position (rtplan_beam->gantry_angle,
         rtplan_beam->patient_support_angle,
@@ -546,11 +544,18 @@ Beam_calc::prepare_for_calc (
     }
 
    /* The priority how to generate dose is:
-       1. manual beamlet map 
+       1. manual beamlet map:
+            The beamlet map contains all information needed to compute dose.
+            (Beam model may also be needed.)
        2. manual spot map
+            The spot map contains all information needed to compute dose.
+            (Beam model may also be needed.)
        3. manual peaks 
+            Manual peaks are for passively scattered beams only?
        4. dose prescription 
+            Dose prescription is for passively scattered beams only?
        5. target 
+            Target runs a limited form of optimization.
        6. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
@@ -605,10 +610,6 @@ Beam_calc::compute_beam_data_from_beamlet_map()
 {
     this->get_mebs()->clear_depth_dose ();
     this->get_mebs()->load_beamlet_map (this->get_aperture());
-
-    /* the automatic aperture and range compensator are erased and the 
-       ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator ();
 }
 
 void
@@ -640,20 +641,6 @@ Beam_calc::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
                 d_ptr->mebs->get_distal_margin());
         }
     }
-    /* the automatic aperture and range compensator are erased and the 
-       ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator();
-}
-
-void
-Beam_calc::compute_beam_data_from_manual_peaks()
-{
-    /* The beamlet map will be identical for passive or scanning beam lines */
-    const plm_long *ap_dim = this->get_aperture()->get_dim();
-    this->get_mebs()->generate_part_num_from_weight(ap_dim);
-    /* the automatic aperture and range compensator are erased and the 
-       ones defined in the input file are considered */
-    this->update_aperture_and_range_compensator();
 }
 
 void
@@ -697,7 +684,9 @@ Beam_calc::compute_default_beam()
 {
     /* Computes a default 100 MeV peak */
     this->get_mebs()->add_peak (100, 1, 1);
-    this->compute_beam_data_from_manual_peaks ();
+    /* The beamlet map will be identical for passive or scanning beam lines */
+    const plm_long *ap_dim = this->get_aperture()->get_dim();
+    this->get_mebs()->generate_part_num_from_weight(ap_dim);
 }
 
 void 
@@ -1080,50 +1069,6 @@ Beam_calc::apply_smearing_to_target (
 
     /* Clean up */
     delete[] strel;
-}
-
-void
-Beam_calc::update_aperture_and_range_compensator ()
-{
-    // GCS FIX.  The below logic is no longer valid
-#if defined (commentout)
-    /* The aperture is copied from rpl_vol
-       the range compensator and/or the aperture are erased if defined in the input file */
-    if (d_ptr->aperture_in != "")
-    {
-        Plm_image::Pointer ap_img = Plm_image::New (d_ptr->aperture_in, PLM_IMG_TYPE_ITK_UCHAR);
-        this->get_aperture()->set_aperture_image(d_ptr->aperture_in.c_str());
-        this->get_aperture()->set_aperture_volume(ap_img->get_volume_uchar());
-        if (this->rsp_accum_vol->get_minimum_distance_target() == 0) // means that there is no target defined
-        {
-            printf("Smearing applied to the aperture. The smearing width is defined in the aperture frame.\n");
-            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, d_ptr->aperture->get_distance());
-        }
-        else
-        {
-            printf("Smearing applied to the aperture. The smearing width is defined at the target minimal distance.\n");
-            d_ptr->aperture->apply_smearing_to_aperture(d_ptr->smearing, this->rsp_accum_vol->get_minimum_distance_target());
-        }
-    }
-    /* Set range compensator */
-    if (d_ptr->range_compensator_in != "" && d_ptr->beam_line_type != "active")
-    {
-        Plm_image::Pointer rgc_img = Plm_image::New (d_ptr->range_compensator_in, PLM_IMG_TYPE_ITK_FLOAT);
-        this->get_aperture()->set_range_compensator_image(d_ptr->range_compensator_in.c_str());
-        this->get_aperture()->set_range_compensator_volume(rgc_img->get_volume_float());
-		
-        if (this->rsp_accum_vol->get_minimum_distance_target() == 0) // means that there is no target defined
-        {
-            printf("Smearing applied to the range compensator. The smearing width is defined in the aperture frame.\n");
-            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, d_ptr->aperture->get_distance());
-        }
-        else
-        {
-            printf("Smearing applied to the range compensator. The smearing width is defined at the target minimal distance.\n");
-            d_ptr->aperture->apply_smearing_to_range_compensator(d_ptr->smearing, this->rsp_accum_vol->get_minimum_distance_target());
-        }
-    }
-#endif
 }
 
 void
