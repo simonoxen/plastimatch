@@ -1,4 +1,25 @@
 ******************************************************************************
+Dose calc notes #3
+
+Command file
+------------
+Overrides for any beam model parameter
+
+Beam model
+----------
+Allowed energies (min/max/res or list)
+Depth dose for each energy (analytic parameters or files)
+Field size
+Beamlet spacing
+Beamline type
+Allowed spot positions
+Spot sigma
+Source distance
+Aperture distance
+Flavor/homo approx/ray step
+
+
+******************************************************************************
 Dose calc notes #2
 
 (A1) Aperture
@@ -35,6 +56,8 @@ A possible strategy
 3) Create MEBS structure
 4) Optimize
 5) Fill in
+
+But before I can implement this, I need to improve the command file organization.
 
 
 ******************************************************************************

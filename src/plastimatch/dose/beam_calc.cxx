@@ -16,36 +16,8 @@
 #include "rt_spot_map.h"
 #include "rtplan_control_pt.h"
 
-static void
-save_vector_as_image (
-    const std::vector<double>& v,
-    const int dim2d[2],
-    const std::string& filename)
-{
-    plm_long dim[3] = { dim2d[0], dim2d[1], 1 };
-    float origin[3] = { 0.f, 0.f, 0.f };
-    float spacing[3] = { 1.f, 1.f, 1.f };
-    Volume::Pointer vol = Volume::New (
-        dim, origin, spacing, (float*) 0, PT_FLOAT, 1);
-    float *vol_img = vol->get_raw<float> ();
-
-    for (plm_long i = 0; i < vol->npix; i++)
-    {
-        if (std::isnan(v[i]) || std::isinf(v[i]) || v[i] == NLMAX(double)) {
-            vol_img[i] = -1;
-        } else {
-            vol_img[i] = (float) v[i];
-        }
-    }
-
-    Plm_image::Pointer img = Plm_image::New (vol);
-    img->save_image (filename);
-}
-
-
 class Beam_calc_private {
 public:
-
     /* dose volume */
     Plm_image::Pointer dose_vol;
 
@@ -615,7 +587,7 @@ Beam_calc::compute_beam_data_from_beamlet_map()
 void
 Beam_calc::compute_beam_data_from_spot_map()
 {
-    this->get_mebs()->set_from_spot_map (d_ptr->spot_map);
+    this->get_mebs()->set_from_spot_map (this->rsp_accum_vol, d_ptr->spot_map);
 }
 
 void
@@ -644,7 +616,7 @@ Beam_calc::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
 }
 
 void
-Beam_calc::compute_beam_data_from_prescription(Plm_image::Pointer& target)
+Beam_calc::compute_beam_data_from_prescription (Plm_image::Pointer& target)
 {
     /* The beamlet map will be identical for passive or scanning beam lines */
     /* Identic to compute from manual peaks, with a preliminary optimization */
@@ -653,7 +625,7 @@ Beam_calc::compute_beam_data_from_prescription(Plm_image::Pointer& target)
 }
 
 void
-Beam_calc::compute_beam_data_from_target(Plm_image::Pointer& target)
+Beam_calc::compute_beam_data_from_target (Plm_image::Pointer& target)
 {
     /* Compute beam aperture, range compensator 
        + SOBP for passively scattered beam lines */

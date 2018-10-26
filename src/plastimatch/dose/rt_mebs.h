@@ -154,7 +154,9 @@ public:
         std::vector <double>& wepl_min,
         std::vector <double>& wepl_max);
 
-    void set_from_spot_map (const Rt_spot_map::Pointer& rsm);
+    void set_from_spot_map (
+        Rpl_volume* rpl_vol,
+        const Rt_spot_map::Pointer& rsm);
 
     void load_beamlet_map (Aperture::Pointer& ap);
     void export_as_txt (const std::string& fn, Aperture::Pointer ap);

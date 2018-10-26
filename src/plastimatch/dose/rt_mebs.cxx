@@ -1251,29 +1251,34 @@ Rt_mebs::get_particle_number_xyz (
 }
 
 void
-Rt_mebs::set_from_spot_map (const Rt_spot_map::Pointer& rsm)
+Rt_mebs::set_from_spot_map (
+    Rpl_volume* rpl_vol,
+    const Rt_spot_map::Pointer& rsm)
 {
     this->clear_depth_dose ();
 
     const std::list<Rt_spot>& spot_list = rsm->get_spot_list();
 
-#if defined (commentout)
     int dim[2] = {
         static_cast<int>(rpl_vol->get_aperture()->get_dim()[0]),
         static_cast<int>(rpl_vol->get_aperture()->get_dim()[1])
     };
-    printf ("AP DIM = %d %d\n", dim[0], dim[1]);
+
+    /* Until fully implemented, we must exit! */
     exit (0);
-#endif
+
 }
 
 void
 Rt_mebs::load_beamlet_map (Aperture::Pointer& ap)
 {
+    this->clear_depth_dose ();
+
     /* Confirm file can be read */
     if (!file_exists (d_ptr->particle_number_in)) {
-        printf ("Error reading config file: %s\n", d_ptr->particle_number_in.c_str());
-        printf("Particle number map set to 0 for each dose beamlet \n");
+        lprintf ("Error reading config file: %s\n",
+            d_ptr->particle_number_in.c_str());
+        lprintf ("Particle number map set to 0 for each dose beamlet \n");
         return;
     }
 

@@ -306,3 +306,29 @@ void dose_normalization_to_dose_and_point(Volume::Pointer dose_volume, double do
         dose_normalization_to_dose(dose_volume, dose,beam);
     }
 }
+
+void
+save_vector_as_image (
+    const std::vector<double>& v,
+    const int dim2d[2],
+    const std::string& filename)
+{
+    plm_long dim[3] = { dim2d[0], dim2d[1], 1 };
+    float origin[3] = { 0.f, 0.f, 0.f };
+    float spacing[3] = { 1.f, 1.f, 1.f };
+    Volume::Pointer vol = Volume::New (
+        dim, origin, spacing, (float*) 0, PT_FLOAT, 1);
+    float *vol_img = vol->get_raw<float> ();
+
+    for (plm_long i = 0; i < vol->npix; i++)
+    {
+        if (std::isnan(v[i]) || std::isinf(v[i]) || v[i] == NLMAX(double)) {
+            vol_img[i] = -1;
+        } else {
+            vol_img[i] = (float) v[i];
+        }
+    }
+
+    Plm_image::Pointer img = Plm_image::New (vol);
+    img->save_image (filename);
+}
