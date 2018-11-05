@@ -6,6 +6,10 @@
 
 #include "plmdose_config.h"
 
+/*! \brief 
+ * The Rt_depth_dose class encapsulates depth dose curve for a single 
+ * beam energy.  
+ */
 class PLMDOSE_API Rt_depth_dose {
 public:
     Rt_depth_dose ();

@@ -1,4 +1,20 @@
 ******************************************************************************
+Dose calc notes #4
+
+What does Rt_mebs d_lut/e_lut/f_lut do?
+Answer: It is used in get_optimized_peaks.
+
+Beam_calc::compute_beam_data_from_prescription (Plm_image::Pointer& target)
+  Rt_mebs::optimize_sobp()
+    Rt_mebs::optimizer()
+      Rt_mebs::get_optimized_peaks()
+
+Beam_calc::compute_beam_data_from_target(Plm_image::Pointer& target)
+  Rt_mebs::compute_particle_number_matrix_from_target_active()
+    Rt_mebs::get_optimized_peaks()
+
+
+******************************************************************************
 Dose calc notes #3
 
 Command file

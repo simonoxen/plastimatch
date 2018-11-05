@@ -47,9 +47,6 @@ public:
     /* Print the parameters of the mebs */
     void printparameters();
 
-    /* reset the mebs depth dose curve */
-    void reset_mebs_depth_dose_curve();
-
     /* set the prescription parameters: target and prescription depths, energy */
     void set_energies(float new_E_min, float new_E_max);
     void set_energies(float new_E_min, float new_E_max, float new_step);
@@ -61,9 +58,6 @@ public:
     void update_energies_from_prescription();
 	
     /* Set/Get private members */
-    float* get_d_lut();
-    float* get_e_lut();
-    float* get_f_lut();
     void set_particle_type(Particle_type particle_type);
     Particle_type get_particle_type();
     void set_alpha(double alpha);

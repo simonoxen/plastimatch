@@ -19,9 +19,6 @@
 
 class Rt_mebs_private {
 public:
-    float* d_lut;               /* depth array (mm) */
-    float* e_lut;               /* energy array (MeV) */
-    float* f_lut;		/* integrated energy array (MeV) */
     int num_samples;	        /* number of depths */
 
     float beam_min_energy;
@@ -80,9 +77,6 @@ public:
 public:
     Rt_mebs_private ()
     {
-        this->d_lut = new float[0];
-        this->e_lut = new float[0];
-        this->f_lut = new float[0];
         this->num_samples = 0;
 
         this->beam_min_energy = 0.f;
@@ -119,9 +113,6 @@ public:
     }
     Rt_mebs_private (Particle_type part)
     {
-        this->d_lut = new float[0];
-        this->e_lut = new float[0];
-        this->f_lut = new float[0];
         this->num_samples = 0;
 
         this->beam_min_energy = 0.f;
@@ -154,9 +145,6 @@ public:
     }
     Rt_mebs_private (const Rt_mebs_private* rsp)
     {
-        this->d_lut = new float[0];
-        this->e_lut = new float[0];
-        this->f_lut = new float[0];
         this->num_samples = rsp->num_samples;
 
         this->beam_min_energy = rsp->beam_min_energy;
@@ -206,30 +194,11 @@ public:
         {
             this->num_particles.push_back(rsp->num_particles[i]);
         }
-
-        /* update the global depth_dose curve */
-        this->d_lut = (float*) malloc (this->num_samples*sizeof(float));
-        this->e_lut = (float*) malloc (this->num_samples*sizeof(float));
-        this->f_lut = (float*) malloc (this->num_samples*sizeof(float));
-
-        memset (this->d_lut, 0, this->num_samples*sizeof(float));
-        memset (this->e_lut, 0, this->num_samples*sizeof(float));
-        memset (this->f_lut, 0, this->num_samples*sizeof(float));
-        for (int i = 0; i < rsp->num_samples; i++)
-        {
-            this->d_lut[i] = rsp->d_lut[i];
-            this->e_lut[i] = rsp->e_lut[i];
-            this->f_lut[i] = rsp->f_lut[i];
-        }
-
         this->debug = false;
     }
 public:
     ~Rt_mebs_private ()
     {
-        if (d_lut) delete[] d_lut;
-        if (e_lut) delete[] e_lut;
-        if (f_lut) delete[] f_lut;
         clear_depth_dose ();
     }
 public:
@@ -286,16 +255,7 @@ public:
             printf("Mono energetic beamlet set is erased.\n");
         }
         int stop = depth_dose.size();
-        /* std::vector<Rt_depth_dose*>::iterator it;
-           for (it = depth_dose.begin(); it != depth_dose.end(); ++it) {
-           delete *it;
-           } */
         depth_dose.clear();
-        /* stop = depth_dose.size();
-           for (int i = 0; i < stop; i++)
-           {
-           depth_dose.pop_back();
-           } */
         stop = depth_dose_weight.size();
         for (int i = 0; i < stop; i++)
         {
@@ -348,132 +308,30 @@ Rt_mebs::add_peak (double E0, double spread, double weight)
         d_ptr->have_copied_peaks = false;
     }
 
-    switch(d_ptr->particle_type)
+    Rt_depth_dose *depth_dose = new Rt_depth_dose (
+        E0, spread, d_ptr->depth_res, d_ptr->depth_end);
+    if (depth_dose->dend > d_ptr->depth_end)
     {
-    case PARTICLE_TYPE_P:			// proton
-    {
-        Rt_depth_dose *depth_dose = new Rt_depth_dose (
-            E0, spread, d_ptr->depth_res, d_ptr->depth_end);
-        if (depth_dose->dend > d_ptr->depth_end)
-        {
-            d_ptr->depth_end = depth_dose->dend;
-        }
-        printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n",
-            (float) E0, (float) spread, (float) weight,
-            d_ptr->depth_res, d_ptr->depth_end);
-        d_ptr->depth_dose.push_back (depth_dose);
-        d_ptr->energy_number = d_ptr->depth_dose.size();
-        d_ptr->depth_dose_weight.push_back((float) weight);
-        d_ptr->energies.push_back(E0);
+        d_ptr->depth_end = depth_dose->dend;
+    }
+    printf ("Adding peak to sobp (%f, %f, %f) [%f, %f]\n",
+        (float) E0, (float) spread, (float) weight,
+        d_ptr->depth_res, d_ptr->depth_end);
+    d_ptr->depth_dose.push_back (depth_dose);
+    d_ptr->energy_number = d_ptr->depth_dose.size();
+    d_ptr->depth_dose_weight.push_back((float) weight);
+    d_ptr->energies.push_back(E0);
 
-        /* update the mebs depth dose length if this one is longer */
-        if (depth_dose->num_samples > d_ptr->num_samples) {
-            d_ptr->num_samples = depth_dose->num_samples;
-        }
-    }
-    case PARTICLE_TYPE_HE:			// helium
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_LI:			// lithium
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_BE:			// berilium
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_B:			// bore
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_C:			// carbon
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_N:			// nitrogen
-    {
-        //to be implemented
-    }
-    break;
-    case PARTICLE_TYPE_O:			// oxygen
-    {
-        //to be implemented
-    }
-    break;
-    default:
-    {
-        //to be implemented
-    }
+    /* update the mebs depth dose length if this one is longer */
+    if (depth_dose->num_samples > d_ptr->num_samples) {
+        d_ptr->num_samples = depth_dose->num_samples;
     }
 }
-
-#if defined (commentout)
-bool
-Rt_mebs::generate ()
-{
-    printf("depth_dose number %d\n", (int)d_ptr->depth_dose.size());
-
-    /* Construct the data structure first time through */
-    if (d_ptr->d_lut) delete[] d_ptr->d_lut;
-    if (d_ptr->e_lut) delete[] d_ptr->e_lut;
-    if (d_ptr->f_lut) delete[] d_ptr->f_lut;
-    d_ptr->e_lut = new float [d_ptr->num_samples];
-    d_ptr->f_lut = new float [d_ptr->num_samples];
-    d_ptr->d_lut = new float [d_ptr->num_samples];
-
-    for (int i = 0; i < d_ptr->num_samples; i++) {
-        d_ptr->d_lut[i] = (float) i * d_ptr->depth_res;
-        d_ptr->e_lut[i] = 0;
-        d_ptr->f_lut[i] = 0;
-    }
-
-    for (size_t it = 0; it < d_ptr->depth_dose.size(); it++)
-    {
-        const Rt_depth_dose *ppp = d_ptr->depth_dose[it];
-        /* Check that this peak has the same resolution */
-        if (ppp->dres != d_ptr->depth_res) {
-            print_and_exit ("Error, mismatch in resolution.\n MEBS: %lg, depth dose # %d: %lg.\n", d_ptr->depth_res, it, ppp->dres);
-        }
-        if (ppp->num_samples > d_ptr->num_samples) {
-            print_and_exit ("Error, num_samples MEBS > num_sample depth dose.\n MEBS: %d, depth dose # %d: %d.\n", d_ptr->num_samples, it, ppp->num_samples);
-        }
-
-        /* Add weighted pristine peak to mebs */
-        for (int i = 0; i < ppp->num_samples; i++) {
-            d_ptr->e_lut[i] += d_ptr->depth_dose_weight[it] * ppp->e_lut[i];
-        }
-
-        /* Go on to next pristine peak */
-        it++;
-    }
-
-    /* build the integrated dose */
-    if (d_ptr->f_lut[0] && d_ptr->f_lut[0]) {d_ptr->f_lut[0] = d_ptr->e_lut[0];}
-    for (int i = 1; i < d_ptr->num_samples; i++) {
-        d_ptr->f_lut[i] = d_ptr->f_lut[i-1] + d_ptr->e_lut[i];
-    }
-    return true;
-}
-#endif
 
 void
 Rt_mebs::dump (const char* dir)
 {
     std::string dirname = dir;
-
-    /* Dump SOBP */
-    std::string sobp_fn = string_format ("%s/bragg_curve.txt", dir);
-    FILE* fp = plm_fopen (sobp_fn.c_str(), "w");
-    for (int i=0; i < d_ptr->num_samples; i++) {
-        fprintf (fp, "%3.2f %3.2f\n", d_ptr->d_lut[i], d_ptr->e_lut[i]);
-    }
-    fclose (fp);
 
     /* Dump pristine peaks */
     std::vector<Rt_depth_dose*>::const_iterator it
@@ -512,26 +370,6 @@ Rt_mebs::printparameters()
     printf("prescription depths: proximal: %lg mm, distal: %lg mm\n",d_ptr->prescription_depth_min, d_ptr->prescription_depth_max);
     printf("margins: proximal: %lg mm, distal: %lg mm\n", d_ptr->proximal_margin, d_ptr->distal_margin);
 }
-
-/* reset the mebs depth dose curve */
-void
-Rt_mebs::reset_mebs_depth_dose_curve()
-{
-    if (d_ptr->d_lut) delete[] d_ptr->d_lut;
-    d_ptr->d_lut = new float[d_ptr->num_samples];
-    if (d_ptr->e_lut) delete[] d_ptr->e_lut;
-    d_ptr->e_lut = new float[d_ptr->num_samples];
-    if (d_ptr->f_lut) delete[] d_ptr->f_lut;
-    d_ptr->f_lut = new float[d_ptr->num_samples];
-
-    for (int i = 0; i < d_ptr->num_samples; i++)
-    {
-        d_ptr->d_lut[i] = (float) i * d_ptr->depth_res;
-        d_ptr->e_lut[i] = 0;
-        d_ptr->f_lut[i] = 0;
-    }
-}
-
 
 /* set the mebs parameters by introducing the min and max energies */
 void
@@ -662,7 +500,6 @@ Rt_mebs::update_prescription_depths_from_energies()
     d_ptr->depth_end = d_ptr->prescription_depth_max + 20;
     d_ptr->num_samples = (int)ceil((d_ptr->depth_end/d_ptr->depth_res))+1;
     d_ptr->energy_number = (int) ceil((d_ptr->beam_max_energy - d_ptr->beam_min_energy) / d_ptr->energy_res) + 1;
-    this->reset_mebs_depth_dose_curve();
 }
 
 /* update the mebs energy parameters from prescription definition */
@@ -685,25 +522,6 @@ Rt_mebs::update_energies_from_prescription()
     d_ptr->depth_end = d_ptr->prescription_depth_max + 20;
     d_ptr->num_samples = (int)ceil((d_ptr->depth_end/d_ptr->depth_res))+1;
     d_ptr->energy_number = (int) ceil((d_ptr->beam_max_energy - d_ptr->beam_min_energy) / d_ptr->energy_res) + 1;
-    this->reset_mebs_depth_dose_curve();
-}
-
-float*
-Rt_mebs::get_d_lut()
-{
-    return d_ptr->d_lut;
-}
-
-float*
-Rt_mebs::get_e_lut()
-{
-    return d_ptr->e_lut;
-}
-
-float*
-Rt_mebs::get_f_lut()
-{
-    return d_ptr->f_lut;
 }
 
 void
@@ -872,7 +690,6 @@ Rt_mebs::set_depth_resolution(float dres)
     {
         d_ptr->depth_res = dres;
         d_ptr->num_samples = (int)ceil((d_ptr->depth_end/d_ptr->depth_res))+1;
-        this->reset_mebs_depth_dose_curve();
     }
     else
     {
@@ -893,7 +710,6 @@ Rt_mebs::set_depth_end(float dend)
     {
         d_ptr->depth_end = dend;
         d_ptr->num_samples = (int)ceil((d_ptr->depth_end/d_ptr->depth_res))+1;
-        this->reset_mebs_depth_dose_curve();
     }
     else
     {
@@ -1064,10 +880,11 @@ Rt_mebs::add_depth_dose_weight(float weight)
     d_ptr->depth_dose_weight.push_back(weight);
 }
 
-/* This function check (and correct if necessary) that E_max is the closest energy (+/- energy_resolution)
-	to reach the distal prescription */
-/* This function is designed to return a float value that represents the increase/decrease of energy to correct it
-	this is used by two parts of the program on different members (explaining this particular structure) */
+/* This function check (and correct if necessary) that E_max is the closest 
+   energy (+/- energy_resolution) to reach the distal prescription 
+   This function is designed to return a float value that represents the 
+   increase/decrease of energy to correct it this is used by two parts of 
+   the program on different members (explaining this particular structure) */
 float
 Rt_mebs::check_and_correct_max_energy(float E, float depth)
 {
@@ -1082,8 +899,9 @@ Rt_mebs::check_and_correct_max_energy(float E, float depth)
         dose_plus = bragg_curve(E, d_ptr->spread, depth+d_ptr->depth_res);
     }
 
-    /* Check that this energy is really the smallest one that reach the distal prescription */
-    /* This case happen if E is already superior at a first estimation, estimated by alpha and p */
+    /* Check that this energy is really the smallest one that reach the distal 
+       prescription. This case happen if E is already superior at a first 
+       estimation, estimated by alpha and p */
     if (E < d_ptr->energy_res)
     {
         return E - E_init;
@@ -1101,10 +919,11 @@ Rt_mebs::check_and_correct_max_energy(float E, float depth)
     return E - E_init;
 }
 
-/* This function check (and correct if necessary) that E_min is the closest energy (+/- energy_resolution)
-	to reach the proximal prescription */
-/* This function is designed to return a float value that represents the increase/decrease of energy to correct it
-	this is used by two parts of the program on different members (explaining this particular structure) */
+/* This function check (and correct if necessary) that E_min is the closest 
+   energy (+/- energy_resolution) to reach the proximal prescription 
+   This function is designed to return a float value that represents the 
+   increase/decrease of energy to correct it this is used by two parts of 
+   the program on different members (explaining this particular structure) */
 float
 Rt_mebs::check_and_correct_min_energy(float E, float depth)
 {
@@ -1157,9 +976,13 @@ Rt_mebs::optimizer (std::vector<float>* weight_tmp, std::vector<float>* energy_t
 {
     printf("prescription min/max: %lg mm, %lg mm.\n", d_ptr->prescription_depth_min, d_ptr->prescription_depth_max);
     std::vector<Rt_depth_dose*> depth_dose_tmp;
-    this->initialize_energy_weight_and_depth_dose_vectors(weight_tmp, energy_tmp, &depth_dose_tmp);
+    this->initialize_energy_weight_and_depth_dose_vectors (
+        weight_tmp, energy_tmp, &depth_dose_tmp);
 
-    this->get_optimized_peaks(d_ptr->prescription_depth_min, d_ptr->prescription_depth_max, weight_tmp, &depth_dose_tmp);
+    this->get_optimized_peaks (
+        d_ptr->prescription_depth_min,
+        d_ptr->prescription_depth_max,
+        weight_tmp, &depth_dose_tmp);
 }
 
 void
@@ -1201,7 +1024,6 @@ Rt_mebs::initialize_energy_weight_and_depth_dose_vectors (
 void
 Rt_mebs::generate_part_num_from_weight (const plm_long* ap_dim)
 {
-    //int idx = 0;
     for (int i = 0; i < d_ptr->energy_number; i++) {
         for (int j = 0; j < ap_dim[0] * ap_dim[1]; j++) {
             d_ptr->num_particles.push_back (d_ptr->depth_dose_weight[i]);
@@ -1229,24 +1051,8 @@ Rt_mebs::get_particle_number_xyz (
     int beamlet = 0;
     beamlet = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * idx[1] + idx[0];
     A = d_ptr->num_particles[beamlet] + rest[0] * ( d_ptr->num_particles[beamlet+1] -  d_ptr->num_particles[beamlet]);
-#if defined (commentout)
-    if (d_ptr->debug) {
-        printf (" Mebs::GPNXYZ %f %f",
-            d_ptr->num_particles[beamlet],
-            d_ptr->num_particles[beamlet+1]
-        );
-    }
-#endif
     beamlet = ap_dim[0] * ap_dim[1] * dd_idx + ap_dim[0] * (idx[1]+1) + idx[0];
     B =  d_ptr->num_particles[beamlet] + rest[0] * ( d_ptr->num_particles[beamlet+1] -  d_ptr->num_particles[beamlet]);
-#if defined (commentout)
-    if (d_ptr->debug) {
-        printf (" %f %f\n",
-            d_ptr->num_particles[beamlet],
-            d_ptr->num_particles[beamlet+1]
-        );
-    }
-#endif
     return A + rest[1] * (B-A);
 }
 
@@ -1264,7 +1070,10 @@ Rt_mebs::set_from_spot_map (
         static_cast<int>(rpl_vol->get_aperture()->get_dim()[1])
     };
 
+
+    
     /* Until fully implemented, we must exit! */
+    printf ("Got as far as I could.  Exiting.\n");
     exit (0);
 
 }
@@ -1453,9 +1262,8 @@ Rt_mebs::compute_particle_number_matrix_from_target_active (
     }
 }
 
-/* This function returns optimized weighted peaks for passive systems
-   (SOBP weights) and active systems (beamlet particle numbers
-   for each energy) */
+/* This function returns optimized weighting of energies for both 
+   passive (SOBP) and active systems */
 void
 Rt_mebs::get_optimized_peaks (
     float dmin,
@@ -1466,9 +1274,10 @@ Rt_mebs::get_optimized_peaks (
     if (dmin == 0 || dmax == 0) {
         return;
     }
-    int energy_min_index = (int) floor(pow((dmin/(10*d_ptr->alpha)),(1/d_ptr->p)) / d_ptr->energy_res);
-    int energy_max_index = (int) ceil(pow((dmax/(10*d_ptr->alpha)),(1/d_ptr->p)) / d_ptr->energy_res);
-
+    int energy_min_index = (int) floor(pow((dmin/(10*d_ptr->alpha)),(1/d_ptr->p))
+        / d_ptr->energy_res);
+    int energy_max_index = (int) ceil (pow((dmax/(10*d_ptr->alpha)),(1/d_ptr->p))
+        / d_ptr->energy_res);
     float E_min_sobp = (float) energy_min_index * d_ptr->energy_res;
     float E_max_sobp = (float) energy_max_index * d_ptr->energy_res;
 

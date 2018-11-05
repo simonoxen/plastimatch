@@ -14,13 +14,13 @@ Rt_depth_dose::Rt_depth_dose ()
 {
     this->d_lut = NULL;
     this->e_lut = NULL;
-	this->f_lut = NULL;
+    this->f_lut = NULL;
 
     this->E0 = 100.0;
     this->spread = 1.0;
     this->dres = .01;
     this->dend = 400.0;
-	this->index_of_dose_max = 0;
+    this->index_of_dose_max = 0;
 
     this->num_samples = 40000;
 }
@@ -359,7 +359,7 @@ Rt_depth_dose::lookup_energy (float depth) const
             * ((e_lut[i+1] - e_lut[i]) 
                 / (d_lut[i+1] - d_lut[i]));
     } else {
-        // we wen't past the end of the lookup table
+        // we went past the end of the lookup table
         energy = 0.0f;
     }
     return energy;
