@@ -531,13 +531,13 @@ Beam_calc::prepare_for_calc (
        6. 100 MeV sample beam */
     if (d_ptr->mebs->get_have_particle_number_map() == true)
     {
-        lprintf ("Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
+        lprintf ("Priority 1. Beamlet map file detected: Any manual peaks set, depth prescription, target or range compensator will not be considered.\n");
         this->compute_beam_data_from_beamlet_map ();
         return true;
     }
     if (d_ptr->spot_map->num_spots() > 0)
     {
-        lprintf ("Beam specified by spot map\n");
+        lprintf ("Priority 2. Beam specified by spot map\n");
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_spot_map ();
@@ -545,14 +545,14 @@ Beam_calc::prepare_for_calc (
     }
     if (d_ptr->mebs->get_have_manual_peaks() == true)
     {
-        lprintf("Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
+        lprintf("Priority 3. Manual peaks detected [PEAKS]: Any prescription or target depth will not be considered.\n");
         this->get_mebs()->set_have_manual_peaks (true);
         this->compute_beam_data_from_manual_peaks (target);
         return true;
     }
     if (d_ptr->mebs->get_have_prescription() == true)
     {
-        lprintf ("Prescription depths detected. Any target depth will not be considered.\n");
+        lprintf ("Priority 4. Prescription depths detected. Any target depth will not be considered.\n");
         this->get_mebs()->set_have_prescription(true);
         /* Apply margins */
         this->get_mebs()->set_target_depths (d_ptr->mebs->get_prescription_min(), d_ptr->mebs->get_prescription_max());
@@ -561,7 +561,7 @@ Beam_calc::prepare_for_calc (
     }
     if (target && target->get_vol())
     {
-        lprintf("Target detected.\n");
+        lprintf("Priority 5. Target detected.\n");
         this->get_mebs()->set_have_manual_peaks(false);
         this->get_mebs()->set_have_prescription(false);
         this->compute_beam_data_from_target(target);
@@ -570,7 +570,7 @@ Beam_calc::prepare_for_calc (
 
     /* If we arrive to this point, it is because no beam was defined
        Creation of a default beam: 100 MeV */
-    lprintf("***WARNING*** No beamlet map, manual peaks, depth prescription or target detected.\n");
+    lprintf("***WARNING***\nPriority 6. No beamlet map, manual peaks, depth prescription or target detected.\n");
     lprintf("Beam set to a 100 MeV mono-energetic beam. Proximal and distal margins not considered.\n");
     this->compute_default_beam ();
 
@@ -632,9 +632,16 @@ Beam_calc::compute_beam_data_from_target (Plm_image::Pointer& target)
     if (this->get_beam_line_type() == "passive")
     {
         lprintf ("Computing beam modifiers for passive target\n");
-        this->compute_beam_modifiers (
-            d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(),
+        this->compute_beam_modifiers_passive_scattering_b (
+            d_ptr->target->get_vol(),
+            d_ptr->smearing,
+            d_ptr->mebs->get_proximal_margin(),
+            d_ptr->mebs->get_distal_margin(),
+            this->get_mebs()->get_min_wed_map(),
             this->get_mebs()->get_max_wed_map());
+        d_ptr->mebs->set_prescription_depths (d_ptr->min_wed, d_ptr->max_wed);
+        this->rsp_accum_vol->apply_beam_modifiers ();
+        
         this->compute_beam_data_from_prescription (target);
     }
     else
@@ -660,29 +667,6 @@ Beam_calc::compute_default_beam()
     /* The beamlet map will be identical for passive or scanning beam lines */
     const plm_long *ap_dim = this->get_aperture()->get_dim();
     this->get_mebs()->generate_part_num_from_weight(ap_dim);
-}
-
-void 
-Beam_calc::compute_beam_modifiers (
-    Volume *seg_vol,
-    std::vector<double>& map_wed_min,
-    std::vector<double>& map_wed_max)
-{
-    if (d_ptr->beam_line_type == "active")
-    {
-        this->compute_beam_modifiers_active_scanning_b (
-            seg_vol, d_ptr->smearing,
-            d_ptr->mebs->get_proximal_margin(),
-            d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
-    }
-    else
-    {
-        this->compute_beam_modifiers_passive_scattering_b (seg_vol, 
-            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
-            d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
-    }
-    d_ptr->mebs->set_prescription_depths (d_ptr->min_wed, d_ptr->max_wed);
-    this->rsp_accum_vol->apply_beam_modifiers ();
 }
 
 void 

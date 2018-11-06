@@ -11,7 +11,7 @@ Plan_calc::compute_beam_dose
 Beam_calc::prepare_for_calc
  Beam_calc::compute_beam_data_from_target
   Beam_calc::compute_beam_modifiers
-   Beam_calc::compute_beam_modifiers_passive_scattering  
+   Beam_calc::compute_beam_modifiers_passive_scattering_b 
   Beam_calc::compute_beam_data_from_prescription
 
 
