@@ -1,17 +1,18 @@
 ******************************************************************************
 Dose calc notes #4
 
-What does Rt_mebs d_lut/e_lut/f_lut do?
-Answer: It is used in get_optimized_peaks.
+Deep dive (passive target = 4d)
+-------------------------------
+Plan_calc::compute_beam_dose
+ Beam_calc::prepare_for_calc
+ for each energy
+   compute_dose_{a,b,d}
 
-Beam_calc::compute_beam_data_from_prescription (Plm_image::Pointer& target)
-  Rt_mebs::optimize_sobp()
-    Rt_mebs::optimizer()
-      Rt_mebs::get_optimized_peaks()
-
-Beam_calc::compute_beam_data_from_target(Plm_image::Pointer& target)
-  Rt_mebs::compute_particle_number_matrix_from_target_active()
-    Rt_mebs::get_optimized_peaks()
+Beam_calc::prepare_for_calc
+ Beam_calc::compute_beam_data_from_target
+  Beam_calc::compute_beam_modifiers
+   Beam_calc::compute_beam_modifiers_passive_scattering  
+  Beam_calc::compute_beam_data_from_prescription
 
 
 ******************************************************************************
@@ -64,16 +65,12 @@ D defines B
 C may be used to compute A and/or B through optimization
 What about manually specified energy weights?
 
-
 A possible strategy
 
 1) Evaluate which items (A-E) need computed
-2) Compute them
+2) Optimize (A,B) from (C)
 3) Create MEBS structure
-4) Optimize
-5) Fill in
-
-But before I can implement this, I need to improve the command file organization.
+4) Optimize (D) from (A,B,C)
 
 
 ******************************************************************************

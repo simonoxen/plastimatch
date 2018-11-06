@@ -123,21 +123,20 @@ public:
     void compute_default_beam();
 
     /* This computes the aperture and range compensator */
-    void compute_beam_modifiers (Volume *seg_vol);
     void compute_beam_modifiers (Volume *seg_vol,
         std::vector<double>& map_wed_min,
         std::vector<double>& map_wed_max);
-    void compute_beam_modifiers_active_scanning (
+    void compute_beam_modifiers_active_scanning_a (
         Volume *seg_vol, float smearing, float proximal_margin,
         float distal_margin);
-    void compute_beam_modifiers_passive_scattering (
+    void compute_beam_modifiers_passive_scattering_a (
         Volume *seg_vol, float smearing, float proximal_margin, 
         float distal_margin);
-    void compute_beam_modifiers_active_scanning (
+    void compute_beam_modifiers_active_scanning_b (
         Volume *seg_vol, float smearing, float proximal_margin,
         float distal_margin, std::vector<double>& map_wed_min,
         std::vector<double>& map_wed_max);
-    void compute_beam_modifiers_passive_scattering (
+    void compute_beam_modifiers_passive_scattering_b (
         Volume *seg_vol, float smearing, float proximal_margin, 
         float distal_margin, std::vector<double>& map_wed_min, 
         std::vector<double>& map_wed_max);

@@ -74,7 +74,8 @@ set (CONFIG_FILE_LIST
   "plm-reg-gw-a.txt"
   "proton-dose-1.txt"
   "proton-dose-2.txt"
-  "proton-dose-4.txt"
+  "proton-dose-4a.txt"
+  "proton-dose-4d.txt"
   "proton-dose-5a.txt"
   "proton-dose-5d.txt"
   "proton-dose-6a.txt"
@@ -4471,8 +4472,10 @@ set_tests_properties (vf-invert-trans-1-check
 ## -------------------------------------------------------------------------
 ## bragg-curve
 ## proton-dose-1    Flavor a, sobp
-## proton-dose-5a   Flavor a, sobp target with aperture and rgc
-## proton-dose-5d   Flavor d, sobp target with aperture and rgc
+## proton-dose-4a   Flavor a, passive target with aperture and rgc
+## proton-dose-4d   Flavor d, passive target with aperture and rgc
+## proton-dose-5a   Flavor a, active target
+## proton-dose-5d   Flavor d, active target
 ## proton-dose-6a   Flavor a, target geometry differs from CT geometry
 ## proton-dose-7a   Flavor a, spot map
 ## -------------------------------------------------------------------------
@@ -4507,6 +4510,50 @@ set_tests_properties (proton-dose-1-stats
     PROPERTIES DEPENDS proton-dose-1)
 set_tests_properties (proton-dose-1-check
     PROPERTIES DEPENDS proton-dose-1-stats)
+
+plm_add_test (
+    "proton-dose-4a"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-4a.txt"
+    )
+plm_add_test (
+  "proton-dose-4a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-4a.mha"
+  )
+plmtest_check_interval ("proton-dose-4a-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-4a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.26"
+  "0.27"
+  )
+set_tests_properties (proton-dose-4a PROPERTIES DEPENDS "rect-17;ptv-1")
+set_tests_properties (proton-dose-4a-stats
+    PROPERTIES DEPENDS proton-dose-4a)
+set_tests_properties (proton-dose-4a-check
+    PROPERTIES DEPENDS proton-dose-4a-stats)
+
+plm_add_test (
+    "proton-dose-4d"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-4d.txt"
+    )
+plm_add_test (
+  "proton-dose-4d-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-4d.mha"
+  )
+plmtest_check_interval ("proton-dose-4d-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-4d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.38"
+  "0.39"
+  )
+set_tests_properties (proton-dose-4d PROPERTIES DEPENDS "rect-17;ptv-1")
+set_tests_properties (proton-dose-4d-stats
+    PROPERTIES DEPENDS proton-dose-4d)
+set_tests_properties (proton-dose-4d-check
+    PROPERTIES DEPENDS proton-dose-4d-stats)
 
 plm_add_test (
     "proton-dose-5a"

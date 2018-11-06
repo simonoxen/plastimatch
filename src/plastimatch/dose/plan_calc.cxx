@@ -462,9 +462,9 @@ Plan_calc::normalize_beam_dose (Beam_calc *beam)
 }
 
 void
-Plan_calc::compute_dose (Beam_calc *beam)
+Plan_calc::compute_beam_dose (Beam_calc *beam)
 {
-    printf ("Plan_calc::compute_dose(beam) entry --\n");
+    printf ("Plan_calc::compute_beam_dose(beam) entry --\n");
     d_ptr->rt_dose_timing->timer_misc.resume ();
     Volume::Pointer ct_vol = this->get_patient_volume ();
     Volume::Pointer dose_vol = ct_vol->clone_empty ();
@@ -515,8 +515,7 @@ Plan_calc::compute_dose (Beam_calc *beam)
         d_ptr->rt_dose_timing->timer_dose_calc.resume ();
 
         // Add range compensator to rpl volume
-        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
-        {
+        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image()) {
             beam->add_rcomp_length_to_rpl_volume ();
         }
         
@@ -552,8 +551,7 @@ Plan_calc::compute_dose (Beam_calc *beam)
         d_ptr->rt_dose_timing->timer_dose_calc.resume ();
 
         // Add range compensator to rpl volume
-        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image())
-        {
+        if (beam->rsp_accum_vol->get_aperture()->have_range_compensator_image()) {
             beam->add_rcomp_length_to_rpl_volume ();
         }
         
@@ -566,7 +564,6 @@ Plan_calc::compute_dose (Beam_calc *beam)
         d_ptr->rt_dose_timing->timer_reformat.stop ();
     }
     else if (beam->get_flavor() == "d") {
-
         // Loop through energies
         Rt_mebs::Pointer mebs = beam->get_mebs();
         std::vector<Rt_depth_dose*> depth_dose = mebs->get_depth_dose();
@@ -634,7 +631,7 @@ Plan_calc::compute_plan ()
 
         /* Generate dose */
         this->set_debug (true);
-        this->compute_dose (beam);
+        this->compute_beam_dose (beam);
 
         /* Save beam data */
         d_ptr->rt_dose_timing->timer_io.resume ();

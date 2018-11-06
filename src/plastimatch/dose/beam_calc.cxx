@@ -522,7 +522,7 @@ Beam_calc::prepare_for_calc (
        2. manual spot map
             The spot map contains all information needed to compute dose.
             (Beam model may also be needed.)
-       3. manual peaks 
+       3. manual peaks
             Manual peaks are for passively scattered beams only?
        4. dose prescription 
             Dose prescription is for passively scattered beams only?
@@ -600,14 +600,14 @@ Beam_calc::compute_beam_data_from_manual_peaks (Plm_image::Pointer& target)
     {
         if (d_ptr->beam_line_type == "active")
         {
-            this->compute_beam_modifiers_active_scanning (
+            this->compute_beam_modifiers_active_scanning_a (
                 target->get_vol(), d_ptr->smearing, 
                 d_ptr->mebs->get_proximal_margin(), 
                 d_ptr->mebs->get_distal_margin());
         }
         else
         {
-            this->compute_beam_modifiers_passive_scattering (
+            this->compute_beam_modifiers_passive_scattering_a (
                 target->get_vol(), d_ptr->smearing, 
                 d_ptr->mebs->get_proximal_margin(), 
                 d_ptr->mebs->get_distal_margin());
@@ -631,6 +631,7 @@ Beam_calc::compute_beam_data_from_target (Plm_image::Pointer& target)
        + SOBP for passively scattered beam lines */
     if (this->get_beam_line_type() == "passive")
     {
+        lprintf ("Computing beam modifiers for passive target\n");
         this->compute_beam_modifiers (
             d_ptr->target->get_vol(), this->get_mebs()->get_min_wed_map(),
             this->get_mebs()->get_max_wed_map());
@@ -640,7 +641,7 @@ Beam_calc::compute_beam_data_from_target (Plm_image::Pointer& target)
     {
         std::vector <double> wepl_min;
         std::vector <double> wepl_max;
-        this->compute_beam_modifiers_active_scanning (
+        this->compute_beam_modifiers_active_scanning_b (
             target->get_vol(), d_ptr->smearing,
             d_ptr->mebs->get_proximal_margin(),
             d_ptr->mebs->get_distal_margin(),
@@ -662,38 +663,21 @@ Beam_calc::compute_default_beam()
 }
 
 void 
-Beam_calc::compute_beam_modifiers (Volume *seg_vol)
+Beam_calc::compute_beam_modifiers (
+    Volume *seg_vol,
+    std::vector<double>& map_wed_min,
+    std::vector<double>& map_wed_max)
 {
     if (d_ptr->beam_line_type == "active")
     {
-        this->compute_beam_modifiers_active_scanning (seg_vol, 
-            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
-            d_ptr->mebs->get_distal_margin());
-    }
-    else
-    {
-        this->compute_beam_modifiers_passive_scattering (seg_vol, 
-            d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
-            d_ptr->mebs->get_distal_margin());
-    }
-
-    d_ptr->mebs->set_prescription_depths (d_ptr->min_wed, d_ptr->max_wed);
-    this->rsp_accum_vol->apply_beam_modifiers ();
-}
-
-void 
-Beam_calc::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed_min, std::vector<double>& map_wed_max)
-{
-    if (d_ptr->beam_line_type == "active")
-    {
-        this->compute_beam_modifiers_active_scanning (
+        this->compute_beam_modifiers_active_scanning_b (
             seg_vol, d_ptr->smearing,
             d_ptr->mebs->get_proximal_margin(),
             d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
     else
     {
-        this->compute_beam_modifiers_passive_scattering (seg_vol, 
+        this->compute_beam_modifiers_passive_scattering_b (seg_vol, 
             d_ptr->smearing, d_ptr->mebs->get_proximal_margin(), 
             d_ptr->mebs->get_distal_margin(), map_wed_min, map_wed_max);
     }
@@ -702,7 +686,7 @@ Beam_calc::compute_beam_modifiers (Volume *seg_vol, std::vector<double>& map_wed
 }
 
 void 
-Beam_calc::compute_beam_modifiers_active_scanning (
+Beam_calc::compute_beam_modifiers_active_scanning_a (
     Volume *seg_vol, float smearing, float proximal_margin,
     float distal_margin)
 {
@@ -713,7 +697,7 @@ Beam_calc::compute_beam_modifiers_active_scanning (
 }
 
 void 
-Beam_calc::compute_beam_modifiers_passive_scattering (
+Beam_calc::compute_beam_modifiers_passive_scattering_a (
     Volume *seg_vol, float smearing, float proximal_margin, 
     float distal_margin)
 {
@@ -724,7 +708,7 @@ Beam_calc::compute_beam_modifiers_passive_scattering (
 }
 
 void 
-Beam_calc::compute_beam_modifiers_active_scanning (
+Beam_calc::compute_beam_modifiers_active_scanning_b (
     Volume *seg_vol, float smearing, float proximal_margin,
     float distal_margin, std::vector<double>& map_wed_min,
     std::vector<double>& map_wed_max)
@@ -734,7 +718,7 @@ Beam_calc::compute_beam_modifiers_active_scanning (
 }
 
 void 
-Beam_calc::compute_beam_modifiers_passive_scattering (
+Beam_calc::compute_beam_modifiers_passive_scattering_b (
     Volume *seg_vol, float smearing, float proximal_margin, 
     float distal_margin, std::vector<double>& map_wed_min, 
     std::vector<double>& map_wed_max)
