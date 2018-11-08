@@ -80,6 +80,7 @@ set (CONFIG_FILE_LIST
   "proton-dose-5d.txt"
   "proton-dose-6a.txt"
   "proton-dose-7a.txt"
+  "proton-dose-8d.txt"
   "speedtest-a.txt"
   "wed-a.txt"
   "wed-b.txt"
@@ -4478,6 +4479,7 @@ set_tests_properties (vf-invert-trans-1-check
 ## proton-dose-5d   Flavor d, active target
 ## proton-dose-6a   Flavor a, target geometry differs from CT geometry
 ## proton-dose-7a   Flavor a, spot map
+## proton-dose-8d   Flavor d, mebs map
 ## -------------------------------------------------------------------------
 plm_add_test (
   "bragg-curve"
@@ -4627,6 +4629,28 @@ plm_add_test (
     "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-7a.txt"
     )
 set_tests_properties (proton-dose-7a PROPERTIES DEPENDS "rect-17")
+
+plm_add_test (
+    "proton-dose-8d"
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "dose;--command-file;${PLM_BUILD_TESTING_DIR}/proton-dose-8d.txt"
+    )
+plm_add_test (
+  "proton-dose-8d-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/proton-dose-8d.mha"
+  )
+plmtest_check_interval ("proton-dose-8d-check"
+  "${PLM_BUILD_TESTING_DIR}/proton-dose-8d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.38"
+  "0.39"
+  )
+set_tests_properties (proton-dose-8d PROPERTIES DEPENDS "rect-17;proton-dose-5d")
+set_tests_properties (proton-dose-8d-stats
+    PROPERTIES DEPENDS proton-dose-8d)
+set_tests_properties (proton-dose-8d-check
+    PROPERTIES DEPENDS proton-dose-8d-stats)
 
 ## -------------------------------------------------------------------------
 ## wed-a           ct to proj-wed, proj-ct, and wed-ct

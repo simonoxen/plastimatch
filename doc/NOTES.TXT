@@ -1,8 +1,8 @@
 ******************************************************************************
 Dose calc notes #4
 
-Deep dive (passive target = 4d)
--------------------------------
+Deep dive (priority 1, n/a, no test)
+------------------------------------
 Plan_calc::compute_beam_dose
  Beam_calc::prepare_for_calc
  for each energy
@@ -10,10 +10,40 @@ Plan_calc::compute_beam_dose
 
 Beam_calc::prepare_for_calc
  Beam_calc::compute_beam_data_from_target
-  Beam_calc::compute_beam_modifiers
-   Beam_calc::compute_beam_modifiers_passive_scattering_b 
-  Beam_calc::compute_beam_data_from_prescription
+  Beam_calc::compute_beam_modifiers_passive_scattering_b
+   Beam_calc::compute_beam_modifiers
+    Beam_calc::compute_target_wepl_min_max
+    Beam_calc::apply_smearing_to_target
+   Rt_mebs::set_prescription_depths
+    Rt_mebs::update_energies_from_prescription
+   Rpl_volume::apply_beam_modifiers
+   Beam_calc::compute_beam_data_from_prescription
+    Rt_mebs::optimize_sobp
+    Beam_calc::compute_beam_data_from_manual_peaks
+     Rt_mebs::generate_part_num_from_weight
+     // compute_beam_modifiers not re-run
 
+Deep dive (priority 5, passive target, test 4d)
+-----------------------------------------------
+Plan_calc::compute_beam_dose
+ Beam_calc::prepare_for_calc
+ for each energy
+   compute_dose_{a,b,d}
+
+Beam_calc::prepare_for_calc
+ Beam_calc::compute_beam_data_from_target
+  Beam_calc::compute_beam_modifiers_passive_scattering_b
+   Beam_calc::compute_beam_modifiers
+    Beam_calc::compute_target_wepl_min_max
+    Beam_calc::apply_smearing_to_target
+   Rt_mebs::set_prescription_depths
+    Rt_mebs::update_energies_from_prescription
+   Rpl_volume::apply_beam_modifiers
+   Beam_calc::compute_beam_data_from_prescription
+    Rt_mebs::optimize_sobp
+    Beam_calc::compute_beam_data_from_manual_peaks
+     Rt_mebs::generate_part_num_from_weight
+     // compute_beam_modifiers not re-run
 
 ******************************************************************************
 Dose calc notes #3

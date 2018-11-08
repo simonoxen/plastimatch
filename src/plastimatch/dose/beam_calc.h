@@ -137,7 +137,7 @@ public:
         Volume *seg_vol, float smearing, float proximal_margin, 
         float distal_margin, std::vector<double>& map_wed_min, 
         std::vector<double>& map_wed_max);
-    void compute_beam_modifiers_core (
+    void compute_beam_modifiers (
         Volume *seg_vol,
         bool active,
         float smearing,
