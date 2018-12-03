@@ -93,62 +93,6 @@ Wed_Parms::get_group_lines(char* groupfile)
     return numlines;
 }
 
-#if defined (commentout)
-void
-Wed_Parms::parse_group(int argc, char** argv, int linenumber)
-{
-    int linecounter = 0;
-    for (int i=1; i<argc; i++) {
-        if (!strcmp (argv[i], "--group")) {
-            std::string line;
-            std::ifstream text(argv[i+1]);
-            if (text.is_open()) {
-                while (text.good()) {
-                    getline(text,line);
-                    if ( (!line.empty()) && (line.compare(0,1,"#")) )  {
-                        if (linecounter == linenumber)  {
-
-                            std::string pvol_file;
-                            std::string dose_file;
-                            std::string dose_wed_file;
-
-                            std::stringstream linestream(line);
-
-                            linestream >> pvol_file >> dose_file >> dose_wed_file;
-
-                            if (pvol_file.size()>=4)  {
-                                if (pvol_file.compare(pvol_file.size()-4,4,".mha"))  {
-                                    print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());
-                                    return;
-                                }
-                            }
-                            else {print_and_exit ("%s is not in <name>.mha format.\n", pvol_file.c_str());}
-
-                            if (dose_file.size()>=4)  {
-                                if (dose_file.compare(dose_file.size()-4,4,".mha"))  {
-                                    print_and_exit ("%s is not an .mha file.\n", dose_file.c_str());
-                                    return;
-                                }
-                            }
-                            else {print_and_exit ("%s is not in <name>.mha format.\n", dose_file.c_str());}
-
-                            this->input_ct_fn = pvol_file;
-                            this->input_dose_fn = dose_file.c_str();
-
-                            //add "_wed" to  pvol_file names
-                            pvol_file.insert (pvol_file.size()-4,"_wed");   
-                            this->output_ct_fn = pvol_file;
-                            this->output_dose_fn = dose_wed_file.c_str();
-                        }
-                        linecounter++;
-                    }
-                }
-            }
-        }
-    }
-}
-#endif
-
 int
 Wed_Parms::set_key_val (
     const char* key, 

@@ -1,4 +1,18 @@
 ******************************************************************************
+DRR, WED, BSTV = beam specific target volume
+
+DRR pro
+-------
+Drr uses command line options
+
+DRR con
+-------
+Drr does not use IEC
+Wed maintains an actual wed volume
+Drr does not have programmable LUT
+
+
+******************************************************************************
 Dose calc notes #4
 
 Deep dive (priority 1, n/a, no test)

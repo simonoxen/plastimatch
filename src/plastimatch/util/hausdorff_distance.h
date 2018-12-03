@@ -102,7 +102,7 @@ public:
     /*! \name Inputs */
     ///@{
     /*! \brief Set the reference image.  The image will be loaded
-      from the specified filename. */
+     from the specified filename. */
     void set_reference_image (const char* image_fn);
     /*! \brief Set the reference image as an ITK image. */
     void set_reference_image (const UCharImageType::Pointer image);
@@ -136,6 +136,8 @@ public:
     ///@{
     /*! \brief Return the Hausdorff distance */
     float get_hausdorff ();
+    /*! \brief Return the Hausdorff distance */
+    float get_min_min_hausdorff ();
     /*! \brief Return the average Hausdorff distance */
     float get_avg_average_hausdorff ();
     /*! \brief Return the max average Hausdorff distance */
@@ -144,6 +146,8 @@ public:
     float get_percent_hausdorff ();
     /*! \brief Return the boundary Hausdorff distance */
     float get_boundary_hausdorff ();
+    /*! \brief Return the average boundary Hausdorff distance */
+    float get_min_min_boundary_hausdorff ();
     /*! \brief Return the average boundary Hausdorff distance */
     float get_avg_average_boundary_hausdorff ();
     /*! \brief Return the max average boundary Hausdorff distance */

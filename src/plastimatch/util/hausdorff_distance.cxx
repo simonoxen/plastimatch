@@ -33,20 +33,24 @@ public:
 public:
     void clear_statistics () {
         hausdorff_distance = 0.f;
+        min_min_hausdorff_distance = FLT_MAX;
         avg_avg_hausdorff_distance = 0.f;
         max_avg_hausdorff_distance = 0.f;
         pct_hausdorff_distance = 0.f;
         boundary_hausdorff_distance = 0.f;
+        min_min_boundary_hausdorff_distance = FLT_MAX;
         avg_avg_boundary_hausdorff_distance = 0.f;
         max_avg_boundary_hausdorff_distance = 0.f;
         pct_boundary_hausdorff_distance = 0.f;
     }
 public:
     float hausdorff_distance;
+    float min_min_hausdorff_distance;
     float avg_avg_hausdorff_distance;
     float max_avg_hausdorff_distance;
     float pct_hausdorff_distance;
     float boundary_hausdorff_distance;
+    float min_min_boundary_hausdorff_distance;
     float avg_avg_boundary_hausdorff_distance;
     float max_avg_boundary_hausdorff_distance;
     float pct_boundary_hausdorff_distance;
@@ -163,6 +167,8 @@ Hausdorff_distance::run_internal (
     float *bh_distance_array = new float[vol_uchar->npix];
 
     /* Loop through voxels, find distances */
+    float min_h_distance = FLT_MAX;
+    float min_bh_distance = FLT_MAX;
     float max_h_distance = 0;
     float max_bh_distance = 0;
     double sum_h_distance = 0;
@@ -186,6 +192,9 @@ Hausdorff_distance::run_internal (
         if (h_dist > max_h_distance) {
             max_h_distance = h_dist;
         }
+        if (h_dist < min_h_distance) {
+            min_h_distance = h_dist;
+        }
         sum_h_distance += h_dist;
         h_distance_array[num_h_vox] = h_dist;
         num_h_vox ++;
@@ -194,6 +203,9 @@ Hausdorff_distance::run_internal (
         if (img_ib[i]) {
             if (bh_dist > max_bh_distance) {
                 max_bh_distance = bh_dist;
+            }
+            if (bh_dist < min_bh_distance) {
+                min_bh_distance = bh_dist;
             }
             sum_bh_distance += bh_dist;
             bh_distance_array[num_bh_vox] = bh_dist;
@@ -226,6 +238,12 @@ Hausdorff_distance::run_internal (
     }
     if (max_bh_distance > d_ptr->boundary_hausdorff_distance) {
         d_ptr->boundary_hausdorff_distance = max_bh_distance;
+    }
+    if (min_h_distance < d_ptr->min_min_hausdorff_distance) {
+        d_ptr->min_min_hausdorff_distance = min_h_distance;
+    }
+    if (min_bh_distance < d_ptr->min_min_boundary_hausdorff_distance) {
+        d_ptr->min_min_boundary_hausdorff_distance = min_bh_distance;
     }
     if (num_h_vox > 0) {
         float ahd = sum_h_distance / num_h_vox;
@@ -271,6 +289,12 @@ Hausdorff_distance::get_hausdorff ()
 }
 
 float 
+Hausdorff_distance::get_min_min_hausdorff ()
+{
+    return d_ptr->min_min_hausdorff_distance;
+}
+
+float 
 Hausdorff_distance::get_avg_average_hausdorff ()
 {
     return d_ptr->avg_avg_hausdorff_distance;
@@ -292,6 +316,12 @@ float
 Hausdorff_distance::get_boundary_hausdorff ()
 {
     return d_ptr->boundary_hausdorff_distance;
+}
+
+float 
+Hausdorff_distance::get_min_min_boundary_hausdorff ()
+{
+    return d_ptr->min_min_boundary_hausdorff_distance;
 }
 
 float 
