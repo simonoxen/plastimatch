@@ -136,7 +136,7 @@ public:
     ///@{
     /*! \brief Return the Hausdorff distance */
     float get_hausdorff ();
-    /*! \brief Return the Hausdorff distance */
+    /*! \brief Return the minimum Hausdorff distance */
     float get_min_min_hausdorff ();
     /*! \brief Return the average Hausdorff distance */
     float get_avg_average_hausdorff ();
@@ -146,7 +146,7 @@ public:
     float get_percent_hausdorff ();
     /*! \brief Return the boundary Hausdorff distance */
     float get_boundary_hausdorff ();
-    /*! \brief Return the average boundary Hausdorff distance */
+    /*! \brief Return the minimum boundary Hausdorff distance */
     float get_min_min_boundary_hausdorff ();
     /*! \brief Return the average boundary Hausdorff distance */
     float get_avg_average_boundary_hausdorff ();
