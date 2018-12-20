@@ -11,6 +11,7 @@
 #include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
+#include "print_and_exit.h"
 #include "vf_convolve.h"
 #include "xf_invert.h"
 #include "volume.h"
@@ -118,10 +119,33 @@ Xf_invert::run ()
 void 
 Xf_invert::run_invert_itk ()
 {
-    if (d_ptr->xf_in.m_type == XFORM_ITK_VERSOR) {
+    if (d_ptr->xf_in.m_type == XFORM_ITK_TRANSLATION) {
+        TranslationTransformType::Pointer xf_inv = TranslationTransformType::New();
+        d_ptr->xf_in.get_trn()->GetInverse (xf_inv.GetPointer());
+        d_ptr->xf_out.set_trn (xf_inv);
+    }
+    else if (d_ptr->xf_in.m_type == XFORM_ITK_VERSOR) {
         VersorTransformType::Pointer xf_inv = VersorTransformType::New();
         d_ptr->xf_in.get_vrs()->GetInverse (xf_inv.GetPointer());
         d_ptr->xf_out.set_vrs (xf_inv);
+    }
+    else if (d_ptr->xf_in.m_type == XFORM_ITK_QUATERNION) {
+        QuaternionTransformType::Pointer xf_inv = QuaternionTransformType::New();
+        d_ptr->xf_in.get_quat()->GetInverse (xf_inv.GetPointer());
+        d_ptr->xf_out.set_quat (xf_inv);
+    }
+    else if (d_ptr->xf_in.m_type == XFORM_ITK_SIMILARITY) {
+        SimilarityTransformType::Pointer xf_inv = SimilarityTransformType::New();
+        d_ptr->xf_in.get_similarity()->GetInverse (xf_inv.GetPointer());
+        d_ptr->xf_out.set_similarity (xf_inv);
+    }
+    else if (d_ptr->xf_in.m_type == XFORM_ITK_AFFINE) {
+        AffineTransformType::Pointer xf_inv = AffineTransformType::New();
+        d_ptr->xf_in.get_aff()->GetInverse (xf_inv.GetPointer());
+        d_ptr->xf_out.set_aff (xf_inv);
+    }
+    else {
+        print_and_exit ("Error, unable to invert this transform type.\n");
     }
 }
 

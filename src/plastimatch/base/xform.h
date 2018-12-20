@@ -24,17 +24,17 @@ class Xform;
 class Xform_private;
 
 enum Xform_type {
-    XFORM_NONE                  = 0,
-    XFORM_ITK_TRANSLATION       = 1,
-    XFORM_ITK_VERSOR            = 2,
-    XFORM_ITK_QUATERNION        = 3,
-    XFORM_ITK_AFFINE            = 4,
-    XFORM_ITK_BSPLINE           = 5,
-    XFORM_ITK_TPS               = 6,
-    XFORM_ITK_VECTOR_FIELD      = 7,
-    XFORM_GPUIT_BSPLINE         = 8,
-    XFORM_GPUIT_VECTOR_FIELD    = 9,
-    XFORM_ITK_SIMILARITY        = 10
+    XFORM_NONE,
+    XFORM_ITK_TRANSLATION,
+    XFORM_ITK_VERSOR,
+    XFORM_ITK_QUATERNION,
+    XFORM_ITK_SIMILARITY,
+    XFORM_ITK_AFFINE,
+    XFORM_ITK_BSPLINE,
+    XFORM_ITK_TPS,
+    XFORM_ITK_VECTOR_FIELD,
+    XFORM_GPUIT_BSPLINE,
+    XFORM_GPUIT_VECTOR_FIELD,
 };
 
 /* itk basic transforms */
