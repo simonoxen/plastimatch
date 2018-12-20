@@ -12,18 +12,18 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "vf_convolve.h"
-#include "vf_invert.h"
+#include "xf_invert.h"
 #include "volume.h"
 #include "volume_header.h"
 #include "xform.h"
 
-class Vf_invert_private {
+class Xf_invert_private {
 public:
-    Vf_invert_private () {
+    Xf_invert_private () {
         iterations = 20;
         vf_out = 0;
     }
-    ~Vf_invert_private () {
+    ~Xf_invert_private () {
         delete vf_out;
     }
 public:
@@ -33,23 +33,23 @@ public:
     Volume *vf_out;
 };
 
-Vf_invert::Vf_invert () {
-    this->d_ptr = new Vf_invert_private;
+Xf_invert::Xf_invert () {
+    this->d_ptr = new Xf_invert_private;
 }
 
-Vf_invert::~Vf_invert () {
+Xf_invert::~Xf_invert () {
     delete this->d_ptr;
 }
 
 void 
-Vf_invert::set_input_vf (const char* vf_fn)
+Xf_invert::set_input_vf (const char* xf_fn)
 {
-    d_ptr->input_vf = itk_image_load_float_field (vf_fn);
+    d_ptr->input_vf = itk_image_load_float_field (xf_fn);
     d_ptr->gchooser.set_reference_image (d_ptr->input_vf);
 }
 
 void 
-Vf_invert::set_input_vf (
+Xf_invert::set_input_vf (
     const DeformationFieldType::Pointer vf)
 {
     d_ptr->input_vf = vf;
@@ -57,51 +57,51 @@ Vf_invert::set_input_vf (
 }
 
 void 
-Vf_invert::set_fixed_image (const char* image_fn)
+Xf_invert::set_fixed_image (const char* image_fn)
 {
     d_ptr->gchooser.set_fixed_image (image_fn);
 }
 
 void 
-Vf_invert::set_fixed_image (
+Xf_invert::set_fixed_image (
     const FloatImageType::Pointer image)
 {
     d_ptr->gchooser.set_fixed_image (image);
 }
 
 void 
-Vf_invert::set_dim (const plm_long dim[3])
+Xf_invert::set_dim (const plm_long dim[3])
 {
     d_ptr->gchooser.set_dim (dim);
 }
 
 void 
-Vf_invert::set_origin (const float origin[3])
+Xf_invert::set_origin (const float origin[3])
 {
     d_ptr->gchooser.set_origin (origin);
 }
 
 void 
-Vf_invert::set_spacing (const float spacing[3])
+Xf_invert::set_spacing (const float spacing[3])
 {
     d_ptr->gchooser.set_spacing (spacing);
 }
 
 void 
-Vf_invert::set_direction_cosines (const float direction_cosines[9])
+Xf_invert::set_direction_cosines (const float direction_cosines[9])
 {
     Direction_cosines dc (direction_cosines);
     d_ptr->gchooser.set_direction_cosines (dc);
 }
 
 void 
-Vf_invert::set_iterations (int iterations)
+Xf_invert::set_iterations (int iterations)
 {
     d_ptr->iterations = iterations;
 }
 
 void 
-Vf_invert::run ()
+Xf_invert::run ()
 {
     /* Compute geometry of output volume */
     const Plm_image_header *pih = d_ptr->gchooser.get_geometry ();
@@ -212,7 +212,7 @@ Vf_invert::run ()
 }
 
 const Volume*
-Vf_invert::get_output_volume ()
+Xf_invert::get_output_volume ()
 {
     return d_ptr->vf_out;
 }

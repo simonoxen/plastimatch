@@ -4646,7 +4646,7 @@ plmtest_check_interval ("proton-dose-8d-check"
   "0.38"
   "0.39"
   )
-set_tests_properties (proton-dose-8d PROPERTIES DEPENDS "rect-17;proton-dose-8d")
+set_tests_properties (proton-dose-8d PROPERTIES DEPENDS "rect-17;proton-dose-5d")
 set_tests_properties (proton-dose-8d-stats
     PROPERTIES DEPENDS proton-dose-8d)
 set_tests_properties (proton-dose-8d-check

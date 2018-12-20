@@ -250,8 +250,8 @@ if (ITK_FOUND)
     plm_add_executable_v3 (viscous "${VISCOUS_SRC}"
       "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   endif ()
-  plm_add_executable_v3 (vf_invert "${VF_INVERT_SRC}"
-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+#  plm_add_executable_v3 (vf_invert "${VF_INVERT_SRC}"
+#    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   plm_add_executable_v3 (wed "${WED_SRC}" 
     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   if (PLM_DCM_USE_DCMTK)

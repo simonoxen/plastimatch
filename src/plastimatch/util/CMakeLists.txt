@@ -52,7 +52,7 @@ set (PLMUTIL_LIBRARY_SRC
   threshbox.cxx
   volume_adjust.cxx volume_adjust.h
   volume_boundary_type.cxx volume_boundary_type.h
-  vf_invert.cxx
+  xf_invert.cxx xf_invert.h
   )
 if (FFTW_FOUND)
   set (PLMUTIL_LIBRARY_SRC

@@ -9,7 +9,8 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "vf_convolve.h"
-#include "vf_invert.h"
+#include "xf_invert.h"
+#include "xform.h"
 
 class Vf_invert_parms {
 public:
@@ -161,40 +162,40 @@ do_vf_invert_old (Vf_invert_parms* parms)
 }
 
 void
-do_vf_invert_new (Vf_invert_parms* parms)
+do_xf_invert_new (Vf_invert_parms* parms)
 {
-    Vf_invert vf_invert;
+    Xf_invert xf_invert;
 
-    vf_invert.set_input_vf (parms->vf_in_fn.c_str());
+    xf_invert.set_input_vf (parms->vf_in_fn.c_str());
     if (parms->fixed_img_fn != "") {
-        vf_invert.set_fixed_image (parms->fixed_img_fn.c_str());
+        xf_invert.set_fixed_image (parms->fixed_img_fn.c_str());
     }
     if (parms->have_dim) {
-        vf_invert.set_dim (parms->dim);
+        xf_invert.set_dim (parms->dim);
     }
     if (parms->have_origin) {
-        vf_invert.set_origin (parms->origin);
+        xf_invert.set_origin (parms->origin);
     }
     if (parms->have_spacing) {
-        vf_invert.set_spacing (parms->spacing);
+        xf_invert.set_spacing (parms->spacing);
     }
 #if defined (commentout)
     /* GCS FIX: direction cosines */
     if (parms->have_direction_cosines) {
-        vf_invert.set_direction_cosines (parms->direction_cosines);
+        xf_invert.set_direction_cosines (parms->direction_cosines);
     }
 #endif
 
-    vf_invert.set_iterations (parms->iterations);
+    xf_invert.set_iterations (parms->iterations);
 
     /* Invert the vf */
-    vf_invert.run ();
+    xf_invert.run ();
 
     /* Write the output */
-    write_mha (parms->vf_out_fn.c_str(), vf_invert.get_output_volume());
+    write_mha (parms->vf_out_fn.c_str(), xf_invert.get_output_volume());
 #if defined (commentout)
     plm_image_save_vol (parms->vf_out_fn.c_str(), 
-        vf_invert.get_output_volume());
+        xf_invert.get_output_volume());
 #endif
 }
 
@@ -204,7 +205,7 @@ do_vf_invert (Vf_invert_parms* parms)
     if (parms->old_algorithm) {
         do_vf_invert_old (parms);
     } else {
-        do_vf_invert_new (parms);
+        do_xf_invert_new (parms);
     }
 }
 
@@ -230,9 +231,9 @@ parse_fn (
 
     /* Basic options */
     parser->add_long_option ("", "input", 
-	"input vector field file name", 1, "");
+	"input transform file name", 1, "");
     parser->add_long_option ("", "output", 
-	"output vector field file name", 1, "");
+	"output transform file name", 1, "");
     parser->add_long_option ("", "dim", 
         "size of output vector field in voxels \"x [y z]\"", 1, "");
     parser->add_long_option ("", "origin", 
@@ -243,9 +244,9 @@ parse_fn (
     parser->add_long_option ("", "fixed", 
         "fixed image (match output vector field size to this image)", 1, "");
     parser->add_long_option ("", "old-algorithm", 
-        "use the old algorithm", 0);
+        "use the old vector field inversion algorithm", 0);
     parser->add_long_option ("", "iterations", 
-        "number of iterations to run (default = 20)", 1, "");
+        "number of iterations to run for vector field inversion (default = 20)", 1, "");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);

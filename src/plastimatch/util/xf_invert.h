@@ -1,27 +1,27 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _vf_invert_h_
-#define _vf_invert_h_
+#ifndef _xf_invert_h_
+#define _xf_invert_h_
 
 #include "plmutil_config.h"
 #include "itk_image_type.h"
 
-class Vf_invert_private;
+class Xf_invert_private;
 
-class PLMUTIL_API Vf_invert {
+class PLMUTIL_API Xf_invert {
 public:
-    Vf_invert ();
-    ~Vf_invert ();
+    Xf_invert ();
+    ~Xf_invert ();
 public:
-    Vf_invert_private *d_ptr;
+    Xf_invert_private *d_ptr;
 public:
 
     /*! \name Inputs */
     ///@{
     /*! \brief Set the input vector field to be inverted.  
       The vector field will be loaded from the specified filename. */
-    void set_input_vf (const char* vf_fn);
+    void set_input_vf (const char* xf_fn);
     /*! \brief Set the input vector field to be inverted
       as an ITK image. */
     void set_input_vf (const DeformationFieldType::Pointer vf);
