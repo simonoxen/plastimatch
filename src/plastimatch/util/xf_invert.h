@@ -8,6 +8,7 @@
 #include "itk_image_type.h"
 
 class Xf_invert_private;
+class Xform;
 
 class PLMUTIL_API Xf_invert {
 public:
@@ -19,9 +20,9 @@ public:
 
     /*! \name Inputs */
     ///@{
-    /*! \brief Set the input vector field to be inverted.  
-      The vector field will be loaded from the specified filename. */
-    void set_input_vf (const char* xf_fn);
+    /*! \brief Set the transform to be inverted.  
+      The transform will be loaded from the specified filename. */
+    void set_input_xf (const char* xf_fn);
     /*! \brief Set the input vector field to be inverted
       as an ITK image. */
     void set_input_vf (const DeformationFieldType::Pointer vf);
@@ -57,9 +58,13 @@ public:
 
     /*! \name Outputs */
     ///@{
-    /*! \brief Return the inverse vector field as a Volume*. */
-    const Volume* get_output_volume ();
+    /*! \brief Return the inverse xform */
+    const Xform* get_output ();
     ///@}
+
+protected:
+    void run_invert_itk ();
+    void run_invert_vf ();
 };
 
 #endif

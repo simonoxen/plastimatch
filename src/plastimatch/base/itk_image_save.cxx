@@ -200,18 +200,10 @@ template PLMBASE_API void itk_image_save(UCharImage4DType::Pointer, const std::s
 template PLMBASE_API void itk_image_save(UCharVecImageType::Pointer, const std::string&);
 
 template PLMBASE_API void itk_image_save_char (FloatImageType::Pointer, const char*);
-template PLMBASE_API void itk_image_save_uchar (FloatImageType::Pointer, const char*);
+template PLMBASE_API void itk_image_save_uchar (const FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_short (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_ushort (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_int32 (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_uint32 (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_float (FloatImageType::Pointer, const char*);
 template PLMBASE_API void itk_image_save_double (FloatImageType::Pointer, const char*);
-
-#if defined (commentout)
-template PLMBASE_API void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Rt_study_metadata *rsm);
-template PLMBASE_API void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
-template PLMBASE_API void itk_image_save_short_dicom (UShortImageType::Pointer, const char*, Rt_study_metadata *rsm);
-template PLMBASE_API void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Rt_study_metadata *rsm);
-template PLMBASE_API void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Rt_study_metadata *rsm);
-#endif

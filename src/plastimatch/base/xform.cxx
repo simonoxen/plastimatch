@@ -419,7 +419,7 @@ load_gpuit_bsp (Xform *xf, const char* fn)
 
 template< class T >
 static void
-itk_xform_save (T transform, const char *filename)
+itk_xform_save (const T transform, const char *filename)
 {
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer outputTransformWriter;
@@ -524,7 +524,7 @@ itk_xform_load (Xform *xf, const char* fn)
 }
 
 void
-Xform::save_gpuit_vf (const char* fn)
+Xform::save_gpuit_vf (const char* fn) const
 {
     //write_mha (fn, this->get_gpuit_vf().get());
 
@@ -534,7 +534,7 @@ Xform::save_gpuit_vf (const char* fn)
 }
 
 void
-Xform::save (const char* fn)
+Xform::save (const char* fn) const
 {
     switch (this->m_type) {
     case XFORM_ITK_TRANSLATION:
@@ -574,7 +574,7 @@ Xform::save (const char* fn)
 }
 
 void
-Xform::save (const std::string& fn)
+Xform::save (const std::string& fn) const
 {
     this->save (fn.c_str());
 }

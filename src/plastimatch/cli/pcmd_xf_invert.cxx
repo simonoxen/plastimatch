@@ -166,7 +166,7 @@ do_xf_invert_new (Vf_invert_parms* parms)
 {
     Xf_invert xf_invert;
 
-    xf_invert.set_input_vf (parms->vf_in_fn.c_str());
+    xf_invert.set_input_xf (parms->vf_in_fn.c_str());
     if (parms->fixed_img_fn != "") {
         xf_invert.set_fixed_image (parms->fixed_img_fn.c_str());
     }
@@ -192,8 +192,11 @@ do_xf_invert_new (Vf_invert_parms* parms)
     xf_invert.run ();
 
     /* Write the output */
-    write_mha (parms->vf_out_fn.c_str(), xf_invert.get_output_volume());
+    const Xform *xf = xf_invert.get_output ();
+    xf->save (parms->vf_out_fn);
+
 #if defined (commentout)
+    write_mha (parms->vf_out_fn.c_str(), xf_invert.get_output_volume());
     plm_image_save_vol (parms->vf_out_fn.c_str(), 
         xf_invert.get_output_volume());
 #endif
@@ -267,6 +270,9 @@ parse_fn (
     }
 
     /* Check that output dimensions are known */
+    /* GCS FIX: This cannot be checked here.  If input is rigid transform, 
+       these parameters are not needed. */
+#if defined (commentout)
     if (!parser->option ("dim") 
         || !parser->option("origin")
         || !parser->option("spacing"))
@@ -276,6 +282,7 @@ parse_fn (
                     " and spacing -or- a fixed file"));
         }
     }
+#endif
 
     /* Copy values into parameter struct */
     parms->vf_in_fn = parser->get_string("input");

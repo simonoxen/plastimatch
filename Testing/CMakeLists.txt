@@ -4422,53 +4422,85 @@ set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 ## -------------------------------------------------------------------------
 ## xf-invert
 ## -------------------------------------------------------------------------
-## xf-invert-zero-1    invert zero vector field
-## xf-invert-trans-1   invert translation x direction, 1cm
-## xf-invert-gauss-1   invert gaussian warp, 10cm std, 1cm x, 2cm y
+## xf-invert-vf-zero-1    invert zero vector field
+## xf-invert-vf-trans-1   invert translation x direction, 1cm
+## xf-invert-vf-gauss-1   invert gaussian warp, 10cm std, 1cm x, 2cm y
+##                             (missing)
+## xf-invert-vrs-a        invert versor translation
+## xf-invert-vrs-b        invert versor rotation
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "xf-invert-zero-1"
+  "xf-invert-vf-zero-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1.mha"
+  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-vf-zero-1.mha"
   )
 plm_add_test (
-  "xf-invert-zero-1-stats"
+  "xf-invert-vf-zero-1-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-vf-zero-1.mha"
   )
-plmtest_check_interval ("xf-invert-zero-1-check"
-  "${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1-stats.stdout.txt"
+plmtest_check_interval ("xf-invert-vf-zero-1-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-vf-zero-1-stats.stdout.txt"
   "Mean abs: *([-0-9.]*)"
   "0.000"
   "0.000"
   )
-set_tests_properties (xf-invert-zero-1 PROPERTIES DEPENDS vf-zero)
-set_tests_properties (xf-invert-zero-1-stats 
-  PROPERTIES DEPENDS xf-invert-zero-1)
-set_tests_properties (xf-invert-zero-1-check 
-  PROPERTIES DEPENDS xf-invert-zero-1-stats)
+set_tests_properties (xf-invert-vf-zero-1 PROPERTIES DEPENDS vf-zero)
+set_tests_properties (xf-invert-vf-zero-1-stats 
+  PROPERTIES DEPENDS xf-invert-vf-zero-1)
+set_tests_properties (xf-invert-vf-zero-1-check 
+  PROPERTIES DEPENDS xf-invert-vf-zero-1-stats)
 
 plm_add_test (
-  "xf-invert-trans-1"
+  "xf-invert-vf-trans-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1.mha;--iterations;10"
+  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-vf-trans-1.mha;--iterations;10"
   )
 plm_add_test (
-  "xf-invert-trans-1-stats"
+  "xf-invert-vf-trans-1-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-vf-trans-1.mha"
   )
-plmtest_check_interval ("xf-invert-trans-1-check"
-  "${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1-stats.stdout.txt"
+plmtest_check_interval ("xf-invert-vf-trans-1-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-vf-trans-1-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
   "-10.0"
   "-9.9"
   )
-set_tests_properties (xf-invert-trans-1 PROPERTIES DEPENDS vf-trans-1)
-set_tests_properties (xf-invert-trans-1-stats 
-  PROPERTIES DEPENDS xf-invert-trans-1)
-set_tests_properties (xf-invert-trans-1-check 
-  PROPERTIES DEPENDS xf-invert-trans-1-stats)
+set_tests_properties (xf-invert-vf-trans-1 PROPERTIES DEPENDS vf-trans-1)
+set_tests_properties (xf-invert-vf-trans-1-stats 
+  PROPERTIES DEPENDS xf-invert-vf-trans-1)
+set_tests_properties (xf-invert-vf-trans-1-check 
+  PROPERTIES DEPENDS xf-invert-vf-trans-1-stats)
+
+plm_add_test (
+  "xf-invert-vrs-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-invert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-a.tfm"
+  )
+plmtest_check_string (
+  "xf-invert-vrs-a-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-a.tfm"
+  "^Parameters: *(.*)$"
+  "0 0 0 -20 0 0"
+  )
+set_tests_properties (xf-invert-vrs-a-check
+  PROPERTIES DEPENDS xf-invert-vrs-a)
+
+plm_add_test (
+  "xf-invert-vrs-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-invert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-b.tfm;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-b.tfm"
+  )
+plmtest_check_string (
+  "xf-invert-vrs-b-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-b.tfm"
+  "^Parameters: *(.*)$"
+  "-0.5236 0 0 0 0 0"
+  )
+set_tests_properties (xf-invert-vrs-b-check
+  PROPERTIES DEPENDS xf-invert-vrs-b)
+
 
 ## -------------------------------------------------------------------------
 ## bragg-curve

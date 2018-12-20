@@ -29,7 +29,9 @@ public:
 public:
     int iterations;
     Geometry_chooser gchooser;
+    Xform xf_in;
     DeformationFieldType::Pointer input_vf;
+    Xform xf_out;
     Volume *vf_out;
 };
 
@@ -42,10 +44,13 @@ Xf_invert::~Xf_invert () {
 }
 
 void 
-Xf_invert::set_input_vf (const char* xf_fn)
+Xf_invert::set_input_xf (const char* xf_fn)
 {
-    d_ptr->input_vf = itk_image_load_float_field (xf_fn);
-    d_ptr->gchooser.set_reference_image (d_ptr->input_vf);
+    d_ptr->xf_in.load (xf_fn);
+
+    if (d_ptr->xf_in.m_type == XFORM_ITK_VECTOR_FIELD) {
+        this->set_input_vf (d_ptr->xf_in.m_itk_vf);
+    }
 }
 
 void 
@@ -102,6 +107,26 @@ Xf_invert::set_iterations (int iterations)
 
 void 
 Xf_invert::run ()
+{
+    if (d_ptr->xf_in.m_type == XFORM_ITK_VECTOR_FIELD) {
+        this->run_invert_vf ();
+    } else {
+        this->run_invert_itk ();
+    }
+}
+
+void 
+Xf_invert::run_invert_itk ()
+{
+    if (d_ptr->xf_in.m_type == XFORM_ITK_VERSOR) {
+        VersorTransformType::Pointer xf_inv = VersorTransformType::New();
+        d_ptr->xf_in.get_vrs()->GetInverse (xf_inv.GetPointer());
+        d_ptr->xf_out.set_vrs (xf_inv);
+    }
+}
+
+void 
+Xf_invert::run_invert_vf ()
 {
     /* Compute geometry of output volume */
     const Plm_image_header *pih = d_ptr->gchooser.get_geometry ();
@@ -207,12 +232,17 @@ Xf_invert::run ()
     delete vf_inv;
     delete vf_smooth;
 
+#if defined (commentout)
     /* Save the output image! */
     d_ptr->vf_out = vf_out;
+#endif
+    
+    /* Fixate into xform */
+    d_ptr->xf_out.set_gpuit_vf (Volume::Pointer(vf_out));
 }
 
-const Volume*
-Xf_invert::get_output_volume ()
+const Xform*
+Xf_invert::get_output ()
 {
-    return d_ptr->vf_out;
+    return &d_ptr->xf_out;
 }

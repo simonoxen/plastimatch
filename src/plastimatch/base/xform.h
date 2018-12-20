@@ -85,8 +85,8 @@ public:
 
     void load (const char* fn);
     void load (const std::string& fn);
-    void save (const char* fn);
-    void save (const std::string& fn);
+    void save (const char* fn) const;
+    void save (const std::string& fn) const;
 
     TranslationTransformType::Pointer get_trn () const;
     VersorTransformType::Pointer get_vrs () const;
@@ -131,7 +131,7 @@ public:
     void print ();
 
 protected:
-    void save_gpuit_vf (const char* fn);
+    void save_gpuit_vf (const char* fn) const;
 
 public:
     Xform& operator= (const Xform& xf);
