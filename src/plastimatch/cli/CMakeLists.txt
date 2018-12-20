@@ -57,12 +57,12 @@ set (PLASTIMATCH_SRC
   pcmd_threshold.cxx
   pcmd_thumbnail.cxx 
   pcmd_union.cxx
-  pcmd_vf_invert.cxx pcmd_vf_invert.h
   pcmd_warp.cxx 
   pcmd_warp_dij.cxx 
   pcmd_warp_pointset.cxx 
   pcmd_xio_dvh.cxx 
   pcmd_xf_convert.cxx 
+  pcmd_xf_invert.cxx pcmd_xf_invert.h
   plastimatch_main.cxx
   )
 

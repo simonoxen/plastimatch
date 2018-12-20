@@ -4420,55 +4420,55 @@ plm_add_test (
 set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 
 ## -------------------------------------------------------------------------
-## vf-invert
+## xf-invert
 ## -------------------------------------------------------------------------
-## vf-invert-zero-1    invert zero vector field
-## vf-invert-trans-1   invert translation x direction, 1cm
-## vf-invert-gauss-1   invert gaussian warp, 10cm std, 1cm x, 2cm y
+## xf-invert-zero-1    invert zero vector field
+## xf-invert-trans-1   invert translation x direction, 1cm
+## xf-invert-gauss-1   invert gaussian warp, 10cm std, 1cm x, 2cm y
 ## -------------------------------------------------------------------------
 plm_add_test (
-  "vf-invert-zero-1"
+  "xf-invert-zero-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "vf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
+  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-zero.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1.mha"
   )
 plm_add_test (
-  "vf-invert-zero-1-stats"
+  "xf-invert-zero-1-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1.mha"
   )
-plmtest_check_interval ("vf-invert-zero-1-check"
-  "${PLM_BUILD_TESTING_DIR}/vf-invert-zero-1-stats.stdout.txt"
+plmtest_check_interval ("xf-invert-zero-1-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-zero-1-stats.stdout.txt"
   "Mean abs: *([-0-9.]*)"
   "0.000"
   "0.000"
   )
-set_tests_properties (vf-invert-zero-1 PROPERTIES DEPENDS vf-zero)
-set_tests_properties (vf-invert-zero-1-stats 
-  PROPERTIES DEPENDS vf-invert-zero-1)
-set_tests_properties (vf-invert-zero-1-check 
-  PROPERTIES DEPENDS vf-invert-zero-1-stats)
+set_tests_properties (xf-invert-zero-1 PROPERTIES DEPENDS vf-zero)
+set_tests_properties (xf-invert-zero-1-stats 
+  PROPERTIES DEPENDS xf-invert-zero-1)
+set_tests_properties (xf-invert-zero-1-check 
+  PROPERTIES DEPENDS xf-invert-zero-1-stats)
 
 plm_add_test (
-  "vf-invert-trans-1"
+  "xf-invert-trans-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "vf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha;--iterations;10"
+  "xf-invert;--input;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--fixed;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1.mha;--iterations;10"
   )
 plm_add_test (
-  "vf-invert-trans-1-stats"
+  "xf-invert-trans-1-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1.mha"
+  "stats;${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1.mha"
   )
-plmtest_check_interval ("vf-invert-trans-1-check"
-  "${PLM_BUILD_TESTING_DIR}/vf-invert-trans-1-stats.stdout.txt"
+plmtest_check_interval ("xf-invert-trans-1-check"
+  "${PLM_BUILD_TESTING_DIR}/xf-invert-trans-1-stats.stdout.txt"
   "Mean: *([-0-9.]*)"
   "-10.0"
   "-9.9"
   )
-set_tests_properties (vf-invert-trans-1 PROPERTIES DEPENDS vf-trans-1)
-set_tests_properties (vf-invert-trans-1-stats 
-  PROPERTIES DEPENDS vf-invert-trans-1)
-set_tests_properties (vf-invert-trans-1-check 
-  PROPERTIES DEPENDS vf-invert-trans-1-stats)
+set_tests_properties (xf-invert-trans-1 PROPERTIES DEPENDS vf-trans-1)
+set_tests_properties (xf-invert-trans-1-stats 
+  PROPERTIES DEPENDS xf-invert-trans-1)
+set_tests_properties (xf-invert-trans-1-check 
+  PROPERTIES DEPENDS xf-invert-trans-1-stats)
 
 ## -------------------------------------------------------------------------
 ## bragg-curve
@@ -4617,7 +4617,7 @@ plmtest_check_interval ("proton-dose-6a-check"
   "0.26"
   "0.27"
   )
-set_tests_properties (proton-dose-6a PROPERTIES DEPENDS "rect-17;ptv2")
+set_tests_properties (proton-dose-6a PROPERTIES DEPENDS "rect-17;ptv-2")
 set_tests_properties (proton-dose-6a-stats
     PROPERTIES DEPENDS proton-dose-6a)
 set_tests_properties (proton-dose-6a-check
@@ -4646,7 +4646,7 @@ plmtest_check_interval ("proton-dose-8d-check"
   "0.38"
   "0.39"
   )
-set_tests_properties (proton-dose-8d PROPERTIES DEPENDS "rect-17;proton-dose-5d")
+set_tests_properties (proton-dose-8d PROPERTIES DEPENDS "rect-17;proton-dose-8d")
 set_tests_properties (proton-dose-8d-stats
     PROPERTIES DEPENDS proton-dose-8d)
 set_tests_properties (proton-dose-8d-check
