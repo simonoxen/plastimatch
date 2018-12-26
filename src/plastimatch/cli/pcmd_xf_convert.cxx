@@ -30,6 +30,8 @@ public:
 
     std::string series_description;
 
+    bool dicom_filenames_with_uids;
+
     /* Geometry options */
     bool m_have_dim;
     bool m_have_origin;
@@ -42,6 +44,7 @@ public:
     Xform_convert xfc;
 public:
     Xf_convert_parms () {
+        dicom_filenames_with_uids = true;
         m_have_dim = false;
         m_have_origin = false;
         m_have_spacing = false;
@@ -175,7 +178,8 @@ do_xf_convert (Xf_convert_parms *parms)
 
         lprintf ("Saving sro\n");
         Dcmtk_sro::save (
-            xf_out, rtm_fixed, rtm_moving, parms->output_dicom_dir, true);
+            xf_out, rtm_fixed, rtm_moving, parms->output_dicom_dir,
+            parms->dicom_filenames_with_uids);
         lprintf ("Done saving sro\n");
 #endif
     }
@@ -238,6 +242,8 @@ parse_fn (
     parser->add_long_option ("", "series-description",
         "DICOM Series Description",
         1, "");
+    parser->add_long_option ("", "filenames-without-uids", 
+        "create simple dicom filenames that don't include the uid", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -266,6 +272,9 @@ parse_fn (
     parms->moving_image = parser->get_string("moving-image");
     parms->fixed_rcs = parser->get_string("fixed-rcs");
     parms->moving_rcs = parser->get_string("moving-rcs");
+    if (parser->option ("filenames-without-uids")) {
+        parms->dicom_filenames_with_uids = false;
+    }
 
     Xform_convert *xfc = &parms->xfc;
 

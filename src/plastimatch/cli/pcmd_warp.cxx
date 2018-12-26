@@ -105,9 +105,8 @@ parse_fn (
     parser->add_long_option ("", "prefix-format", 
         "file format of rasterized structures, either \"mha\" or \"nrrd\"",
         1, "mha");
-    parser->add_long_option ("", "dicom-with-uids", 
-        "set to false to remove uids from created dicom filenames, "
-        "default is true", 1, "true");
+    parser->add_long_option ("", "filenames-without-uids", 
+        "create simple dicom filenames that don't include the uid", 0);
     parser->add_long_option ("", "dij-dose-volumes",
         "set to true to output nrrd files corresponding to Dij matrix "
         " beamlets, default is false", 1, "true");
@@ -253,9 +252,8 @@ parse_fn (
     } else {
         parms->prefix_format = "mha";
     }
-    if (parser->option("dicom-with-uids")) {
-        parms->dicom_with_uids = string_value_true (
-            parser->get_string ("dicom-with-uids"));
+    if (parser->option ("filenames-without-uids")) {
+        parms->dicom_filenames_with_uids = false;
     }
     if (parser->option("dij-dose-volumes")) {
         parms->output_dij_dose_volumes = string_value_true (

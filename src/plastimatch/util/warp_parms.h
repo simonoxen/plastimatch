@@ -47,7 +47,7 @@ public:
     /* Output options */
     Plm_image_type output_type;
     std::string prefix_format;
-    bool dicom_with_uids;
+    bool dicom_filenames_with_uids;
     Xio_version output_xio_version;
     bool output_dij_dose_volumes;
 
@@ -97,7 +97,7 @@ public:
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 	prefix_format = "mha";
-        dicom_with_uids = true;
+        dicom_filenames_with_uids = true;
 	output_xio_version = XIO_VERSION_4_2_1;
         output_dij_dose_volumes = false;
 

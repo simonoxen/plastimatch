@@ -26,11 +26,11 @@ public:
     std::string output_ss_list_fn;
     std::string output_dicom;
     Synthetic_mha_parms sm_parms;
-    bool dicom_with_uids;
+    bool dicom_filenames_with_uids;
     std::vector<std::string> m_metadata;
 public:
     Synthetic_mha_main_parms () {
-        dicom_with_uids = true;
+        dicom_filenames_with_uids = true;
     }
 };
 
@@ -89,7 +89,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     if (parms->output_dicom != "") {
         rtds.get_segmentation()->convert_ss_img_to_cxt ();
         rtds.save_dicom (parms->output_dicom.c_str(),
-            parms->dicom_with_uids);
+            parms->dicom_filenames_with_uids);
     }
 
 }
@@ -136,9 +136,8 @@ parse_fn (
         "data type for output image: {uchar, short, ushort, ulong, float},"
         " default is float", 
         1, "float");
-    parser->add_long_option ("", "dicom-with-uids", 
-        "set to false to remove uids from created dicom filenames, "
-        "default is true", 1, "true");
+    parser->add_long_option ("", "filenames-without-uids", 
+        "create simple dicom filenames that don't include the uid", 0);
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
@@ -268,9 +267,8 @@ parse_fn (
     if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
         throw dlib::error ("Error, unknown output-type\n");
     }
-    if (parser->option("dicom-with-uids")) {
-        parms->dicom_with_uids = string_value_true (
-            parser->get_string ("dicom-with-uids"));
+    if (parser->option ("filenames-without-uids")) {
+        parms->dicom_filenames_with_uids = false;
     }
 
     /* Main pattern */

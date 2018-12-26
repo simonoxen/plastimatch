@@ -302,7 +302,7 @@ plm_add_test (
 plm_add_test (
   "donut-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--dicom-with-uids;false;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom;--output-prefix;${PLM_BUILD_TESTING_DIR}/donut-1-prefix/"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--filenames-without-uids;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom;--output-prefix;${PLM_BUILD_TESTING_DIR}/donut-1-prefix/"
   )
 plm_add_test (
   "gabor-01"
@@ -367,12 +367,12 @@ plm_add_test (
 plm_add_test (
   "lung-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-prefix;${PLM_BUILD_TESTING_DIR}/lung-1-prefix;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
+  "synth;--filenames-without-uids;--output;${PLM_BUILD_TESTING_DIR}/lung-1.mha;--output-prefix;${PLM_BUILD_TESTING_DIR}/lung-1-prefix;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-1-dicom;--pattern;lung;--lung-tumor-pos;0"
   )
 plm_add_test (
   "lung-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-2-dicom;--pattern;lung;--lung-tumor-pos;-5"
+  "synth;--filenames-without-uids;--output;${PLM_BUILD_TESTING_DIR}/lung-2.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/lung-2-dicom;--pattern;lung;--lung-tumor-pos;-5"
   )
 plm_add_test (
   "gw-lung-a"
@@ -402,7 +402,7 @@ plm_add_test (
 plm_add_test (
   "rect-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--dicom-with-uids;false;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "synth;--filenames-without-uids;--output;${PLM_BUILD_TESTING_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_BUILD_TESTING_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/rect-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/rect-1-ss-list.txt;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 plm_add_test (
   "rect-2"
@@ -1514,7 +1514,7 @@ set_tests_properties (plm-convert-dicom-a-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom;--metadata;0018,5100=FFS"
+  "convert;--filenames-without-uids;--input;${PLM_BUILD_TESTING_DIR}/rect-1-dicom;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-b-dicom;--metadata;0018,5100=FFS"
   )
 plm_add_test (
   "plm-convert-dicom-b-stats" 
@@ -1639,7 +1639,7 @@ set_tests_properties (plm-convert-dicom-donut-b-check PROPERTIES
 plm_add_test (
   "plm-convert-dicom-donut-c"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--dicom-with-uids;false;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-c"
+  "convert;--input;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--filenames-without-uids;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-donut-c"
   )
 set_tests_properties (plm-convert-dicom-donut-c PROPERTIES DEPENDS donut-1)
 
@@ -1658,7 +1658,7 @@ plm_add_test (
 plm_add_test (
   "plm-convert-dicom-aw-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--dicom-with-uids;false;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-aw-4.4-foot/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
+  "convert;--filenames-without-uids;--input;${PLM_BUILD_TESTING_DIR}/dicomrt-aw-4.4-foot/20101202HFS;--output-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-convert-dicom-aw-a-dicom"
   )
 plm_add_test (
   "plm-convert-dicom-aw-a-stats" 
@@ -4408,14 +4408,14 @@ set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES
 plm_add_test (
   "plm-xf-convert-e" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
+  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
   )
 set_tests_properties (plm-xf-convert-e PROPERTIES DEPENDS "rect-2;rect-3")
 
 plm_add_test (
   "plm-xf-convert-f" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-f;--fixed-image;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--moving-image;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-f;--fixed-image;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--moving-image;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
   )
 set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 

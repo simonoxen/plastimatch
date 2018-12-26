@@ -470,6 +470,6 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     if (parms->output_dicom != "") {
         lprintf ("Rt_study_warp: Save dicom.\n");
         rt_study->save_dicom (parms->output_dicom.c_str(),
-            parms->dicom_with_uids);
+            parms->dicom_filenames_with_uids);
     }
 }
