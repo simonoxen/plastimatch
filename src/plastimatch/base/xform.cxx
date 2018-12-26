@@ -2132,6 +2132,16 @@ Xform::get_grid_spacing (float grid_spacing[3])
     }
 }
 
+bool
+Xform::is_linear ()
+{
+    return this->m_type == XFORM_ITK_TRANSLATION
+        || this->m_type == XFORM_ITK_VERSOR
+        || this->m_type == XFORM_ITK_QUATERNION
+        || this->m_type == XFORM_ITK_SIMILARITY
+        || this->m_type == XFORM_ITK_AFFINE;
+}
+
 void
 Xform::print ()
 {

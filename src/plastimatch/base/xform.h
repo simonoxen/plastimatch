@@ -58,6 +58,11 @@ typedef itk::ThinPlateSplineKernelTransform <
 typedef DoubleTpsTransformType TpsTransformType;
 
 
+/*! \brief 
+ * The Xform class is an abstraction that encapsulates a simple transform, 
+ * either native format (B-spline or vector field), or ITK format 
+ * (linear, B-spline, or vector field).
+ */
 class PLMBASE_API Xform {
 public:
     SMART_POINTER_SUPPORT (Xform);
@@ -127,6 +132,10 @@ public:
     void get_volume_header (Volume_header *vh);
     Plm_image_header get_plm_image_header ();
     void get_grid_spacing (float grid_spacing[3]);
+
+    /*! \brief Return true if the xform type is translation, rigid, 
+      similarity, or affine. */
+    bool is_linear ();
 
     void print ();
 

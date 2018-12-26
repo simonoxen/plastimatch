@@ -1,7 +1,7 @@
 [GLOBAL]
 fixed=@PLM_BUILD_TESTING_DIR@/rect-2.mha
 moving=@PLM_BUILD_TESTING_DIR@/rect-3.mha
-vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-rect-vf.mha
+vf_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-rect-vf.nrrd
 xform_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-rect-xf.txt
 img_out=@PLM_BUILD_TESTING_DIR@/plm-bsp-rect-img.mha
 

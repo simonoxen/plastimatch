@@ -28,9 +28,17 @@ Dcmtk_sro::save (
     bool filenames_with_uid)
 {
     /* Prepare xform */
-    Xform xf_aff;
-    xform_to_aff (&xf_aff, xf.get(), 0);
-    AffineTransformType::Pointer itk_aff = xf_aff.get_aff();
+    Xform xf_cvt;
+    AffineTransformType::Pointer itk_aff;
+    bool is_linear = xf->is_linear();
+    if (is_linear) {
+        xform_to_aff (&xf_cvt, xf.get(), 0);
+        itk_aff = xf_cvt.get_aff();
+    }
+    else {
+        print_and_exit ("Oops, deformable SRO not yet supported.\n");
+    }
+    
 
     /* Prepare dcmtk */
     OFCondition ofc;
