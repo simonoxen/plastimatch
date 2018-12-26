@@ -210,10 +210,11 @@ parse_fn (
     parser->add_long_option ("", "output", 
         "Output xform filename", 1, "");
     parser->add_long_option ("", "output-type", 
-        "Type of xform to create (required), choose from "
+        "Type of xform to create; optional, choose from "
         "{bspline, itk_bspline, vf}", 1, "none");
     parser->add_long_option ("", "output-dicom", 
-        "Directory for output of dicom spatial registration IOD", 1, "");
+        "Directory for output of dicom spatial registration IOD, and "
+        "optionally, fixed and/or moving images", 1, "");
 
     parser->add_long_option ("", "dim", 
         "Size of output image in voxels \"x [y z]\"", 1, "");
