@@ -29,17 +29,14 @@ Dcmtk_sro::save (
 {
     /* Prepare xform */
     Xform xf_cvt;
-    AffineTransformType::Pointer itk_aff;
     bool is_linear = xf->is_linear();
     if (is_linear) {
         xform_to_aff (&xf_cvt, xf.get(), 0);
-        itk_aff = xf_cvt.get_aff();
     }
     else {
-        print_and_exit ("Oops, deformable SRO not yet supported.\n");
+        xform_to_gpuit_vf (&xf_cvt, xf.get(), 0);
     }
     
-
     /* Prepare dcmtk */
     OFCondition ofc;
     DcmFileFormat fileformat;
@@ -68,105 +65,185 @@ Dcmtk_sro::save (
     /* Spatial Registration Series module */
     /* (nothing to do) */
 
-    /* Frame of Reference module */
+    /* Frame of Reference module.  The direction of the transform is opposite 
+       between spatial Registration and Deforamble Spatial Registration IODs, 
+       See Section 17 Part O. 
+       http://dicom.nema.org/medical/Dicom/current/output/chtml/part17/chapter_O.html
+       However, this implementation keeps the fixed image as 
+       the Registered RCS, and the moving image be the Source RCS, 
+       whether the registration is linear or deformable.
+    */
     Dcmtk_module::set_frame_of_reference (dataset, rsm_fixed);
 
     /* General Equipment module */
     Dcmtk_module::set_general_equipment (dataset, study_meta);
 
-    /* Spatial Registration module */
+    /* These do not seem to be needed,  */
+#if defined (commentout)
+    dataset->putAndInsertString (DCM_InstanceNumber, "");
+    dataset->putAndInsertString (DCM_ContentLabel, "");
+#endif
+
+    /* Spatial Registration module or Deformable Spatial Registration 
+       module */
     dataset->putAndInsertOFStringArray (DCM_ContentDate, 
         rsm_moving->get_study_date());
     dataset->putAndInsertOFStringArray (DCM_ContentTime, 
         rsm_moving->get_study_time());
-    dataset->putAndInsertString (DCM_InstanceNumber, "");
-    dataset->putAndInsertString (DCM_ContentLabel, "");
+    if (is_linear) {
+        AffineTransformType::Pointer itk_aff;
+        itk_aff = xf_cvt.get_aff();
 
-    /* fixed image */
-    DcmItem *reg_item = 0;
-    dataset->findOrCreateSequenceItem (
-        DCM_RegistrationSequence, reg_item, -2);
-    reg_item->putAndInsertString (
-        DCM_FrameOfReferenceUID, 
-        rsm_fixed->get_frame_of_reference_uid().c_str());
-    DcmItem *mr_item = 0;
-    reg_item->findOrCreateSequenceItem (
-        DCM_MatrixRegistrationSequence, mr_item, -2);
-    DcmItem *rtc_item = 0;
-    mr_item->findOrCreateSequenceItem (
-        DCM_RegistrationTypeCodeSequence, rtc_item, -2);
-    rtc_item->putAndInsertString (DCM_CodeValue, "125025");
-    rtc_item->putAndInsertString (DCM_CodingSchemeDesignator, "DCM");
-    rtc_item->putAndInsertString (DCM_CodeMeaning, "Visual Alignment");
-    DcmItem *m_item = 0;
-    mr_item->findOrCreateSequenceItem (DCM_MatrixSequence, m_item, -2);
-    m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
-        "1.0\\0.0\\0.0\\0.0\\0.0\\1.0\\0.0\\0.0\\"
-        "0.0\\0.0\\1.0\\0.0\\0.0\\0.0\\0.0\\1.0");
-    m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrixType,
-        "RIGID");
+        /* fixed image */
+        DcmItem *reg_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_RegistrationSequence, reg_item, -2);
+        reg_item->putAndInsertString (
+            DCM_FrameOfReferenceUID, 
+            rsm_fixed->get_frame_of_reference_uid().c_str());
+        DcmItem *mr_item = 0;
+        reg_item->findOrCreateSequenceItem (
+            DCM_MatrixRegistrationSequence, mr_item, -2);
+        DcmItem *rtc_item = 0;
+        mr_item->findOrCreateSequenceItem (
+            DCM_RegistrationTypeCodeSequence, rtc_item, -2);
+        rtc_item->putAndInsertString (DCM_CodeValue, "125025");
+        rtc_item->putAndInsertString (DCM_CodingSchemeDesignator, "DCM");
+        rtc_item->putAndInsertString (DCM_CodeMeaning, "Visual Alignment");
+        DcmItem *m_item = 0;
+        mr_item->findOrCreateSequenceItem (DCM_MatrixSequence, m_item, -2);
+        m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
+            "1.0\\0.0\\0.0\\0.0\\0.0\\1.0\\0.0\\0.0\\"
+            "0.0\\0.0\\1.0\\0.0\\0.0\\0.0\\0.0\\1.0");
+        m_item->putAndInsertString (
+            DCM_FrameOfReferenceTransformationMatrixType, "RIGID");
 
-    /* moving image */
-    dataset->findOrCreateSequenceItem (
-        DCM_RegistrationSequence, reg_item, -2);
-    reg_item->putAndInsertString (
-        DCM_FrameOfReferenceUID, 
-        rsm_moving->get_frame_of_reference_uid().c_str());
-    reg_item->findOrCreateSequenceItem (
-        DCM_MatrixRegistrationSequence, mr_item, -2);
-    mr_item->findOrCreateSequenceItem (
-        DCM_RegistrationTypeCodeSequence, rtc_item, -2);
-    rtc_item->putAndInsertString (DCM_CodeValue, "125025");
-    rtc_item->putAndInsertString (DCM_CodingSchemeDesignator, "DCM");
-    rtc_item->putAndInsertString (DCM_CodeMeaning, "Visual Alignment");
-    mr_item->findOrCreateSequenceItem (DCM_MatrixSequence, m_item, -2);
-    std::string matrix_string;
+        /* moving image */
+        dataset->findOrCreateSequenceItem (
+            DCM_RegistrationSequence, reg_item, -2);
+        reg_item->putAndInsertString (
+            DCM_FrameOfReferenceUID, 
+            rsm_moving->get_frame_of_reference_uid().c_str());
+        reg_item->findOrCreateSequenceItem (
+            DCM_MatrixRegistrationSequence, mr_item, -2);
+        mr_item->findOrCreateSequenceItem (
+            DCM_RegistrationTypeCodeSequence, rtc_item, -2);
+        rtc_item->putAndInsertString (DCM_CodeValue, "125025");
+        rtc_item->putAndInsertString (DCM_CodingSchemeDesignator, "DCM");
+        rtc_item->putAndInsertString (DCM_CodeMeaning, "Visual Alignment");
+        mr_item->findOrCreateSequenceItem (DCM_MatrixSequence, m_item, -2);
+        std::string matrix_string;
 
-    const AffineTransformType::MatrixType& itk_aff_mat 
-        = itk_aff->GetMatrix ();
-    const AffineTransformType::OutputVectorType& itk_aff_off 
-        = itk_aff->GetOffset ();
+        /* Invert the matrix, as per Section 17 Part O. */
+        const AffineTransformType::MatrixType& itk_aff_mat 
+            = itk_aff->GetMatrix ();
+        const AffineTransformType::OutputVectorType& itk_aff_off 
+            = itk_aff->GetOffset ();
 
-    printf ("ITK_AFF_OFF\n%f %f %f\n",
-        itk_aff_off[0], itk_aff_off[1], itk_aff_off[2]);
+        printf ("ITK_AFF_OFF\n%f %f %f\n",
+            itk_aff_off[0], itk_aff_off[1], itk_aff_off[2]);
     
-    /* Nb. ITK does not easily create an inverse affine transform. 
-       Therefore we play with the matrices. */
-    vnl_matrix_fixed< double, 3, 3 > itk_aff_mat_inv =
-        itk_aff_mat.GetInverse();
+        /* Nb. ITK does not easily create an inverse affine transform. 
+           Therefore we play with the matrices. */
+        /* GCS FIX: The above comment is likely no longer true.  We 
+           probably want to switch to using the ITK function. */
+        vnl_matrix_fixed< double, 3, 3 > itk_aff_mat_inv =
+            itk_aff_mat.GetInverse();
     
-    matrix_string = string_format (
-        "%f\\%f\\%f\\%f\\"
-        "%f\\%f\\%f\\%f\\"
-        "%f\\%f\\%f\\%f\\"
-        "0.0\\0.0\\0.0\\1.0",
-        itk_aff_mat_inv[0][0],
-        itk_aff_mat_inv[0][1],
-        itk_aff_mat_inv[0][2],
-        - itk_aff_mat_inv[0][0] * itk_aff_off[0]
-        - itk_aff_mat_inv[0][1] * itk_aff_off[1]
-        - itk_aff_mat_inv[0][2] * itk_aff_off[2],
-        itk_aff_mat_inv[1][0],
-        itk_aff_mat_inv[1][1],
-        itk_aff_mat_inv[1][2],
-        - itk_aff_mat_inv[1][0] * itk_aff_off[0]
-        - itk_aff_mat_inv[1][1] * itk_aff_off[1]
-        - itk_aff_mat_inv[1][2] * itk_aff_off[2],
-        itk_aff_mat_inv[2][0],
-        itk_aff_mat_inv[2][1],
-        itk_aff_mat_inv[2][2],
-        - itk_aff_mat_inv[2][0] * itk_aff_off[0]
-        - itk_aff_mat_inv[2][1] * itk_aff_off[1]
-        - itk_aff_mat_inv[2][2] * itk_aff_off[2]
-    );
-    m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
-        matrix_string.c_str());
-    m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrixType,
-        "RIGID");
+        matrix_string = string_format (
+            "%f\\%f\\%f\\%f\\"
+            "%f\\%f\\%f\\%f\\"
+            "%f\\%f\\%f\\%f\\"
+            "0.0\\0.0\\0.0\\1.0",
+            itk_aff_mat_inv[0][0],
+            itk_aff_mat_inv[0][1],
+            itk_aff_mat_inv[0][2],
+            - itk_aff_mat_inv[0][0] * itk_aff_off[0]
+            - itk_aff_mat_inv[0][1] * itk_aff_off[1]
+            - itk_aff_mat_inv[0][2] * itk_aff_off[2],
+            itk_aff_mat_inv[1][0],
+            itk_aff_mat_inv[1][1],
+            itk_aff_mat_inv[1][2],
+            - itk_aff_mat_inv[1][0] * itk_aff_off[0]
+            - itk_aff_mat_inv[1][1] * itk_aff_off[1]
+            - itk_aff_mat_inv[1][2] * itk_aff_off[2],
+            itk_aff_mat_inv[2][0],
+            itk_aff_mat_inv[2][1],
+            itk_aff_mat_inv[2][2],
+            - itk_aff_mat_inv[2][0] * itk_aff_off[0]
+            - itk_aff_mat_inv[2][1] * itk_aff_off[1]
+            - itk_aff_mat_inv[2][2] * itk_aff_off[2]
+        );
+        m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
+            matrix_string.c_str());
+        m_item->putAndInsertString (
+            DCM_FrameOfReferenceTransformationMatrixType, "RIGID");
 
-    printf ("SRO\n%s\n", matrix_string.c_str());
+        printf ("SRO\n%s\n", matrix_string.c_str());
+
+    }
+    else {
+        DcmItem *reg_item = 0;
+        dataset->findOrCreateSequenceItem (
+            DCM_DeformableRegistrationSequence, reg_item, -2);
+        reg_item->putAndInsertString (
+            DCM_SourceFrameOfReferenceUID, 
+            rsm_moving->get_frame_of_reference_uid().c_str());
+
+        /* For now, punt on Referenced Image Sequence */
+
+        /* Registration Type Code Sequence (allowed to be empty) */
+        DcmItem *m_item = 0;
+        reg_item->findOrCreateSequenceItem (
+            DCM_RegistrationTypeCodeSequence, m_item, -2);
+
+        /* Pre Deformation Matrix Registration Sequence */
+        reg_item->findOrCreateSequenceItem (
+            DCM_PreDeformationMatrixRegistrationSequence, m_item, -2);
+        m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
+            "1.0\\0.0\\0.0\\0.0\\0.0\\1.0\\0.0\\0.0\\"
+            "0.0\\0.0\\1.0\\0.0\\0.0\\0.0\\0.0\\1.0");
+        m_item->putAndInsertString (
+            DCM_FrameOfReferenceTransformationMatrixType, "RIGID");
+
+        /* Post Deformation Matrix Registration Sequence */
+        reg_item->findOrCreateSequenceItem (
+            DCM_PostDeformationMatrixRegistrationSequence, m_item, -2);
+        m_item->putAndInsertString (DCM_FrameOfReferenceTransformationMatrix,
+            "1.0\\0.0\\0.0\\0.0\\0.0\\1.0\\0.0\\0.0\\"
+            "0.0\\0.0\\1.0\\0.0\\0.0\\0.0\\0.0\\1.0");
+        m_item->putAndInsertString (
+            DCM_FrameOfReferenceTransformationMatrixType, "RIGID");
+
+        /* Deformable Registration Grid Sequence */
+        Volume::Pointer vf = xf_cvt.get_gpuit_vf();
+        reg_item->findOrCreateSequenceItem (
+            DCM_DeformableRegistrationGridSequence, m_item, -2);
+        float *dc = vf->get_direction_matrix();
+        std::string s = string_format ("%f\\%f\\%f\\%f\\%f\\%f",
+            dc[0], dc[3], dc[6], dc[1], dc[4], dc[7]);
+        m_item->putAndInsertString (DCM_ImageOrientationPatient, s.c_str());
+        s = string_format ("%f\\%f\\%f", 
+            vf->origin[0], vf->origin[1], vf->origin[2]);
+        m_item->putAndInsertString (DCM_ImagePositionPatient, s.c_str());
+        s = string_format ("%d\\%d\\%d", 
+            vf->dim[0], vf->dim[1], vf->dim[2]);
+        m_item->putAndInsertString (DCM_GridDimensions, s.c_str());
+        s = string_format ("%f\\%f\\%f", 
+            vf->spacing[0], vf->spacing[1], vf->spacing[2]);
+        m_item->putAndInsertString (DCM_GridResolution, s.c_str());
+
+
+        DcmFloatingPointSingle *fele;
+        Float32 *f = (Float32*) vf->img;
+        fele = new DcmFloatingPointSingle (DCM_VectorGridData);
+        ofc = fele->putFloat32Array (f, 3*vf->npix);
+        ofc = m_item->insert (fele);
+    }
 
     /* Common Instance Reference module */
+    /* GCS FIX: Two things to fix.  (1) Moving image may belong to different 
+       study; (2) All referenced instances should be included. */
     DcmItem *rss_item = 0;
     DcmItem *ris_item = 0;
     /* moving */
@@ -191,23 +268,34 @@ Dcmtk_sro::save (
         rsm_fixed->get_slice_uid (0));
     rss_item->putAndInsertString (DCM_SeriesInstanceUID,
         rsm_fixed->get_ct_series_uid ());
-
+    
     /* SOP Common Module */
     std::string sro_sop_instance_uid = dicom_uid (PLM_UID_PREFIX);
-    dataset->putAndInsertString (DCM_SOPClassUID, 
-        UID_SpatialRegistrationStorage);
+    if (is_linear) {
+        dataset->putAndInsertString (DCM_SOPClassUID, 
+            UID_SpatialRegistrationStorage);
+    } else {
+        dataset->putAndInsertString (DCM_SOPClassUID, 
+            UID_DeformableSpatialRegistrationStorage);
+    }
     dataset->putAndInsertString (DCM_SOPInstanceUID, 
         sro_sop_instance_uid.c_str());
-
+        
     /* ----------------------------------------------------------------- *
      *  Write the output file
      * ----------------------------------------------------------------- */
     std::string sro_fn;
-    if (filenames_with_uid) {
-        sro_fn = string_format ("%s/sro_%s.dcm", dicom_dir.c_str(),
-            sro_sop_instance_uid.c_str());
+    const char *prefix;
+    if (is_linear) {
+        prefix = "sro";
     } else {
-        sro_fn = string_format ("%s/sro.dcm", dicom_dir.c_str());
+        prefix = "dro";
+    }
+    if (filenames_with_uid) {
+        sro_fn = string_format ("%s/%s_%s.dcm", dicom_dir.c_str(),
+            prefix, sro_sop_instance_uid.c_str());
+    } else {
+        sro_fn = string_format ("%s/%s.dcm", dicom_dir.c_str(), prefix);
     }
     make_parent_directories (sro_fn);
 

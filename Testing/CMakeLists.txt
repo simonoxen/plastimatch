@@ -407,7 +407,7 @@ plm_add_test (
 plm_add_test (
   "rect-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50;--patient-name;RECT^SYNTH;--patient-id;RECT-SYNTH;--series-description;rect-2;--filenames-without-uids"
   )
 
 plm_add_test (
@@ -419,7 +419,7 @@ plm_add_test (
 plm_add_test (
   "rect-3"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_BUILD_TESTING_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50;--patient-name;RECT^SYNTH;--patient-id;RECT-SYNTH;--series-description;rect-3;--filenames-without-uids"
   )
 plm_add_test (
   "rect-4"
@@ -4409,21 +4409,21 @@ set_tests_properties (plm-xf-convert-d-warp-2-check PROPERTIES
 plm_add_test (
   "plm-xf-convert-e" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
+  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom"
   )
 set_tests_properties (plm-xf-convert-e PROPERTIES DEPENDS "rect-2;rect-3")
 
 plm_add_test (
   "plm-xf-convert-f" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-f;--fixed-image;${PLM_BUILD_TESTING_DIR}/rect-2.mha;--moving-image;${PLM_BUILD_TESTING_DIR}/rect-3.mha"
+  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-f;--fixed-image;${PLM_BUILD_TESTING_DIR}/rect-3.mha;--moving-image;${PLM_BUILD_TESTING_DIR}/rect-2.mha"
   )
 set_tests_properties (plm-xf-convert-f PROPERTIES DEPENDS "rect-2;rect-3")
 
 plm_add_test (
   "plm-xf-convert-g" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--filenames-without-uids;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-rect-vf.nrrd;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-e;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
+  "xf-convert;--filenames-without-uids;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-rect-vf.nrrd;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-g;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
   )
 set_tests_properties (plm-xf-convert-g PROPERTIES DEPENDS "rect-2;rect-3;plm-bsp-rect")
 

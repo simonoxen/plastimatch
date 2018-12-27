@@ -51,6 +51,7 @@ public:
         const float spacing[3], const float dc[9]);
     void set (const plm_long dim[3], const float origin[3], 
         const float spacing[3], const Direction_cosines& dc);
+    void set (const Plm_image_header* img);
     void set_from_bxf (Bspline_xform *bxf);
 
 public:

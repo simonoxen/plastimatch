@@ -1582,7 +1582,8 @@ Volume::Pointer
 xform_itk_vf_to_gpuit_vf (
     DeformationFieldType::Pointer itk_vf, const Plm_image_header *pih)
 {
-    Volume_header vh (pih);
+    const Plm_image_header pih_vf (itk_vf);
+    Volume_header vh (&pih_vf);
     Volume::Pointer vf_out = Volume::New (vh, PT_VF_FLOAT_INTERLEAVED, 3);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
@@ -1595,6 +1596,10 @@ xform_itk_vf_to_gpuit_vf (
         for (int r = 0; r < 3; r++) {
             img[i++] = displacement[r];
         }
+    }
+
+    if (pih) {
+        /* GCS FIX: Resample to desired resolution */
     }
     return vf_out;
 }

@@ -76,8 +76,8 @@ void
 Dcmtk_module::set_general_equipment (DcmDataset *dataset,  
     const Metadata::Pointer& meta)
 {
+    /* Satisfies Enhanced General Equipment Module requirements */
     dcmtk_copy_from_metadata (dataset, meta, DCM_Manufacturer, "Plastimatch");
-    //dcmtk_copy_from_metadata (dataset, meta, DCM_InstitutionName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_StationName, "");
     dcmtk_copy_from_metadata (dataset, meta, DCM_ManufacturerModelName,
         "Plastimatch");
