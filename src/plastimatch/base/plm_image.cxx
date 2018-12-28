@@ -942,6 +942,15 @@ void
 Plm_image::convert_to_itk_short (void)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	CONVERT_ITK_ITK (short, uchar);
+	return;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	CONVERT_ITK_ITK (short, char);
+	return;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	CONVERT_ITK_ITK (short, ushort);
+	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	return;
     case PLM_IMG_TYPE_ITK_ULONG:
@@ -953,6 +962,9 @@ Plm_image::convert_to_itk_short (void)
     case PLM_IMG_TYPE_ITK_FLOAT:
 	CONVERT_ITK_ITK (short, float);
 	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	CONVERT_ITK_ITK (short, double);
+	return;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->m_itk_short = this->convert_gpuit_to_itk<
             ShortImageType::Pointer, short> (this->get_vol());
