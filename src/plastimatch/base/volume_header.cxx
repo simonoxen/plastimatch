@@ -59,6 +59,14 @@ Volume_header::Volume_header (
 }
 
 Volume_header::Volume_header (
+    const Volume_header* vh)
+{
+    this->d_ptr = new Volume_header_private;
+    this->set (vh->get_dim(), vh->get_origin(), vh->get_spacing(),
+        vh->get_direction_cosines());
+}
+
+Volume_header::Volume_header (
     const Plm_image_header *pih)
 {
     this->d_ptr = new Volume_header_private;
@@ -106,6 +114,14 @@ Volume_header::set_origin (const float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	d_ptr->m_origin[d] = origin[d];
+    }
+}
+
+void
+Volume_header::get_origin (float origin[3])
+{
+    for (unsigned int d = 0; d < 3; d++) {
+	origin[d] = d_ptr->m_origin[d];
     }
 }
 

@@ -176,9 +176,6 @@ Dcmtk_file::get_direction_cosines () const
 float
 Dcmtk_file::get_z_position () const
 {
-#if defined (commentout)
-    return d_ptr->m_vh.get_origin()[2];
-#endif
     return d_ptr->m_zpos;
 }
 
@@ -225,21 +222,22 @@ Dcmtk_file::load_header (const char *fn) {
     }
 
     /* ImageOrientationPatient */
-    float direction_cosines[9];
+    float dc[9];
     ofrc = dset->findAndGetString (DCM_ImageOrientationPatient, c);
     if (ofrc.good() && c) {
-	Plm_return_code rc = parse_dicom_float6 (direction_cosines, c);
+        float tmp[6];
+	Plm_return_code rc = parse_dicom_float6 (tmp, c);
 	if (rc == PLM_SUCCESS) {
-	    direction_cosines[6] 
-		= direction_cosines[1]*direction_cosines[5] 
-		- direction_cosines[2]*direction_cosines[4];
-	    direction_cosines[7] 
-		= direction_cosines[2]*direction_cosines[3] 
-		- direction_cosines[0]*direction_cosines[5];
-	    direction_cosines[8] 
-		= direction_cosines[0]*direction_cosines[4] 
-		- direction_cosines[1]*direction_cosines[3];
-	    d_ptr->m_vh.set_direction_cosines (direction_cosines);
+            dc[0] = tmp[0];
+            dc[3] = tmp[1];
+            dc[6] = tmp[2];
+            dc[1] = tmp[3];
+            dc[4] = tmp[4];
+            dc[7] = tmp[5];
+	    dc[2] = dc[3]*dc[7] - dc[4]*dc[6];
+	    dc[5] = dc[1]*dc[6] - dc[0]*dc[7];
+	    dc[8] = dc[0]*dc[4] - dc[1]*dc[3];
+	    d_ptr->m_vh.set_direction_cosines (dc);
 	}
     }
 
@@ -257,10 +255,7 @@ Dcmtk_file::load_header (const char *fn) {
     }
 
     /* Compute z position */
-    d_ptr->m_zpos =
-        + direction_cosines[6] * origin[0]
-        + direction_cosines[7] * origin[1]
-        + direction_cosines[8] * origin[2];
+    d_ptr->m_zpos = dc[2] * origin[0] + dc[5] * origin[1] + dc[8] * origin[2];
 
     d_ptr->m_valid = true;
 }

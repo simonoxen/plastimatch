@@ -23,6 +23,7 @@ public:
     Volume_header (plm_long dim[3], float origin[3], float spacing[3]);
     Volume_header (plm_long dim[3], float origin[3], float spacing[3],
         float direction_cosines[9]);
+    Volume_header (const Volume_header*);
     Volume_header (const Volume::Pointer& vol);
     Volume_header (const Plm_image_header *pih);
     Volume_header (const Plm_image::Pointer& img);
@@ -34,6 +35,7 @@ public:
     const plm_long* get_dim () const;
 
     void set_origin (const float origin[3]);
+    void get_origin (float origin[3]);
     float* get_origin ();
     const float* get_origin () const;
 

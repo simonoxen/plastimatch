@@ -279,6 +279,8 @@ Dcmtk_rt_study::image_load ()
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
+    const Dcmtk_file* df_this_chunk_start = df;
+    const Dcmtk_file* df_best_chunk_start = df;
 
     std::list<Dcmtk_file::Pointer>::const_iterator it = flist->begin();
     ++it; ++slice_no;
@@ -306,6 +308,7 @@ Dcmtk_rt_study::image_load ()
 	    this_chunk_start = slice_no - 1;
 	    this_chunk_len = 2;
 	    this_chunk_diff = z_diff;
+            df_best_chunk_start = it->get();
 	} else {
 	    /* Same thickness, increase size of this chunk */
 	    this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
@@ -319,6 +322,7 @@ Dcmtk_rt_study::image_load ()
 		best_chunk_diff = this_chunk_diff;
 		best_chunk_z_start = z_prev 
 		    - (best_chunk_len-1) * best_chunk_diff;
+                df_best_chunk_start = df_this_chunk_start;
 	    }
 	}
     }
@@ -335,8 +339,8 @@ Dcmtk_rt_study::image_load ()
             best_chunk_diff);
     }
     
-    /* Some debugging info */
 #if defined (commentout)
+    /* Some debugging info */
     lprintf ("Slices: ");
     for (it = flist->begin(); it != flist->end(); ++it) {
         df = (*it).get();
@@ -345,21 +349,24 @@ Dcmtk_rt_study::image_load ()
     lprintf ("\n");
 #endif
 
-    /* Create a Volume_header to hold the image geometry */
-    Volume_header vh;
+    /* Create a Volume_header to hold the final, resampled, image geometry */
+    Volume_header vh (df_best_chunk_start->get_volume_header());
+    printf ("--- *2 ----\n");
+    vh.print();
+    const float *dc = vh.get_direction_cosines();
     plm_long *dim = vh.get_dim();
-
-    /* Compute resampled volume header */
+    float *spacing = vh.get_spacing();
+    float *origin = vh.get_origin();
     int slices_before = 
 	ROUND_INT ((best_chunk_z_start - z_init) / best_chunk_diff);
     int slices_after = 
 	ROUND_INT ((z_last - best_chunk_z_start 
 		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
-    df = (*flist->begin()).get();
-    vh.clone (df->get_volume_header());
     dim[2] = slices_before + best_chunk_len + slices_after;
-    vh.get_origin()[2] = best_chunk_z_start - slices_before * best_chunk_diff;
-    vh.get_spacing()[2] = best_chunk_diff;
+    spacing[2] = best_chunk_diff;
+    float origin_diff[3] = {
+        slices_before * dc[2], slices_before * dc[5], slices_before * dc[8] };
+    vec3_add (origin, origin_diff);
 
     /* Store image header */
     if (d_ptr->rt_study_metadata) {
@@ -385,12 +392,14 @@ Dcmtk_rt_study::image_load ()
     pli->set_volume (vol);
     float* img = (float*) vol->img;
 
+    float origin_z_pos = origin[0] * dc[2] + origin[1] * dc[5]
+        + origin[2] * dc[8];
     for (plm_long i = 0; i < dim[2]; i++) {
 	/* Find the best slice, using nearest neighbor interpolation */
 	std::list<Dcmtk_file::Pointer>::const_iterator best_slice_it 
             = flist->begin();
 	float best_z_dist = FLT_MAX;
-	float z_pos = vh.get_origin()[2] + i * vh.get_spacing()[2];
+	float z_pos = origin_z_pos + i * spacing[2];
 	for (it = flist->begin(); it != flist->end(); ++it) {
 	    float this_z_dist = fabs ((*it)->get_z_position() - z_pos);
 	    if (this_z_dist < best_z_dist) {
