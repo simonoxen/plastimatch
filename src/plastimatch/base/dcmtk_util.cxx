@@ -15,7 +15,7 @@
 
 /* Workaround for older versions of DCMTK */
 #if !DCMTK_HAS_EC_INVALIDVALUE
-makeOFConditionConst (EC_InvalidValue, OFM_dcmdata, 42, OF_error, "Invalid Value");
+#define EC_InvalidValue EC_InvalidTag
 #endif
 
 void
