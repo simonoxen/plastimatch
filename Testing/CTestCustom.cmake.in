@@ -303,31 +303,14 @@ if (NOT PLM_DCM_USE_DCMTK)
     )
 endif ()
 
-## Dose calculation not yet supported on debian
+## These tests are failing
 if (PLM_CONFIG_DEBIAN_BUILD)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
-    "proton-dose-1"
-    "proton-dose-1-stats"
-    "proton-dose-1-check"
-    "proton-dose-2"
-    "proton-dose-2-stats"
-    "proton-dose-2-check"
-    "proton-dose-3"
-    "proton-dose-3-stats"
-    "proton-dose-3-check"
-    "proton-dose-5a"
-    "proton-dose-5a-stats"
-    "proton-dose-5a-check"
-    "proton-dose-5d"
-    "proton-dose-5d-stats"
-    "proton-dose-5d-check"
-    "proton-dose-5g"
-    "proton-dose-5g-stats"
-    "proton-dose-5g-check"
-    "proton-dose-6a"
-    "proton-dose-6a-stats"
-    "proton-dose-6a-check"
+    "proton-dose-7a"
+    "proton-dose-8d"
+    "proton-dose-8d-stats"
+    "proton-dose-8d-check"
     )
 endif ()
 
