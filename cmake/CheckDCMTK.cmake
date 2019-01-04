@@ -4,7 +4,6 @@
 
 include (CheckCXXSourceCompiles)
 
-unset (DCMTK_HAS_EC_INVALIDVALUE CACHE)
 file (READ "${PLM_SOURCE_DIR}/cmake/check_dcmtk_ec_invalidvalue.cxx"
   CHECK_DCMTK_EC_INVALIDVALUE_SOURCE)
 push_vars (CMAKE_REQUIRED_INCLUDES CMAKE_REQUIRED_LIBRARIES)

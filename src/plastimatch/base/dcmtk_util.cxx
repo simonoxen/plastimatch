@@ -13,6 +13,11 @@
 #include "print_and_exit.h"
 #include "string_util.h"
 
+/* Workaround for older versions of DCMTK */
+#if !DCMTK_HAS_EC_INVALIDVALUE
+makeOFConditionConst (EC_InvalidValue, OFM_dcmdata, 42, OF_error, "Invalid Value");
+#endif
+
 void
 dcmtk_get_date_time (
     std::string *current_date,
