@@ -20,7 +20,7 @@ Setting up a build system for the first time
 
 #. Install the requisite packages::
 
-   sudo apt-get install devscripts pbuilder debhelper \
+     sudo apt-get install devscripts pbuilder debhelper \
      git-buildpackage cowbuilder
 
    Note: if your host is not sid, you might need to install a newer gcc version 
@@ -72,30 +72,30 @@ Step 1: Test the debian build
 
 #. Repack into correct version name::
 
-   tar xvf plastimatch-master-*.tar.gz
-   rm plastimatch-master-*.tar.gz
-   mv plastimatch-master-* plastimatch-1.6.6
-   tar cvfz plastimatch-1.6.6.tar.gz plastimatch-1.6.6
+     tar xvf plastimatch-master-*.tar.gz
+     rm plastimatch-master-*.tar.gz
+     mv plastimatch-master-* plastimatch-1.6.6
+     tar cvfz plastimatch-1.6.6.tar.gz plastimatch-1.6.6
 
-Note that the old version number should be used, as we have not yet updated
-the version in the debian changelog.
+   Note that the old version number should be used, as we have not yet updated
+   the version in the debian changelog.
 
 #. Run debian repacking::
 
-   mk-origtargz ../plastimatch-1.6.6.tar.gz
+     mk-origtargz ../plastimatch-1.6.6.tar.gz
 
 #. Unzip the created tarball, and copy over the debian directory::
 
-   tar xvf plastimatch_1.6.6+dfsg.1.orig.tar.gz
-   cp -r plastimatch/debian plastimatch-1.6.6
+     tar xvf plastimatch_1.6.6+dfsg.1.orig.tar.gz
+     cp -r plastimatch/debian plastimatch-1.6.6
 
 #. Run pdebuild::
 
-   pdebuild
+     pdebuild
 
 #. Run lintian on package::
 
-   lintian -i *.changes
+     lintian -i *.changes
    
 Step 2: Build the tarball
 -------------------------
