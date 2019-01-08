@@ -1,3 +1,12 @@
+Version 1.7.4 (tag v1.7.4)
+Tue Jan  8 12:28:02 EST 2019
+* Implement xf-invert for inverting linear transforms
+* Deformable DICOM SRO export
+* Distance map calculation can be performed from either face or center
+* Add min Hausdorff distance metric
+* Improvements to dose calculation and RT Ion Plan support
+* Fix direction cosines problem loading DICOM
+
 Version 1.7.3 (tag v1.7.3)
 Mon Jul  9 14:24:13 EDT 2018
 * Implement command "plastimatch drr" as prefered method of creating DRRs

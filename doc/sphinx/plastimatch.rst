@@ -16,17 +16,17 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
  $ plastimatch
- plastimatch version 1.7.3
+ plastimatch version 1.7.4
  Usage: plastimatch command [options]
  Commands:
   add           adjust        average       bbox          boundary    
   crop          compare       compose       convert       dice        
-  diff          dmap          dose          dvh           fill        
-  filter        gamma         header        jacobian      mabs        
-  mask          maximum       ml-convert    multiply      probe       
-  register      resample      scale         segment       stats       
-  synth         synth-vf      threshold     thumbnail     union       
-  vf-invert     warp          xf-convert  
+  diff          dmap          dose          drr           dvh         
+  fill          filter        gamma         header        jacobian    
+  mabs          mask          maximum       ml-convert    multiply    
+  probe         register      resample      scale         segment     
+  sift          stats         synth         synth-vf      threshold   
+  thumbnail     union         warp          xf-convert    xf-invert   
 
  For detailed usage of a specific command, type:
    plastimatch command
