@@ -72,9 +72,9 @@ Step 1: Test the debian build
 
 #. Repack into correct version name::
 
-     tar xvf plastimatch-master-*.tar.gz
-     rm plastimatch-master-*.tar.gz
-     mv plastimatch-master-* plastimatch-1.6.6
+     tar xvf plastimatch-master.tar.gz
+     rm plastimatch-master.tar.gz
+     mv plastimatch-master plastimatch-1.6.6
      tar cvfz plastimatch-1.6.6.tar.gz plastimatch-1.6.6
 
    Note that the old version number should be used, as we have not yet updated
@@ -89,9 +89,14 @@ Step 1: Test the debian build
      tar xvf plastimatch_1.6.6+dfsg.1.orig.tar.gz
      cp -r plastimatch/debian plastimatch-1.6.6
 
-#. Run pdebuild::
+#. Refresh your pbuilder environment (if needed)::
 
-     pdebuild
+     sudo pbuilder update
+
+#. Run debuild and build::
+
+     sudo pbuilder debuild
+     sudo pbuilder build ../plastimatch_*.dsc
 
 #. Run lintian on package::
 
