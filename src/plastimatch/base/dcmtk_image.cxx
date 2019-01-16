@@ -69,6 +69,7 @@ Dcmtk_rt_study::image_load ()
             continue;
         }
         /* Else insert new element into group_list */
+        //printf ("Match not found.  :(\n");
         group_list.push_back (Dcmtk_file_list());
         group_list.back().push_back (df);
     }
@@ -234,7 +235,7 @@ Dcmtk_rt_study::image_load ()
     while (++it != flist->end())
     {
         ++slice_no;
-        printf ("Slice no: %d\n", slice_no);
+        //lprintf ("Slice no: %d\n", slice_no);
         df = (*it).get();
         z_diff = df->get_z_position() - z_prev;
         z_last = z_prev = df->get_z_position();
@@ -351,8 +352,7 @@ Dcmtk_rt_study::image_load ()
 
     /* Create a Volume_header to hold the final, resampled, image geometry */
     Volume_header vh (df_best_chunk_start->get_volume_header());
-    printf ("--- *2 ----\n");
-    vh.print();
+    //vh.print();
     const float *dc = vh.get_direction_cosines();
     plm_long *dim = vh.get_dim();
     float *spacing = vh.get_spacing();
