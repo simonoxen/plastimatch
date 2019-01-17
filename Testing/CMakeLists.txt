@@ -4500,15 +4500,15 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-invert;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-b.tfm;--output;${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-b.tfm"
   )
-plmtest_check_string (
+plmtest_check_interval (
   "xf-invert-vrs-b-check"
   "${PLM_BUILD_TESTING_DIR}/xf-invert-vrs-b.tfm"
-  "^Parameters: *(.*)$"
-  "-0.5236 0 0 0 0 0"
+  "^Parameters: *([-0-9.]*) *0 *0 *0 *0 *0 *$"
+  "-0.52361"
+  "-0.52359"
   )
 set_tests_properties (xf-invert-vrs-b-check
   PROPERTIES DEPENDS xf-invert-vrs-b)
-
 
 ## -------------------------------------------------------------------------
 ## bragg-curve
