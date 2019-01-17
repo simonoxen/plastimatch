@@ -13,7 +13,7 @@ file is included in the distribution.
 
 Conformance
 -----------
-Plastimatch 1.X series must conform to the C++03 standard.
+Plastimatch <= 1.7 series must conform to the C++03 standard.
 
 Supported hosts:
   Microsoft Windows 7 SP1           Visual Studio 2015 (for CUDA 8)
@@ -23,7 +23,7 @@ Supported hosts:
   Arch linux                        (varies)
   OSX 10.11 El Capitan              Xcode 8.2.1; clang-800; llvm 3.9.0svn
 
-Plastimatch 2.X series (planned) must conform to a restricted
+Plastimatch >= 1.8 series must conform to a restricted
 subset of the C++11 standard.  This subset is restricted to 
 features available in the stock compilers provided on
 a fully-updated install of the supported platforms.
