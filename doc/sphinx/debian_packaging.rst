@@ -57,10 +57,9 @@ Setting up a build system for the first time
      apt-get install \
        apt-utils fakeroot debhelper \
        cmake \
-       libblas-dev liblapack-dev libsqlite-dev \
-       libdcmtk-dev libdlib-dev libdlib18 libfftw3-dev \
+       libblas-dev liblapack-dev libsqlite3-dev \
+       libdcmtk-dev libdlib-dev libfftw3-dev \
        libgdcm2-dev libinsighttoolkit4-dev \
-       libsqlite3-dev \
        libpng-dev libtiff-dev uuid-dev zlib1g-dev
 
    See this link for more information https://wiki.debian.org/git-pbuilder
