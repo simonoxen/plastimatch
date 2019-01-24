@@ -26,6 +26,7 @@
 #include "pcmd_gamma.h"
 #include "pcmd_header.h"
 #include "pcmd_jacobian.h"
+#include "pcmd_lm_warp.h"
 #include "pcmd_mabs.h"
 #include "pcmd_mask.h"
 #include "pcmd_maximum.h"
@@ -91,29 +92,31 @@ print_usage (int return_code)
         "  header      "
         "  jacobian    "
         "\n"
+        "  lm-warp     "
         "  mabs        "
         "  mask        "
         "  maximum     "
         "  ml-convert  "
-        "  multiply    "
         "\n"
+        "  multiply    "
         "  probe       "
         "  register    "
         "  resample    "
         "  scale       "
-        "  segment     "
         "\n"
+        "  segment     "
         "  sift        "
         "  stats       "
         "  synth       "
         "  synth-vf    "
-        "  threshold   "
         "\n"
+        "  threshold   "
         "  thumbnail   "
         "  union       "
         "  warp        "
 //        "  xio-dvh     "
         "  xf-convert  "
+        "\n"
         "  xf-invert   "
         "\n"
         "\n"
@@ -208,6 +211,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "jacobian")) {
         do_command_jacobian (argc, argv);
+    }
+    else if (!strcmp (command, "lm-warp")) {
+        do_command_lm_warp (argc, argv);
     }
     else if (!strcmp (command, "mabs")) {
         do_command_mabs (argc, argv);

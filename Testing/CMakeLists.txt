@@ -834,12 +834,11 @@ set_tests_properties (demons-cuda-a-check PROPERTIES DEPENDS demons-cuda-a)
 ##   drr-d       gauss-4.mha (negative spacing), uniform
 ##   drr-cuda    gauss-1.mha, uniform
 ##   drr-opencl  gauss-1.mha, uniform
-##   pcmd-drr-a  same as drr-a, but with plastimatch front end
 ## -------------------------------------------------------------------------
 plm_add_test (
   "drr-a"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-a/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-a/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
   )
 plm_add_test (
   "drr-a-stats"
@@ -858,8 +857,8 @@ set_tests_properties (drr-a-check PROPERTIES DEPENDS drr-a-stats)
 
 plm_add_test (
   "drr-b"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-b/out_;-i;uniform;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-b/out_;-i;uniform;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
   )
 plm_add_test (
   "drr-b-stats"
@@ -878,8 +877,8 @@ set_tests_properties (drr-b-check PROPERTIES DEPENDS drr-b-stats)
 
 plm_add_test (
   "drr-c"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-c/out_;${PLM_BUILD_TESTING_DIR}/gauss-4.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-c/out_;${PLM_BUILD_TESTING_DIR}/gauss-4.mha"
   )
 plm_add_test (
   "drr-c-stats"
@@ -898,8 +897,8 @@ set_tests_properties (drr-c-check PROPERTIES DEPENDS drr-c-stats)
 
 plm_add_test (
   "drr-d"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-d/out_;-i;uniform;${PLM_BUILD_TESTING_DIR}/gauss-4.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-d/out_;-i;uniform;${PLM_BUILD_TESTING_DIR}/gauss-4.mha"
   )
 plm_add_test (
   "drr-d-stats"
@@ -918,8 +917,8 @@ set_tests_properties (drr-d-check PROPERTIES DEPENDS drr-d-stats)
 
 plm_add_test (
   "drr-cuda"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-A;cuda;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-cuda/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-A;cuda;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-cuda/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
   )
 plm_add_test (
   "drr-cuda-stats"
@@ -938,8 +937,8 @@ set_tests_properties (drr-cuda-check PROPERTIES DEPENDS drr-cuda-stats)
 
 plm_add_test (
   "drr-opencl"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-A;opencl;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-opencl/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-A;opencl;-a;20;-O;${PLM_BUILD_TESTING_DIR}/drr-opencl/out_;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
   )
 plm_add_test (
   "drr-opencl-stats"
@@ -955,26 +954,6 @@ plmtest_check_interval ("drr-opencl-check"
 set_tests_properties (drr-opencl PROPERTIES DEPENDS gauss-1)
 set_tests_properties (drr-opencl-stats PROPERTIES DEPENDS drr-opencl)
 set_tests_properties (drr-opencl-check PROPERTIES DEPENDS drr-opencl-stats)
-
-plm_add_test (
-  "plm-drr-a"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "drr;-a;20;-O;${PLM_BUILD_TESTING_DIR}/plm-drr-a/out_;-I;${PLM_BUILD_TESTING_DIR}/gauss-1.mha"
-  )
-plm_add_test (
-  "plm-drr-a-stats"
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;${PLM_BUILD_TESTING_DIR}/plm-drr-a/out_0010.pfm"
-  )
-plmtest_check_interval ("plm-drr-a-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-drr-a-stats.stdout.txt"
-  "MAX *([-0-9.]*)"
-  "0.045"
-  "0.055"
-  )
-set_tests_properties (plm-drr-a PROPERTIES DEPENDS gauss-1)
-set_tests_properties (plm-drr-a-stats PROPERTIES DEPENDS plm-drr-a)
-set_tests_properties (plm-drr-a-check PROPERTIES DEPENDS plm-drr-a-stats)
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection
@@ -1161,8 +1140,8 @@ set_tests_properties (fdk-tutorial-c-check-1 PROPERTIES
 ## -------------------------------------------------------------------------
 plm_add_test (
   "landmark-warp-a" 
-  ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-a-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-a-vf.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "lm-warp;-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-a-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-a-vf.mha"
   )
 plm_add_test (
   "landmark-warp-a-stats-1"
@@ -1198,8 +1177,8 @@ set_tests_properties (landmark-warp-a-check-2 PROPERTIES
 
 plm_add_test (
   "landmark-warp-b" 
-  ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;wendland;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-b-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-b-vf.mha;-r;90;-d;0;-Y;0.0"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "lm-warp;-a;wendland;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-b-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-b-vf.mha;-r;90;-d;0;-Y;0.0"
   )
 plm_add_test (
   "landmark-warp-b-stats-1"
@@ -1235,8 +1214,8 @@ set_tests_properties (landmark-warp-b-check-2 PROPERTIES
 
 plm_add_test (
   "landmark-warp-c" 
-  ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-c-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-c-vf.mha;-r;74;-d;0;-Y;1.0"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "lm-warp;-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-c-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-c-vf.mha;-r;74;-d;0;-Y;1.0"
   )
 plm_add_test (
   "landmark-warp-c-stats-1"
@@ -1272,8 +1251,8 @@ set_tests_properties (landmark-warp-c-check-2 PROPERTIES
 
 plm_add_test (
   "landmark-warp-d" 
-  ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-vf.mha;-L;${PLM_BUILD_TESTING_DIR}/landmark-warp-d.fcsv"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "lm-warp;-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_BUILD_TESTING_DIR}/rect-3.mha;-O;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-img.mha;-V;${PLM_BUILD_TESTING_DIR}/landmark-warp-d-vf.mha;-L;${PLM_BUILD_TESTING_DIR}/landmark-warp-d.fcsv"
   )
 set_tests_properties (landmark-warp-d PROPERTIES DEPENDS rect-3)
 

@@ -135,7 +135,7 @@ parse_fn (
     /* Check that input was given */
     parser->check_required ("output");
 
-    /* Insert command line values into options array */
+    /* Insert command line options into options array */
     std::string s;
     s = make_lowercase (parser->get_string("threading"));
     if (s == "cpu" || s == "openmp") {
@@ -217,12 +217,18 @@ parse_fn (
 
     options->autoscale = parser->have_option ("autoscale");
     parser->assign_float_2 (options->autoscale_range, "autoscale-range");
-    
-    if (!parser->have_option ("input") && options->geometry_only) {
-        throw (dlib::error ("Error.  Specify either option \"input\" "
+
+    /* Verify that either an inputfile was given, or --geometry-only was 
+       requested */
+    if (parser->have_option ("input")) {
+        options->input_file = parser->get_string("input");
+    } else if (parser->number_of_arguments() == 1) {
+        options->input_file = (*parser)[0];
+    } else if (!options->geometry_only) {
+        throw (dlib::error ("Error.  Specify either a single input file "
                 "or option \"geometry-only\""));
     }
-    options->input_file = parser->get_string("input");
+
     options->output_prefix = parser->get_string("output");
 
     set_image_parms (options);

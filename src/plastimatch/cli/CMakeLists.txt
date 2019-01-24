@@ -39,6 +39,7 @@ set (PLASTIMATCH_SRC
   pcmd_gamma.cxx
   pcmd_header.cxx 
   pcmd_jacobian.cxx
+  pcmd_lm_warp.cxx
   pcmd_mabs.cxx 
   pcmd_mask.cxx 
   pcmd_maximum.cxx
@@ -88,7 +89,7 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
 #add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
 plm_add_executable_v3 (plastimatch "${PLASTIMATCH_SRC}"
   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
-plm_add_executable_v3 (landmark_warp "${LANDMARK_WARP_SRC}" 
-  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
-plm_add_executable_v3 (drr "${DRR_SRC}" 
-  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+# plm_add_executable_v3 (landmark_warp "${LANDMARK_WARP_SRC}" 
+#   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+# plm_add_executable_v3 (drr "${DRR_SRC}" 
+#   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
