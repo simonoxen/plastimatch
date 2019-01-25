@@ -967,8 +967,8 @@ set_tests_properties (drr-opencl-check PROPERTIES DEPENDS drr-opencl-stats)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "fdk-cpu-a"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-a.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-a.mha"
   )
 plm_add_test (
   "fdk-cpu-a-stats"
@@ -987,8 +987,8 @@ set_tests_properties (fdk-cpu-a-check PROPERTIES DEPENDS fdk-cpu-a-stats)
 
 plm_add_test (
   "fdk-cpu-b"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;none;-a;0 20 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-b.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;none;-a;0 20 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-b.mha"
   )
 plm_add_test (
   "fdk-cpu-b-stats"
@@ -1006,8 +1006,8 @@ set_tests_properties (fdk-cpu-b-check PROPERTIES DEPENDS fdk-cpu-b-stats)
 
 plm_add_test (
   "fdk-cpu-c"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;ramp;-a;0 50 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-c.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/varian-catphan-subset;-f;ramp;-a;0 50 670;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-c.mha"
   )
 plm_add_test (
   "fdk-cpu-c-stats"
@@ -1025,8 +1025,8 @@ set_tests_properties (fdk-cpu-c-check PROPERTIES DEPENDS fdk-cpu-c-stats)
 
 plm_add_test (
   "fdk-cpu-d"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/drr-a;-X;0;-f;none;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-d.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/drr-a;-X;0;-f;none;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cpu-d.mha"
   )
 plm_add_test (
   "fdk-cpu-d-stats"
@@ -1045,8 +1045,8 @@ set_tests_properties (fdk-cpu-d-check PROPERTIES DEPENDS fdk-cpu-d-stats)
 
 plm_add_test (
   "fdk-cuda-a"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cuda-a.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-cuda-a.mha"
   )
 plm_add_test (
   "fdk-cuda-a-stats"
@@ -1065,8 +1065,8 @@ set_tests_properties (fdk-cuda-a-check PROPERTIES DEPENDS fdk-cuda-a-stats)
 
 plm_add_test (
   "fdk-opencl-a"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-A;opencl;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-opencl-a.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-I;${PLM_BUILD_TESTING_DIR}/drr-a;-f;none;-A;opencl;-a;0 19;-O;${PLM_BUILD_TESTING_DIR}/fdk-opencl-a.mha"
   )
 plm_add_test (
   "fdk-opencl-a-stats"
@@ -1088,13 +1088,13 @@ set_tests_properties (fdk-opencl-a-check PROPERTIES DEPENDS fdk-opencl-a-stats)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "fdk-tutorial-a"
-  ${PLM_PLASTIMATCH_PATH}/drr
-  "-t;pfm;-a;60;-N;3;-g;1000 1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "drr;-t;pfm;-a;60;-N;3;-g;1000 1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
   )
 plm_add_test (
   "fdk-tutorial-b"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-f;none;-r;100 100 100;-I;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-b.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-f;none;-r;100 100 100;-I;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-b.mha"
   )
 plm_add_test (
   "fdk-tutorial-b-stats-1"
@@ -1109,8 +1109,8 @@ plmtest_check_interval ("fdk-tutorial-b-check-1"
   )
 plm_add_test (
   "fdk-tutorial-c"
-  ${PLM_PLASTIMATCH_PATH}/fdk
-  "-f;ramp;-r;100 100 100;-I;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-c.mha"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fdk;-f;ramp;-r;100 100 100;-I;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-c.mha"
   )
 plm_add_test (
   "fdk-tutorial-c-stats-1"

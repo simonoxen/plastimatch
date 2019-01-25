@@ -297,8 +297,8 @@ plm_add_executable_v3 (bragg_curve "${BRAGG_CURVE_SRC}"
 plm_add_executable_v3 (sobp "${SOBP_SRC}" 
   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 
-plm_add_executable_v3 (fdk "${FDK_SRC}" 
-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+# plm_add_executable_v3 (fdk "${FDK_SRC}" 
+#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
 if (CUDA_FOUND)
   plm_add_executable_v3 (cuda_probe "${CUDA_PROBE_SRC}" 
     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})

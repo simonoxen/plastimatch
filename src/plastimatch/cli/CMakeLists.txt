@@ -35,6 +35,7 @@ set (PLASTIMATCH_SRC
   pcmd_dose.cxx pcmd_dose.h
   pcmd_drr.cxx 
   pcmd_dvh.cxx 
+  pcmd_fdk.cxx 
   pcmd_filter.cxx
   pcmd_gamma.cxx
   pcmd_header.cxx 

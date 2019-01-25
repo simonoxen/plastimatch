@@ -238,8 +238,6 @@ void
 do_command_drr (int argc, char *argv[])
 {
     Drr_options parms;
-
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
-
     do_drr (&parms);
 }

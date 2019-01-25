@@ -5,6 +5,7 @@
 #define _fdk_h_
 
 #include "plmreconstruct_config.h"
+#include <string>
 #include "plm_int.h"
 #include "threading.h"
 
@@ -34,8 +35,8 @@ public:
 
     char flavor;
 
-    char* input_dir;
-    char* output_file;
+    std::string input_dir;
+    std::string output_file;
 
     int full_fan;            //Full_fan=1, Half_fan=0;
     char* Full_normCBCT_name;

@@ -55,6 +55,10 @@ Proj_image_dir::Proj_image_dir (const char *dir)
     this->harden_filenames ();
 }
 
+Proj_image_dir::Proj_image_dir (const std::string& dir)
+    : Proj_image_dir (dir.c_str())
+{}
+
 Proj_image_dir::~Proj_image_dir ()
 {
     if (this->img_pat) free (this->img_pat);

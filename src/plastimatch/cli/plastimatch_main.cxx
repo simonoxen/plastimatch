@@ -23,6 +23,7 @@
 #include "pcmd_drr.h"
 #include "pcmd_dvh.h"
 #include "pcmd_filter.h"
+#include "pcmd_fdk.h"
 #include "pcmd_gamma.h"
 #include "pcmd_header.h"
 #include "pcmd_jacobian.h"
@@ -86,37 +87,38 @@ print_usage (int return_code)
         "  drr         "
         "  dvh         "
         "\n"
+        "  fdk         "
         "  fill        "
         "  filter      "
         "  gamma       "
         "  header      "
-        "  jacobian    "
         "\n"
+        "  jacobian    "
         "  lm-warp     "
         "  mabs        "
         "  mask        "
         "  maximum     "
-        "  ml-convert  "
         "\n"
+        "  ml-convert  "
         "  multiply    "
         "  probe       "
         "  register    "
         "  resample    "
-        "  scale       "
         "\n"
+        "  scale       "
         "  segment     "
         "  sift        "
         "  stats       "
         "  synth       "
-        "  synth-vf    "
         "\n"
+        "  synth-vf    "
         "  threshold   "
         "  thumbnail   "
         "  union       "
         "  warp        "
 //        "  xio-dvh     "
-        "  xf-convert  "
         "\n"
+        "  xf-convert  "
         "  xf-invert   "
         "\n"
         "\n"
@@ -195,6 +197,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "dvh")) {
         do_command_dvh (argc, argv);
+    }
+    else if (!strcmp (command, "fdk")) {
+        do_command_fdk (argc, argv);
     }
     else if (!strcmp (command, "fill")) {
         /* fill and mask are the same */

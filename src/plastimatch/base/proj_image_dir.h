@@ -12,6 +12,7 @@ class Proj_image;
 class PLMBASE_API Proj_image_dir
 {
 public:
+    Proj_image_dir (const std::string& dir);
     Proj_image_dir (const char *dir);
     ~Proj_image_dir ();
 

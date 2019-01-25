@@ -87,7 +87,7 @@ main (int argc, char* argv[])
 
     /* Write output */
     printf ("Writing output volume(s)...\n");
-    write_mha (parms.output_file, vol);
+    write_mha (parms.output_file.c_str(), vol);
 
     /* Free memory */
     delete vol;
