@@ -26,7 +26,6 @@
 #include "pcmd_fdk.h"
 #include "pcmd_gamma.h"
 #include "pcmd_header.h"
-#include "pcmd_histogram_matching.h"
 #include "pcmd_intensity_correction.h"
 #include "pcmd_jacobian.h"
 #include "pcmd_lm_warp.h"
@@ -94,7 +93,6 @@ print_usage (int return_code)
         "  filter      "
         "  gamma       "
         "  header      "
-        "  hist-match  "
         "\n"
         "  jacobian    "
         "  lm-warp     "
@@ -150,9 +148,6 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "adjust")) {
         do_command_adjust (argc, argv);
-    }
-    else if (!strcmp (command, "hist-match")) {
-        do_command_histogram_matching(argc, argv);
     }
     else if (!strcmp (command, "average")) {
         /* add and average are the same */

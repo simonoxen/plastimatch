@@ -32,10 +32,10 @@ set (PLMUTIL_LIBRARY_SRC
   image_boundary.cxx image_boundary.h
   image_center.cxx image_center.h
   itk_adjust.cxx itk_adjust.h
-  itk_histogram_matching.cxx itk_histogram_matching.h
-  itk_distance_map.cxx
   itk_crop.cxx
+  itk_distance_map.cxx
   itk_gabor.cxx
+  itk_histogram_matching.cxx itk_histogram_matching.h
   itk_mask.cxx
   itk_scale.cxx
   itk_threshold.cxx

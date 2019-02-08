@@ -38,7 +38,6 @@ set (PLASTIMATCH_SRC
   pcmd_fdk.cxx 
   pcmd_filter.cxx
   pcmd_gamma.cxx
-  pcmd_histogram_matching.cxx pcmd_histogram_matching.h
   pcmd_header.cxx
   pcmd_intensity_correction.cxx pcmd_intensity_correction.h
   pcmd_jacobian.cxx
