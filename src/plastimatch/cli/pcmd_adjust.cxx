@@ -8,6 +8,8 @@
 #include "itk_adjust.h"
 #include "itk_histogram_matching.h"
 #include "itk_image_save.h"
+#include "itk_image_shift_scale.h"
+#include "itk_image_stats.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -36,6 +38,19 @@ adjust_main (Adjust_parms* parms)
         ref_img = plm_ref_image->m_itk_float;
     }
 
+    /* Read mask images if available */
+    UCharImageType::Pointer mask_in, mask_ref;
+    if (parms->mask_in_fn != "") {
+        Plm_image::Pointer plm_mask_image = plm_image_load(
+            parms->mask_in_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        mask_in = plm_mask_image->m_itk_uchar;
+    }
+    if (parms->mask_ref_fn != "") {
+        Plm_image::Pointer plm_refmask_image = plm_image_load(
+            parms->mask_ref_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        mask_ref = plm_refmask_image->m_itk_uchar;
+    }
+
     if (parms->have_ab_scale) {
 	it.GoToBegin();
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
@@ -58,13 +73,34 @@ adjust_main (Adjust_parms* parms)
         plm_image->set_itk(img);
     }
 
+    if (parms->do_linear_match) {
+        double min, max, avg_in, sigma_in, avg_ref, sigma_ref;
+        int num, nonzero;
+        if (parms->mask_in_fn != "" && parms->mask_ref_fn != "") {
+            itk_masked_image_stats(img, mask_in, STATS_OPERATION_INSIDE,
+                &min, &max, &avg_in, &nonzero, &num, &sigma_in);
+            itk_masked_image_stats(ref_img, mask_ref, STATS_OPERATION_INSIDE,
+                &min, &max, &avg_ref, &nonzero, &num, &sigma_ref);
+        } else {
+            itk_image_stats(img, &min, &max, &avg_in, &nonzero, &num, &sigma_in);
+            itk_image_stats(ref_img, &min, &max, &avg_ref, &nonzero, &num, &sigma_ref);
+        }
+        float shift, scale;
+        scale = float(sigma_ref / sigma_in);
+        shift = float(avg_ref - avg_in * scale);
+        itk_image_shift_scale(img, shift, scale);
+    }
+    if (parms->do_linear) {
+        itk_image_shift_scale(img, parms->shift, parms->scale);
+    }
+
     if (parms->output_dicom) {
         plm_image->save_short_dicom (parms->img_out_fn.c_str(), 0);
     } else {
-	if (parms->output_type) {
-	    plm_image->convert (parms->output_type);
-	}
-	plm_image->save_image (parms->img_out_fn);
+        if (parms->output_type) {
+            plm_image->convert (parms->output_type);
+        }
+        plm_image->save_image (parms->img_out_fn);
     }
 }
 
@@ -104,7 +140,7 @@ parse_fn (
     /* histogram matching options */
     parser->add_long_option ("", "hist-match",
         "reference image for histogram matching. You must\n"
-        " specify --hist-levels and --hist-points",
+        "specify --hist-levels and --hist-points",
         1, "");
     parser->add_long_option ("", "hist-levels",
         "number of histogram bins for histogram matching",
@@ -114,6 +150,25 @@ parse_fn (
         1, "");
     parser->add_long_option("", "hist-threshold",
         "threshold at mean intensity (simple background exclusion", 0);
+
+    /* linear matching options */
+    parser->add_long_option("", "linear-match",
+        "reference image for linear matching with mean and std",
+        1, "");
+    parser->add_long_option("", "ref-mask",
+        "reference image mask for statistics calculations (linear-match)",
+        1, "");
+    parser->add_long_option("", "input-mask",
+        "input image mask for statistics calculations (linear-match)",
+        1, "");
+
+    parser->add_long_option("", "linear",
+        "shift and scale image intensities", 0);
+    parser->add_long_option("", "shift",
+        "shift value for linear adjustment (default 0.0)", 1, "");
+    parser->add_long_option("", "scale",
+        "scale value for linear adjustment (default 1.0)", 1, "");
+
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -139,6 +194,13 @@ parse_fn (
     /* Output files */
     parms->img_out_fn = parser->get_string("output").c_str();
 
+    /* Check if only one method is used */
+    if (!(parser->option("pw-linear") ^ parser->option("hist-match") ^ parser->option("linear-match")
+            ^ parser->option("linear"))) {
+        throw (dlib::error("Error. Please use only one of --pw-linear, --hist-match"
+                           "--linear-match or --linear"));
+    }
+
     /* Piecewise linear adjustment string */
     if (parser->option ("pw-linear")) {
         parms->pw_linear = parser->get_string("pw-linear").c_str();
@@ -154,6 +216,21 @@ parse_fn (
         parms->hist_levels = parser->get_int("hist-levels");
         parms->hist_points = parser->get_int("hist-points");
         parms->hist_th = bool(parser->option("hist-threshold"));
+    }
+    if (parser->option ("linear-match")) {
+        parms->do_linear_match = true;
+        parms->img_ref_fn = parser->get_string("linear-match");
+        parms->mask_ref_fn = parser->get_string("ref-mask");
+        parms->mask_in_fn = parser->get_string("input-mask");
+    }
+    if (parser->option ("linear")) {
+        parms->do_linear = true;
+        if (parser->option ("shift")) {
+            parms->shift = parser->get_float("shift");
+        }
+        if (parser->option ("scale")) {
+            parms->scale = parser->get_float("scale");
+        }
     }
 }
 

@@ -4,7 +4,7 @@
 #include "plmbase_config.h"
 #include "itkImageRegionIterator.h"
 
-#include "itk_image_scale.h"
+#include "itk_image_shift_scale.h"
 
 template<class T> 
 void

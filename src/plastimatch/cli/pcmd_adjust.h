@@ -15,6 +15,8 @@ public:
     std::string img_in_fn;
     std::string img_out_fn;
     std::string img_ref_fn;
+    std::string mask_ref_fn;
+    std::string mask_in_fn;
 
     /* Piecewise linear adjustment */
     std::string pw_linear;
@@ -31,7 +33,11 @@ public:
     int hist_levels;
     int hist_points;
 
-
+    /* linear matching/adjustment */
+    bool do_linear_match;
+    bool do_linear;
+    float shift;
+    float scale;
 
     bool output_dicom;
     Plm_image_type output_type;
@@ -39,8 +45,13 @@ public:
     Adjust_parms () {
 	have_ab_scale = false;
 	do_hist_match = false;
+	do_linear_match = false;
+	do_linear = false;
 	output_dicom = false;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
+
+	shift = 0,
+	scale = 1;
     }
 };
 

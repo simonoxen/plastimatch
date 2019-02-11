@@ -15,4 +15,10 @@ template<class T> PLMBASE_API void itk_image_scale (
     float scale
 );
 
+template<class T> PLMBASE_API void itk_image_shift_scale (
+    T img,
+    float shift,
+    float scale
+);
+
 #endif

@@ -55,4 +55,5 @@ template PLMBASE_API bool itk_image_header_compare (UCharImageType::Pointer imag
 template PLMBASE_API bool itk_image_header_compare (UShortImageType::Pointer image1, UCharImageType::Pointer image2);
 template PLMBASE_API bool itk_image_header_compare (ShortImageType::Pointer image1, UCharImageType::Pointer image2);
 template PLMBASE_API bool itk_image_header_compare (UInt32ImageType::Pointer image1, UCharImageType::Pointer image2);
+template PLMBASE_API bool itk_image_header_compare (Int32ImageType::Pointer image1, UCharImageType::Pointer image2);
 template PLMBASE_API bool itk_image_header_compare (FloatImageType::Pointer image1, UCharImageType::Pointer image2);

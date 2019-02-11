@@ -62,7 +62,7 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_origin.cxx itk_image_origin.h
   itk_image_region.cxx itk_image_region.h
   itk_image_save.cxx itk_image_save.h
-  itk_image_scale.cxx itk_image_scale.h
+  itk_image_shift_scale.cxx itk_image_shift_scale.h
   itk_image_stats.cxx itk_image_stats.h
   itk_image_type.h
   itk_metadata.cxx itk_metadata.h

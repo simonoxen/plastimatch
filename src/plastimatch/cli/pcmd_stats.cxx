@@ -24,6 +24,8 @@
 class Stats_parms {
 public:
     bool structure;
+    bool get_sigma;
+    Stats_operation stats_op;
     std::string mask_fn;
     std::list<std::string> input_fns;
 };
@@ -126,13 +128,34 @@ stats_img_main (Stats_parms* parms, const std::string& current_fn)
 {
     Plm_image pli (current_fn);
     FloatImageType::Pointer img = pli.itk_float();
+    UCharImageType::Pointer mask = nullptr;
+    if (parms->mask_fn != "") {
+        Plm_image pli_mask(parms->mask_fn);
+        mask = pli_mask.itk_uchar();
+    }
 
     double min_val, max_val, avg;
     int non_zero, num_vox;
-    itk_image_stats (img, &min_val, &max_val, &avg, &non_zero, &num_vox);
-
-    printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
-	(float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+    double sigma;
+    if (parms->get_sigma) {
+        if (parms->mask_fn != "") {
+            itk_masked_image_stats(img, mask, parms->stats_op, &min_val, &max_val,
+                    &avg, &non_zero, &num_vox, &sigma);
+        } else {
+            itk_image_stats(img, &min_val, &max_val, &avg, &non_zero, &num_vox, &sigma);
+        }
+        printf("MIN %f AVE %f MAX %f SIGMA %f NONZERO %d NUMVOX %d\n",
+               (float) min_val, (float) avg, (float) max_val, (float) sigma, non_zero, num_vox);
+    } else {
+        if (parms->mask_fn != "") {
+            itk_masked_image_stats(img, mask, parms->stats_op, &min_val, &max_val,
+                                   &avg, &non_zero, &num_vox);
+        } else {
+            itk_image_stats(img, &min_val, &max_val, &avg, &non_zero, &num_vox);
+        }
+        printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n",
+                (float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
+    }
 }
 
 static void
@@ -210,6 +233,10 @@ parse_fn (
         "are considered for statistics", 1, "");
     parser->add_long_option ("", "structure", 
         "Compute structure statistics rather than image statistics", 0);
+    parser->add_long_option ("", "sigma",
+        "Compute standard deviation of image intensity", 0);
+    parser->add_long_option ("", "outside",
+        "Calculate statistics outside of mask", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -224,6 +251,16 @@ parse_fn (
         parms->structure = true;
     } else {
         parms->structure = false;
+    }
+    if (parser->option ("sigma")) {
+        parms->get_sigma = true;
+    } else {
+        parms->get_sigma = false;
+    }
+    if (parser->option ("outside")) {
+        parms->stats_op = STATS_OPERATION_OUTSIDE;
+    } else {
+        parms->stats_op = STATS_OPERATION_INSIDE;
     }
 
     /* Check that no extraneous options were given */
