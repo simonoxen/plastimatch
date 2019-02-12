@@ -214,9 +214,6 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "header")) {
         do_command_header (argc, argv);
     }
-    else if (!strcmp (command, "intensity-correction")) {
-        do_command_intensity_correction(argc, argv);
-    }
     else if (!strcmp (command, "jacobian")) {
         do_command_jacobian (argc, argv);
     }
