@@ -265,8 +265,8 @@ parse_fn (
 
     /* Check that no extraneous options were given */
     if (parser->number_of_arguments() == 0) {
-	throw (dlib::error ("Error.  You must specify at least one "
-                "file for printing stats."));
+	    throw (dlib::error ("Error.  You must specify at least one "
+                            "file for printing stats."));
     }
 
     /* Copy input filenames to parms struct */

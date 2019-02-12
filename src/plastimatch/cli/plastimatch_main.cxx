@@ -26,7 +26,6 @@
 #include "pcmd_fdk.h"
 #include "pcmd_gamma.h"
 #include "pcmd_header.h"
-#include "pcmd_intensity_correction.h"
 #include "pcmd_jacobian.h"
 #include "pcmd_lm_warp.h"
 #include "pcmd_mabs.h"
