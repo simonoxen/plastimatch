@@ -10,6 +10,7 @@
 #include "itk_image_save.h"
 #include "itk_image_shift_scale.h"
 #include "itk_image_stats.h"
+#include "itk_local_intensity_correction.h"
 #include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_math.h"
@@ -93,6 +94,20 @@ adjust_main (Adjust_parms* parms)
     if (parms->do_linear) {
         itk_image_shift_scale(img, parms->shift, parms->scale);
     }
+    if (parms->do_local) {
+        FloatImageType::Pointer shift_img, scale_img;
+        if (parms->mask_in_fn != "" && parms->mask_ref_fn != "")
+            img = itk_masked_local_intensity_correction(img, ref_img, parms->patch_size,
+                    mask_in, mask_ref, shift_img, scale_img, parms->blending, parms->median_radius);
+        else
+            img = itk_local_intensity_correction(img, ref_img, parms->patch_size, shift_img,
+                    scale_img, parms->blending, parms->median_radius);
+        plm_image->set_itk(img);
+        if (parms->shift_out_fn != "")
+            itk_image_save(shift_img, parms->shift_out_fn);
+        if (parms->scale_out_fn != "")
+            itk_image_save(scale_img, parms->scale_out_fn);
+    }
 
     if (parms->output_dicom) {
         plm_image->save_short_dicom (parms->img_out_fn.c_str(), 0);
@@ -169,7 +184,20 @@ parse_fn (
     parser->add_long_option("", "scale",
         "scale value for linear adjustment (default 1.0)", 1, "");
 
-
+    parser->add_long_option("", "local-match",
+        "reference image for patch-wise shift and scale", 1, "");
+    parser->add_long_option("", "patch-size",
+        "patch size for local matching; provide 1 \"n\" or 3 values "
+        "\"nx ny nz\"", 1, "");
+    parser->add_long_option("", "local-shift-out",
+    "filename to store pixel-wise shifts", 1, "");
+    parser->add_long_option("", "local-scale-out",
+                            "filename to store pixel-wise scales", 1, "");
+    parser->add_long_option("", "local-blending",
+        "trilinear interpolation of shifts and scales", 0);
+    parser->add_long_option("", "local-medianfilt",
+        "apply median filter to shifts and scales before blending; provide 1 or 3 values "
+        "\"nx ny nz\" for radius in number of tiles", 1, "");
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -196,10 +224,13 @@ parse_fn (
 
     /* Check if only one method is used */
     if (!(parser->option("pw-linear") ^ parser->option("hist-match") ^ parser->option("linear-match")
-            ^ parser->option("linear"))) {
-        throw (dlib::error("Error. Please use only one of --pw-linear, --hist-match"
-                           "--linear-match or --linear"));
+            ^ parser->option("linear") ^ parser->option("local-match"))) {
+        throw (dlib::error("Error.  Please use only one of --pw-linear, --hist-match"
+                           "--linear-match, --linear or --local-match"));
     }
+
+    parms->mask_ref_fn = parser->get_string("ref-mask");
+    parms->mask_in_fn = parser->get_string("input-mask");
 
     /* Piecewise linear adjustment string */
     if (parser->option ("pw-linear")) {
@@ -208,7 +239,7 @@ parse_fn (
 
     if (parser->option ("hist-match")) {
         if (!parser->option("hist-levels") || !parser->option("hist-points")) {
-            throw (dlib::error ("Error. Please specify number of bins and match points"
+            throw (dlib::error ("Error.  Please specify number of bins and match points"
                                 "\nusing the --hist-levels and --hist-points options"));
         }
         parms->do_hist_match = true;
@@ -220,8 +251,6 @@ parse_fn (
     if (parser->option ("linear-match")) {
         parms->do_linear_match = true;
         parms->img_ref_fn = parser->get_string("linear-match");
-        parms->mask_ref_fn = parser->get_string("ref-mask");
-        parms->mask_in_fn = parser->get_string("input-mask");
     }
     if (parser->option ("linear")) {
         parms->do_linear = true;
@@ -230,6 +259,35 @@ parse_fn (
         }
         if (parser->option ("scale")) {
             parms->scale = parser->get_float("scale");
+        }
+    }
+    if (parser->option ("local-match")) {
+        parms->do_local = true;
+        parms->img_ref_fn = parser->get_string("local-match");
+        if (!parser->option("patch-size")) {
+            throw (dlib::error("Error.  Please specify the patch size using the "
+                               "--patch-size option"));
+        }
+        int patchsize[3];
+        parser->assign_int13(patchsize, "patch-size");
+        for (unsigned long i = 0; i < 3; ++i) {
+            parms->patch_size.SetElement(i, (unsigned long)patchsize[i]);
+        }
+        if (parser->option("local-shift-out")) {
+            parms->shift_out_fn = parser->get_string("local-shift-out");
+        }
+        if (parser->option("local-scale-out")) {
+            parms->scale_out_fn = parser->get_string("local-scale-out");
+        }
+        parms->blending = (bool) parser->option("local-blending");
+        if (parser->option("local-medianfilt")) {
+            int filtsize[3];
+            parser->assign_int13(filtsize, "local-medianfilt");
+            for (unsigned long i = 0; i < 3; ++i) {
+                parms->median_radius.SetElement(i, (unsigned long)filtsize[i]);
+            }
+        } else {
+            parms->median_radius.Fill(0);
         }
     }
 }

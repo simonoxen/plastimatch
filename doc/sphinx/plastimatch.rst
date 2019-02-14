@@ -1348,7 +1348,7 @@ following::
 
   plastimatch warp \
     --input infile.nrrd \
-    --output outfile.nrrd \
+    --output-img outfile.nrrd \
     --xf bspline.txt
 
 In the previous example, the output file geometry was determined by the 
@@ -1357,7 +1357,7 @@ to a different geometry using --fixed, or --origin, --dim, and --spacing. ::
 
   plastimatch warp \
     --input infile.nrrd \
-    --output outfile.nrrd \
+    --output-img outfile.nrrd \
     --xf bspline.txt \
     --fixed reference.nrrd
 
@@ -1367,7 +1367,7 @@ rather than linear interpolation. ::
 
   plastimatch warp \
     --input structures-in.nrrd \
-    --output structures-out.nrrd \
+    --output-img structures-out.nrrd \
     --xf bspline.txt \
     --interpolation nn
 
@@ -1378,7 +1378,7 @@ value for these areas using the --default-value option. ::
 
   plastimatch warp \
     --input infile.nrrd \
-    --output outfile.nrrd \
+    --output-img outfile.nrrd \
     --xf bspline.txt \
     --default-value -1000
 

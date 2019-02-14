@@ -36,6 +36,7 @@ set (PLMUTIL_LIBRARY_SRC
   itk_distance_map.cxx
   itk_gabor.cxx
   itk_histogram_matching.cxx itk_histogram_matching.h
+  itk_local_intensity_correction.cxx itk_local_intensity_correction.h
   itk_mask.cxx
   itk_scale.cxx
   itk_threshold.cxx

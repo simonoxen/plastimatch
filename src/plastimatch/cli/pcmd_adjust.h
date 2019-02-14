@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "plm_image_type.h"
+#include "plm_image.h"
 
 class Adjust_parms {
 public:
@@ -17,6 +18,8 @@ public:
     std::string img_ref_fn;
     std::string mask_ref_fn;
     std::string mask_in_fn;
+    std::string shift_out_fn;
+    std::string scale_out_fn;
 
     /* Piecewise linear adjustment */
     std::string pw_linear;
@@ -39,6 +42,12 @@ public:
     float shift;
     float scale;
 
+    /* local intensity adjustment */
+    bool do_local;
+    SizeType patch_size;
+    bool blending;
+    SizeType median_radius;
+
     bool output_dicom;
     Plm_image_type output_type;
 public:
@@ -52,6 +61,7 @@ public:
 
 	shift = 0,
 	scale = 1;
+	blending = false;
     }
 };
 
