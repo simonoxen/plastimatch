@@ -56,6 +56,8 @@ public:
 	do_hist_match = false;
 	do_linear_match = false;
 	do_linear = false;
+        do_local = false;
+        blending = false;
 	output_dicom = false;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 

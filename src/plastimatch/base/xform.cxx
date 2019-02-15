@@ -1347,9 +1347,9 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 static DeformationFieldType::Pointer
 xform_itk_vf_to_itk_vf (
     const DeformationFieldType::Pointer& vf,
-    Plm_image_header* pih)
+    const Plm_image_header* pih)
 {
-    return vector_resample_image (vf, (const Plm_image_header*) pih);
+    return vector_resample_image (vf, pih);
 }
 
 /* Here what we're going to do is use GPUIT library to interpolate the
@@ -1362,7 +1362,7 @@ xform_itk_vf_to_itk_vf (
     3) Render vf.
 */
 static DeformationFieldType::Pointer
-xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
+xform_gpuit_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 {
     DeformationFieldType::Pointer itk_vf;
 
@@ -1388,8 +1388,8 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
    2) convert itk -> itk to change resolution.  */
 DeformationFieldType::Pointer
 xform_gpuit_vf_to_itk_vf (
-    Volume* vf,              /* Input */
-    Plm_image_header* pih    /* Input, can be null */
+    Volume* vf,                    /* Input */
+    const Plm_image_header* pih    /* Input, can be null */
 )
 {
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
@@ -1883,7 +1883,7 @@ xform_to_itk_bsp_nobulk (
 }
 
 void
-xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
+xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const Plm_image_header* pih)
 {
     DeformationFieldType::Pointer vf;
 

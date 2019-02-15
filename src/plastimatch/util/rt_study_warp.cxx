@@ -368,7 +368,8 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
         Plm_image::Pointer im_out = Plm_image::New();
         lprintf ("Rt_study_warp: Warping m_img\n");
         plm_warp (im_out, &vf, xform, &pih, rt_study->get_image(), 
-            parms->default_val, parms->use_itk, parms->interp_lin);
+            parms->default_val, parms->force_resample,
+            parms->use_itk, parms->interp_lin);
         rt_study->set_image (im_out);
     }
 
@@ -391,7 +392,7 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
         lprintf ("Rt_study_warp: Warping dose\n");
         Plm_image::Pointer im_out = Plm_image::New();
         plm_warp (im_out, 0, xform, &pih, rt_study->get_dose(), 0, 
-            parms->use_itk, 1);
+            parms->force_resample, parms->use_itk, true);
         rt_study->set_dose (im_out);
     }
 

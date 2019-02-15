@@ -124,6 +124,64 @@ plm_warp_itk (
     }
 }
 
+
+/* Rewrite image header instead of resampling */
+static void
+plm_warp_linear (
+    Plm_image::Pointer& im_warped,         /* Output */
+    DeformationFieldType::Pointer *vf_out, /* Output */
+    const Xform::Pointer& xf_in,           /* Input */
+    const Plm_image_header *pih,           /* Input */
+    const Plm_image::Pointer& im_in        /* Input */
+)
+{
+    Xform xform_tmp;
+
+    /* If caller wants the vf, we assign it here */
+    if (vf_out) {
+        printf ("plm_warp_itk: xform_to_itk_vf\n");
+        xform_to_itk_vf (&xform_tmp, xf_in.get(), pih);
+	*vf_out = xform_tmp.get_itk_vf ();
+    }
+
+    /* If caller only wants the vf, we are done */
+    if (!im_warped) {
+	return;
+    }
+
+    /* Convert to xform to affine */
+    Xform xf_aff;
+    xform_to_aff (&xf_aff, xf_in.get(), 0);
+    AffineTransformType::Pointer itk_aff = xf_aff.get_aff();
+    const AffineTransformType::MatrixType& itk_aff_mat = itk_aff->GetMatrix ();
+    const AffineTransformType::OutputVectorType& itk_aff_off = itk_aff->GetOffset ();
+
+    std::cout << itk_aff << std::endl;
+
+    /* Why can't this be a AffineTransformType::Pointer ? */
+    AffineTransformType::InverseTransformBaseType::Pointer itk_aff_inv
+        = itk_aff->GetInverseTransform ();
+    
+    //AffineTransformType::Pointer itk_aff_inv_2 = itk_aff_inv;
+    
+    std::cout << itk_aff_inv << std::endl;
+
+    exit (0);
+    
+    /* Rotate direction cosines */
+    // GCS FIX TODO
+    float direction_cosines[9];
+    pih->get_direction_cosines (direction_cosines);
+
+    /* Rotate and translate origin */
+    // GCS FIX TODO
+    float origin[3];
+    pih->get_origin (origin);
+    
+    
+}
+
+
 /* Native warping (only gpuit bspline + float) */
 static void
 plm_warp_native (
@@ -280,10 +338,19 @@ plm_warp (
     Plm_image_header *pih, /* Input:  Size of output image */
     const Plm_image::Pointer& im_in,      /* Input:  Input image */
     float default_val,     /* Input:  Value for pixels without match */
-    int use_itk,           /* Input:  Force use of itk (1) or not (0) */
-    int interp_lin         /* Input:  Trilinear (1) or nn (0) */
+    bool force_resample,   /* Input:  Force resample of image for linear transforms */
+    bool use_itk,          /* Input:  Force use of itk (1) or not (0) */
+    bool interp_lin        /* Input:  Trilinear (1) or nn (0) */
 )
 {
+    /* For linear transforms, don't resample unless requested */
+#if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
+    if (xf_in->is_linear() && !force_resample) {
+	plm_warp_linear (im_warped, vf, xf_in, pih, im_in);
+	return;
+    }
+#endif
+    
     /* If user requested ITK-based warping, respect their wish */
     if (use_itk) {
 	plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,

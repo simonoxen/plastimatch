@@ -250,7 +250,7 @@ Mabs_atlas_selection::compute_similarity_value_post()
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
     Plm_image_header fixed_pih (this->subject);
     plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
-        this->atlas, regp->default_value, 0, 1);
+        this->atlas, regp->default_value, false, 0, 1);
    
     double similarity_value_post = 0;
     if (this->atlas_selection_criteria == "nmi-post") {
@@ -291,7 +291,7 @@ Mabs_atlas_selection::compute_similarity_value_ratio()
     Plm_image::Pointer deformed_atlas = Plm_image::New ();
     Plm_image_header fixed_pih (this->subject);
     plm_warp (deformed_atlas, 0, xf, &fixed_pih, 
-        this->atlas, regp->default_value, 0, 1);
+        this->atlas, regp->default_value, false, 0, 1);
 
     double similarity_value_post = 0;
 

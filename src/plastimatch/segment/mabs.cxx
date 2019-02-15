@@ -626,7 +626,7 @@ Mabs::run_registration_loop ()
             timer.start();
             plm_warp (warped_image, 0, xf_out, &fixed_pih, 
                 moving_image, 
-                regp->default_value, 0, 1);
+                regp->default_value, false, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
             /* Warp the structures */
@@ -966,7 +966,7 @@ Mabs::atlas_selection ()
             timer.start();
             plm_warp (warped_image, 0, xf_out, &fixed_pih,
                 moving_image,
-                regp->default_value, 0, 1);
+                regp->default_value, false, 0, 1);
             d_ptr->time_warp_img += timer.report();
 
             atlas_selector->subject = warped_image; 
@@ -1527,14 +1527,14 @@ Mabs::no_voting (
         timer.start();
         std::string atlas_struct_fn;
         atlas_struct_fn = string_format ("%s/structures/%s.nrrd", 
-                atlas_input_path.c_str(), mapped_name.c_str());
+            atlas_input_path.c_str(), mapped_name.c_str());
         Plm_image::Pointer atlas_struct = 
-                plm_image_load_native (atlas_struct_fn);
+            plm_image_load_native (atlas_struct_fn);
         d_ptr->time_io += timer.report();
         if (!atlas_struct) {
-                lprintf ("Atlas %s doesn't have structure %s\n",
-                    atlas_id.c_str(), mapped_name.c_str());
-                continue;
+            lprintf ("Atlas %s doesn't have structure %s\n",
+                atlas_id.c_str(), mapped_name.c_str());
+            continue;
         }
 
         /* Warp structure */
@@ -1543,9 +1543,9 @@ Mabs::no_voting (
         Plm_image_header fixed_pih (d_ptr->ref_rtds->get_image());
         lprintf ("Warping atlas structure.\n");
         plm_warp (warped_structure, 0, xf, 
-                &fixed_pih, 
-                atlas_struct,
-                0, 0, 0);
+            &fixed_pih, 
+            atlas_struct,
+            0, false, 0, 0);
         d_ptr->time_warp_str += timer.report();
         
         /* Save warped structure */        
@@ -1657,7 +1657,7 @@ Mabs::gaussian_segmentation_vote (
         plm_warp (warped_image, 0, xf, 
             &fixed_pih, 
             atlas_image, 
-            0, 0, 1);
+            0, false, 0, 1);
         d_ptr->time_warp_img += timer.report();
         /* Save warped image */
         if (d_ptr->write_warped_images) {
@@ -1741,7 +1741,7 @@ Mabs::gaussian_segmentation_vote (
                 plm_warp (warped_structure, 0, xf, 
                     &fixed_pih, 
                     atlas_struct,
-                    0, 0, 1);
+                    0, false, 0, 1);
                 d_ptr->time_warp_str += timer.report();
             }
             if (!warped_structure) continue;

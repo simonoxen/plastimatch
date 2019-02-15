@@ -304,7 +304,7 @@ save_output (
         logfile_printf ("Warping...\n");
         Plm_image::Pointer moving_image = regd->get_moving_image();
         plm_warp (im_warped, vfp, xf_out, &pih, moving_image,
-            default_value, 0, 1);
+            default_value, false, 0, 1);
 
         if (img_out_fn[0]) {
             logfile_printf ("Saving image...\n");

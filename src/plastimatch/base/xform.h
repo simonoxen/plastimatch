@@ -170,13 +170,13 @@ PLMBASE_API void xform_to_aff (
 PLMBASE_API void xform_to_similarity (
     Xform *xf_out, const Xform *xf_in, Plm_image_header* pih);
 PLMBASE_API DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (
-    Volume* vf,              /* Input */
-    Plm_image_header* pih    /* Input, can be null */
+    Volume* vf,                    /* Input */
+    const Plm_image_header* pih    /* Input, can be null */
 );
 PLMBASE_API void xform_to_itk_bsp (Xform *xf_out, const Xform *xf_in,
     Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, Plm_image_header* pih, const float* grid_spac);
-PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
+PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const Plm_image_header* pih);
 PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih);

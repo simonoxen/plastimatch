@@ -96,6 +96,8 @@ sb_option (PLM_CONFIG_PREFER_PATCHED_ITK
   "Prefer to use the patched version of certain ITK files" ON)
 sb_option (PLM_CONFIG_VOL_LIST
   "Native support for volumes with irregular slice thicknesses" OFF)
+sb_option (PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
+  "By default, harden linear transforms rather than resample" OFF)
 
 # Plastimatch legacy options
 sb_option (PLM_CONFIG_LEGACY_BSPLINE_EXTEND

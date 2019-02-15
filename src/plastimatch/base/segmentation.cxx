@@ -723,7 +723,7 @@ Segmentation::warp_nondestructive (
     if (d_ptr->m_labelmap) {
         printf ("Warping labelmap.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
         rtss_warped->d_ptr->m_labelmap = tmp;
         rtss_warped->d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
@@ -731,7 +731,7 @@ Segmentation::warp_nondestructive (
     if (d_ptr->m_ss_img) {
         printf ("Warping ss_img.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
         rtss_warped->d_ptr->m_ss_img = tmp;
     }
 
@@ -747,7 +747,7 @@ Segmentation::warp (
     if (d_ptr->m_labelmap) {
         printf ("Warping labelmap.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
         d_ptr->m_labelmap = tmp;
         d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
@@ -755,7 +755,7 @@ Segmentation::warp (
     if (d_ptr->m_ss_img) {
         printf ("Warping ss_img.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
         d_ptr->m_ss_img = tmp;
     }
 

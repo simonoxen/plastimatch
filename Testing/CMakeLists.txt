@@ -4137,11 +4137,10 @@ set_tests_properties (plm-warp-pointset-c PROPERTIES DEPENDS landmark-warp-c)
 ##   plm warp b: xf = bspline, algorithm = native
 ##   plm warp c: xf = bspline, algorithm = itk, interp = nn
 ##   plm warp d: xf = bspline, algorithm = native, interp = nn
-##   plm warp e: input = xio, multiple outputs
-##   plm warp f: input = dicom, multiple outputs
-##   plm warp g: xf = translation
-##   plm warp h: xf = translation, ushort images
-##   plm warp i: xf = translation, double images
+##   plm warp f: xf = translation, harden transform
+##   plm warp g: xf = translation, force resample
+##   plm warp h: xf = translation, force resample, ushort images
+##   plm warp i: xf = translation, force resample, double images
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-warp-a" 
@@ -4241,9 +4240,29 @@ set_tests_properties (plm-warp-d-stats PROPERTIES DEPENDS plm-warp-d)
 set_tests_properties (plm-warp-d-check PROPERTIES DEPENDS plm-warp-d-stats)
 
 plm_add_test (
+  "plm-warp-f" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-f-img.nrrd;--default-value;0"
+  )
+plm_add_test (
+  "plm-warp-f-stats-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;plm-warp-f-img.nrrd"
+  )
+plmtest_check_interval ("plm-warp-f-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-warp-f-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-675.5"
+  "-674.5"
+  )
+set_tests_properties (plm-warp-f PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-warp-f-stats-1 PROPERTIES DEPENDS plm-warp-f)
+set_tests_properties (plm-warp-f-check-1 PROPERTIES DEPENDS plm-warp-f-stats-1)
+
+plm_add_test (
   "plm-warp-g" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-g-img.nrrd;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-g-img.nrrd;--default-value;0;--force-resample"
   )
 plm_add_test (
   "plm-warp-g-stats-1"
@@ -4263,7 +4282,7 @@ set_tests_properties (plm-warp-g-check-1 PROPERTIES DEPENDS plm-warp-g-stats-1)
 plm_add_test (
   "plm-warp-h" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-ushort-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-h-img.nrrd;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-ushort-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-h-img.nrrd;--default-value;0;--force-resample"
   )
 plm_add_test (
   "plm-warp-h-stats-1"
@@ -4283,7 +4302,7 @@ set_tests_properties (plm-warp-h-check-1 PROPERTIES DEPENDS plm-warp-h-stats-1)
 plm_add_test (
   "plm-warp-i" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-double-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-i-img.nrrd;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_BUILD_TESTING_DIR}/gauss-double-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-i-img.nrrd;--default-value;0;--force-resample"
   )
 plm_add_test (
   "plm-warp-i-stats-1"
