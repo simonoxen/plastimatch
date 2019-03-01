@@ -252,6 +252,11 @@ specific parameters are available.
      - 1.0
      - float
      - Relative contribution of landmark distance in cost function
+   * - lbfgsb_mmax
+     - bspline+any+plastimatch
+     - (AUTO)
+     - integer
+     - Maximum number of histories retained by the lbfgsb optimizer.
    * - mattes_fixed_minVal, mattes_fixed_maxVal
      - bspline+any+itk
      - 0
