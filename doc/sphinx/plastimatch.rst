@@ -66,23 +66,48 @@ then you should do this::
     --weight "2 0.5 0.1" \
     01.mha 02.mha 03.mha
 
+.. _plastimatch_adjust:
 
 plastimatch adjust
 ------------------
 The *adjust* command is used to adjust the intensity values 
-within an image.  The adjustment operations available are truncation and 
-linear scaling.  
+within an image.  The adjustment operations available are truncation, linear
+scaling, histogram matching as well as global and local linear matching.
 
 The command line usage is given as follows::
 
   Usage: plastimatch adjust [options]
-  Required:
-    --input <arg>       input directory or filename 
-    --output <arg>      output image 
-  Optional:
-    --pw-linear <arg>   a string that forms a piecewise linear 
-                         map from input values to output values, 
-                         of the form "in1,out1,in2,out2,..." 
+  Options:
+    -h, --help                    display this help message 
+        --hist-levels <arg>       number of histogram bins for histogram 
+                                   matching, default is 1024 
+        --hist-match <arg>        reference image for histogram matching 
+        --hist-points <arg>       number of match points for histogram matching,
+                                   default is 10 
+        --hist-threshold          threshold at mean intensity (simple background
+                                   exclusion) for histogram matching 
+        --input <arg>             input directory or filename 
+        --input-mask <arg>        input image mask, only affects --linear-match 
+                                   and --local-match 
+        --linear <arg>            shift and scale image intensities, provide a 
+                                   string with "<shift> <scale>" 
+        --linear-match <arg>      reference image for linear matching with mean 
+                                   and std 
+        --local-match <arg>       reference image for patch-wise shift and 
+                                   scale. You must specify the --patch-size 
+        --local-blending-off      no trilinear interpolation of shifts and
+                                   scales 
+        --local-scale-out <arg>   filename to store pixel-wise scales 
+        --local-shift-out <arg>   filename to store pixel-wise shifts 
+        --output <arg>            output image 
+        --patch-size <arg>        patch size for local matching; provide 1 "n" 
+                                   or 3 values "nx ny nz" 
+        --pw-linear <arg>         a string that forms a piecewise linear map 
+                                   from input values to output values, of the 
+                                   form "in1,out1,in2,out2,..." 
+        --ref-mask <arg>          reference image mask, only affects 
+                                   --linear-match and --local-match 
+        --version                 display the program version 
 
 The adjust command can be used to make a piecewise 
 linear adjustment of
@@ -90,14 +115,30 @@ the image intensities.  The --pw-linear option is used to create
 the mapping from input intensities to output intensities.  
 The input intensities in the curve must increase from left to right 
 in the string, but output intensities are arbitrary.  
-
 Input intensities below the first pair or after the last pair 
 are transformed by extrapolating the curve out to infinity with 
 a slope of +1.  A different slope may be specified out to 
 positive or negative infinity by specifying the special 
 input values of -inf and +inf.  In this case, the 
 second number in the pair is the slope of the curve, not the 
-output intensity.
+output intensity.  You can do a simplified linear transformation of
+gray levels with the --linear option.  For this, you need to 
+provide a string with "<shift> <scale>". 
+
+In addition, you can adjust the image intensities based on a
+reference image. With --linear-match, a linear transformation
+(shift and scale) is determined from mean and standard deviation
+of pixel values in reference and input image. If the input image feaures
+local intensity inconsistencies, you can choose a patch-based intensity
+correction using the --local-match option.  Similar to --linear-match,
+shift and scale are computed patch-wise from mean and standard
+deviation.  For both options, you can provide masks that specify the
+regions taken into account.  Finally, choose --hist-match to perform
+histogram matching.
+
+You can only choose one of --linear, --pw-linear, --linear-match,
+--local-match and --hist-match. Beware that a reference filename has to
+be added for matching options.
 
 Examples
 ^^^^^^^^
@@ -123,6 +164,64 @@ range of [-1000,+1000]::
     --input infile.nrrd \
     --output outfile.nrrd \
     --pw-linear "-inf,0,-1000,-1000,+1000,+1000,inf,0"
+
+The following command scales and then shifts all voxel values by
+2.5 and +1000, respectively. (Use either comma or space to separate
+the values)::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --linear "1000,2.5"
+
+The following command matches the histogram of infile.nrrd to be
+similar to that of reference.nrrd::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --hist-match reference.nrrd \
+    --hist-levels 1000 --hist-points 12
+
+The following command matches mean and standard deviation of
+intensities in the input image to equal those of the reference image::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --linear-match reference.nrrd
+
+The following command also matches mean and standard deviation, 
+but calculates statistics only from inside the mask regions 
+(note that masks are only used for statistic calculations,
+you would need to use plastimatch mask to reset outside values)::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --linear-match reference.nrrd \
+    --input-mask inmask.nrrd --ref-mask refmask.nrrd
+
+Finally, you can apply patch-wise local intensity adjustment using the
+following command::
+
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --local-match reference.nrrd \
+    --patch-size "20 20 10"
+
+The --local-match option requires the input and reference to be
+spatially aligned.  In order to reduce the influence of background
+pixels at the border, you can provide foreground masks for both images::
+
+  plastimatch adjust \
+    --input infile.nrrd
+    --output outfile.nrrd \
+    --local-match reference.nrrd \
+    --patch-size "20 20 10" \
+    --input-mask inmask.nrrd \
+    --ref-mask refmask.nrrd
 
 plastimatch average
 -------------------
@@ -1443,3 +1542,4 @@ coefficients with a control-point spacing of 30 mm in each direction. ::
     --output bspline.txt \
     --output-type bspline \
     --grid-spacing 30
+

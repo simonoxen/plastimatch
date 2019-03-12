@@ -83,6 +83,7 @@ exclude_trees = ['_build']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+highlight_language = 'console'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -131,7 +132,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = False
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}

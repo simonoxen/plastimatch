@@ -140,30 +140,7 @@ void itk_masked_image_stats(T img, UCharImageType::Pointer mask,
 		= mask->GetLargestPossibleRegion();
 	ImageIteratorType it_img (img, rgn_img);
 	MaskIteratorType it_mask (mask, rgn_mask);
-
-	int first = 1;
-	double sum = 0.0;
-	*non_zero = 0;
-	*num_vox = 0;
-	for (it_img.GoToBegin(), it_mask.GoToBegin(); !it_img.IsAtEnd(); ++it_img, ++it_mask) {
-		double v = (double) it_img.Get();
-		unsigned char mask_value = it_mask.Get();
-		if ((mask_value > 0) ^ (stats_operation == STATS_OPERATION_OUTSIDE)) {
-			if (first) {
-				*min_val = *max_val = v;
-				first = 0;
-			}
-			if (*min_val > v) *min_val = v;
-			if (*max_val < v) *max_val = v;
-			sum += v;
-			(*num_vox)++;
-			if (v != 0.0) {
-				(*non_zero)++;
-			}
-		}
-	}
-	*avg = sum / (*num_vox);
-
+    itk_masked_image_stats(img, mask, stats_operation, min_val, max_val, avg, non_zero, num_vox);
 	*sigma = 0;
 	for (it_img.GoToBegin(), it_mask.GoToBegin(); !it_img.IsAtEnd(); ++it_img, ++it_mask) {
 		double v = (double) it_img.Get();
