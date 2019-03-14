@@ -118,12 +118,18 @@ adjust_main (Adjust_parms* parms)
     if (parms->do_local) {
         std::cout << "Applying local intensity matching..." << std::flush;
         FloatImageType::Pointer shift_img, scale_img;
-        if (parms->mask_in_fn != "" && parms->mask_ref_fn != "")
+        if (parms->mask_in_fn != "" || parms->mask_ref_fn != "") {
+            if (parms->mask_in_fn == "")
+                mask_in = mask_ref;
+            if (parms->mask_ref_fn == "")
+                mask_ref = mask_in;
             img = itk_masked_local_intensity_correction(img, ref_img, parms->patch_size,
-                    mask_in, mask_ref, shift_img, scale_img, parms->blending, parms->median_radius);
-        else
+                    mask_in, mask_ref, shift_img, scale_img, parms->blending,
+                    parms->median_radius);
+        } else {
             img = itk_local_intensity_correction(img, ref_img, parms->patch_size, shift_img,
                     scale_img, parms->blending, parms->median_radius);
+        }
         plm_image->set_itk(img);
         if (parms->shift_out_fn != "")
             itk_image_save(shift_img, parms->shift_out_fn);
