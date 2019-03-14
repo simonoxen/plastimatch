@@ -1089,7 +1089,7 @@ set_tests_properties (fdk-opencl-a-check PROPERTIES DEPENDS fdk-opencl-a-stats)
 plm_add_test (
   "fdk-tutorial-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "drr;-t;pfm;-a;60;-N;3;-g;1000 1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
+  "drr;-t;pfm;-a;60;-N;3;--sad;1000;--sid;1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
   )
 plm_add_test (
   "fdk-tutorial-b"
