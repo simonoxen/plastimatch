@@ -13,6 +13,9 @@
 
 import sys, os
 
+from sphinx.highlighting import lexers
+from pygments.lexer import RegexLexer, bygroups
+from pygments import token
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -81,8 +84,59 @@ exclude_trees = ['_build']
 # output. They are ignored by default.
 #show_authors = False
 
+
+class PlmLexer(RegexLexer):
+    """Custom lexer for plastimatch command highlighting
+
+    `tokens` defines different states, each containing a set of
+    sequentially tested regular expressions.  Depending on the current
+    state (e.g. root, string1), the list of regular expressions is
+    tested one by one until a match is found.  The matched token(s) are
+    then characterized and if necessary the state is changed.  Next,
+    RegEx matching is reset for the current state at the end of the
+    previous token.
+
+    Each entry in the token list is of the form
+    (RegEx, TokenType[, newState]).  States can be pushed and popped
+    using the '#push' and '#pop' names, respectively.
+
+    For more information, check out
+    http://pygments.org/docs/lexerdevelopment/
+    """
+    name = "PLM"
+
+    tokens = {
+        'root': [
+            (r'(plastimatch)([^\S\n]+)([-a-z]+)',  # plastimatch and subcommand
+             bygroups(token.Keyword.Namespace, token.Text, token.Name.Builtin)),
+            (r'^#.*\n', token.Comment),  # line comments
+            ('\'', token.String, "string1"),  # single quoted string start
+            ('\"', token.String, "string2"),  # double quoted string start
+            (r'(--[a-zA-Z-]+|-[a-zA-Z]\b)', token.Name.Function),  # options
+            # anything not starting with a number is normal Text:
+            (r'\b[/_\-a-zA-Z]+[\-0-9]*', token.Text),
+            # all sorts of numbers including scientific notation
+            (r'[-+]?(\d+\.\d*|\.\d+|\d+)([eE][-+]?\d+)?(?![a-zA-Z])', token.Number),
+            (r'<[a-zA-Z]+>', token.Name.Variable.Magic),  # e.g. <arg>
+            # everything else:
+            (r'\s+', token.Text),
+            (r'.', token.Text)
+        ],
+        'string1': [
+            ('\'', token.String, "#pop"),  # end single quoted string
+            (r'([^\']|\n)+', token.String),
+        ],
+        'string2': [
+            ('\"', token.String, "#pop"),  # end double quoted string
+            (r'([^\"]|\n)+', token.String),
+        ],
+    }
+
+
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'friendly'
+lexers["PLMLANG"] = PlmLexer()
+highlight_language = 'PLMLANG'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -98,7 +152,8 @@ html_theme = 'default'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "nosidebar": "true"
+    "nosidebar": "true",
+    "codebgcolor": "#f8f8f8",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
@@ -131,7 +186,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = False
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}

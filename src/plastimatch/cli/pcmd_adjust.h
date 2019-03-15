@@ -52,18 +52,22 @@ public:
     Plm_image_type output_type;
 public:
     Adjust_parms () {
-	have_ab_scale = false;
-	do_hist_match = false;
-	do_linear_match = false;
-	do_linear = false;
+        have_ab_scale = false;
+        do_hist_match = false;
+        do_linear_match = false;
+        do_linear = false;
         do_local = false;
         blending = false;
-	output_dicom = false;
-	output_type = PLM_IMG_TYPE_UNDEFINED;
 
-	shift = 0,
-	scale = 1;
-	blending = false;
+        output_dicom = false;
+        output_type = PLM_IMG_TYPE_UNDEFINED;
+
+        shift = 0;
+        scale = 1;
+        blending = false;
+        hist_levels = 1024;
+        hist_points = 10;
+        median_radius.Fill(0);
     }
 };
 

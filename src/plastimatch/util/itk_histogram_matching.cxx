@@ -13,11 +13,12 @@
 #include "pwlut.h"
 
 FloatImageType::Pointer
-itk_histogram_matching (const FloatImageType::Pointer source_image,
-                        const FloatImageType::Pointer reference_image,
-                        const bool threshold,
-                        const int levels,
-                        const int match_points)
+itk_histogram_matching (
+    const FloatImageType::Pointer source_image,
+    const FloatImageType::Pointer reference_image,
+    const bool threshold,
+    const int levels,
+    const int match_points)
 {
     typedef itk::HistogramMatchingImageFilter<FloatImageType, FloatImageType> MatchingFilterType;
 

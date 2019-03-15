@@ -30,13 +30,13 @@ UCharImageType::Pointer GetFullMask(FloatImageType::Pointer img) {
 }
 
 void GetIntensityCorrectionField(
-        FloatImageType::Pointer& source_image,
-        FloatImageType::Pointer& reference_image,
-        SizeType patch_size,
-        UCharImageType::Pointer& source_mask,
-        UCharImageType::Pointer& reference_mask,
-        FloatImageType::Pointer& shift_field,
-        FloatImageType::Pointer& scale_field)
+    FloatImageType::Pointer& source_image,
+    FloatImageType::Pointer& reference_image,
+    SizeType patch_size,
+    UCharImageType::Pointer& source_mask,
+    UCharImageType::Pointer& reference_mask,
+    FloatImageType::Pointer& shift_field,
+    FloatImageType::Pointer& scale_field)
 {
     typedef itk::ImageRegionIterator<FloatImageType> RegionIteratorType;
     typedef itk::ImageRegionIterator<UCharImageType> MaskRegionIteratorType;
@@ -128,9 +128,9 @@ void GetIntensityCorrectionField(
 }
 
 FloatImageType::Pointer BlendField(
-        FloatImageType::Pointer field,
-        FloatImageType::Pointer source,
-        bool trilinear)
+    FloatImageType::Pointer field,
+    FloatImageType::Pointer source,
+    bool trilinear)
 {
     typedef itk::TranslationTransform<double, 3> TranslationTransformType;
     typedef itk::ResampleImageFilter<FloatImageType, FloatImageType> ResampleImageFilterType;
@@ -170,77 +170,10 @@ void BlendIntensityCorrectionField(
     scale_field = mask_image(scale_field, mask, MASK_OPERATION_MASK, 1);
 }
 
-void BlendIntensityCorrectionField1(
-    FloatImageType::Pointer& shift_field,
-    FloatImageType::Pointer& scale_field,
-    UCharImageType::Pointer& mask,
-    SizeType patch_size)
-{
-    typedef itk::ImageRegionIterator<FloatImageType> RegionIteratorType;
-    typedef itk::ImageRegionIterator<UCharImageType> MaskRegionIteratorType;
-
-    RegionType region = shift_field->GetLargestPossibleRegion();
-    RegionIteratorType it_shift (shift_field, region);
-    RegionIteratorType it_scale (scale_field, region);
-    MaskRegionIteratorType it_mask (mask, region);
-
-    SizeType num_tiles;
-    for (int i = 0; i < 3; ++i)
-        num_tiles[i] = (region.GetSize()[i] + patch_size[i] - 1) / patch_size[i];
-
-    for (it_shift.GoToBegin(), it_scale.GoToBegin(), it_mask.GoToBegin();
-         !it_shift.IsAtEnd(); ++it_shift, ++it_scale, ++it_mask)
-    {
-        IndexType index = it_shift.GetIndex();
-        FloatVector3DType dx;
-        IndexType p1;
-        for (int i = 0; i < 3; ++i) {
-            p1[i] = (index[i] + patch_size[i]/2) / patch_size[i];
-            if (p1[i] == 0)
-                dx[i] = 0;
-            else if (p1[i] == num_tiles[i])
-                dx[i] = patch_size[i];
-            else
-                dx[i] = ((index[i] + patch_size[i]/2) % patch_size[i]);
-            dx[i] = dx[i] / patch_size[i];
-        }
-        float shift_val = 0, scale_val = 0;
-
-        for (int i = 0; i < 2; ++i) {
-            IndexType corner;
-            corner[0] = (p1[0]+i)*patch_size[0]+patch_size[0]/2;
-            if (p1[0] == num_tiles[0])
-                corner[0] = corner[0] - patch_size[0] + 1;
-            for (int j = 0; j < 2; ++j) {
-                corner[1] = (p1[1]+j)*patch_size[1]+patch_size[1]/2;
-                if (p1[1] == num_tiles[1])
-                    corner[1] = corner[1] - patch_size[1] + 1;
-                for (int k = 0; k < 2; ++k) {
-                    corner[2] = (p1[2]+k)*patch_size[2]+patch_size[2]/2;
-                    if (p1[2] == num_tiles[2])
-                        corner[2] = corner[2] - patch_size[2] + 1;
-                    shift_val += shift_field->GetPixel(corner)
-                        * (i*dx[0] + (1 - i)*(1-dx[0]))
-                        * (j*dx[1] + (1 - j)*(1-dx[1]))
-                        * (k*dx[2] + (1 - k)*(1-dx[2]));
-                    scale_val += scale_field->GetPixel(corner)
-                        * (i*dx[0] + (1 - i)*(1-dx[0]))
-                        * (j*dx[1] + (1 - j)*(1-dx[1]))
-                        * (k*dx[2] + (1 - k)*(1-dx[2]));
-                }
-            }
-        }
-        if (it_mask.Get() > 0) {
-            it_shift.Set(shift_val);
-            it_scale.Set(scale_val);
-        }
-    }
-}
-
 void ApplyIntensityCorrectionField(
-        FloatImageType::Pointer& img,
-        const FloatImageType::Pointer& shift,
-        const FloatImageType::Pointer& scale)
+    FloatImageType::Pointer& img,
+    const FloatImageType::Pointer& shift,
+    const FloatImageType::Pointer& scale)
 {
     typedef itk::ImageRegionIterator<FloatImageType> RegionIteratorType;
     RegionType region = img->GetLargestPossibleRegion();
@@ -257,10 +190,6 @@ void ApplyIntensityCorrectionField(
 
 FloatImageType::Pointer ApplyMedianFilter(FloatImageType::Pointer img, SizeType mediansize) {
     typedef itk::MedianImageFilter<FloatImageType, FloatImageType> MedianFilterType;
-    /*MedianFilterType::RadiusType radius;
-    for (int i = 0; i < 3; ++i) {
-        radius[i] = mediansize[i];
-    }*/
     MedianFilterType::RadiusType radius = mediansize;
     MedianFilterType::Pointer filter = MedianFilterType::New();
     filter->SetRadius(radius);
@@ -272,9 +201,9 @@ FloatImageType::Pointer ApplyMedianFilter(FloatImageType::Pointer img, SizeType 
 
 FloatImageType::Pointer
 itk_local_intensity_correction (
-        FloatImageType::Pointer& source_image,
-        FloatImageType::Pointer& reference_image,
-        SizeType patch_size, bool blend, SizeType mediansize)
+    FloatImageType::Pointer& source_image,
+    FloatImageType::Pointer& reference_image,
+    SizeType patch_size, bool blend, SizeType mediansize)
 {
     FloatImageType::Pointer shift_field, scale_field;
     return itk_local_intensity_correction(source_image, reference_image,
@@ -283,13 +212,13 @@ itk_local_intensity_correction (
 
 FloatImageType::Pointer
 itk_local_intensity_correction (
-        FloatImageType::Pointer& source_image,
-        FloatImageType::Pointer& reference_image,
-        SizeType patch_size,
-        FloatImageType::Pointer& shift_field,
-        FloatImageType::Pointer& scale_field,
-        bool blend,
-        SizeType mediansize)
+    FloatImageType::Pointer& source_image,
+    FloatImageType::Pointer& reference_image,
+    SizeType patch_size,
+    FloatImageType::Pointer& shift_field,
+    FloatImageType::Pointer& scale_field,
+    bool blend,
+    SizeType mediansize)
 {
     UCharImageType::Pointer source_mask = GetFullMask(source_image);
 
@@ -303,15 +232,15 @@ itk_local_intensity_correction (
 
 FloatImageType::Pointer
 itk_masked_local_intensity_correction(
-        FloatImageType::Pointer& source_image,
-        FloatImageType::Pointer& reference_image,
-        SizeType patch_size,
-        UCharImageType::Pointer& source_mask,
-        UCharImageType::Pointer& reference_mask,
-        FloatImageType::Pointer& shift_field,
-        FloatImageType::Pointer& scale_field,
-        bool blend,
-        SizeType mediansize)
+    FloatImageType::Pointer& source_image,
+    FloatImageType::Pointer& reference_image,
+    SizeType patch_size,
+    UCharImageType::Pointer& source_mask,
+    UCharImageType::Pointer& reference_mask,
+    FloatImageType::Pointer& shift_field,
+    FloatImageType::Pointer& scale_field,
+    bool blend,
+    SizeType mediansize)
 {
     typedef itk::ImageRegionIterator<FloatImageType> RegionIteratorType;
     typedef itk::ImageRegionIterator<UCharImageType> MaskRegionIteratorType;

@@ -236,6 +236,7 @@ add_custom_target (speedtest
 ## Create synthetic images
 ##   black-1           All black, slightly different geometry
 ##   donut-1           Centered donut
+##   donut-2           Centered donut mask (0s and 1s)
 ##   gabor-xx          Fibonacci Gabor
 ##   gauss-1           Centered gauss
 ##   gauss-2           Off-center gauss
@@ -304,6 +305,11 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-1.mha;--output-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-ss-list;${PLM_BUILD_TESTING_DIR}/donut-1-ss-list.txt;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0;--filenames-without-uids;--output-dicom;${PLM_BUILD_TESTING_DIR}/donut-1-dicom;--output-prefix;${PLM_BUILD_TESTING_DIR}/donut-1-prefix/"
   )
+plm_add_test (
+  "donut-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/donut-2.mha;--output-type;uchar;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;0;--foreground;1"
+)
 plm_add_test (
   "gabor-01"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1089,7 +1095,7 @@ set_tests_properties (fdk-opencl-a-check PROPERTIES DEPENDS fdk-opencl-a-stats)
 plm_add_test (
   "fdk-tutorial-a"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "drr;-t;pfm;-a;60;-N;3;-g;1000 1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
+  "drr;-t;pfm;-a;60;-N;3;--sad;1000;--sid;1500;-r;100 100;-z;300 300;-I;${PLM_BUILD_TESTING_DIR}/headphantom/headphantom.mha;-O;${PLM_BUILD_TESTING_DIR}/fdk-tutorial-a/"
   )
 plm_add_test (
   "fdk-tutorial-b"
@@ -1343,6 +1349,207 @@ plmtest_check_interval ("plm-add-vf-b-check"
 set_tests_properties (plm-add-vf-b PROPERTIES DEPENDS "vf-trans-1;vf-trans-2")
 set_tests_properties (plm-add-vf-b-stats PROPERTIES DEPENDS plm-add-vf-b)
 set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
+
+## -------------------------------------------------------------------------
+## plm-adjust-a     shift intensities by 100 with --pw-linear
+## plm-adjust-b     shift intensities by 100 with --pw-linear and 
+##                   explicit extrapolation
+## plm-adjust-c     shift intensities by 100 with --linear
+## plm-adjust-d     truncation of intensity values between -800 and -600
+## plm-adjust-e     shift and scale (1000,2.5) intensities with --linear
+## plm-adjust-f     histogram matching
+## plm-adjust-g     linear-match
+## plm-adjust-h     linear-match with masking
+## plm-adjust-i     local-match
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-adjust-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-a.nrrd;--pw-linear;0,100"
+)
+plm_add_test (
+  "plm-adjust-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-a.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-819.55"
+  "-819.54"
+)
+set_tests_properties (plm-adjust-a PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-a-stats PROPERTIES DEPENDS "plm-adjust-a")
+set_tests_properties (plm-adjust-a-check PROPERTIES DEPENDS "plm-adjust-a-stats")
+
+plm_add_test (
+  "plm-adjust-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-b.nrrd;--pw-linear;-inf,1,0,100,inf,1"
+)
+plm_add_test (
+  "plm-adjust-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-b.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-819.55"
+  "-819.54"
+)
+set_tests_properties (plm-adjust-b PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-b-stats PROPERTIES DEPENDS "plm-adjust-b")
+set_tests_properties (plm-adjust-b-check PROPERTIES DEPENDS "plm-adjust-b-stats")
+
+plm_add_test (
+  "plm-adjust-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-c.nrrd;--linear;100,1"
+)
+plm_add_test (
+  "plm-adjust-c-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-c.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-819.55"
+  "-819.54"
+)
+set_tests_properties (plm-adjust-c PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-c-stats PROPERTIES DEPENDS "plm-adjust-c")
+set_tests_properties (plm-adjust-c-check PROPERTIES DEPENDS "plm-adjust-c-stats")
+
+plm_add_test (
+  "plm-adjust-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-d.nrrd;--pw-linear;-inf,0,-800,-800,-600,-600,inf,0"
+)
+plm_add_test (
+  "plm-adjust-d-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-d.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-d-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-782.97"
+  "-782.96"
+)
+set_tests_properties (plm-adjust-d PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-d-stats PROPERTIES DEPENDS "plm-adjust-d")
+set_tests_properties (plm-adjust-d-check PROPERTIES DEPENDS "plm-adjust-d-stats")
+
+plm_add_test (
+  "plm-adjust-e"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-e.nrrd;--linear;1000,2.5"
+)
+plm_add_test (
+  "plm-adjust-e-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-e.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-e-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-e-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-1298.87"
+  "-1298.86"
+)
+set_tests_properties (plm-adjust-d PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-d-stats PROPERTIES DEPENDS "plm-adjust-d")
+set_tests_properties (plm-adjust-d-check PROPERTIES DEPENDS "plm-adjust-d-stats")
+
+plm_add_test (
+  "plm-adjust-f"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-f.nrrd;--hist-match;${PLM_BUILD_TESTING_DIR}/gabor-01.mha;--hist-levels;128;--hist-points;5"
+)
+plm_add_test (
+  "plm-adjust-f-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-f.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-f-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-f-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-0.0196"
+  "-0.0195"
+)
+set_tests_properties (plm-adjust-f PROPERTIES DEPENDS "gauss-4;gabor-01")
+set_tests_properties (plm-adjust-f-stats PROPERTIES DEPENDS "plm-adjust-f")
+set_tests_properties (plm-adjust-f-check PROPERTIES DEPENDS "plm-adjust-f-stats")
+
+plm_add_test (
+  "plm-adjust-g"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-g.nrrd;--linear-match;${PLM_BUILD_TESTING_DIR}/gabor-01.mha"
+)
+plm_add_test (
+  "plm-adjust-g-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-g.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-g-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-g-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-0.0001"
+  "0.0001"
+)
+set_tests_properties (plm-adjust-g PROPERTIES DEPENDS "gauss-4;gabor-01")
+set_tests_properties (plm-adjust-g-stats PROPERTIES DEPENDS "plm-adjust-g")
+set_tests_properties (plm-adjust-g-check PROPERTIES DEPENDS "plm-adjust-g-stats")
+
+plm_add_test (
+  "plm-adjust-h"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-h.nrrd;--linear-match;${PLM_BUILD_TESTING_DIR}/gabor-01.mha;--input-mask;donut-2.mha"
+)
+plm_add_test (
+  "plm-adjust-h-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-h.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-h-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-h-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-0.2481"
+  "-0.248"
+)
+set_tests_properties (plm-adjust-h PROPERTIES DEPENDS "gauss-4;gabor-01;donut-2")
+set_tests_properties (plm-adjust-h-stats PROPERTIES DEPENDS "plm-adjust-h")
+set_tests_properties (plm-adjust-h-check PROPERTIES DEPENDS "plm-adjust-h-stats")
+
+plm_add_test (
+  "plm-adjust-i"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-i.nrrd;--local-match;${PLM_BUILD_TESTING_DIR}/gauss-3.mha;--patch-size;3 3 3;--ref-mask;donut-2.mha"
+)
+plm_add_test (
+  "plm-adjust-i-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-i.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-i-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-i-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-921.2166"
+  "-921.2164"
+)
+set_tests_properties (plm-adjust-i PROPERTIES DEPENDS "gauss-4;gabor-3;donut-2")
+set_tests_properties (plm-adjust-i-stats PROPERTIES DEPENDS "plm-adjust-i")
+set_tests_properties (plm-adjust-i-check PROPERTIES DEPENDS "plm-adjust-i-stats")
 
 ## -------------------------------------------------------------------------
 ## plastimatch boundary
