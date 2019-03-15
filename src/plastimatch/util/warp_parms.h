@@ -52,7 +52,7 @@ public:
     bool output_dij_dose_volumes;
 
     /* Algorithm options */
-    bool force_resample;
+    bool resample_linear_xf;
     float default_val;
     bool have_dose_scale;       /* should we scale the dose image? */
     float dose_scale;           /* how much to scale the dose image */
@@ -92,7 +92,11 @@ public:
 	/* Misc options */
 	have_dose_scale = false;
 	dose_scale = 1.0f;
-        force_resample = false;
+#if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
+        resample_linear_xf = false;
+#else
+        resample_linear_xf = true;
+#endif
 	default_val = 0.0f;
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;

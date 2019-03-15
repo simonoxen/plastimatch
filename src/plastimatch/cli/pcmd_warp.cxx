@@ -115,7 +115,9 @@ parse_fn (
     parser->add_long_option ("", "algorithm", 
         "algorithm to use for warping, either \"itk\" or \"native\", "
         "default is native", 1, "native");
-    parser->add_long_option ("", "force-resample",
+    parser->add_long_option ("", "harden-linear-xf",
+        "harden linear transforms, don't resample", 0);
+    parser->add_long_option ("", "resample-linear-xf",
         "resample the transformed image even when transform is linear", 0);
     parser->add_long_option ("", "dose-scale", 
         "scale the dose by this value", 1, "");
@@ -272,8 +274,11 @@ parse_fn (
         throw (dlib::error ("Error. Unknown --algorithm argument: " + arg));
     }
 
-    if (parser->option("force-resample")) {
-        parms->force_resample = true;
+    if (parser->option("harden-linear-xf")) {
+        parms->resample_linear_xf = false;
+    }
+    if (parser->option("resample-linear-xf")) {
+        parms->resample_linear_xf = true;
     }
     if (parser->option("default-value")) {
         parms->default_val = parser->get_float("default-value");

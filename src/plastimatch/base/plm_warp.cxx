@@ -338,14 +338,14 @@ plm_warp (
     Plm_image_header *pih, /* Input:  Size of output image */
     const Plm_image::Pointer& im_in,      /* Input:  Input image */
     float default_val,     /* Input:  Value for pixels without match */
-    bool force_resample,   /* Input:  Force resample of image for linear transforms */
+    bool resample_linear_xf,   /* Input:  Force resample of image for linear transforms */
     bool use_itk,          /* Input:  Force use of itk (1) or not (0) */
     bool interp_lin        /* Input:  Trilinear (1) or nn (0) */
 )
 {
     /* For linear transforms, don't resample unless requested */
 #if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
-    if (xf_in->is_linear() && !force_resample) {
+    if (xf_in->is_linear() && !resample_linear_xf) {
 	plm_warp_linear (im_warped, vf, xf_in, pih, im_in);
 	return;
     }
