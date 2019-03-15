@@ -210,15 +210,15 @@ Dcmtk_rt_study::image_load ()
        into a PLM_IMG_TYPE_GPUIT_LIST */
 #if (PLM_CONFIG_VOL_LIST)
 
-    /* Get first slice of group */
+    /* Get first slice of first chunk */
     Dcmtk_file_list::iterator it = flist->begin();
     df = it->get();
 
-    /* Get next slice in group */
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
 
+    /* Get second slice to form first chunk */
     ++it; ++slice_no;
     df = (*it).get();
     z_diff = df->get_z_position() - z_prev;
@@ -235,7 +235,6 @@ Dcmtk_rt_study::image_load ()
     while (++it != flist->end())
     {
         ++slice_no;
-        //lprintf ("Slice no: %d\n", slice_no);
         df = (*it).get();
         z_diff = df->get_z_position() - z_prev;
         z_last = z_prev = df->get_z_position();
@@ -262,7 +261,7 @@ Dcmtk_rt_study::image_load ()
             }
         }
     }
-
+    
 #if defined (commentout)        
     Dcmtk_file_list& flp = *grit;
     const Dcmtk_file::Pointer dfp = grit->front();
@@ -276,21 +275,23 @@ Dcmtk_rt_study::image_load ()
 #endif
 
 #else /* NOT VOL_LIST */
-    /* Get next slice in first chunk */
+
+    /* We want to find the largest chunk (most slices) with equal spacing.  
+       This will be used to resample in the case of irregular spacing. */
+
+    /* Get first slice of first chunk */
     float z_init, z_prev, z_diff, z_last;
     int slice_no = 0;
     float best_chunk_z_start = z_init = z_prev = df->get_z_position ();
     const Dcmtk_file* df_this_chunk_start = df;
     const Dcmtk_file* df_best_chunk_start = df;
 
+    /* Get second slice to form first chunk */
     std::list<Dcmtk_file::Pointer>::const_iterator it = flist->begin();
     ++it; ++slice_no;
     df = (*it).get();
     z_diff = df->get_z_position() - z_prev;
     z_last = z_prev = df->get_z_position();
-
-    /* We want to find the largest chunk with equal spacing.  This will 
-       be used to resample in the case of irregular spacing. */
     int this_chunk_start = 0, best_chunk_start = 0;
     float this_chunk_diff = z_diff, best_chunk_diff = z_diff;
     size_t this_chunk_len = 2, best_chunk_len = 2;
@@ -302,6 +303,7 @@ Dcmtk_rt_study::image_load ()
 	df = (*it).get();
 	z_diff = df->get_z_position() - z_prev;
 	z_last = z_prev = df->get_z_position();
+        // lprintf ("Slice %d, z_pos %f\n", slice_no, df->get_z_position());
 
 	if (fabs (this_chunk_diff - z_diff) > 0.11) {
 	    /* Start a new chunk if difference in thickness is 
@@ -309,7 +311,7 @@ Dcmtk_rt_study::image_load ()
 	    this_chunk_start = slice_no - 1;
 	    this_chunk_len = 2;
 	    this_chunk_diff = z_diff;
-            df_best_chunk_start = it->get();
+            df_this_chunk_start = std::prev(it)->get();
 	} else {
 	    /* Same thickness, increase size of this chunk */
 	    this_chunk_diff = ((this_chunk_len * this_chunk_diff) + z_diff)
@@ -352,21 +354,27 @@ Dcmtk_rt_study::image_load ()
 
     /* Create a Volume_header to hold the final, resampled, image geometry */
     Volume_header vh (df_best_chunk_start->get_volume_header());
-    //vh.print();
+    // vh.print();
     const float *dc = vh.get_direction_cosines();
     plm_long *dim = vh.get_dim();
     float *spacing = vh.get_spacing();
     float *origin = vh.get_origin();
     int slices_before = 
 	ROUND_INT ((best_chunk_z_start - z_init) / best_chunk_diff);
+    // printf ("bczs: %f, zi: %f, bcd: %f\n", best_chunk_z_start, z_init, best_chunk_diff);
+    // printf ("slices_before: %d\n", slices_before);
     int slices_after = 
 	ROUND_INT ((z_last - best_chunk_z_start 
 		- (best_chunk_len - 1) * best_chunk_diff) / best_chunk_diff);
+    // printf ("zl: %f, bczs: %f, bcl: %d, bcd: %d\n", z_last, best_chunk_z_start, best_chunk_len, best_chunk_diff);
+    // printf ("slices_after: %d\n", slices_after);
     dim[2] = slices_before + best_chunk_len + slices_after;
     spacing[2] = best_chunk_diff;
     float origin_diff[3] = {
-        slices_before * dc[2], slices_before * dc[5], slices_before * dc[8] };
-    vec3_add (origin, origin_diff);
+        slices_before * best_chunk_diff * dc[2],
+        slices_before * best_chunk_diff * dc[5],
+        slices_before * best_chunk_diff * dc[8] };
+    vec3_sub2 (origin, origin_diff);
 
     /* Store image header */
     if (d_ptr->rt_study_metadata) {
@@ -407,7 +415,6 @@ Dcmtk_rt_study::image_load ()
 		best_slice_it = it;
 	    }
 	}
-
 	/* Load the slice image data into volume */
 	df = (*best_slice_it).get();
 
