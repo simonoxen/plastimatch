@@ -18,7 +18,11 @@ template <class TInputImage, class TOutputImage>
 ClampCastImageFilter<TInputImage, TOutputImage>
 ::ClampCastImageFilter()
 {
+#if ITK_VERSION_MAJOR >= 5
+    this->DynamicMultiThreadingOff();
+#else
     /* Do nothing */
+#endif
 }
 
 template <class TInputImage, class TOutputImage>
@@ -32,12 +36,13 @@ ClampCastImageFilter<TInputImage, TOutputImage>
 template <class TInputImage, class TOutputImage>
 void 
 ClampCastImageFilter<TInputImage, TOutputImage>
-::ThreadedGenerateData (
-    const OutputImageRegionType& outputRegionForThread,
-#if ITK_VERSION_MAJOR == 3
-    int threadId
-#else /* ITK 4 */
-    ThreadIdType threadId
+::ThreadedGenerateData
+(
+    const OutputImageRegionType& outputRegionForThread
+#if ITK_VERSION_MAJOR >= 4
+    , ThreadIdType threadId
+#else
+    , int threadId
 #endif
 ) {
     itkDebugMacro(<<"Actually executing");

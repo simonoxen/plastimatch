@@ -42,14 +42,14 @@ class ITK_EXPORT ClampCastImageFilter
     ~ClampCastImageFilter() {};
     void PrintSelf(std::ostream& os, Indent indent) const;
 
-#if ITK_VERSION_MAJOR == 3
-    void ThreadedGenerateData (
-	const OutputImageRegionType& outputRegionForThread,
-	int threadId);
-#else /* ITK 4 */
+#if ITK_VERSION_MAJOR >= 4
     void ThreadedGenerateData (
 	const OutputImageRegionType& outputRegionForThread,
 	ThreadIdType threadId);
+#else
+    void ThreadedGenerateData (
+	const OutputImageRegionType& outputRegionForThread,
+	int threadId);
 #endif
 
   private:
