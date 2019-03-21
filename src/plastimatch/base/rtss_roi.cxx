@@ -28,7 +28,9 @@ void
 Rtss_roi::clear ()
 {
     for (size_t i = 0; i < this->num_contours; i++) {
-	delete this->pslist[i];
+        if (this->pslist[i] != nullptr) {
+            delete this->pslist[i];
+        }
     }
     free (this->pslist);
 
