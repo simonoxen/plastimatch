@@ -21,6 +21,9 @@
 #include "itkESMDemonsRegistrationWithMaskFunction.h"
 #include "itkExceptionObject.h"
 #include "vnl/vnl_math.h"
+#if ITK_VERSION_MAJOR >= 5
+#include "vcl_legacy_aliases.h"
+#endif
 #include "itkImageMaskSpatialObject.h"
 
 namespace itk
@@ -546,7 +549,11 @@ ESMDemonsRegistrationWithMaskFunction<TFixedImage, TMovingImage,
 {
   GlobalDataStruct *globalData = (GlobalDataStruct *)gd;
 
+#if (ITK_VERSION_MAJOR >= 5)
+  m_MetricCalculationLock.lock();
+#else
   m_MetricCalculationLock.Lock();
+#endif
   m_SumOfSquaredDifference += globalData->m_SumOfSquaredDifference;
   m_NumberOfPixelsProcessed += globalData->m_NumberOfPixelsProcessed;
   m_SumOfSquaredChange += globalData->m_SumOfSquaredChange;
@@ -557,7 +564,11 @@ ESMDemonsRegistrationWithMaskFunction<TFixedImage, TMovingImage,
     m_RMSChange = vcl_sqrt( m_SumOfSquaredChange
       / static_cast<double>( m_NumberOfPixelsProcessed ) );
     }
+#if (ITK_VERSION_MAJOR >= 5)
+  m_MetricCalculationLock.unlock();
+#else
   m_MetricCalculationLock.Unlock();
+#endif
 
   delete globalData;
 }

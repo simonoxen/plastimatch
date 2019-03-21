@@ -2062,10 +2062,9 @@ void YK16GrayImage::MedianFilter( int iMedianSizeX, int iMedianSizeY )
 
 UnsignedShortImageType::Pointer YK16GrayImage::CloneItkImage()
 {
-  if (m_pData == NULL)
-	return NULL;
-
   UnsignedShortImageType::Pointer spTmpItkImg = UnsignedShortImageType::New();	
+  if (m_pData == NULL)
+      return spTmpItkImg;
 
   UnsignedShortImageType::SizeType size;
   size[0] = m_iWidth;

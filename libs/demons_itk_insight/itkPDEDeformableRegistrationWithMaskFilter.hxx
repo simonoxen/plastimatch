@@ -28,6 +28,9 @@
 #include "itkVectorNeighborhoodOperatorImageFilter.h"
 
 #include "vnl/vnl_math.h"
+#if ITK_VERSION_MAJOR >= 5
+#include "vcl_legacy_aliases.h"
+#endif
 
 namespace itk {
 

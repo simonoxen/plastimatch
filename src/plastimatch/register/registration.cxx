@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "itkImageRegionConstIteratorWithIndex.h"
+#if ITK_VERSION_MAJOR >= 5
+#include "itkPlatformMultiThreader.h"
+#else
 #include "itkMultiThreader.h"
-
+#endif
 #include "bspline_stage.h"
 #include "bspline_xform.h"
 #include "dlib_threads.h"
@@ -40,7 +43,11 @@ public:
     Xform::Pointer xf_in;
     Xform::Pointer xf_out;
 
+#if ITK_VERSION_MAJOR >= 5
+    itk::PlatformMultiThreader::Pointer threader;
+#else
     itk::MultiThreader::Pointer threader;
+#endif
     Dlib_master_slave master_slave;
     Dlib_semaphore worker_running;
     int thread_no;
@@ -53,7 +60,11 @@ public:
         xf_in = Xform::New ();
         xf_out = Xform::New ();
 
+#if ITK_VERSION_MAJOR >= 5
+        threader = itk::PlatformMultiThreader::New ();
+#else
         threader = itk::MultiThreader::New ();
+#endif
         thread_no = -1;
         time_to_quit = false;
     }
@@ -575,18 +586,31 @@ Registration::run_main_thread ()
 }
 
 static 
+#if ITK_VERSION_MAJOR >= 5
+itk::ITK_THREAD_RETURN_TYPE
+#else
 ITK_THREAD_RETURN_TYPE
+#endif
 registration_main_thread (void* param)
 {
+#if ITK_VERSION_MAJOR >= 5
+    itk::PlatformMultiThreader::ThreadInfoStruct *info 
+        = (itk::PlatformMultiThreader::ThreadInfoStruct*) param;
+#else
     itk::MultiThreader::ThreadInfoStruct *info 
         = (itk::MultiThreader::ThreadInfoStruct*) param;
+#endif
     Registration* reg = (Registration*) info->UserData;
 
     printf ("Inside registration worker thread\n");
     reg->run_main_thread ();
     printf ("** Registration worker thread finished.\n");
 
+#if ITK_VERSION_MAJOR >= 5
+    return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
+#else
     return ITK_THREAD_RETURN_VALUE;
+#endif
 }
 
 void 

@@ -21,11 +21,17 @@ RANSAC<T,S>::~RANSAC( )
 template<class T, class S>
 void RANSAC<T,S>::SetNumberOfThreads( unsigned int numberOfThreads )
 {
+#if ITK_VERSION_MAJOR >= 5
+    if( numberOfThreads==0 || 
+	numberOfThreads>itk::PlatformMultiThreader::GetGlobalDefaultNumberOfThreads() )
+	throw ExceptionObject(__FILE__,__LINE__,
+	    "Invalid setting for number of threads.");
+#else
     if( numberOfThreads==0 || 
 	numberOfThreads>itk::MultiThreader::GetGlobalDefaultNumberOfThreads() )
 	throw ExceptionObject(__FILE__,__LINE__,
 	    "Invalid setting for number of threads.");
-
+#endif
     this->numberOfThreads = numberOfThreads;
 }
 
@@ -100,7 +106,11 @@ double RANSAC<T,S>::Compute( std::vector<S> &parameters,
 
     //STEP2: create the threads that generate hypotheses and test
 
+#if ITK_VERSION_MAJOR >= 5
+    itk::PlatformMultiThreader::Pointer threader = itk::PlatformMultiThreader::New();   
+#else
     itk::MultiThreader::Pointer threader = itk::MultiThreader::New();   
+#endif
     threader->SetNumberOfThreads( this->numberOfThreads );
     threader->SetSingleMethod( RANSAC<T,S>::RANSACThreadCallback, this );
     //runs all threads and blocks till they finish
@@ -139,9 +149,18 @@ double RANSAC<T,S>::Compute( std::vector<S> &parameters,
 
 
 template<class T, class S>
-ITK_THREAD_RETURN_TYPE RANSAC<T,S>::RANSACThreadCallback( void *arg )
+#if ITK_VERSION_MAJOR >= 5
+itk::ITK_THREAD_RETURN_TYPE
+#else
+ITK_THREAD_RETURN_TYPE
+#endif
+RANSAC<T,S>::RANSACThreadCallback( void *arg )
 {
+#if ITK_VERSION_MAJOR >= 5
+    typedef itk::PlatformMultiThreader::ThreadInfoStruct ThreadInfoType;
+#else
     typedef itk::MultiThreader::ThreadInfoStruct ThreadInfoType;
+#endif
     ThreadInfoType *infoStruct = static_cast<ThreadInfoType*>( arg );
     //dynamic_cast doesn't work with void *
     RANSAC<T,S> *caller = 
@@ -191,13 +210,20 @@ ITK_THREAD_RETURN_TYPE RANSAC<T,S>::RANSACThreadCallback( void *arg )
 		    l++;
 		}
 	    }
-
+#if ITK_VERSION_MAJOR >= 5
+	    caller->hypothesisMutex.lock();
+#else
 	    caller->hypothesisMutex.Lock();
+#endif
 
 	    //check that the sub-set just chosen is unique
 	    std::pair< typename std::set<int *, SubSetIndexComparator >::iterator, bool> res = caller->chosenSubSets->insert( curSubSetIndexes );
 		 
+#if ITK_VERSION_MAJOR >= 5
+	    caller->hypothesisMutex.unlock();
+#else
 	    caller->hypothesisMutex.Unlock();
+#endif
 
 	    if(res.second == true) { //first time we chose this sub set        
 		//use the selected data for an exact model parameter fit
@@ -220,7 +246,11 @@ ITK_THREAD_RETURN_TYPE RANSAC<T,S>::RANSACThreadCallback( void *arg )
 		}
 
 		// Did we find a larger consensus set?
+#if ITK_VERSION_MAJOR >= 5
+		caller->resultsMutex.lock();
+#else
 		caller->resultsMutex.Lock();
+#endif
 		if( numVotesForCur > caller->numVotesForBest ) {
 		    caller->numVotesForBest = numVotesForCur;
 		    std::copy( curVotes, curVotes+numDataObjects, caller->bestVotes );
@@ -238,7 +268,11 @@ ITK_THREAD_RETURN_TYPE RANSAC<T,S>::RANSACThreadCallback( void *arg )
 			caller->numTries = caller->numTries<caller->allTries ? caller->numTries : caller->allTries;
 		    }
 		}
+#if ITK_VERSION_MAJOR >= 5
+		caller->resultsMutex.unlock();
+#else
 		caller->resultsMutex.Unlock();
+#endif
 	    }
 	    else {  //this sub set already appeared, release memory
 		delete [] curSubSetIndexes;			
@@ -247,7 +281,11 @@ ITK_THREAD_RETURN_TYPE RANSAC<T,S>::RANSACThreadCallback( void *arg )
 	delete [] curVotes;
 	delete [] notChosen;
     }
+#if ITK_VERSION_MAJOR >= 5
+    return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
+#else
     return ITK_THREAD_RETURN_VALUE;
+#endif
 }
 
 /*****************************************************************************/

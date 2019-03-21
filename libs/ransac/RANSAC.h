@@ -8,8 +8,13 @@
 #include <time.h>
 #include <limits>
 #include "ParametersEstimator.h"
+#if ITK_VERSION_MAJOR >= 5
+#include <mutex>
+#include "itkPlatformMultiThreader.h"
+#else
 #include "itkMultiThreader.h"
 #include "itkSimpleFastMutexLock.h"
+#endif
 #include "itkExceptionObject.h"
 
 /**
@@ -168,8 +173,13 @@ private:
     std::vector<S> best_estimate;
 
     typename ParametersEstimator<T,S>::Pointer paramEstimator;
+#if ITK_VERSION_MAJOR >= 5
+    std::mutex hypothesisMutex;
+    std::mutex resultsMutex;
+#else
     itk::SimpleFastMutexLock hypothesisMutex;
     itk::SimpleFastMutexLock resultsMutex;
+#endif
 };
 
 } // end namespace itk
