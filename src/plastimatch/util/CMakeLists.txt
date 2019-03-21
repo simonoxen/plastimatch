@@ -5,7 +5,7 @@ project (src_plastimatch_util)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmutil_config.h.in
-    ${CMAKE_BINARY_DIR}/plmutil_config.h
+    ${PLM_BINARY_DIR}/plmutil_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -65,7 +65,7 @@ if (FFTW_FOUND)
 endif ()
 
 set (PLMUTIL_LIBRARY_HEADERS
-  "${CMAKE_BINARY_DIR}/plmutil_config.h"
+  "${PLM_BINARY_DIR}/plmutil_config.h"
   )
 foreach (ARG ${PLMUTIL_LIBRARY_SRC})
   string (REGEX MATCH ".*\\.h$" TMP "${ARG}")

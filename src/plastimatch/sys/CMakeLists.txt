@@ -5,7 +5,7 @@ project (src_plastimatch_sys)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmsys_config.h.in
-    ${CMAKE_BINARY_DIR}/plmsys_config.h
+    ${PLM_BINARY_DIR}/plmsys_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -50,8 +50,8 @@ list (APPEND PLMSYS_LIBRARY_SRC
 endif ()
 
 set (PLMSYS_LIBRARY_HEADERS
-  "${CMAKE_BINARY_DIR}/plm_config.h"
-  "${CMAKE_BINARY_DIR}/plmsys_config.h"
+  "${PLM_BINARY_DIR}/plm_config.h"
+  "${PLM_BINARY_DIR}/plmsys_config.h"
   )
 foreach (ARG ${PLMSYS_LIBRARY_SRC})
   string (REGEX MATCH ".*\\.h$" TMP "${ARG}")

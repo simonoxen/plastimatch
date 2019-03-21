@@ -76,33 +76,33 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
 
     # Test executable -- matlab
     if (MATLAB_FOUND)
-	file (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
+	file (WRITE "${PLM_BINARY_DIR}/compile_mex_test.m"
 	    "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
-	file (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
+	file (WRITE "${PLM_BINARY_DIR}/mex_test.cmake"
 	    "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm
             -r compile_mex_test
             RESULT_VARIABLE RESULT
             OUTPUT_VARIABLE STDOUT
             ERROR_VARIABLE STDERR)\n")
 	add_custom_command (
-	    OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}"
-	    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/mex_test.cmake"
+	    OUTPUT "${PLM_BINARY_DIR}/mex_test${MATLAB_MEXEXT}"
+	    COMMAND ${CMAKE_COMMAND} -P "${PLM_BINARY_DIR}/mex_test.cmake"
 	    DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
 	add_custom_target (mat_mex_test
-	    DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
+	    DEPENDS "${PLM_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
 	target_link_libraries (mex_test ${MATLAB_LIBRARIES})
     endif ()
 
     # Test executable -- octave
     if (OCTAVE_FOUND)
 	add_custom_command (
-	    OUTPUT "${CMAKE_BINARY_DIR}/mex_test.mex"
+	    OUTPUT "${PLM_BINARY_DIR}/mex_test.mex"
 	    COMMAND ${OCTAVE_MKOCTFILE} --mex 
-	    -o "${CMAKE_BINARY_DIR}/mex_test.mex" 
+	    -o "${PLM_BINARY_DIR}/mex_test.mex" 
 	    "${CMAKE_SOURCE_DIR}/mex_test.c"
 	    DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
 	add_custom_target (oct_mex_test
-	    DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
+	    DEPENDS "${PLM_BINARY_DIR}/mex_test.mex")
     endif ()
 
     # Test executable -- nlopt
@@ -121,7 +121,7 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     if (OPENCL_FOUND)
       set (OPENCL_TEST_SRC
 	opencl_test.cxx opencl_test.h opencl_test.cl
-	"${CMAKE_BINARY_DIR}/opencl_test.cl"
+	"${PLM_BINARY_DIR}/opencl_test.cl"
 	)
       set (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
       plm_add_executable_v3 (opencl_test "${OPENCL_TEST_SRC}" 
@@ -130,10 +130,10 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
       # I don't yet know how to bundle the .cl file within the executable.
       # Therefore, copy the .cl into binary directory.
       add_custom_command (
-	OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
+	OUTPUT "${PLM_BINARY_DIR}/opencl_test.cl" 
 	COMMAND ${CMAKE_COMMAND} "-E" "copy" 
 	"${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl" 
-	"${CMAKE_BINARY_DIR}/opencl_test.cl" 
+	"${PLM_BINARY_DIR}/opencl_test.cl" 
 	DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl")
     endif ()
 

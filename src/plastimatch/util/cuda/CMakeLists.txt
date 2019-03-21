@@ -6,7 +6,7 @@ project (src_plastimatch_util_cuda)
 set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES "")
 set_directory_properties (PROPERTIES COMPILE_DEFINITIONS "")
 
-include_directories (BEFORE ${CMAKE_BINARY_DIR})
+include_directories (BEFORE ${PLM_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/base)
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/cuda)
 include_directories (BEFORE ${CMAKE_SOURCE_DIR}/src/plastimatch/sys)

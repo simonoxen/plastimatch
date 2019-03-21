@@ -252,10 +252,10 @@ plm_set_pic_flags ()
 ##-----------------------------------------------------------------------------
 ##  Extra paths
 ##-----------------------------------------------------------------------------
-set (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
-set (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
-set (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
-set (PLM_BUILD_TESTING_DIR "${CMAKE_BINARY_DIR}/Testing")
+set (PLM_TESTING_SOURCE_DIR "${PLM_SOURCE_DIR}/Testing")
+set (PLM_TESTING_DATA_DIR "${PLM_SOURCE_DIR}/Testing/Data")
+set (PLM_TESTING_DOWNLOAD_DATA_DIR "${PLM_BINARY_DIR}/TestData")
+set (PLM_BUILD_TESTING_DIR "${PLM_BINARY_DIR}/Testing")
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library
@@ -347,7 +347,7 @@ find_package (wxWidgets)
 ##-----------------------------------------------------------------------------
 if (NOT LIBLBFGS_FOUND)
   add_subdirectory (libs/liblbfgs-1.9)
-  sb_set (LIBLBFGS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/liblbfgs-1.9/include")
+  sb_set (LIBLBFGS_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/liblbfgs-1.9/include")
   sb_set (LIBLBFGS_LIBRARIES lbfgs)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
   sb_set (LIBLBFGS_FOUND TRUE)
@@ -358,7 +358,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (NOT SQLITE_FOUND AND NOT PLM_CONFIG_DEBIAN_BUILD)
   add_subdirectory (libs/sqlite-3.6.21)
-  set (SQLITE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/sqlite-3.6.21")
+  set (SQLITE_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/sqlite-3.6.21")
   set (SQLITE_LIBRARIES sqlite3)
   set (SQLITE_FOUND TRUE)
 endif ()
@@ -366,13 +366,13 @@ endif ()
 #-----------------------------------------------------------------------------
 ##  Only use local devillard
 ##-----------------------------------------------------------------------------
-sb_set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
+sb_set (DEVILLARD_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/devillard")
 add_subdirectory (libs/devillard)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local inih
 ##-----------------------------------------------------------------------------
-sb_set (INIH_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/inih-r29")
+sb_set (INIH_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/inih-r29")
 add_subdirectory (libs/inih-r29)
 
 ##-----------------------------------------------------------------------------
@@ -380,7 +380,7 @@ add_subdirectory (libs/inih-r29)
 ##-----------------------------------------------------------------------------
 # We can't use debian's lua 5.1 because it doesn't contain lobject.h
 #add_subdirectory (libs/lua-5.1.4)
-#set (LUA_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/lua-5.1.4/src")
+#set (LUA_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/lua-5.1.4/src")
 #link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/lua-5.1.4)
 
 # for history, etc in plastimatch tty mode
@@ -397,12 +397,12 @@ sb_set (SPECFUN_FOUND TRUE)
 ##-----------------------------------------------------------------------------
 ##  Only use local msinttypes
 ##-----------------------------------------------------------------------------
-sb_set (MSINTTYPES_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs")
+sb_set (MSINTTYPES_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs")
 
 ##-----------------------------------------------------------------------------
 ##  Only use local nkidecompress
 ##-----------------------------------------------------------------------------
-sb_set (NKIDECOMPRESS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/nkidecompress")
+sb_set (NKIDECOMPRESS_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/nkidecompress")
 add_subdirectory (libs/nkidecompress)
 
 ##-----------------------------------------------------------------------------
@@ -518,7 +518,7 @@ set (PLM_BASIC_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
 set (PLASTIMATCH_VERSION_STRING
   "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
-if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
+if (EXISTS "${PLM_SOURCE_DIR}/.git" AND GIT_FOUND)
   if (GIT_EXECUTABLE MATCHES "[wW][sS][lL].*")
     set (GIT_EXECUTABLE "wsl;git")
   endif ()
@@ -526,7 +526,7 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git" AND GIT_FOUND)
     COMMAND
     #${GIT_EXECUTABLE} rev-list --first-parent --count HEAD
     ${GIT_EXECUTABLE} ${GIT_EXECUTABLE_EXTRA} describe --always
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${PLM_SOURCE_DIR}"
     RESULT_VARIABLE git_result
     OUTPUT_VARIABLE git_output
     ERROR_VARIABLE git_error
@@ -611,7 +611,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local rapidjson
 ##-----------------------------------------------------------------------------
-set (RAPIDJSON_DIR "${CMAKE_SOURCE_DIR}/libs/rapidjson-2015-03-22")
+set (RAPIDJSON_DIR "${PLM_SOURCE_DIR}/libs/rapidjson-2015-03-22")
 if (EXISTS "${RAPIDJSON_DIR}" AND IS_DIRECTORY "${RAPIDJSON_DIR}")
   set (RAPIDJSON_INCLUDE_DIR
     "${RAPIDJSON_DIR}/include"
@@ -699,7 +699,7 @@ endif ()
 
 # Add sample directory/files to Install Only for windows users
 if (WIN32 OR WIN64)
-  set (PLM_WINDOWS_INSTALL_DIR "${CMAKE_SOURCE_DIR}/extra/windows-install")
+  set (PLM_WINDOWS_INSTALL_DIR "${PLM_SOURCE_DIR}/extra/windows-install")
   install (DIRECTORY "${PLM_WINDOWS_INSTALL_DIR}/sample" DESTINATION bin)
   install (FILES "${PLM_WINDOWS_INSTALL_DIR}/launch_cmd_prompt.bat" DESTINATION bin)
 endif ()
@@ -801,9 +801,9 @@ macro (PLM_ADD_TEST PLM_TEST_NAME PLM_TEST_COMMAND PARMS)
     -DPLM_BUILD_TESTING_DIR=${PLM_BUILD_TESTING_DIR}
     "-DPARMS=${TMP_PARMS}"
     ${EXTRA_PARMS}
-    -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake
+    -P ${PLM_SOURCE_DIR}/cmake/RUN_CTEST.cmake
     )
-# message (STATUS "${CMAKE_COMMAND} -DPLM_TEST_NAME=${PLM_TEST_NAME} ${PLM_ITK_LIBRARY_PATH_HACK} ${PLM_PLASTIMATCH_PATH_HACK} ${PLM_FFTW_PATH_HACK} -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND} -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR} -DPLM_BUILD_TESTING_DIR=${PLM_BUILD_TESTING_DIR} \"-DPARMS=${TMP_PARMS}\" ${EXTRA_PARMS} -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake")
+# message (STATUS "${CMAKE_COMMAND} -DPLM_TEST_NAME=${PLM_TEST_NAME} ${PLM_ITK_LIBRARY_PATH_HACK} ${PLM_PLASTIMATCH_PATH_HACK} ${PLM_FFTW_PATH_HACK} -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND} -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR} -DPLM_BUILD_TESTING_DIR=${PLM_BUILD_TESTING_DIR} \"-DPARMS=${TMP_PARMS}\" ${EXTRA_PARMS} -P ${PLM_SOURCE_DIR}/cmake/RUN_CTEST.cmake")
 endmacro ()
 
 # Figure out which tests to ignore
@@ -811,11 +811,11 @@ endmacro ()
 # in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
 configure_file (
   ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
-  ${CMAKE_BINARY_DIR}/CTestCustom.cmake
+  ${PLM_BINARY_DIR}/CTestCustom.cmake
   @ONLY)
 configure_file (
   ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
-  ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
+  ${PLM_BINARY_DIR}/Testing/CTestCustom.cmake
   @ONLY)
 
 if (PLM_BUILD_TESTING)
@@ -823,10 +823,10 @@ if (PLM_BUILD_TESTING)
   add_subdirectory (Testing)
 
   # Copy the lconv script
-  if (EXISTS "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh")
+  if (EXISTS "${PLM_SOURCE_DIR}/extra/devtools/run_lcov.sh")
     configure_file (
-      "${CMAKE_SOURCE_DIR}/extra/devtools/run_lcov.sh"
-      "${CMAKE_BINARY_DIR}/run_lcov.sh"
+      "${PLM_SOURCE_DIR}/extra/devtools/run_lcov.sh"
+      "${PLM_BINARY_DIR}/run_lcov.sh"
       COPYONLY)
   endif ()
 endif ()

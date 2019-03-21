@@ -5,7 +5,7 @@ project (src_plastimatch_base)
 
 configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/plmbase_config.h.in
-    ${CMAKE_BINARY_DIR}/plmbase_config.h
+    ${PLM_BINARY_DIR}/plmbase_config.h
 )
 
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -189,7 +189,7 @@ else ()
 endif ()
 
 set (PLMBASE_LIBRARY_HEADERS
-  "${CMAKE_BINARY_DIR}/plmbase_config.h"
+  "${PLM_BINARY_DIR}/plmbase_config.h"
   )
 foreach (ARG ${PLMBASE_LIBRARY_SRC})
   string (REGEX MATCH ".*\\.h$" TMP "${ARG}")

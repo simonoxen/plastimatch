@@ -202,7 +202,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 set (INCLUDE_THESE_TWICE false)
 
-include_directories (BEFORE ${CMAKE_BINARY_DIR})
+include_directories (BEFORE ${PLM_BINARY_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/base)
 include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/cli)
@@ -288,9 +288,9 @@ endif ()
 ##  CONFIGURE INCLUDE FILES
 ##-----------------------------------------------------------------------------
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
-  ${CMAKE_BINARY_DIR}/plm_config.h)
+  ${PLM_BINARY_DIR}/plm_config.h)
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
-  ${CMAKE_BINARY_DIR}/plm_version.h)
+  ${PLM_BINARY_DIR}/plm_version.h)
 
 ##-----------------------------------------------------------------------------
 ## Option to generate .clang_complete for hip Vim users using clang_complete
@@ -363,7 +363,7 @@ if (NOT PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     $<INSTALL_INTERFACE:${PLM_INSTALL_INCLUDE_DIR}>
     )
   list (APPEND PLASTIMATCH_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+    $<BUILD_INTERFACE:${PLM_BINARY_DIR}>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/plastimatch/sys>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/plastimatch/base>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/plastimatch/util>
@@ -470,7 +470,7 @@ if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 
   export (TARGETS
     ${EXPORT_TARGET_LIST}
-    FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
+    FILE "${PLM_BINARY_DIR}/PlastimatchLibraryDepends.cmake")
 
   # Help cmake find the PlastimatchConfig.cmake in the build directory
   if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8)
@@ -482,15 +482,15 @@ if (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     "${PLM_INSTALL_INCLUDE_DIR}")
   configure_file (
     "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig-Legacy.cmake.in"
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
+    "${PLM_BINARY_DIR}/PlastimatchConfig.cmake"
     @ONLY)
   configure_file (
     "${PROJECT_SOURCE_DIR}/cmake/PlastimatchBuildTreeSettings.cmake.in"
-    "${CMAKE_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
+    "${PLM_BINARY_DIR}/PlastimatchBuildTreeSettings.cmake" @ONLY)
 
   # Install the PlastimatchConfig.cmake file
   install (FILES
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
+    "${PLM_BINARY_DIR}/PlastimatchConfig.cmake"
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     # COMPONENT dev
     )
@@ -516,14 +516,14 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
   # Make the targets file
   if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 3.0)
     export (EXPORT PlastimatchLibraryDepends
-      FILE "${CMAKE_BINARY_DIR}/PlastimatchLibraryDepends.cmake"
+      FILE "${PLM_BINARY_DIR}/PlastimatchLibraryDepends.cmake"
       )
   endif ()
 
   # Make the config file
   configure_file (
     "${PROJECT_SOURCE_DIR}/cmake/PlastimatchConfig.cmake.in"
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
+    "${PLM_BINARY_DIR}/PlastimatchConfig.cmake"
     @ONLY)
 
   # Install the files
@@ -531,7 +531,7 @@ else (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     )
   install (FILES
-    "${CMAKE_BINARY_DIR}/PlastimatchConfig.cmake"
+    "${PLM_BINARY_DIR}/PlastimatchConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/PlastimatchConfigVersion.cmake"
     DESTINATION "${PLM_INSTALL_CMAKE_DIR}"
     COMPONENT Devel
@@ -543,14 +543,14 @@ endif (PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
 ##  DOXYGEN
 ##-----------------------------------------------------------------------------
 if (DOXYGEN_FOUND)
-  file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
+  file (MAKE_DIRECTORY "${PLM_BINARY_DIR}/doc")
   configure_file (
     ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
     @ONLY)
   add_custom_target (doc
     ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/doc"
+    WORKING_DIRECTORY "${PLM_BINARY_DIR}/doc"
     COMMENT "Generating API documentation with Doxygen" VERBATIM
     )
 endif ()
