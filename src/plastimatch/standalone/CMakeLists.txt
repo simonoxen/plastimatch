@@ -94,12 +94,12 @@ set (WED_SRC
 set (XVI_ARCHIVE_SRC
     xvi_archive.cxx
     )
-set (GROUP_ADD_SRC
-  group_add.cxx
-  )
-set (FILTER_SRC
-  filter.cxx
-  )
+# set (GROUP_ADD_SRC
+#   group_add.cxx
+#   )
+# set (FILTER_SRC
+#   filter.cxx
+#   )
 set (GAMMA_THRESH_SRC
   Gamma_Thresh.cxx
   )
@@ -108,9 +108,6 @@ set (FLIP_IMAGE_SRC
   )
 set (DECOMP_VECTOR_SRC
   decomp_vector.cxx
-  )
-set (TEMPLATE_SRC
-  Template.cxx
   )
 set (FIND_CENTER_SRC
   find_center.cxx
@@ -256,8 +253,8 @@ if (ITK_FOUND)
     plm_add_executable_v3 (xvi_archive "${XVI_ARCHIVE_SRC}" 
       "" "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   endif ()
-  plm_add_executable_v3 (group_add "${GROUP_ADD_SRC}" 
-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+  # plm_add_executable_v3 (group_add "${GROUP_ADD_SRC}" 
+  #   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 endif ()
 
 if (QT4_FOUND)
