@@ -10,6 +10,7 @@
 #include "make_string.h"
 
 #if PLM_DCM_USE_DCMTK
+#include "dcmtk_rt_study.h"
 #include "dcmtk_rdd.h"
 #include "dcmtk_uid.h"
 #include "dcmtk_util.h"
@@ -51,6 +52,47 @@ dicom_load_rdd (Rt_study_metadata::Pointer rsm, const char* dicom_dir)
 {
 #if PLM_DCM_USE_DCMTK
     dcmtk_load_rdd (rsm, dicom_dir);
+#endif
+}
+
+void
+dicom_save_short (
+    const char* dicom_dir,
+    Plm_image::Pointer& pli,
+    Rt_study_metadata::Pointer& rsm
+)
+{
+#if PLM_DCM_USE_DCMTK
+    Dcmtk_rt_study drs;
+    if (rsm) {
+        drs.set_rt_study_metadata (rsm);
+    }
+    drs.set_image (pli);
+    drs.save (dicom_dir);
+#endif
+}
+
+void
+dicom_save_short (
+    const std::string& dicom_dir,
+    Plm_image::Pointer& pli,
+    Rt_study_metadata::Pointer& rsm
+)
+{
+#if PLM_DCM_USE_DCMTK
+    dicom_save_short (dicom_dir.c_str(), pli, rsm);
+#endif
+}
+
+void
+dicom_save_short (
+    const std::string& dicom_dir,
+    Plm_image::Pointer& pli
+)
+{
+#if PLM_DCM_USE_DCMTK
+    Rt_study_metadata::Pointer rsm = Rt_study_metadata::New();
+    dicom_save_short (dicom_dir.c_str(), pli, rsm);
 #endif
 }
 

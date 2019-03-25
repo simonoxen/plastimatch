@@ -128,45 +128,43 @@ set (CMD_PROMPT_LAUNCHER_SRC
     cmd_prompt_launcher.cxx
     )
 if (QT4_FOUND)
-set(nki2mha_converter_SRC
-	nki2mha_converter_main.cpp
-	nki2mha_converter.cpp 	nki2mha_converter.h)
+  # set(nki2mha_converter_SRC
+  #   nki2mha_converter_main.cpp
+  #   nki2mha_converter.cpp nki2mha_converter.h)
+  # QT4_WRAP_CPP(nki2mha_converter_SRC
+  #   nki2mha_converter.h)
+  # QT4_WRAP_UI(nki2mha_converter_SRC
+  #   nki2mha_converter.ui)
+  # QT4_ADD_RESOURCES (nki2mha_converter_SRC
+  #   nki2mha_converter.qrc)
 
-QT4_WRAP_CPP(nki2mha_converter_SRC
-	nki2mha_converter.h)
-QT4_WRAP_UI(nki2mha_converter_SRC
-	nki2mha_converter.ui)
-QT4_ADD_RESOURCES (nki2mha_converter_SRC
-	nki2mha_converter.qrc)
+  set(GAMMA_GUI_BASE_SRC
+    gamma_gui_main.cpp	
+    gamma_gui.cpp
+    gamma_gui.h
+    qyklabel.h
+    qyklabel.cpp
+    DlgGammaView.h
+    DlgGammaView.cxx
+    YK16GrayImage.cxx
+    YK16GrayImage.h	
+    qt_util.h
+    qt_util.cxx
+    qcustomplot.h
+    qcustomplot.cpp
+    yk_config.h)
 
+  QT4_WRAP_CPP(GAMMA_GUI_MOC
+    DlgGammaView.h
+    qyklabel.h
+    qcustomplot.h
+    gamma_gui.h)
 	
-set(GAMMA_GUI_BASE_SRC
-	gamma_gui_main.cpp	
-	gamma_gui.cpp
-	gamma_gui.h
-	qyklabel.h
-	qyklabel.cpp
-	DlgGammaView.h
-	DlgGammaView.cxx
-	YK16GrayImage.cxx
-	YK16GrayImage.h	
-	qt_util.h
-	qt_util.cxx
-	qcustomplot.h
-	qcustomplot.cpp
-	yk_config.h)
+  QT4_WRAP_UI(GAMMA_GUI_UI
+    gamma_gui.ui
+    DlgGammaView.ui)
 
-QT4_WRAP_CPP(GAMMA_GUI_MOC
-	DlgGammaView.h
-	qyklabel.h
-	qcustomplot.h
-	gamma_gui.h)
-	
-QT4_WRAP_UI(GAMMA_GUI_UI
-	gamma_gui.ui
-	DlgGammaView.ui)
-
-set(GAMMA_GUI_SRC
+  set(GAMMA_GUI_SRC
     ${GAMMA_GUI_BASE_SRC}
     ${GAMMA_GUI_MOC}
     ${GAMMA_GUI_UI}
@@ -266,9 +264,9 @@ if (QT4_FOUND)
   set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
     ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
   set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
-  plm_add_executable_v3 (nki2mha_converter "${nki2mha_converter_SRC}"
-    "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
-    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+  # plm_add_executable_v3 (nki2mha_converter "${nki2mha_converter_SRC}"
+  #   "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+  #   "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
   if (DCMTK_FOUND)
     plm_add_executable_v3 (gamma_gui "${GAMMA_GUI_SRC}"
       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"

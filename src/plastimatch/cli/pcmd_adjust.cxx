@@ -5,6 +5,7 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "dicom_util.h"
 #include "itk_adjust.h"
 #include "itk_histogram_matching.h"
 #include "itk_image_save.h"
@@ -139,7 +140,7 @@ adjust_main (Adjust_parms* parms)
 
     std::cout << " done." << std::endl;
     if (parms->output_dicom) {
-        plm_image->save_short_dicom (parms->img_out_fn.c_str(), 0);
+        dicom_save_short (parms->img_out_fn, plm_image);
     } else {
         if (parms->output_type) {
             plm_image->convert (parms->output_type);

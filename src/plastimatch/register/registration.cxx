@@ -12,6 +12,7 @@
 #endif
 #include "bspline_stage.h"
 #include "bspline_xform.h"
+#include "dicom_util.h"
 #include "dlib_threads.h"
 #include "gpuit_demons.h"
 #include "itk_align_center.h"
@@ -326,7 +327,7 @@ save_output (
                     im_warped->convert_and_save (img_out_fn, img_out_type);
                 }
             } else {
-                im_warped->save_short_dicom (img_out_fn, 0);
+                dicom_save_short (img_out_fn, im_warped);
             }
         }
         if (warped_landmarks_fn[0]) {

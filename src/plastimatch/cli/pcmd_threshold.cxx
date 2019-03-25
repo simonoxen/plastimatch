@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include "dicom_util.h"
 #include "itk_threshold.h"
 #include "itk_image_save.h"
 #include "plm_clp.h"
@@ -27,7 +28,7 @@ threshold_main (Pcmd_threshold* parms)
     }
 
     if (parms->output_dicom) {
-	plm_image->save_short_dicom (parms->img_out_fn.c_str(), 0);
+        dicom_save_short (parms->img_out_fn, plm_image);
     } else {
 	if (parms->output_type) {
 	    plm_image->convert (parms->output_type);

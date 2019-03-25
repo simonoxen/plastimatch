@@ -3,12 +3,11 @@
 #include <QFileDialog>
 #include <QListView>
 #include <QMessageBox>
-//#include "YK16GrayImage.h"
 #include <fstream>
 
+#include "dicom_util.h"
 #include "mha_io.h"
 #include "nki_io.h"
-//#include "volume.h"
 #include "plm_image.h"
 #include "rt_study_metadata.h"
 
@@ -240,7 +239,7 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
         return "";
     }	
 
-    Plm_image plm_img(v);
+    Plm_image::Pointer plm_img = Plm_image::New (v);
 
     QString endFix = "_DCM";
 
@@ -256,11 +255,11 @@ QString nki2mha_converter::CorrectSingle_NKI2DCM( const char* filePath )
         dirNew.mkdir(".");
     }		
 
-    Rt_study_metadata rsm;
-    rsm.set_patient_id(baseName.toLocal8Bit().constData());
-    rsm.set_patient_name(baseName.toLocal8Bit().constData());
+    Rt_study_metadata::Pointer rsm = Rt_study_metadata::New ();
+    rsm->set_patient_id(baseName.toLocal8Bit().constData());
+    rsm->set_patient_name(baseName.toLocal8Bit().constData());
 
-    plm_img.save_short_dicom(newDirPath.toLocal8Bit().constData(), &rsm);	
+    dicom_save_short (newDirPath.toLocal8Bit().constData(), plm_img, rsm);
 
     return newDirPath;
 }

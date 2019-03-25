@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmcli_config.h"
 
+#include "dicom_util.h"
 #include "itk_image_load.h"
 #include "itk_mask.h"
 #include "pcmd_mask.h"
@@ -69,7 +70,7 @@ mask_main (Mask_parms* parms)
     }
 
     if (parms->output_dicom) {
-	img->save_short_dicom (parms->output_fn, 0);
+        dicom_save_short (parms->output_fn, img);
     } else {
 	if (parms->output_type) {
 	    img->convert (parms->output_type);
