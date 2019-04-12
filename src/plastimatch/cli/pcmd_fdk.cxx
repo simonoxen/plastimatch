@@ -4,6 +4,8 @@
 #include "plmcli_config.h"
 
 #include "fdk.h"
+#include "fdk_cuda.h"
+#include "fdk_opencl.h"
 #include "fdk_util.h"
 #include "mha_io.h"
 #include "pcmd_fdk.h"
@@ -220,8 +222,8 @@ do_fdk (Fdk_parms *parms)
     /* Look for input files */
     proj_dir = new Proj_image_dir (parms->input_dir);
     if (proj_dir->num_proj_images < 1) {
-	print_and_exit ("Error: couldn't find input files in directory %s\n",
-	    parms->input_dir);
+        print_and_exit ("Error: couldn't find input files in directory %s\n",
+            parms->input_dir.c_str());
     }
 
     /* Set the panel offset */
@@ -241,12 +243,12 @@ do_fdk (Fdk_parms *parms)
     switch (parms->threading) {
 #if (CUDA_FOUND)
     case THREADING_CUDA:
-	CUDA_reconstruct_conebeam (vol, proj_dir, &parms);
+	CUDA_reconstruct_conebeam (vol, proj_dir, parms);
 	break;
 #endif
 #if (OPENCL_FOUND)
     case THREADING_OPENCL:
-        opencl_reconstruct_conebeam (vol, proj_dir, &parms);
+        opencl_reconstruct_conebeam (vol, proj_dir, parms);
         //OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &parms);
         break;
 #endif
