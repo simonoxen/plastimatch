@@ -51,7 +51,8 @@ Direction_cosines::operator float* ()
     return d_ptr->direction_matrix;
 }
 
-bool Direction_cosines::operator==(const Direction_cosines& dc) const
+bool
+Direction_cosines::operator==(const Direction_cosines& dc) const
 {
     for (int i = 0; i < 9; i++) {
         float diff = fabs(this->d_ptr->direction_matrix[i]
@@ -63,7 +64,8 @@ bool Direction_cosines::operator==(const Direction_cosines& dc) const
     return true;
 }
 
-void Direction_cosines::set_identity () {
+void
+Direction_cosines::set_identity () {
     d_ptr->direction_matrix[0] = 1.;
     d_ptr->direction_matrix[1] = 0.;
     d_ptr->direction_matrix[2] = 0.;
@@ -75,7 +77,8 @@ void Direction_cosines::set_identity () {
     d_ptr->direction_matrix[8] = 1.;
     solve_inverse ();
 }
-void Direction_cosines::set_rotated_1 () {
+void
+Direction_cosines::set_rotated_1 () {
     d_ptr->direction_matrix[0] = 0.894427190999916;
     d_ptr->direction_matrix[1] = 0.447213595499958;
     d_ptr->direction_matrix[2] = 0.;
@@ -87,7 +90,8 @@ void Direction_cosines::set_rotated_1 () {
     d_ptr->direction_matrix[8] = 1.;
     solve_inverse ();
 }
-void Direction_cosines::set_rotated_2 () {
+void
+Direction_cosines::set_rotated_2 () {
     d_ptr->direction_matrix[0] = M_SQRT1_2;
     d_ptr->direction_matrix[1] = -M_SQRT1_2;
     d_ptr->direction_matrix[2] = 0.;
@@ -99,7 +103,8 @@ void Direction_cosines::set_rotated_2 () {
     d_ptr->direction_matrix[8] = 1.;
     solve_inverse ();
 }
-void Direction_cosines::set_rotated_3 () {
+void
+Direction_cosines::set_rotated_3 () {
     d_ptr->direction_matrix[0] = -0.855063803257865;
     d_ptr->direction_matrix[1] = 0.498361271551590;
     d_ptr->direction_matrix[2] = -0.143184969098287;
@@ -111,7 +116,8 @@ void Direction_cosines::set_rotated_3 () {
     d_ptr->direction_matrix[8] = 0.926807426605751;
     solve_inverse ();
 }
-void Direction_cosines::set_skewed () {
+void
+Direction_cosines::set_skewed () {
     d_ptr->direction_matrix[0] = 1.;
     d_ptr->direction_matrix[1] = 0.;
     d_ptr->direction_matrix[2] = 0.;

@@ -156,29 +156,25 @@ plm_warp_linear (
     const AffineTransformType::MatrixType& itk_aff_mat = itk_aff->GetMatrix ();
     const AffineTransformType::OutputVectorType& itk_aff_off = itk_aff->GetOffset ();
 
-    std::cout << itk_aff << std::endl;
+    AffineTransformType::Pointer itk_aff_inv = AffineTransformType::New ();
+    itk_aff->GetInverse (itk_aff_inv);
 
-    /* Why can't this be a AffineTransformType::Pointer ? */
-    AffineTransformType::InverseTransformBaseType::Pointer itk_aff_inv
-        = itk_aff->GetInverseTransform ();
-    
-    //AffineTransformType::Pointer itk_aff_inv_2 = itk_aff_inv;
-    
-    std::cout << itk_aff_inv << std::endl;
+    Plm_image_header pih_warped;
 
-    exit (0);
-    
     /* Rotate direction cosines */
     // GCS FIX TODO
     float direction_cosines[9];
     pih->get_direction_cosines (direction_cosines);
+    
 
     /* Rotate and translate origin */
     // GCS FIX TODO
     float origin[3];
     pih->get_origin (origin);
     
+    exit (0);
     
+//    im_warped->set_plm_image_header (pih);
 }
 
 
