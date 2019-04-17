@@ -181,6 +181,7 @@ PLMBASE_API void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::P
 PLMBASE_API void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API void xform_to_gpuit_vf (Xform* xf_out, const Xform *xf_in, const Plm_image_header* pih);
 
+PLMBASE_API Xform::Pointer xform_to_aff (const Xform::Pointer& xf_in);
 PLMBASE_API Xform::Pointer xform_to_itk_bsp (const Xform::Pointer& xf_in,
     Plm_image_header* pih, const float* grid_spac);
 PLMBASE_API Xform::Pointer xform_to_itk_bsp_nobulk (const Xform::Pointer& xf_in, Plm_image_header* pih, const float* grid_spac);

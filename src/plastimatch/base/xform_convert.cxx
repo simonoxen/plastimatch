@@ -61,7 +61,11 @@ Xform_convert::run ()
 	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_VERSOR\n");
 	break;
     case XFORM_ITK_AFFINE:
-	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_AFFINE\n");
+        if (xf_in_type == XFORM_ITK_VERSOR) {
+            d_ptr->m_xf_out = xform_to_aff (d_ptr->m_xf_in);
+        } else {
+            print_and_exit ("Sorry, couldn't convert to XFORM_ITK_AFFINE\n");
+        }
 	break;
     case XFORM_ITK_BSPLINE:
 	if (this->m_grid_spac[0] <= 0.0f) {

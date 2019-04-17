@@ -64,6 +64,9 @@ set_output_xform_type (Xform_convert *xfc, const std::string& output_type)
     else if (output_type == "itk_bsp" || output_type == "itk_bspline") {
         xfc->m_xf_out_type = XFORM_ITK_BSPLINE;
     }
+    else if (output_type == "affine") {
+        xfc->m_xf_out_type = XFORM_ITK_AFFINE;
+    }
     else if (output_type == "none") {
         xfc->m_xf_out_type = XFORM_NONE;
     }

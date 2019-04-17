@@ -1746,6 +1746,16 @@ xform_to_aff (
     }
 }
 
+Xform::Pointer
+xform_to_aff (
+    const Xform::Pointer& xf_in
+)
+{
+    Xform::Pointer xf_out = Xform::New ();
+    xform_to_aff (xf_out.get(), xf_in.get(), nullptr);
+    return xf_out;
+}
+
 void
 xform_to_similarity (
     Xform *xf_out,
