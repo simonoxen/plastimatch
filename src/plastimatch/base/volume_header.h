@@ -48,6 +48,7 @@ public:
     void set_direction_cosines_identity ();
     Direction_cosines& get_direction_cosines ();
     const Direction_cosines& get_direction_cosines () const;
+    const float * get_direction_cosines_matrix () const;
 
     void set (const plm_long dim[3], const float origin[3], 
         const float spacing[3], const float dc[9]);

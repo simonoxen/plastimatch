@@ -276,6 +276,7 @@ add_custom_target (speedtest
 ##   rect-17           Water phantom, resolution 5x5x5, for dose calculation
 ##   rect-18	       Water phantom, very low resolution 20x20, dose calc.
 ##   rect-19	       Standard, but larger rectangle
+##   rect-20           Standard rect, rotated and translated
 ##   rectarr-01        Two rectangles, both centered
 ##   rectarr-02        Two rectangles, lower rect offset
 ##   rectarr-m-01      Upper mask for rectarr-01 and rectarr-02

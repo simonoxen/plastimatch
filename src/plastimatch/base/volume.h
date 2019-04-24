@@ -12,6 +12,7 @@
 #include "volume_macros.h"
 
 class Volume_header;
+class Plm_image_header;
 
 enum Volume_pixel_type {
     PT_UNDEFINED,
@@ -132,6 +133,15 @@ public:
     const plm_long *get_dim (void) {
         return dim;
     }
+    /*! \brief Get a pointer to the spacing of the volume.  
+      The spacing is distance between voxels.
+    */
+    const float* get_spacing (void) const;
+    void get_spacing (float *) const;
+    /*! \brief Set the spacing.
+      The spacing is distance between voxels.
+    */
+    void set_spacing (const float spacing[3]);
     /*! \brief Get a pointer to the direction cosines.  
       Direction cosines hold the orientation of a volume. 
       They are defined as the unit length direction vectors 
@@ -157,6 +167,12 @@ public:
       in the raw array of values.
     */
     void set_direction_cosines (const float direction_cosines[9]);
+
+    /*! \brief Set the image header.  This routine doesn't 
+      change any of the pixel values.  It just changes the image geometry.
+    */
+    void set_header (const Volume_header&);
+    void set_header (const Plm_image_header *);
 
     /*! \brief Get the raw image pointer as specified type.
       No error checking done.

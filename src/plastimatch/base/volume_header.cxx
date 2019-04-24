@@ -187,6 +187,12 @@ Volume_header::get_direction_cosines () const
     return d_ptr->m_direction_cosines;
 }
 
+const float*
+Volume_header::get_direction_cosines_matrix () const
+{
+    return d_ptr->m_direction_cosines.get_matrix();
+}
+
 void
 Volume_header::set (
     const plm_long dim[3],

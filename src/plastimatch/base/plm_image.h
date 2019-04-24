@@ -162,6 +162,7 @@ public:
     size_t dim (size_t);
     float origin (size_t);
     float spacing (size_t);
+    void set_header (const Plm_image_header*);
 
     /* debug */
     void print ();

@@ -181,6 +181,14 @@ template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], fl
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
 template PLMBASE_API void get_image_header (plm_long dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
+template PLMBASE_API void itk_image_set_header (UCharImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (CharImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (UShortImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (ShortImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (UInt32ImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (Int32ImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (FloatImageType::Pointer, const Plm_image_header *pih);
+template PLMBASE_API void itk_image_set_header (DoubleImageType::Pointer, const Plm_image_header *pih);
 template PLMBASE_API void itk_image_set_header (UCharVecImageType::Pointer, const Plm_image_header *pih);
 template PLMBASE_API void itk_image_set_header (DeformationFieldType::Pointer, const Plm_image_header *pih);
 template PLMBASE_API void itk_image_set_header (UCharVecImageType::Pointer, const Plm_image_header& pih);

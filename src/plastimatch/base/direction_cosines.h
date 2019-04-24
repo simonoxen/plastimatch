@@ -41,7 +41,7 @@ public:
     void set_rotated_3 ();
     void set_skewed ();
 
-    const float* get_matrix () const;
+    const float* get_matrix() const;
     float* get_matrix ();
     const float* get_inverse () const;
     void set (const float dc[]);

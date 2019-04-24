@@ -10,20 +10,30 @@
 
 class Plm_image;
 
-/* -----------------------------------------------------------------------
-   Public functions
-   ----------------------------------------------------------------------- */
+/*! \brief 
+ * The plm_warp function creates a new image from an input image 
+ * and a transform.  It also, optionally, creates a vector field.
+ */
 PLMBASE_API void
 plm_warp (
-    Plm_image::Pointer& im_warped,   /* Output: Output image (optional) */
-    DeformationFieldType::Pointer *vf,    /* Output: Output vf (optional) */
-    const Xform::Pointer& xf_in, /* Input:  Input image warped by this xform */
-    Plm_image_header *pih, /* Input:  Size of output image */
-    const Plm_image::Pointer& im_in,      /* Input:  Input image */
-    float default_val,     /* Input:  Value for pixels without match */
-    bool resample_linear_xf,   /* Input:  Force resample of image for linear transforms */
-    bool use_itk,          /* Input:  Force use of itk (1) or not (0) */
-    bool interp_lin        /* Input:  Trilinear (1) or nn (0) */
+    /*! Output: Output image (optional) */
+    Plm_image::Pointer& im_warped,
+    /*! Output: Output vf (optional) */
+    DeformationFieldType::Pointer *vf,
+    /*! Input:  Input image warped by this xform */
+    const Xform::Pointer& xf_in,
+    /*! Input:  Size of output image */
+    Plm_image_header *pih,
+    /*! Input:  Input image */
+    const Plm_image::Pointer& im_in,
+    /*! Input:  Value for pixels without match */
+    float default_val,
+    /*! Input:  Force resample of image for linear transforms */
+    bool resample_linear_xf,
+    /*! Input:  Force use of itk (1) or not (0) */
+    bool use_itk,
+    /*! Input:  Trilinear (1) or nn (0) */
+    bool interp_lin
 );
 
 #endif

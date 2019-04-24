@@ -236,6 +236,28 @@ Volume::set_origin (const float origin[3])
     }
 }
 
+const float*
+Volume::get_spacing () const
+{
+    return this->spacing;
+}
+
+void
+Volume::get_spacing (float *spacing) const
+{
+    for (int d = 0; d < 3; d++) {
+        spacing[d] = this->spacing[d];
+    }
+}
+
+void
+Volume::set_spacing (const float spacing[3])
+{
+    for (int d = 0; d < 3; d++) {
+        this->spacing[d] = spacing[d];
+    }
+}
+
 void 
 Volume::set_direction_cosines (
     const float direction_cosines[9]
@@ -253,6 +275,29 @@ Volume::set_direction_cosines (
 
     compute_direction_matrices (step, proj, 
         this->direction_cosines, this->spacing);
+}
+
+void 
+Volume::set_header (
+    const Volume_header& vh
+)
+{
+    this->set_origin (vh.get_origin());
+    this->set_spacing (vh.get_spacing());
+#if defined (commentout)
+    /* GCS LEFT OFF HERE */
+    this->set_dim (vh.get_dim());
+#endif
+    this->set_direction_cosines (vh.get_direction_cosines_matrix());
+}
+
+void 
+Volume::set_header (
+    const Plm_image_header *pih
+)
+{
+    Volume_header vh (pih);
+    set_header (vh);
 }
 
 template<class T> T* Volume::get_raw ()

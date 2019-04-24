@@ -1590,6 +1590,55 @@ Plm_image::spacing (size_t d1)
     return 0.f;
 }
 
+void
+Plm_image::set_header (const Plm_image_header* pih)
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+        return;
+    case PLM_IMG_TYPE_ITK_CHAR:
+        itk_image_set_header (this->m_itk_char, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_UCHAR:
+        itk_image_set_header (this->m_itk_uchar, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_SHORT:
+        itk_image_set_header (this->m_itk_short, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_USHORT:
+        itk_image_set_header (this->m_itk_ushort, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_LONG:
+        itk_image_set_header (this->m_itk_int32, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_ULONG:
+        itk_image_set_header (this->m_itk_uint32, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+        itk_image_set_header (this->m_itk_float, pih);
+        return;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        itk_image_set_header (this->m_itk_double, pih);
+        return;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_INT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+        d_ptr->m_vol->set_header (pih);
+        return;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+    default:
+	print_and_exit (
+	    "Unhandled call to Plm_image::set_header (type = %s)\n", 
+	    plm_image_type_string (this->m_type));
+        return;
+    }
+}
+
 /* Printing debug information */
 void
 Plm_image::print ()

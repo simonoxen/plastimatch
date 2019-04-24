@@ -156,38 +156,45 @@ plm_warp_linear (
     const AffineTransformType::MatrixType& itk_aff_mat = itk_aff->GetMatrix ();
     const AffineTransformType::OutputVectorType& itk_aff_off = itk_aff->GetOffset ();
 
+    /* Invert matrix */
     AffineTransformType::Pointer itk_aff_inv = AffineTransformType::New ();
     itk_aff->GetInverse (itk_aff_inv);
 
-    Plm_image_header pih_warped;
-
     /* Rotate direction cosines */
-    // GCS FIX TODO
-    float direction_cosines[9];
-    pih->get_direction_cosines (direction_cosines);
+    itk::Matrix<double,3,3> mat_inv = itk_aff_inv->GetMatrix ();
+    itk::Matrix<double,3,3> new_dc = mat_inv * pih->GetDirection ();
     
-
     /* Rotate and translate origin */
-    // GCS FIX TODO
-    float origin[3];
-    pih->get_origin (origin);
+    itk::Vector<double,3> off_inv = itk_aff_inv->GetOffset ();
+    itk::Vector<double,3> new_origin =
+        mat_inv * pih->GetOrigin().GetVectorFromOrigin() + itk_aff_inv->GetOffset ();
+
+    /* Clone the image voxels */
+    im_warped = im_in->clone ();
     
+    /* Set the geometry */
+#if defined (commentout)
+    /* GCS FIX LEFT OFF HERE */
+    pih->set_origin (new_origin);
+    pih->set_direction_cosines (new_dc);
+    im_warped->set_header (pih);
+#endif
+    
+    printf ("Cowardly exiting.\n");
     exit (0);
-    
-//    im_warped->set_plm_image_header (pih);
 }
 
 
 /* Native warping (only gpuit bspline + float) */
 static void
 plm_warp_native (
-    Plm_image::Pointer& im_warped,        /* Output */
-    DeformationFieldType::Pointer *vf,    /* Output */
-    const Xform::Pointer& xf_in,          /* Input */
-    Plm_image_header *pih,                /* Input */
-    const Plm_image::Pointer& im_in,      /* Input */
-    float default_val,     /* Input:  Value for pixels without match */
-    int interp_lin         /* Input:  Trilinear (1) or nn (0) */
+    Plm_image::Pointer& im_warped,
+    DeformationFieldType::Pointer *vf,
+    const Xform::Pointer& xf_in,
+    Plm_image_header *pih,
+    const Plm_image::Pointer& im_in,
+    float default_val,
+    int interp_lin
 )
 {
     Xform xf_tmp;
@@ -328,24 +335,22 @@ plm_warp_native_vec (
 
 void
 plm_warp (
-    Plm_image::Pointer& im_warped,  /* Output: Output image (optional) */
-    DeformationFieldType::Pointer* vf,    /* Output: Output vf (optional) */
-    const Xform::Pointer& xf_in, /* Input:  Input image warped by this xform */
-    Plm_image_header *pih, /* Input:  Size of output image */
-    const Plm_image::Pointer& im_in,      /* Input:  Input image */
-    float default_val,     /* Input:  Value for pixels without match */
-    bool resample_linear_xf,   /* Input:  Force resample of image for linear transforms */
-    bool use_itk,          /* Input:  Force use of itk (1) or not (0) */
-    bool interp_lin        /* Input:  Trilinear (1) or nn (0) */
+    Plm_image::Pointer& im_warped,
+    DeformationFieldType::Pointer* vf,
+    const Xform::Pointer& xf_in,
+    Plm_image_header *pih,
+    const Plm_image::Pointer& im_in,
+    float default_val,
+    bool resample_linear_xf,
+    bool use_itk,
+    bool interp_lin
 )
 {
     /* For linear transforms, don't resample unless requested */
-#if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
     if (xf_in->is_linear() && !resample_linear_xf) {
 	plm_warp_linear (im_warped, vf, xf_in, pih, im_in);
 	return;
     }
-#endif
     
     /* If user requested ITK-based warping, respect their wish */
     if (use_itk) {
