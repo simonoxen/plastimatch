@@ -166,22 +166,23 @@ plm_warp_linear (
     
     /* Rotate and translate origin */
     itk::Vector<double,3> off_inv = itk_aff_inv->GetOffset ();
-    itk::Vector<double,3> new_origin =
+    itk::Point<double,3> new_origin =
         mat_inv * pih->GetOrigin().GetVectorFromOrigin() + itk_aff_inv->GetOffset ();
 
     /* Clone the image voxels */
     im_warped = im_in->clone ();
     
     /* Set the geometry */
-#if defined (commentout)
     /* GCS FIX LEFT OFF HERE */
-    pih->set_origin (new_origin);
-    pih->set_direction_cosines (new_dc);
-    im_warped->set_header (pih);
-#endif
-    
+    Plm_image_header new_pih (im_in);
+    new_pih.set_origin (new_origin);
+    new_pih.set_direction_cosines (new_dc);
+    im_warped->set_header (new_pih);
+
+#if defined (commentout)
     printf ("Cowardly exiting.\n");
     exit (0);
+#endif
 }
 
 

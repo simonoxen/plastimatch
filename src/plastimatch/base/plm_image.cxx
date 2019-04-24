@@ -1639,6 +1639,12 @@ Plm_image::set_header (const Plm_image_header* pih)
     }
 }
 
+void
+Plm_image::set_header (const Plm_image_header& pih)
+{
+    this->set_header (&pih);
+}
+
 /* Printing debug information */
 void
 Plm_image::print ()

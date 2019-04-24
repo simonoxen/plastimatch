@@ -60,6 +60,9 @@ public:
     float spacing (int d) const;
     void set_dim (const plm_long dim[3]);
     void set_origin (const float origin[3]);
+    void set_origin (const OriginType& origin) {
+        m_origin = origin;
+    }
     void set_spacing (const float spacing[3]);
     void set_direction_cosines (
         const float direction_cosines[9]);
