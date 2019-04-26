@@ -130,7 +130,7 @@ Plm_clp::assign_int_4 (
     int rc;
     int a, b, c, d;
     rc = sscanf (get_string(name).c_str(), "%d %d %d %d", 
-        &a, &b);
+        &a, &b, &c, &d);
     if (rc == 4) {
         arr[0] = a;
         arr[1] = b;
