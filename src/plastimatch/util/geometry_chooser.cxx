@@ -98,8 +98,9 @@ Geometry_chooser::set_fixed_image (const char* image_fn)
     }
     else {
         /* Hope for the best... */
-        FloatImageType::Pointer fixed = itk_image_load_float (image_fn, 0);
-	this->set_fixed_image (fixed);
+        Plm_image pli (image_fn);
+        d_ptr->pih_fix.set_from_plm_image (pli);
+        d_ptr->have_pih_fix = true;
     }
 }
 
