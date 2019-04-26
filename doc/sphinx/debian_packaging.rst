@@ -69,23 +69,25 @@ Step 1: Test the debian build
 -----------------------------
 #. Download the candidate tarball and repack into correct version name::
 
+     export V=1.7.4
      wget https://gitlab.com/plastimatch/plastimatch/-/archive/master/plastimatch-master.tar.gz
      tar xvf plastimatch-master.tar.gz
      rm plastimatch-master.tar.gz
-     mv plastimatch-master plastimatch-1.6.6
-     tar cvfz plastimatch-1.6.6.tar.gz plastimatch-1.6.6
+     mv plastimatch-master plastimatch-${V}
+     tar cvfz plastimatch-${V}.tar.gz plastimatch-${V}
+     rm -rf plastimatch-${V}
 
    Note that the old version number should be used, as we have not yet updated
    the version in the debian changelog.
 
 #. Run debian repacking::
 
-     mk-origtargz ../plastimatch-1.6.6.tar.gz
+     (cd plastimatch && mk-origtargz ../plastimatch-${V}.tar.gz)
 
 #. Unzip the created tarball, and copy over the debian directory::
 
-     tar xvf plastimatch_1.6.6+dfsg.1.orig.tar.gz
-     cp -r plastimatch/debian plastimatch-1.6.6
+     tar xvf plastimatch_${V}+dfsg.1.orig.tar.[xg]z
+     cp -r plastimatch/debian plastimatch-${V}
 
 #. Refresh your pbuilder environment (if needed)::
 
@@ -93,7 +95,8 @@ Step 1: Test the debian build
 
 #. Run debuild and build::
 
-     sudo pbuilder debuild
+     cd plastimatch-${V}
+     debuild -i -us -uc -S
      sudo pbuilder build ../plastimatch_*.dsc
 
 #. Run lintian on package::
@@ -127,7 +130,7 @@ Step 3: Build the debian package
 #. Update changelog (in an terminal, not emacs)::
 
      cd plastimatch
-     dch -v 1.6.6+dfsg.1-1
+     dch -v ${V}+dfsg.1-1
      git commit -a -m "Update changelog"
 
    Don't forget to change release status to "unstable"
