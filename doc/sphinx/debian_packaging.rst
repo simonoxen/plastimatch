@@ -67,10 +67,9 @@ Setting up a build system for the first time
 
 Step 1: Test the debian build
 -----------------------------
-#. Download the candidate tarball
+#. Download the candidate tarball and repack into correct version name::
 
-#. Repack into correct version name::
-
+     wget https://gitlab.com/plastimatch/plastimatch/-/archive/master/plastimatch-master.tar.gz
      tar xvf plastimatch-master.tar.gz
      rm plastimatch-master.tar.gz
      mv plastimatch-master plastimatch-1.6.6

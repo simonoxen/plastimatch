@@ -58,9 +58,6 @@ enum Optimization_type {
 #define OPTIMIZATION_SUB_LOGDOM_ITK         2
 #define OPTIMIZATION_SUB_SYM_LOGDOM_ITK     3
 
-#define IMG_OUT_FMT_AUTO                    0
-#define IMG_OUT_FMT_DICOM                   1
-
 enum Stage_type {
     STAGE_TYPE_PROCESS,
     STAGE_TYPE_REGISTER
@@ -206,10 +203,7 @@ public:
     float overlap_penalty_lambda;
     float overlap_penalty_fraction;
     /* Output files */
-    int img_out_fmt;
-    Plm_image_type img_out_type;
     std::string img_out_fn;
-    bool xf_out_itk;
     std::list<std::string> xf_out_fn;
     std::string vf_out_fn;
     std::string debug_dir;

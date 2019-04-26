@@ -8,6 +8,10 @@
 #include <map>
 #include <string>
 #include "metric_parms.h"
+#include "plm_image_type.h"
+
+#define IMG_OUT_FMT_AUTO                    0
+#define IMG_OUT_FMT_DICOM                   1
 
 class PLMREGISTER_API Shared_parms {
 public:
@@ -37,6 +41,12 @@ public:
     std::string fixed_landmarks_list;
     std::string moving_landmarks_list;
     std::string warped_landmarks_fn;
+
+    /* Output files */
+    bool img_out_resample_linear_xf;
+    int img_out_fmt;
+    Plm_image_type img_out_type;
+    bool xf_out_itk;
 
 public:
     void copy (const Shared_parms *s);

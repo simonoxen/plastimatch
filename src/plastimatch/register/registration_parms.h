@@ -29,11 +29,10 @@ public:
     Registration_parms_private *d_ptr;
 public:
     int num_stages;
-    int img_out_fmt;
-    Plm_image_type img_out_type;
+
+    /* Output files */
     std::string img_out_fn;
     std::string xf_in_fn;
-    bool xf_out_itk;
     std::list<std::string> xf_out_fn;
     std::string vf_out_fn;
     std::string log_fn;

@@ -99,9 +99,6 @@ Registration_parms::Registration_parms()
 {
     d_ptr = new Registration_parms_private;
 
-    img_out_fmt = IMG_OUT_FMT_AUTO;
-    img_out_type = PLM_IMG_TYPE_UNDEFINED;
-    xf_out_itk = false;
     init_type = STAGE_TRANSFORM_NONE;
     default_value = 0.0;
     num_stages = 0;
@@ -226,32 +223,26 @@ Registration_parms::set_key_value (
         }
     }
     else if (key == "img_out_fmt") {
+        if (section_process) goto key_not_allowed_in_section_process;
         int fmt = IMG_OUT_FMT_AUTO;
         if (val == "dicom") {
             fmt = IMG_OUT_FMT_DICOM;
         } else {
             goto error_exit;
         }
-        if (section_global) {
-            this->img_out_fmt = fmt;
-        } else if (section_stage) {
-            stage->img_out_fmt = fmt;
-        } else {
-            goto key_not_allowed_in_section_process;
-        }
+        shared->img_out_fmt = fmt;
     }
     else if (key == "img_out_type") {
+        if (section_process) goto key_not_allowed_in_section_process;
         Plm_image_type type = plm_image_type_parse (val.c_str());
         if (type == PLM_IMG_TYPE_UNDEFINED) {
             goto error_exit;
         }
-        if (section_global) {
-            this->img_out_type = type;
-        } else if (section_stage) {
-            stage->img_out_type = type;
-        } else {
-            goto key_not_allowed_in_section_process;
-        }
+        shared->img_out_type = type;
+    }
+    else if (key == "resample_when_linear") {
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->img_out_resample_linear_xf = string_value_true (val);
     }
     else if (key == "vf_out") {
         if (section_global) {
@@ -263,19 +254,8 @@ Registration_parms::set_key_value (
         }
     }
     else if (key == "xf_out_itk") {
-        bool value;
-        if (string_value_true (val)) {
-            value = true;
-        } else {
-            value = false;
-        }
-        if (section_global) {
-            this->xf_out_itk = value;
-        } else if (section_stage) {
-            stage->xf_out_itk = value;
-        } else {
-            goto key_not_allowed_in_section_process;
-        }
+        if (section_process) goto key_not_allowed_in_section_process;
+        shared->xf_out_itk = string_value_true (val);
     }
     else if (key == "xf_out" || key == "xform_out") {
         /* xf_out is special.  You can have more than one of these.  
@@ -331,9 +311,7 @@ Registration_parms::set_key_value (
     }
     else if (key == "resume") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (string_value_true (val)) {
-            stage->resume_stage = true;
-        }
+        stage->resume_stage = string_value_true (val);
     }
     else if (key == "xform") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
@@ -721,19 +699,11 @@ Registration_parms::set_key_value (
     }
     else if (key == "demons_smooth_deformation_field") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (string_value_true (val)) {
-            stage->demons_smooth_deformation_field = true;
-        }
-        else
-            stage->demons_smooth_deformation_field = false;
+        stage->demons_smooth_deformation_field = string_value_true (val);
     }
     else if (key == "demons_smooth_update_field") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (string_value_true (val)) {
-            stage->demons_smooth_update_field = true;
-        }
-        else
-            stage->demons_smooth_update_field = false;
+        stage->demons_smooth_update_field = string_value_true (val);
     }
     else if (key == "demons_gradient_type")
     {
@@ -935,19 +905,11 @@ Registration_parms::set_key_value (
     }
     else if (key == "histo_equ") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (string_value_true (val)) {
-            stage->histoeq = true;
-        }
-        else
-            stage->histoeq= false;
+        stage->histoeq = string_value_true (val);
     }
     else if (key == "thresh_mean_intensity") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (string_value_true (val)) {
-            stage->thresh_mean_intensity = true;
-        }
-        else
-            stage->thresh_mean_intensity= false;
+        stage->thresh_mean_intensity = string_value_true (val);
     }
     else if (key == "num_hist_levels") {
         if (!section_stage) goto key_only_allowed_in_section_stage;

@@ -42,6 +42,12 @@ public:
 
     Xform::Pointer get_current_xform ();
     void save_global_outputs ();
+    void save_output (
+        const Shared_parms* shared,
+        const std::list<std::string>& xf_out_fn,
+        float default_value,
+        const std::string& img_out_fn,
+        const std::string& vf_out_fn);
 
     /* This is called by worker thread */
     void run_main_thread ();

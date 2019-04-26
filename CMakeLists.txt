@@ -250,6 +250,13 @@ if (WIN32 AND NOT CYGWIN AND NOT MINGW)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  Disable spurious warnings on GCC
+##-----------------------------------------------------------------------------
+if (CMAKE_COMPILER_IS_GNUCC)
+  set (CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-cpp")
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Compile with -fPIC is needed for amd64 and other platforms
 ##-----------------------------------------------------------------------------
 plm_set_pic_flags ()

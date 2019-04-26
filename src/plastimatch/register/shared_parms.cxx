@@ -17,6 +17,15 @@ Shared_parms::Shared_parms ()
     /* At some future date, this will be changed to "false" */
     // this->legacy_subsampling = false;
     this->legacy_subsampling = true;
+
+#if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
+    this->img_out_resample_linear_xf = false;
+#else
+    this->img_out_resample_linear_xf = true;
+#endif
+    img_out_fmt = IMG_OUT_FMT_AUTO;
+    img_out_type = PLM_IMG_TYPE_UNDEFINED;
+    xf_out_itk = false;
 }
 
 Shared_parms::Shared_parms (const Shared_parms& s)
@@ -26,6 +35,11 @@ Shared_parms::Shared_parms (const Shared_parms& s)
     this->moving_roi_enable = s.moving_roi_enable;
     this->fixed_stiffness_enable = s.fixed_stiffness_enable;
     this->legacy_subsampling = s.legacy_subsampling;
+
+    this->img_out_resample_linear_xf = s.img_out_resample_linear_xf;
+    this->img_out_fmt = s.img_out_fmt;
+    this->img_out_type = s.img_out_type;
+    this->xf_out_itk = s.xf_out_itk;
 
     /* filenames do not propagate when copied */
 }

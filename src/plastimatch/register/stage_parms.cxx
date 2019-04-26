@@ -143,10 +143,6 @@ Stage_parms::Stage_parms ()
     /* Overlap penalty */
     overlap_penalty_lambda = 1.0;
     overlap_penalty_fraction = 0.01;
-    /* Output files */
-    img_out_fmt = IMG_OUT_FMT_AUTO;
-    img_out_type = PLM_IMG_TYPE_UNDEFINED;
-    xf_out_itk = false;
 }
 
 Stage_parms::Stage_parms (const Stage_parms& s) 
@@ -264,12 +260,8 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     /* Overlap penalty */
     overlap_penalty_lambda = s.overlap_penalty_lambda;
     overlap_penalty_fraction = s.overlap_penalty_fraction;
-    /* Output files */
-    img_out_type = s.img_out_type;
-    xf_out_itk = s.xf_out_itk;
 
     /* ...but not the output filenames */
-    img_out_fmt = IMG_OUT_FMT_AUTO;
     xf_out_fn.clear ();
 
     /* ...and don't to resume/finalize unless specifically requested */

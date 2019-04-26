@@ -75,6 +75,16 @@ as noted below.
      - Data type of the output image.  Either “auto” (default), or 
        an image type string: char, uchar, short, ushort, int, uint, 
        float, or double
+   * - resample_when_linear
+     - GLOBAL, STAGE
+     - Setting this field to true will cause plastimatch to resample
+       the moving image to the fixed image geometry
+       when warping the image with a linear 
+       (translation, rigid, similarity, affine) transform.  
+       Setting this field to false will cause plastimatch to 
+       warp the image by changing the image origin and direction cosines.  
+       In versions through 1.8.x, the default is true.
+       In version 1.9.0, the default value will be changed to false.
    * - logfile
      - GLOBAL
      - Filename for output log of registration progress

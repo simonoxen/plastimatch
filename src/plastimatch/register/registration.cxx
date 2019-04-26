@@ -257,21 +257,17 @@ set_fixed_image_region_global (Registration_data::Pointer& regd)
     }
 }
 
-static void
-save_output (
-    Registration_data* regd, 
-    Xform::Pointer& xf_out, 
-    const std::list<std::string>& xf_out_fn, 
-    bool xf_out_itk,
-    int img_out_fmt,
-    Plm_image_type img_out_type,
-    float default_value, 
+void
+Registration::save_output (
+    const Shared_parms* shared,
+    const std::list<std::string>& xf_out_fn,
+    float default_value,
     const std::string& img_out_fn,
-    const std::string& vf_out_fn,
-    const std::string& warped_landmarks_fn,
-    const std::string& valid_roi_out_fn
+    const std::string& vf_out_fn
 )
 {
+    Registration_data::Pointer regd = d_ptr->rdata;
+    Xform::Pointer& xf_out = d_ptr->xf_out;
     Plm_image::Pointer fixed_image = regd->get_fixed_image();
     Plm_image::Pointer moving_image = regd->get_moving_image();
 
@@ -284,7 +280,7 @@ save_output (
     std::list<std::string>::const_iterator it;
     for (it = xf_out_fn.begin(); it != xf_out_fn.end(); ++it) {
         logfile_printf ("Writing transformation ...\n");
-        if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
+        if (shared->xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
             Plm_image_header pih;
             pih.set_from_plm_image (fixed_image);
             Xform::Pointer xf_tmp = xform_to_itk_bsp (xf_out, &pih, 0);
@@ -294,15 +290,15 @@ save_output (
         }
     }
 
-    if (img_out_fn[0] || vf_out_fn[0] || warped_landmarks_fn[0]
-        || valid_roi_out_fn[0])
+    if (img_out_fn[0] || vf_out_fn[0] || shared->warped_landmarks_fn[0]
+        || shared->valid_roi_out_fn[0])
     {
         DeformationFieldType::Pointer vf;
         DeformationFieldType::Pointer *vfp;
         Plm_image::Pointer im_warped;
         Plm_image_header pih;
 
-        if (vf_out_fn[0] || warped_landmarks_fn[0]) {
+        if (vf_out_fn[0] || shared->warped_landmarks_fn[0]) {
             vfp = &vf;
         } else {
             vfp = 0;
@@ -317,36 +313,33 @@ save_output (
         Plm_image::Pointer moving_image = regd->get_moving_image();
         plm_warp (im_warped, vfp, xf_out, &pih, moving_image,
             default_value,
-#if PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT
-            false,
-#else
-            true,
-#endif
+            shared->img_out_resample_linear_xf,
             0, 1);
 
         if (img_out_fn[0]) {
             logfile_printf ("Saving image...\n");
-            if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-                if (img_out_type == PLM_IMG_TYPE_UNDEFINED) {
+            if (shared->img_out_fmt == IMG_OUT_FMT_AUTO) {
+                if (shared->img_out_type == PLM_IMG_TYPE_UNDEFINED) {
                     im_warped->save_image (img_out_fn);
                 } else {
-                    im_warped->convert_and_save (img_out_fn, img_out_type);
+                    im_warped->convert_and_save (img_out_fn,
+                        shared->img_out_type);
                 }
             } else {
                 dicom_save_short (img_out_fn, im_warped);
             }
         }
-        if (warped_landmarks_fn[0]) {
+        if (shared->warped_landmarks_fn[0]) {
             Labeled_pointset warped_pointset;
             logfile_printf ("Saving warped landmarks...\n");
             pointset_warp (&warped_pointset, regd->moving_landmarks, vf);
-            warped_pointset.save (warped_landmarks_fn.c_str());
+            warped_pointset.save (shared->warped_landmarks_fn.c_str());
         }
         if (vf_out_fn[0]) {
             logfile_printf ("Saving vf...\n");
             itk_image_save (vf, vf_out_fn);
         }
-        if (valid_roi_out_fn[0]) {
+        if (shared->valid_roi_out_fn[0]) {
             logfile_printf ("Warping valid ROI...\n");
             Plm_image::Pointer valid_roi
                 = Plm_image::clone (moving_image);
@@ -567,12 +560,12 @@ Registration::run_main_thread ()
             }
 
             /* Save intermediate output */
-            save_output (regd.get(), d_ptr->xf_out, 
-                stage->xf_out_fn, stage->xf_out_itk, 
-                stage->img_out_fmt, stage->img_out_type, 
-                stage->default_value, stage->img_out_fn, 
-                stage->vf_out_fn, shared->warped_landmarks_fn, 
-                shared->valid_roi_out_fn);
+            save_output (
+                shared,
+                stage->xf_out_fn,
+                stage->default_value,
+                stage->img_out_fn,
+                stage->vf_out_fn);
 
             /* Tell the parent thread that we finished a stage, 
                so it can wake up if needed. */
@@ -663,11 +656,12 @@ Registration::save_global_outputs ()
     Registration_parms::Pointer regp = d_ptr->rparms;
     const Shared_parms* shared = regp->get_shared_parms ();
 
-    save_output (regd.get(), d_ptr->xf_out, regp->xf_out_fn, regp->xf_out_itk, 
-        regp->img_out_fmt, regp->img_out_type, 
-        regp->default_value, regp->img_out_fn, 
-        regp->vf_out_fn, shared->warped_landmarks_fn,
-        shared->valid_roi_out_fn);
+    save_output (
+        shared,
+        regp->xf_out_fn,
+        regp->default_value,
+        regp->img_out_fn,
+        regp->vf_out_fn);
 }
 
 Xform::Pointer
