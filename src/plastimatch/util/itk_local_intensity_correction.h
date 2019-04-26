@@ -9,7 +9,7 @@
 #include "itk_image_type.h"
 
 
-FloatImageType::Pointer
+PLMUTIL_API FloatImageType::Pointer
 itk_local_intensity_correction(
         FloatImageType::Pointer& source_image,
         FloatImageType::Pointer& reference_image,
@@ -17,7 +17,7 @@ itk_local_intensity_correction(
         bool blend,
         SizeType mediansize);
 
-FloatImageType::Pointer
+PLMUTIL_API FloatImageType::Pointer
 itk_local_intensity_correction (
         FloatImageType::Pointer& source_image,
         FloatImageType::Pointer& reference_image, SizeType patch_size,
@@ -25,7 +25,7 @@ itk_local_intensity_correction (
         bool blend,
         SizeType mediansize);
 
-FloatImageType::Pointer
+PLMUTIL_API FloatImageType::Pointer
 itk_masked_local_intensity_correction(
         FloatImageType::Pointer& source_image,
         FloatImageType::Pointer& reference_image, SizeType patch_size,
