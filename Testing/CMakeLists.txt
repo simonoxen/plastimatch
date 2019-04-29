@@ -1464,9 +1464,9 @@ plmtest_check_interval (
   "-1298.87"
   "-1298.86"
 )
-set_tests_properties (plm-adjust-d PROPERTIES DEPENDS "gauss-4")
-set_tests_properties (plm-adjust-d-stats PROPERTIES DEPENDS "plm-adjust-d")
-set_tests_properties (plm-adjust-d-check PROPERTIES DEPENDS "plm-adjust-d-stats")
+set_tests_properties (plm-adjust-e PROPERTIES DEPENDS "gauss-4")
+set_tests_properties (plm-adjust-e-stats PROPERTIES DEPENDS "plm-adjust-e")
+set_tests_properties (plm-adjust-e-check PROPERTIES DEPENDS "plm-adjust-e-stats")
 
 plm_add_test (
   "plm-adjust-f"
