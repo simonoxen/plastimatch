@@ -5,7 +5,7 @@
 ##-----------------------------------------------------------------------------
 project (plastimatch)
 
-## The version here should be equal to the "most recent release"
+# The version here should be equal to the "most recent release"
 set (PLM_VERSION_MAJOR "1")
 set (PLM_VERSION_MINOR "7")
 set (PLM_VERSION_PATCH "4")
@@ -13,10 +13,8 @@ set (PLM_VERSION_PATCH "4")
 ##-----------------------------------------------------------------------------
 ##  Set up CMake defaults
 ##-----------------------------------------------------------------------------
-cmake_minimum_required (VERSION 3.1.3) # CMAKE_CXX_STANDARD was introduced in 3.1.3
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# CMAKE_CXX_STANDARD was introduced in 3.1.3
+cmake_minimum_required (VERSION 3.1.3)
 
 # CMP0003: Libraries linked via full path no longer produce linker search
 #  paths.
@@ -43,9 +41,8 @@ if (POLICY CMP0025)
   cmake_policy(SET CMP0025 NEW)
 endif ()
 
-
 ##-----------------------------------------------------------------------------
-##  CMake include files
+##  CMake path
 ##-----------------------------------------------------------------------------
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -55,10 +52,16 @@ set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 include (PreventInSourceBuilds)
 
 ##-----------------------------------------------------------------------------
-##  Macros and functions used in this script
+##  Misc macros and functions used in this script
 ##-----------------------------------------------------------------------------
 include (PlmMacros)
 include (SuperbuildOptions)
+
+##-----------------------------------------------------------------------------
+##  Set C++ compiler standard
+##-----------------------------------------------------------------------------
+sb_set(CMAKE_CXX_STANDARD 11)
+sb_set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ##-----------------------------------------------------------------------------
 ##  Define default build type as Release
