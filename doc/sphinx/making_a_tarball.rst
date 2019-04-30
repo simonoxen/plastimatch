@@ -43,19 +43,6 @@ Step 2: Marking the version
 Step 3: Making the final version
 --------------------------------
 #. Download tarball from gitlab.
-#. Repackage the tarball from hash-based to version-based.::
-
-     tar xvf plastimatch-v1.7.0.tar.gz
-     rm plastimatch-v1.7.0.tar.gz
-     mv plastimatch-v1.7.0* plastimatch-1.7.0
-     tar cjvf plastimatch-1.7.0.tar.bz2 plastimatch-1.7.0
-     rm -rf plastimatch-1.7.0
-
-   The above procedure should no longer be needed, as gitlab no longer gives
-   hash-based version for tagged download.  Also using "1.7.4" instead of "v1.7.4"
-   for the tag should solve the problem of directory name.  Test this for 1.7.4, and
-   if all is working well, remove this step from the procedure.
-     
 #. Unpack and test tarball on linux (don't skip this step).
 #. Unpack and test tarball on windows (don't skip this step).
 #. Upload to sourceforge::
