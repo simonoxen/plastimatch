@@ -1,4 +1,15 @@
-Version 1.7.4 (tag v1.7.4)
+Version 1.8.0 (tag 1.8.0)
+Tue Apr 30 09:18:59 EDT 2019
+* FDK, DRR and landmark-warp functionality is now included in the 
+  plastimatch program and no provided as a separate program
+* Change to C++11 as official standard
+* ITK 5 now supported
+* Many new options in the adjust command: linear, local linear, and histogram
+  matching are now supported
+* Registration and xf-convert can harden linear transforms instead of resampling
+* The xf-invert command can now use DICOM with the --fixed option
+
+Version 1.7.4 (tag 1.7.4)
 Tue Jan  8 12:28:02 EST 2019
 * Implement xf-invert for inverting linear transforms
 * Deformable DICOM SRO export

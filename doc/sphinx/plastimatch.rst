@@ -18,17 +18,18 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
  $ plastimatch
- plastimatch version 1.7.4
+ plastimatch version 1.8.0
  Usage: plastimatch command [options]
  Commands:
-  add           adjust        average       bbox          boundary
-  crop          compare       compose       convert       dice
-  diff          dmap          dose          drr           dvh
-  fill          filter        gamma         header        jacobian
-  mabs          mask          maximum       ml-convert    multiply
-  probe         register      resample      scale         segment
-  sift          stats         synth         synth-vf      threshold
-  thumbnail     union         warp          xf-convert    xf-invert
+  add           adjust        average       bbox          boundary    
+  crop          compare       compose       convert       dice        
+  diff          dmap          dose          drr           dvh         
+  fdk           fill          filter        gamma         header      
+  jacobian      lm-warp       mabs          mask          maximum     
+  ml-convert    multiply      probe         register      resample    
+  scale         segment       sift          stats         synth       
+  synth-vf      threshold     thumbnail     union         warp        
+  xf-convert    xf-invert   
 
  For detailed usage of a specific command, type:
    plastimatch command
@@ -623,7 +624,137 @@ from a binary labelmap image label.nrrd.::
 
 plastimatch drr
 ---------------
-This command is under construction.
+A digitally reconstructed radiograph (DRR) is a synthetic radiograph 
+which can be generated from a computed tomography (CT) scan.  
+It is used as a reference image for verifying the correct setup 
+position of a patient prior to radiation treatment.  
+
+The drr program that comes with plastimatch takes a CT image 
+as input, and generates one or more output images.  
+The output images can be either pgm, pfm, or raw 
+format.  The command line usage is::
+
+
+ Usage: plastimatch drr [options] [infile]
+ Options:
+  -i, --algorithm <arg>         Choose algorithm {exact,uniform} 
+      --autoscale               Automatically rescale intensity 
+      --autoscale-range <arg>   Range used for autoscale in form "min 
+                                 max" (default: "0 255") 
+  -z, --detector-size <arg>     The physical size of the detector in 
+                                 format "row col", in mm 
+  -r, --dim <arg>               The output resolution in format "row 
+                                 col" (in mm) 
+  -e, --exponential             Do exponential mapping of output values 
+  -y, --gantry-angle <arg>      Gantry angle for image source in degrees 
+  -N, --gantry-angle-spacing <arg>   
+                                Difference in gantry angle spacing in 
+                                 degrees 
+  -G, --geometry-only           Create geometry files only 
+  -h, --help                    display this help message 
+  -P, --hu-conversion <arg>     Choose HU conversion type 
+                                 {preprocess,inline,none} 
+  -c, --image-center <arg>      The image center in the format "row 
+                                 col", in pixels 
+  -I, --input <arg>             Input file 
+  -s, --intensity-scale <arg>   Scaling factor for output image 
+                                 intensity 
+  -o, --isocenter <arg>         Isocenter position "x y z" in DICOM 
+                                 coordinates (mm) 
+  -n, --nrm <arg>               Normal vector of detector in format "x y
+                                 z" 
+  -a, --num-angles <arg>        Generate this many images at equal 
+                                 gantry spacing 
+  -O, --output <arg>            Prefix for output file(s) 
+  -t, --output-format <arg>     Select output format {pgm, pfm, raw} 
+  -S, --raytrace-details <arg>   
+                                Create output file with complete ray 
+                                 trace details 
+      --sad <arg>               The SAD (source-axis-distance) in mm 
+                                 (default: 1000) 
+      --sid <arg>               The SID (source-image-distance) in mm 
+                                 (default: 1500) 
+  -w, --subwindow <arg>         Limit DRR output to a subwindow in 
+                                 format "r1 r2 c1 c2",in pixels 
+  -A, --threading <arg>         Threading option {cpu,cuda,opencl} 
+                                 (default: cpu) 
+      --version                 display the program version 
+      --vup <arg>               The vector pointing from the detector 
+                                 center to the top row of the detector in
+                                 format "x y z" 
+
+An input file is required.  
+The drr program can be used in either 
+*single image mode* or *rotational mode*.  In single image mode, 
+you specify the complete geometry of the x-ray source and imaging 
+panel for a single image.  In rotational mode, the imaging geometry 
+is rotated in a circular arc around the isocenter, with a fixed
+source to axis distance (SAD), and projection images generated
+at fixed angular intervals.
+
+
+Examples
+^^^^^^^^
+The following example illustrates the use of single image mode::
+
+  drr -nrm "1 0 0" \
+      -vup "0 0 1" \
+      -g "1000 1500" \
+      -r "1024 768" \
+      -z "400 300" \
+      -c "383.5 511.5" \
+      -o "0 -20 -50" \
+      input_file.mha
+
+In the above example, the isocenter is chosen to be 
+(0, -20, -50), the location marked on the 
+CT image.  The orientation of the projection image is controlled by 
+the **nrm** and **vup** options.  Using the default values of (1, 0, 0) 
+and (0, 0, 1) yields the DRR shown on the right:
+
+.. image:: ../figures/drr_input.png
+   :width: 45 %
+.. image:: ../figures/drr_output_1.png
+   :width: 31 %
+
+By changing the normal direction (**nrm**), we can choose different 
+beam direction within an isocentric orbit.  For example, an 
+anterior-posterior (AP) DRR is generated with a normal of (0, -1, 0) 
+as shown below:
+
+.. image:: ../figures/drr_output_2.png
+   :width: 31 %
+
+The rotation of the imaging panel is selected using the **vup** option.
+The default value of **vup** is (0, 0, 1), which means that the top 
+of the panel is oriented toward the positive z direction in world 
+coordinates.  If we wanted to rotate the panel by 45 degrees 
+counter-clockwise on our AP view, we would set **vup** to 
+the (1, 0, 1) direction, as shown in the image below.  
+Note that **vup** doesn't have to be normalized.
+
+.. image:: ../figures/drr_output_3.png
+   :width: 31 %
+
+In rotional mode, multiple images are created.  The source and imaging 
+panel are assumed to rotate in a circular orbit around the isocenter.  
+The circular orbit is performed around the Z axis, and the images 
+are generated every **-N ang** degrees of the orbit.  This is illustrated 
+using the following example::
+
+  drr -N 20 \
+      -a 18 \
+      -g "1000 1500" \
+      -r "1024 768" \
+      -z "400 300" \
+      -o "0 -20 -50" \
+      input_file.mha
+
+In the above example, 18 images are generated at a 20 degree interval, 
+as follows:
+
+.. image:: ../figures/drr_output_4.png
+   :width: 70 %
 
 
 plastimatch dvh
@@ -632,15 +763,29 @@ The *dvh* command creates a dose value histogram (DVH)
 from a given dose image and structure set image.
 The command line usage is given as follows::
 
-  Usage: plastimatch dvh [options]
-     --input-ss-img file
-     --input-ss-list file
-     --input-dose file
-     --output-csv file
-     --input-units {gy,cgy}
-     --cumulative
-     --num-bins
-     --bin-width
+ Usage: plastimatch dvh [options]
+ Options:
+      --bin-width <arg>       specify bin width in the histogram in 
+                               units of Gy (default=0.5) 
+      --cumulative            create a cumulative DVH (this is the 
+                               default) 
+      --differential          create a differential DVH instead of a 
+                               cumulative DVH 
+      --dose-units <arg>      specify units of dose in input file as 
+                               either cGy as "cgy" or Gy as "gy" 
+                               (default="gy") 
+  -h, --help                  display this help message 
+      --input-dose <arg>      dose image file 
+      --input-ss-img <arg>    structure set image file 
+      --input-ss-list <arg>   structure set list file containing names 
+                               and colors 
+      --normalization <arg>   specify histogram values as either voxels 
+                               "vox" or percent "pct" (default="pct") 
+      --num-bins <arg>        specify number of bins in the histogram 
+                               (default=256) 
+      --output-csv <arg>      file to save dose volume histogram data in
+                               csv format 
+      --version               display the program version 
 
 The required inputs are
 --input-dose,
@@ -673,6 +818,98 @@ use the following command::
     --num-bins 250 \
     --bin-width 1
 
+
+plastimatch fdk
+---------------
+The term FDK refers to the authors 
+Feldkamp, Davis, and Kress who wrote the seminal paper 
+"Practical cone-beam algorithm" in 1984.  Their paper 
+describes a filtered back-projection reconstruction algorithm 
+for cone-beam geometries.  The fdk program in plastimatch is 
+an implmenetation of the FDK algorithm.
+It takes a directory of 2D projection images as input, and 
+generates a single 3D volume as output.  
+
+The command line usage is::
+
+ Usage: plastimatch fdk [options]
+ Options:
+  -x, --detector-offset <arg>   The translational offset of the detector
+                                 "x0 y0", in pixels 
+  -r, --dim <arg>               The output image resolution in voxels 
+                                 "num (num num)" (default: 256 256 100 
+  -f, --filter <arg>            Choice of filter {none,ramp} (default: 
+                                 ramp) 
+  -X, --flavor <arg>            Implementation flavor {0,a,b,c,d} 
+                                 (default: c) 
+  -h, --help                    display this help message 
+  -a, --image-range <arg>       Use a sub-range of available images 
+                                 "first ((skip) last)" 
+  -I, --input <arg>             Input file 
+  -s, --intensity-scale <arg>   Scaling factor for output image 
+                                 intensity 
+  -O, --output <arg>            Prefix for output file(s) 
+  -A, --threading <arg>         Threading option {cpu,cuda,opencl} 
+                                 (default: cpu) 
+      --version                 display the program version 
+  -z, --volume-size <arg>       Physical size of reconstruction volume 
+                                 "s1 s2 s3", in mm (default: 300 300 150) 
+
+The usage of the fdk program is best understood by following along 
+with the tutorials: :ref:`fdk_tutorial_i` and :ref:`fdk_tutorial_ii`.
+
+Three different formats of input files are supported.  These are:
+
+- Pfm format image files with geometry txt files
+- Raw format image files with geometry txt files
+- Varian hnd files
+
+The pfm and raw files are similar, in that they store the image as 
+an array of 4-byte little-endian floats.  The only difference is that 
+the pfm file has a header which stores the image size, and the raw file 
+does not.
+
+Each pfm or raw image file must have a geometry file in the same directory 
+with the .txt extension.  For example, if you want to use image_0000.pfm
+in a reconstruction, you should supply another file image_0000.txt 
+which contains the geometry.  
+A brief description of the geometry file format is given in 
+:ref:`proj_mat_file_format`.
+
+The sequence of files should be stored with the pattern:
+
+  XXXXYYYY.ZZZ
+
+where XXXX is a prefix, YYYY is a number, and .ZZZ is the extension 
+of a known type (either .hnd, .pfm, or .raw).
+
+For example the following would be a good directory layout for pfm files::
+
+  Files/image_00.pfm
+  Files/image_00.txt
+  Files/image_01.pfm
+  Files/image_01.txt
+  etc...
+
+The Varian hnd files should be stored in the original layout.  For example::
+
+  Files/ProjectionInfo.xml
+  Files/Scan0/Proj_0000.hnd
+  Files/Scan0/Proj_0001.hnd
+  etc...
+
+No geometry txt files are needed to reconstruct from Varian hnd format.
+
+By default, when you generate a DRR, the image is oriented as if the
+virtual x-ray source were a camera.  That means that for a right
+lateral film, the columns of the image go from inf to sup, and the
+rows go from ant to post.  The Varian OBI system produces HND files,
+which are oriented differently. For a right lateral film, the columns
+of the HND images go from ant to post, and the rows go from sup to
+inf.  An illustration of this idea is shown in the figure below. 
+
+.. figure:: ../figures/cbct_geometry.png
+   :width: 60 %
 
 plastimatch fill
 ----------------
@@ -883,6 +1120,71 @@ file vf.mha, run the following::
   plastimatch jacobian \
     --input vf.mha --output-img vf_jac.mha
 
+
+plastimatch lm-warp
+-------------------
+The landmark_warp executable performs landmark-based
+deformable registration by matching corresponding point landmarks 
+on the fixed and moving images.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch lm-warp [options]
+ Options:
+  -a, --algorithm <arg>         RBF warping algorithm 
+                                 {tps,gauss,wendland} 
+  -d, --default-value <arg>     Value to set for pixels with unknown 
+                                 value 
+      --dim <arg>               Size of output image in voxels "x [y z]" 
+  -F, --fixed <arg>             Fixed image (match output size to this 
+                                 image) 
+  -f, --fixed-landmarks <arg>   Input fixed landmarks 
+  -h, --help                    display this help message 
+  -I, --input-image <arg>       Input image to warp 
+  -v, --input-vf <arg>          Input vector field (applied prior to 
+                                 landmark warping) 
+  -m, --moving-landmarks <arg>   
+                                Output moving landmarks 
+  -N, --numclusters <arg>       Number of clusters of landmarks 
+      --origin <arg>            Location of first image voxel in mm "x y
+                                 z" 
+  -O, --output-image <arg>      Output warped image 
+  -L, --output-landmarks <arg>   
+                                Output warped landmarks 
+  -V, --output-vf <arg>         Output vector field 
+  -r, --radius <arg>            Radius of radial basis function (in mm) 
+      --spacing <arg>           Voxel spacing in mm "x [y z]" 
+  -Y, --stiffness <arg>         Young modulus (default = 0.0) 
+      --version                 display the program version 
+
+Options "-a", "-r", "-Y", "-d" are set by default to::
+
+      -a=gauss		Gaussian RBFs with infinite support
+      -r=50.0		Gaussian width 50 mm
+      -Y=0.0		No regularization of vector field
+      -d=-1000		Air
+
+You may want to choose different algorithm::
+
+      -a=tps		Thin-plate splines (for global registration)
+      -a=wendland	Wendland RBFs with compact support (for 
+                         local registration)
+
+In the case of Wendland RBFs "-r" option sets the radius of support.
+
+Regularization of vector field is available for "gauss" and "wendland"
+algorithms. To regularize the output vector field increase
+"-Y" to '0.1' and up with increment '0.1'.
+
+Example
+^^^^^^^
+To create a vector field from coresponding landmarks in fixed.fcsv
+and moving.fcs using Gaussian radial basis functions,
+do the following::
+
+  plastimatch lm-warp \
+      --output-vf vf.nrrd \
+      --fixed-landmarks fixed.fcsv --moving-landmarks moving.fcsv
 
 plastimatch mabs
 ----------------

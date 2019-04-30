@@ -24,6 +24,7 @@ Step 2: Marking the version
 #. Update CHANGELOG; Bump version number in CHANGELOG
 #. Bump version number in CMakeLists
 #. Bump version number in doc/sphinx/conf.py
+#. Also check copyright year range in doc/sphinx/conf.py
 #. Bump version number in doc/sphinx/plastimatch.rst
 #. Regenerate man pages::
 
@@ -31,9 +32,10 @@ Step 2: Marking the version
 
 #. Push above changes to remote and tag version::
 
-     git commit -am "Version 1.6.5"
+     export V=1.8.0
+     git commit -am "Version ${V}"
      git push origin master
-     git tag -a "1.6.5" -m "Version 1.6.5"
+     git tag -a "${V}" -m "Version ${V}"
      git push origin --tags
 
 #. Edit changelog on gitlab site.
