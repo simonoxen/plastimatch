@@ -7,7 +7,10 @@ of plastimatch.
 
 Step 1: Preliminary testing
 ---------------------------
-#. Download tarball from gitlab.
+#. Download tarball from gitlab::
+
+     wget https://gitlab.com/plastimatch/plastimatch/-/archive/master/plastimatch-master.tar.gz
+
 #. Unpack and test tarball on linux (don't skip this step)
 #. Unpack and test tarball on windows (don't skip this step)
 #. Unpack and test tarball on mac (don't skip this step)
