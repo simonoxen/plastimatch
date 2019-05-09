@@ -52,3 +52,11 @@ binary download.
 #. Run test cases, make sure all pass
 #. Build PACKAGE
 #. Test package on fresh VM
+#. Upload to sourceforge::
+
+     sftp gregsharp@frs.sourceforge.net
+     cd /home/pfs/project/plastimatch/Windows\ Binaries
+     lcd ~/build/32/plastimatch-1.8.0
+     put Plastimatch-1.8.0-win32.msi
+     lcd ~/build/64/plastimatch-1.8.0
+     put Plastimatch-1.8.0-win64.msi
