@@ -69,9 +69,6 @@ set (MEX_DRR_SRC
 set (MHA_TO_RAW_SRC
   mha_to_raw.c
   )
-#set (MHA_TO_RTOG_DOSE_SRC
-#  mha_to_rtog_dose.cxx
-#  )
 set (OPENCL_PROBE_SRC
   opencl_probe_main.c
   opencl_probe.cxx
@@ -82,9 +79,6 @@ endif ()
 set (RAW_TO_MHA_SRC
   raw_to_mha.c
   )
-#set (RTOG_TO_MHA_SRC
-#  rtog_to_mha.cxx
-#  )
 set (VISCOUS_SRC
   viscous.cxx
   )
@@ -94,12 +88,6 @@ set (WED_SRC
 set (XVI_ARCHIVE_SRC
     xvi_archive.cxx
     )
-# set (GROUP_ADD_SRC
-#   group_add.cxx
-#   )
-# set (FILTER_SRC
-#   filter.cxx
-#   )
 set (GAMMA_THRESH_SRC
   Gamma_Thresh.cxx
   )
@@ -253,8 +241,6 @@ if (ITK_FOUND)
     plm_add_executable_v3 (xvi_archive "${XVI_ARCHIVE_SRC}" 
       "" "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
   endif ()
-  # plm_add_executable_v3 (group_add "${GROUP_ADD_SRC}" 
-  #   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 endif ()
 
 if (QT4_FOUND)
