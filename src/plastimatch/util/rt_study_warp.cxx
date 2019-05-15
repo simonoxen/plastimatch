@@ -103,6 +103,12 @@ save_ss_img (
         seg->save_ss_list (parms->output_ss_list_fn);
     }
 
+    /* Opt4D images */
+    if (parms->output_opt4d_fn != "") {
+        lprintf ("save_ss_img: save_opt4d\n");
+        seg->save_opt4d (parms->output_opt4d_fn);
+    }
+
     /* prefix images */
     if (parms->output_prefix != "") {
         lprintf ("save_ss_img: save_prefix\n");

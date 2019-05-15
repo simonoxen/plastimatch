@@ -36,6 +36,7 @@ public:
     std::string output_dose_img_fn;
     std::string output_img_fn;
     std::string output_labelmap_fn;
+    std::string output_opt4d_fn;
     std::string output_pointset_fn;
     std::string output_prefix;
     std::string output_prefix_fcsv;

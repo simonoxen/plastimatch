@@ -469,6 +469,16 @@ Segmentation::save_labelmap (const std::string& labelmap_fn)
 }
 
 void
+Segmentation::save_opt4d (const std::string &opt4d_prefix)
+{
+    std::string opt4d_vv_fn = opt4d_prefix + ".vv";
+    lprintf ("Trying to write file %s\n", opt4d_vv_fn.c_str());
+    
+    std::string opt4d_voi_fn = opt4d_prefix + ".voi";
+    lprintf ("Trying to write file %s\n", opt4d_voi_fn.c_str());
+}
+
+void
 Segmentation::save_prefix (const std::string &output_prefix,
     const std::string& extension)
 {

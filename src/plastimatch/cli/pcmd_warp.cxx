@@ -81,6 +81,9 @@ parse_fn (
         "a single structure", 1, "");
     parser->add_long_option ("", "output-colormap", 
         "create a colormap file that can be used with 3d slicer", 1, "");
+    parser->add_long_option ("", "output-opt4d", 
+        "create output files file.vv and file.voi that can be used "
+        "with opt4D; file extensions will be added automatically", 1, "");
     parser->add_long_option ("", "output-pointset", 
         "create a pointset file that can be used with 3d slicer", 1, "");
     parser->add_long_option ("", "output-prefix", 
@@ -232,6 +235,7 @@ parse_fn (
     parms->output_labelmap_fn = parser->get_string("output-labelmap").c_str();
     parms->output_colormap_fn = parser->get_string("output-colormap").c_str();
     parms->output_pointset_fn = parser->get_string("output-pointset").c_str();
+    parms->output_opt4d_fn = parser->get_string("output-opt4d").c_str();
     parms->output_prefix = parser->get_string("output-prefix").c_str();
     parms->output_prefix_fcsv 
         = parser->get_string("output-prefix-fcsv").c_str();

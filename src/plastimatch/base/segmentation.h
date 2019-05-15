@@ -51,6 +51,7 @@ public:
     void save_prefix_fcsv (const std::string& output_prefix);
     void save_ss_image (const std::string& ss_img_fn);
     void save_labelmap (const std::string& labelmap_fn);
+    void save_opt4d (const std::string& output_prefix);
     void save_prefix (const std::string& output_prefix, 
         const std::string& extension = "mha");
     void save_prefix (const char *output_prefix);
