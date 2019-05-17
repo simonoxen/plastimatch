@@ -167,6 +167,7 @@ warp_and_save_ss (
        because we might need the labelmap */
     if (parms->output_labelmap_fn != ""
         || parms->output_ss_img_fn != ""
+        || parms->output_opt4d_fn != ""
         || parms->xf_in_fn != ""
         || parms->output_prefix != "")
     {
