@@ -81,7 +81,7 @@ Bspline_state::initialize (
     Bspline_xform *bxf,
     Bspline_parms *parms)
 {
-    Regularization_parms* reg_parms = parms->reg_parms;
+    const Regularization_parms* rparms = parms->regularization_parms;
     Bspline_regularize* rst = &this->rst;
     Bspline_landmarks* blm = parms->blm;
 
@@ -96,9 +96,9 @@ Bspline_state::initialize (
 
     this->ssd.set_num_coeff (bxf->num_coeff);
 
-    if (reg_parms->lambda > 0.0f) {
+    if (rparms->curvature_penalty > 0.0f) {
         rst->fixed_stiffness = parms->fixed_stiffness;
-        rst->initialize (reg_parms, bxf);
+        rst->initialize (rparms, bxf);
     }
 
     /* Initialize MI histograms */

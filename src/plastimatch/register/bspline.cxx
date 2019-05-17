@@ -319,7 +319,7 @@ report_score (
 ) 
 {
     Bspline_score* ssd = &bst->ssd;
-    Regularization_parms* reg_parms = parms->reg_parms;
+    const Regularization_parms* rparms = parms->regularization_parms;
     Bspline_landmarks* blm = parms->blm;
 
     int i;
@@ -352,7 +352,7 @@ report_score (
     
     /* First line, iterations, score, misc stats */
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
-    if (reg_parms->lambda > 0
+    if (rparms->curvature_penalty > 0
         || blm->num_landmarks > 0
         || bst->similarity_data.size() > 1)
     {
@@ -367,7 +367,7 @@ report_score (
         hack_num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line */
-    if (reg_parms->lambda > 0
+    if (rparms->curvature_penalty > 0
         || blm->num_landmarks > 0
         || bst->similarity_data.size() > 1)
     {
@@ -385,16 +385,16 @@ report_score (
             ++it_mr, ++it_st;
         }
         if (ssd->metric_record.size() > 1
-            && (reg_parms->lambda > 0 || blm->num_landmarks > 0))
+            && (rparms->curvature_penalty > 0 || blm->num_landmarks > 0))
         {
             logfile_printf ("\n");
             logfile_printf ("         ");
         }
-        if (reg_parms->lambda > 0 || blm->num_landmarks > 0) {
+        if (rparms->curvature_penalty > 0 || blm->num_landmarks > 0) {
             /* Part 2 - regularization metric */
-            if (reg_parms->lambda > 0) {
+            if (rparms->curvature_penalty > 0) {
                 logfile_printf ("RM %9.3f ", 
-                    reg_parms->lambda * bst->ssd.rmetric);
+                    rparms->curvature_penalty * bst->ssd.rmetric);
             }
             /* Part 3 - landmark metric */
             if (blm->num_landmarks > 0) {
@@ -402,7 +402,7 @@ report_score (
                     blm->landmark_stiffness * bst->ssd.lmetric);
             }
             /* Part 4 - timing */
-            if (reg_parms->lambda > 0) {
+            if (rparms->curvature_penalty > 0) {
                 logfile_printf ("[ %9.3f | %9.3f ]", 
                     total_smetric_time, ssd->time_rmetric);
             }
@@ -418,7 +418,7 @@ bspline_score (Bspline_optimize *bod)
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
 
-    Regularization_parms* reg_parms = parms->reg_parms;
+    const Regularization_parms* rparms = parms->regularization_parms;
     Bspline_landmarks* blm = parms->blm;
 
     /* Zero out the score for this iteration */
@@ -469,18 +469,15 @@ bspline_score (Bspline_optimize *bod)
     }
 
     /* Compute regularization */
-    if (reg_parms->lambda > 0.0f) {
-        bst->rst.compute_score (&bst->ssd, reg_parms, bxf);
+    if (rparms->implementation != '\0') {
+        bst->rst.compute_score (&bst->ssd, rparms, bxf);
+        bst->ssd.total_score +=
+            rparms->curvature_penalty * bst->ssd.rmetric;
     }
 
     /* Compute landmark score/gradient to image score/gradient */
     if (blm->num_landmarks > 0) {
         bspline_landmarks_score (parms, bst, bxf);
-    }
-
-    /* Update total score with regularization and landmarks */
-    bst->ssd.total_score += reg_parms->lambda * bst->ssd.rmetric;
-    if (blm->num_landmarks > 0) {
         bst->ssd.total_score += blm->landmark_stiffness * bst->ssd.lmetric;
     }
 

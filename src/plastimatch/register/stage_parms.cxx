@@ -49,10 +49,7 @@ Stage_parms::Stage_parms ()
     alg_flavor = 0;
     threading_type = THREADING_CPU_OPENMP;
     gpuid = 0;
-    /* Similarity metric */
-    regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
-    demons_gradient_type = SYMMETRIC;
-    regularization_lambda = 0.0f;
+    /* Regularization - default constructor is ok */
     /* Image resample */
     resample_type = RESAMPLE_AUTO;
     resample_rate_fixed[0] = 4;
@@ -81,12 +78,12 @@ Stage_parms::Stage_parms ()
     rotation_scale_factor = 1;
     scaling_scale_factor = 10;
     /*OnePlusOne evolutionary optimizer*/
-    opo_initial_search_rad=1.01;
-    opo_epsilon=1e-7;
+    opo_initial_search_rad = 1.01;
+    opo_epsilon = 1e-7;
     /*frpr optimizer*/
-    frpr_step_tol=0.000001;
-    frpr_step_length=5.0;
-    frpr_max_line_its=100;
+    frpr_step_tol = 0.000001;
+    frpr_step_length = 5.0;
+    frpr_max_line_its = 100;
     /* Quaternion optimizer */
     learn_rate = 0.01 ;
     /* Mattes mutual information */
@@ -98,17 +95,18 @@ Stage_parms::Stage_parms ()
     /* MI threshold values */
     /*Setting values to zero by default. In this case minVal and 
       maxVal will be calculated from image*/
-    mi_fixed_image_minVal=0;
-    mi_fixed_image_maxVal=0;
-    mi_moving_image_minVal=0;
-    mi_moving_image_maxVal=0;
+    mi_fixed_image_minVal = 0;
+    mi_fixed_image_maxVal = 0;
+    mi_moving_image_minVal = 0;
+    mi_moving_image_maxVal = 0;
     /* ITK & GPUIT demons */
     demons_std = 1.0;
     demons_std_update_field = 1.0;
-    demons_smooth_deformation_field =true;
-    demons_smooth_update_field=false;
     demons_step_length = 2.0;
-    num_approx_terms_log_demons=2;
+    demons_smooth_update_field = false;
+    demons_smooth_deformation_field = true;
+    num_approx_terms_log_demons = 2;
+    demons_gradient_type = SYMMETRIC;
     /* GPUIT demons */
     demons_acceleration = 1.0;
     demons_homogenization = 1.0;
@@ -122,9 +120,9 @@ Stage_parms::Stage_parms ()
     grid_spac[1] = 20.;
     grid_spac[2] = 20.; 
     histoeq = false;         // by default, don't do it
-    thresh_mean_intensity=false;
-    num_matching_points=500;
-    num_hist_levels=1000;
+    thresh_mean_intensity = false;
+    num_matching_points = 500;
+    num_hist_levels = 1000;
     /* Native grid search */
     gridsearch_strategy = GRIDSEARCH_STRATEGY_AUTO;
     gridsearch_min_overlap[0] = 0.5;
@@ -165,9 +163,8 @@ Stage_parms::Stage_parms (const Stage_parms& s)
     alg_flavor = s.alg_flavor;
     threading_type = s.threading_type;
     gpuid = s.gpuid;
-    /* Similarity metric */
-    regularization_type = s.regularization_type;
-    regularization_lambda = s.regularization_lambda;
+    /* Regularization */
+    regularization_parms = s.regularization_parms;
     /* Image resample */
     resample_type = s.resample_type;
     resample_rate_fixed[0] = s.resample_rate_fixed[0];

@@ -36,7 +36,7 @@ Bspline_parms::Bspline_parms ()
 
     this->fixed_stiffness = 0;
 
-    this->reg_parms = new Regularization_parms;
+    this->regularization_parms = 0;
 
     this->blm = new Bspline_landmarks;
     this->rbf_radius = 0;
@@ -47,7 +47,6 @@ Bspline_parms::Bspline_parms ()
 Bspline_parms::~Bspline_parms ()
 {
     delete this->blm;
-    delete this->reg_parms;
 }
 
 void

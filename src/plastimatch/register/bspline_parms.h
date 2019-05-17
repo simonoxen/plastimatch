@@ -77,7 +77,7 @@ public:
     float mi_moving_image_maxVal;
 
     /* Regularization */
-    Regularization_parms* reg_parms;
+    const Regularization_parms* regularization_parms;
     Volume* fixed_stiffness;
 
     /* Landmarks */

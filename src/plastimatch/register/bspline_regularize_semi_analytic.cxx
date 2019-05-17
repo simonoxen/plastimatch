@@ -431,14 +431,12 @@ Bspline_regularize::compute_score_semi_analytic (
 
     grad_score = 0;
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
-    grad_coeff = parms->lambda / num_vox;
+    grad_coeff = parms->curvature_penalty / num_vox;
 
     Plm_timer* timer = new Plm_timer;
     timer->start ();
 
     bscore->rmetric = 0.;
-
-    //printf("---- YOUNG MODULUS %f\n", parms->lambda);
 
     for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / bxf->vox_per_rgn[2];
@@ -497,12 +495,9 @@ Bspline_regularize::compute_score_semi_analytic (
 	}
 
 	bscore->time_rmetric = timer->report ();
-	//raw_score = grad_score / num_vox;
-	grad_score *= (parms->lambda / num_vox);
-	//printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
+	grad_score *= (parms->curvature_penalty / num_vox);
 	bscore->rmetric += grad_score;
     }
-    //printf ("SCORE=%.4f\n", bscore->score);
     delete timer;
 }
 

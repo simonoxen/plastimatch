@@ -268,33 +268,40 @@ Bspline_stage::initialize ()
     }
     
     /* Regularization */
-    parms->reg_parms->lambda = stage->regularization_lambda;
-    switch (stage->regularization_type) {
+    parms->regularization_parms = &stage->regularization_parms;
+    switch (parms->regularization_parms->regularization_type) {
     case REGULARIZATION_NONE:
-        parms->reg_parms->lambda = 0.0f;
+        parms->regularization_parms->implementation = '\0';
         break;
     case REGULARIZATION_BSPLINE_ANALYTIC:
         if (stage->threading_type == THREADING_CPU_SINGLE) {
-            parms->reg_parms->implementation = 'b';
+            parms->regularization_parms->implementation = 'b';
         } else {
-            parms->reg_parms->implementation = 'c';
+            parms->regularization_parms->implementation = 'c';
         }
         break;
     case REGULARIZATION_BSPLINE_SEMI_ANALYTIC:
-        parms->reg_parms->implementation = 'd';
+        parms->regularization_parms->implementation = 'd';
         break;
     case REGULARIZATION_BSPLINE_NUMERIC:
-        parms->reg_parms->implementation = 'a';
+        parms->regularization_parms->implementation = 'a';
         break;
     default:
         print_and_exit ("Undefined regularization type in gpuit_bspline\n");
     }
-    if (stage->regularization_lambda != 0) {
-        parms->reg_parms->lambda = stage->regularization_lambda;
+    if (parms->regularization_parms->total_displacement_penalty == 0
+        && parms->regularization_parms->diffusion_penalty == 0
+        && parms->regularization_parms->curvature_penalty == 0
+        && parms->regularization_parms->linear_elastic_penalty == 0
+        && parms->regularization_parms->third_order_penalty == 0)
+    {
+        parms->regularization_parms->implementation = '\0';
     }
-    logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
-        parms->reg_parms->implementation,
-        parms->reg_parms->lambda);
+    if (parms->regularization_parms->implementation != '\0') {
+        logfile_printf ("Regularization: flavor = %c lambda = %f\n", 
+            parms->regularization_parms->implementation,
+            parms->regularization_parms->curvature_penalty);
+    }
 
     /* Mutual information histograms */
     parms->mi_hist_type = stage->mi_hist_type;

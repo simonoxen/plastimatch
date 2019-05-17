@@ -485,26 +485,30 @@ Registration_parms::set_key_value (
     else if (key == "regularization")
     {
         if (!section_stage) goto key_only_allowed_in_section_stage;
+        Regularization_type& rtype
+            = stage->regularization_parms.regularization_type;
         if (val == "none") {
-            stage->regularization_type = REGULARIZATION_NONE;
+            rtype = REGULARIZATION_NONE;
         }
         else if (val == "analytic") {
-            stage->regularization_type = REGULARIZATION_BSPLINE_ANALYTIC;
+            rtype = REGULARIZATION_BSPLINE_ANALYTIC;
         }
         else if (val == "semi_analytic") {
-            stage->regularization_type = REGULARIZATION_BSPLINE_SEMI_ANALYTIC;
+            rtype = REGULARIZATION_BSPLINE_SEMI_ANALYTIC;
         }
         else if (val == "numeric") {
-            stage->regularization_type = REGULARIZATION_BSPLINE_NUMERIC;
+            rtype = REGULARIZATION_BSPLINE_NUMERIC;
         }
         else {
             goto error_exit;
         }
     }
-    else if (key == "regularization_lambda"
+    else if (key == "curvature_penalty"
+        || key == "regularization_lambda"
         || key == "young_modulus") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%f", &stage->regularization_lambda) != 1) {
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.curvature_penalty) != 1) {
             goto error_exit;
         }
     }

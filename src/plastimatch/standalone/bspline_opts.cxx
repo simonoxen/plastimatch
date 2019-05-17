@@ -58,7 +58,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 {
     int i, rc;
     Bspline_parms* parms = &options->parms;
-    Regularization_parms* reg_parms = parms->reg_parms;
+    Regularization_parms* reg_parms = parms->regularization_parms;
     Bspline_landmarks* blm = parms->blm;
 
     for (i = 1; i < argc; i++) {
@@ -145,7 +145,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%g", &reg_parms->lambda);
+	    rc = sscanf (argv[i], "%g", &reg_parms->curvature_penalty);
 	    if (rc != 1) {
 		print_usage ();
 	    }
@@ -320,7 +320,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    rc = sscanf (argv[i], "%g", &reg_parms->lambda);
+	    rc = sscanf (argv[i], "%g", &reg_parms->curvature_penalty);
 	    if (rc != 1) {
 		print_usage ();
 	    }

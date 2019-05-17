@@ -5,22 +5,11 @@
 #define _bspline_regularize_h_
 
 #include "plmregister_config.h"
+#include "regularization_parms.h"
 #include "volume.h"
 
 class Bspline_score;
 class Bspline_xform;
-
-class Regularization_parms
-{
-public:
-    char implementation;    /* Implementation: a, b, c, etc */
-    float lambda;           /* Smoothness weighting factor  */
-public:
-    Regularization_parms () {
-        this->implementation = '\0';
-        this->lambda = 0.0f;
-    }
-};
 
 class PLMREGISTER_API Bspline_regularize {
 public:
@@ -30,7 +19,7 @@ public:
     ~Bspline_regularize ();
 public:
     /* all methods */
-    Regularization_parms *reg_parms;
+    const Regularization_parms *reg_parms;
     Bspline_xform *bxf;
 
     Volume* fixed_stiffness;
@@ -55,7 +44,7 @@ public:
     double* cond;
 public:
     void initialize (
-        Regularization_parms* reg_parms,
+        const Regularization_parms* reg_parms,
         Bspline_xform* bxf
     );
     void compute_score (

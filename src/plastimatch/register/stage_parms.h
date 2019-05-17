@@ -15,6 +15,7 @@
 #include "plm_image_type.h"
 #include "plm_return_code.h"
 #include "process_parms.h"
+#include "regularization_parms.h"
 #include "similarity_metric_type.h"
 #include "threading.h"
 
@@ -71,13 +72,6 @@ enum Resample_type {
     RESAMPLE_DIM                   /* res_dim */
 };
 
-enum Regularization_type {
-    REGULARIZATION_NONE, 
-    REGULARIZATION_BSPLINE_ANALYTIC, 
-    REGULARIZATION_BSPLINE_SEMI_ANALYTIC, 
-    REGULARIZATION_BSPLINE_NUMERIC
-};
-
 enum Demons_gradient_type {
     SYMMETRIC,
     FIXED_IMAGE,
@@ -125,8 +119,7 @@ public:
     Threading threading_type;
     int gpuid;               /* Sets GPU to use for multi-gpu machines */
     /* Regularization */
-    Regularization_type regularization_type;
-    float regularization_lambda;
+    Regularization_parms regularization_parms;
     /* Image resampling */
     /* The units of fixed_resampling_rate are: voxels for res_vox, 
        mm for res_mm, pct for res_pct, voxels for res_dim */
@@ -175,7 +168,8 @@ public:
     float demons_std;
     float demons_std_update_field;
     float demons_step_length;
-    bool demons_smooth_update_field, demons_smooth_deformation_field;
+    bool demons_smooth_update_field;
+    bool demons_smooth_deformation_field;
     unsigned int num_approx_terms_log_demons;
     bool histoeq;         // histogram matching flag
     bool thresh_mean_intensity;

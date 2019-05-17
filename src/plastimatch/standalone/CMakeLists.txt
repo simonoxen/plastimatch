@@ -22,10 +22,6 @@ set (BRAGG_CURVE_SRC
 set (SOBP_SRC
   sobp_main.cxx 
   )
-set (BSPLINE_SRC
-  bspline_main.cxx 
-  bspline_opts.cxx
-  )
 set (CHECK_GRAD_SRC
   check_grad.cxx
   )
@@ -263,8 +259,6 @@ if (QT4_FOUND)
     "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif()
 
-plm_add_executable_v3 (bspline "${BSPLINE_SRC}" 
-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 plm_add_executable_v3 (check_grad "${CHECK_GRAD_SRC}" 
   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
 plm_add_executable_v3 (demons "${DEMONS_SRC}" 

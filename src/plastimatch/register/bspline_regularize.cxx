@@ -64,7 +64,7 @@ Bspline_regularize::~Bspline_regularize ()
 
 void
 Bspline_regularize::initialize (
-    Regularization_parms *reg_parms,
+    const Regularization_parms *reg_parms,
     Bspline_xform* bxf
 )
 {

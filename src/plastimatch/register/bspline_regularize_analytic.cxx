@@ -359,9 +359,9 @@ region_smoothness_omp (
         /* ------------------------------------------------ */
 
         /* dS/dp = 2Vp operation */
-        sets[3*j+0] += 2 * reg_parms->lambda * X[j];
-        sets[3*j+1] += 2 * reg_parms->lambda * Y[j];
-        sets[3*j+2] += 2 * reg_parms->lambda * Z[j];
+        sets[3*j+0] += 2 * reg_parms->curvature_penalty * X[j];
+        sets[3*j+1] += 2 * reg_parms->curvature_penalty * Y[j];
+        sets[3*j+2] += 2 * reg_parms->curvature_penalty * Z[j];
     }
 
     return S;
@@ -396,9 +396,9 @@ region_smoothness (
         /* ------------------------------------------------ */
 
         /* dS/dp = 2Vp operation */
-        bspline_score->total_grad[3*knots[j]+0] += 2 * reg_parms->lambda * X[j];
-        bspline_score->total_grad[3*knots[j]+1] += 2 * reg_parms->lambda * Y[j];
-        bspline_score->total_grad[3*knots[j]+2] += 2 * reg_parms->lambda * Z[j];
+        bspline_score->total_grad[3*knots[j]+0] += 2 * reg_parms->curvature_penalty * X[j];
+        bspline_score->total_grad[3*knots[j]+1] += 2 * reg_parms->curvature_penalty * Y[j];
+        bspline_score->total_grad[3*knots[j]+2] += 2 * reg_parms->curvature_penalty * Z[j];
     }
 
     bspline_score->rmetric += S;
