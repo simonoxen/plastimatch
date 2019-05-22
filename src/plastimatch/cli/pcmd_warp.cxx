@@ -434,14 +434,14 @@ do_command_warp (int argc, char* argv[])
         }
     }
 
-    /* What is the input file type? */
-    file_type = plm_file_format_deduce (parms.input_fn.c_str());
-
     /* Pointsets are a special case */
-    if (file_type == PLM_FILE_FMT_POINTSET) {
+    if (parms.output_pointset_fn != "") {
         warp_pointset_main (&parms);
         return;
     }
+
+    /* What is the input file type? */
+    file_type = plm_file_format_deduce (parms.input_fn.c_str());
 
     /* Process warp */
     rt_study_warp (&rt_study, file_type, &parms);

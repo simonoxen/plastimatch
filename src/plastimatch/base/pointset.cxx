@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
+#include <fstream>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -84,26 +86,23 @@ template<class T>
 void
 Pointset<T>::load_txt (const char *fn)
 {
-    FILE *fp;
-    char s[1024];
-
-    fp = fopen (fn, "r");
-    if (!fp) {
-	return;
+    std::ifstream ifs (fn);
+    if (!ifs.is_open()) {
+        print_and_exit ("Error opening landmark file: %s\n", fn);
     }
 
     /* Parse as txt file */
-    while (!feof(fp)) {
+    std::string line;
+    while (getline (ifs, line)) {
 	float lm[3];
 	int rc;
+        line = string_trim (line);
+        if (line == "") continue;
+        if (line[0]=='#') continue;
 
-        fgets (s, 1024, fp);
-	if (feof(fp)) break;
-        if (s[0]=='#') continue;
-
-        rc = sscanf (s, "%f , %f , %f\n", &lm[0], &lm[1], &lm[2]);
+        rc = sscanf (line.c_str(), "%f , %f , %f\n", &lm[0], &lm[1], &lm[2]);
 	if (rc != 3) {
-	    rc = sscanf (s, "%f %f %f\n", &lm[0], &lm[1], &lm[2]);
+	    rc = sscanf (line.c_str(), "%f %f %f\n", &lm[0], &lm[1], &lm[2]);
 	}
 	if (rc != 3) {
 	    print_and_exit ("Error parsing landmark file: %s\n", fn);
@@ -117,7 +116,6 @@ Pointset<T>::load_txt (const char *fn)
 	lp.p[2] = lm[2];
 	point_list.push_back (lp);
     }
-    fclose (fp);
 }
 
 template<class T>
