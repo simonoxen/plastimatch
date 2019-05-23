@@ -503,12 +503,40 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "total_displacement_penalty") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.total_displacement_penalty) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "diffusion_penalty") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.diffusion_penalty) != 1) {
+            goto error_exit;
+        }
+    }
     else if (key == "curvature_penalty"
         || key == "regularization_lambda"
         || key == "young_modulus") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f",
                 &stage->regularization_parms.curvature_penalty) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "linear_elastic_penalty") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.linear_elastic_penalty) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "third_order_penalty") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.third_order_penalty) != 1) {
             goto error_exit;
         }
     }
