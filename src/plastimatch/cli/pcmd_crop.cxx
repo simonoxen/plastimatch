@@ -37,6 +37,15 @@ crop_main (Crop_parms* parms)
     plm_image.load_native (parms->img_in_fn);
 
     switch (plm_image.m_type) {
+    case PLM_IMG_TYPE_ITK_CHAR:
+        if (parms->have_coordinates) {
+            plm_image.m_itk_char 
+                = itk_crop_by_coord (plm_image.m_itk_char, parms->crop_coords);
+        } else {
+            plm_image.m_itk_char 
+                = itk_crop_by_index (plm_image.m_itk_char, parms->crop_vox);
+        }
+	break;
     case PLM_IMG_TYPE_ITK_UCHAR:
         if (parms->have_coordinates) {
             plm_image.m_itk_uchar 
@@ -55,6 +64,24 @@ crop_main (Crop_parms* parms)
 		= itk_crop_by_index (plm_image.m_itk_short, parms->crop_vox);
         }
 	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+        if (parms->have_coordinates) {
+            plm_image.m_itk_ushort 
+		= itk_crop_by_coord (plm_image.m_itk_ushort, parms->crop_coords);
+        } else {
+            plm_image.m_itk_ushort 
+		= itk_crop_by_index (plm_image.m_itk_ushort, parms->crop_vox);
+        }
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+        if (parms->have_coordinates) {
+            plm_image.m_itk_int32 
+		= itk_crop_by_coord (plm_image.m_itk_int32, parms->crop_coords);
+        } else {
+            plm_image.m_itk_int32 
+		= itk_crop_by_index (plm_image.m_itk_int32, parms->crop_vox);
+        }
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
         if (parms->have_coordinates) {
             plm_image.m_itk_uint32 
@@ -71,6 +98,15 @@ crop_main (Crop_parms* parms)
         } else {
             plm_image.m_itk_float 
 		= itk_crop_by_index (plm_image.m_itk_float, parms->crop_vox);
+        }
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+        if (parms->have_coordinates) {
+            plm_image.m_itk_double 
+		= itk_crop_by_coord (plm_image.m_itk_double, parms->crop_coords);
+        } else {
+            plm_image.m_itk_double 
+		= itk_crop_by_index (plm_image.m_itk_double, parms->crop_vox);
         }
 	break;
     default:
