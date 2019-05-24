@@ -526,10 +526,24 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
-    else if (key == "linear_elastic_penalty") {
+    else if (key == "lame_coefficient_1") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f",
-                &stage->regularization_parms.linear_elastic_penalty) != 1) {
+                &stage->regularization_parms.lame_coefficient_1) != 1) {
+            goto error_exit;
+        }
+    }
+    else if (key == "lame_coefficient_2") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.lame_coefficient_1) != 2) {
+            goto error_exit;
+        }
+    }
+    else if (key == "linear_elastic_multiplier") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.linear_elastic_multiplier) != 1) {
             goto error_exit;
         }
     }

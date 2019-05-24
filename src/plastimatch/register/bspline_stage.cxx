@@ -292,7 +292,9 @@ Bspline_stage::initialize ()
     if (parms->regularization_parms->total_displacement_penalty == 0
         && parms->regularization_parms->diffusion_penalty == 0
         && parms->regularization_parms->curvature_penalty == 0
-        && parms->regularization_parms->linear_elastic_penalty == 0
+        && (parms->regularization_parms->linear_elastic_multiplier == 0
+            || (parms->regularization_parms->lame_coefficient_1 == 0
+                && parms->regularization_parms->lame_coefficient_2 == 0))
         && parms->regularization_parms->third_order_penalty == 0)
     {
         parms->regularization_parms->implementation = '\0';

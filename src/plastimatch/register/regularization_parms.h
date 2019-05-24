@@ -21,7 +21,9 @@ public:
     float total_displacement_penalty;
     float diffusion_penalty;
     float curvature_penalty;
-    float linear_elastic_penalty;
+    float lame_coefficient_1;
+    float lame_coefficient_2;
+    float linear_elastic_multiplier;
     float third_order_penalty;
     
 public:
@@ -31,7 +33,9 @@ public:
         this->total_displacement_penalty = 0.f;
         this->diffusion_penalty = 0.f;
         this->curvature_penalty = 0.f;
-        this->linear_elastic_penalty = 0.f;
+        this->lame_coefficient_1 = 0.f;
+        this->lame_coefficient_2 = 0.f;
+        this->linear_elastic_multiplier = 1.f;
         this->third_order_penalty = 0.f;
     }
 };
