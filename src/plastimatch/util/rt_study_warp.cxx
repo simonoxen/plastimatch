@@ -305,7 +305,9 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     else if (rt_study->have_segmentation() &&
         /* use the spacing of the structure set */
         rt_study->get_segmentation()->have_structure_set() && 
-        rt_study->get_segmentation()->get_structure_set()->have_geometry) {
+        rt_study->get_segmentation()->get_structure_set()->have_geometry)
+    {
+        lprintf ("Setting PIH from structure set spacing\n");
         pih.set_from_gpuit (
             rt_study->get_segmentation()->get_structure_set()->m_dim, 
             rt_study->get_segmentation()->get_structure_set()->m_offset, 
@@ -320,12 +322,14 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     {
         /* we have structure set, but without geometry.  use 
            heuristics to find a good geometry for rasterization */
+        lprintf ("Setting PIH from rasterization heuristics");
         rt_study->get_segmentation()->find_rasterization_geometry (&pih);
     } else {
         /* use some generic default parameters */
         plm_long dim[3] = { 500, 500, 500 };
         float origin[3] = { -249.5, -249.5, -249.5 };
         float spacing[3] = { 1., 1., 1. };
+        lprintf ("Setting PIH from generic defaults");
         pih.set_from_gpuit (dim, origin, spacing, 0);
     }
 
