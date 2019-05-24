@@ -13,4 +13,17 @@
         }                                         \
     } while (0)
 
+#define CLAMP2(v1, v2, min_value, max_value)      \
+    do {                                          \
+        if (v1 < min_value) {                     \
+            v1 = min_value;                       \
+        }                                         \
+        if (v2 > max_value) {                     \
+            v2 = max_value;                       \
+        }                                         \
+        if (v2 < v1) {                            \
+            v2 = v1;                              \
+        }                                         \
+    } while (0)
+
 #endif

@@ -9,6 +9,11 @@
 template <class T>
 PLMUTIL_API
 T
-itk_crop (T& image, const int *new_size);
+itk_crop_by_index (T& image, const int *new_size);
+
+template <class T>
+PLMUTIL_API
+T
+itk_crop_by_coord (T& image, const float *new_size);
 
 #endif

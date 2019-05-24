@@ -266,6 +266,22 @@ void Plm_clp::assign_float_3 (float *arr, const string_type& name)
     }
 }
 
+void Plm_clp::assign_float_6 (float *arr, const string_type& name)
+{
+    float rc;
+    rc = sscanf (get_string(name).c_str(), 
+        "%g %g %g %g %g %g", 
+        &arr[0], &arr[1], &arr[2], 
+        &arr[3], &arr[4], &arr[5]);
+    if (rc != 6) {
+        string_type error_string = 
+            "Error. Option "
+            + get_option_string (name) 
+            + " takes six float arguments.";
+        throw dlib::error (error_string);
+    }
+}
+
 void Plm_clp::assign_float_9 (float *arr, const string_type& name)
 {
     float rc;

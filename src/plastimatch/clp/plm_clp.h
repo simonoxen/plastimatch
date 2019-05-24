@@ -168,6 +168,7 @@ class Plm_clp
     void assign_float_13 (float *arr, const string_type& name);
     void assign_float_2 (float *arr, const string_type& name);
     void assign_float_3 (float *arr, const string_type& name);
+    void assign_float_6 (float *arr, const string_type& name);
     void assign_float_9 (float *arr, const string_type& name);
     void assign_float_vec (
         std::vector<float>* float_vec, 

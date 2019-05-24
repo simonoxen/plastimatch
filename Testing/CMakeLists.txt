@@ -2301,6 +2301,49 @@ set_tests_properties (plm-convert-dose-scale-check PROPERTIES
   DEPENDS plm-convert-dose-scale-stats)
 
 ## -------------------------------------------------------------------------
+## plm-crop-a  crop, with voxel indices
+## plm-crop-b  crop, with world coordinates
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-crop-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "crop;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-crop-a.mha;--voxels;5 15 3 18 7 9"
+  )
+plm_add_test (
+  "plm-crop-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "header;plm-crop-a.mha"
+  )
+plmtest_check_string ("plm-crop-a-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-crop-a-stats.stdout.txt"
+  "^Size = (.*)$"
+  "11 16 3"
+  )
+
+plm_add_test (
+  "plm-crop-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "crop;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-crop-b.mha;--coordinates;-15 10 3 18 -12 -7"
+  )
+plm_add_test (
+  "plm-crop-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "header;plm-crop-b.mha"
+  )
+plmtest_check_string ("plm-crop-b-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-crop-b-stats.stdout.txt"
+  "^Size = (.*)$"
+  "20 13 5"
+  )
+
+set_tests_properties (plm-crop-a PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-crop-a-stats PROPERTIES DEPENDS plm-crop-a)
+set_tests_properties (plm-crop-a-check-1 PROPERTIES DEPENDS plm-crop-a-stats)
+set_tests_properties (plm-crop-b PROPERTIES DEPENDS gauss-1)
+set_tests_properties (plm-crop-b-stats PROPERTIES DEPENDS plm-crop-b)
+set_tests_properties (plm-crop-b-check-1 PROPERTIES DEPENDS plm-crop-b-stats)
+
+## -------------------------------------------------------------------------
 ## plm-dice-a  dice, centered and off-centered rect
 ## plm-dice-b  dice, centered rects of different resolution
 ## plm-dice-c  HD, centered and off-centered rect

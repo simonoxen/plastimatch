@@ -14,14 +14,18 @@ class Crop_parms {
 public:
     std::string img_in_fn;
     std::string img_out_fn;
+    bool have_coordinates;
     int crop_vox[6];
+    float crop_coords[6];
 public:
     Crop_parms () {
         img_in_fn = "";
         img_out_fn = "";
         for (int i = 0; i < 6; i++) {
             crop_vox[i] = 0;
+            crop_coords[i] = 0;
         }
+        have_coordinates = false;
     }
 };
 
@@ -34,20 +38,40 @@ crop_main (Crop_parms* parms)
 
     switch (plm_image.m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	plm_image.m_itk_uchar 
-	    = itk_crop (plm_image.m_itk_uchar, parms->crop_vox);
+        if (parms->have_coordinates) {
+            plm_image.m_itk_uchar 
+                = itk_crop_by_coord (plm_image.m_itk_uchar, parms->crop_coords);
+        } else {
+            plm_image.m_itk_uchar 
+                = itk_crop_by_index (plm_image.m_itk_uchar, parms->crop_vox);
+        }
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	plm_image.m_itk_short 
-		= itk_crop (plm_image.m_itk_short, parms->crop_vox);
+        if (parms->have_coordinates) {
+            plm_image.m_itk_short 
+		= itk_crop_by_coord (plm_image.m_itk_short, parms->crop_coords);
+        } else {
+            plm_image.m_itk_short 
+		= itk_crop_by_index (plm_image.m_itk_short, parms->crop_vox);
+        }
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	plm_image.m_itk_uint32 
-		= itk_crop (plm_image.m_itk_uint32, parms->crop_vox);
+        if (parms->have_coordinates) {
+            plm_image.m_itk_uint32 
+		= itk_crop_by_coord (plm_image.m_itk_uint32, parms->crop_coords);
+        } else {
+            plm_image.m_itk_uint32 
+		= itk_crop_by_index (plm_image.m_itk_uint32, parms->crop_vox);
+        }
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	plm_image.m_itk_float 
-		= itk_crop (plm_image.m_itk_float, parms->crop_vox);
+        if (parms->have_coordinates) {
+            plm_image.m_itk_float 
+		= itk_crop_by_coord (plm_image.m_itk_float, parms->crop_coords);
+        } else {
+            plm_image.m_itk_float 
+		= itk_crop_by_index (plm_image.m_itk_float, parms->crop_vox);
+        }
 	break;
     default:
 	print_and_exit ("Unhandled image type in resample_main()\n");
@@ -86,7 +110,14 @@ parse_fn (
 
     /* Adjustment string */
     parser->add_long_option ("", "voxels", 
-        "a string that specifies the voxels in the six corners "
+        "a string that specifies the voxel indices of the six corners "
+        "of the region to be cropped, in the form "
+        "\"x1 x2 y1 y2 z1 z2\"", 
+        1, "");
+
+    /* Adjustment string */
+    parser->add_long_option ("", "coordinates", 
+        "a string that specifies the coordinates of the six corners "
         "of the region to be cropped, in the form "
         "\"x1 x2 y1 y2 z1 z2\"", 
         1, "");
@@ -110,9 +141,9 @@ parse_fn (
     }
 
     /* Check that an output file was given */
-    if (!parser->option ("voxels")) {
-	throw (dlib::error ("Error.  Please specify the voxels to be "
-		"cropped using the --voxels option"));
+    if (!parser->option ("voxels") && !parser->option("coordinates")) {
+	throw (dlib::error ("Error.  Please specify the crop region "
+		"using the --voxels or --coordinates option"));
     }
 
     /* Input files */
@@ -122,7 +153,15 @@ parse_fn (
     parms->img_out_fn = parser->get_string("output").c_str();
 
     /* Voxels option */
-    parser->assign_int_6 (parms->crop_vox, "voxels");
+    if (parser->option("voxels")) {
+        parser->assign_int_6 (parms->crop_vox, "voxels");
+    }
+    
+    /* Coordinates option */
+    if (parser->option("coordinates")) {
+        parms->have_coordinates = true;
+        parser->assign_float_6 (parms->crop_coords, "coordinates");
+    }
 }
 
 void
