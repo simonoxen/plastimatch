@@ -31,18 +31,24 @@ do_bbox (const Bbox_parms *parms)
     Plm_image pli (parms->input_fn);
     UCharImageType::Pointer img = pli.itk_uchar();
 
-    float bbox[6];
-    itk_bbox (img, bbox);
+    float bbox_coordinates[6];
+    int bbox_indices[6];
+    itk_bbox (img, bbox_coordinates, bbox_indices);
 
-    bbox[0] -= parms->margin;
-    bbox[1] += parms->margin;
-    bbox[2] -= parms->margin;
-    bbox[3] += parms->margin;
-    bbox[4] -= parms->margin;
-    bbox[5] += parms->margin;
+    bbox_coordinates[0] -= parms->margin;
+    bbox_coordinates[1] += parms->margin;
+    bbox_coordinates[2] -= parms->margin;
+    bbox_coordinates[3] += parms->margin;
+    bbox_coordinates[4] -= parms->margin;
+    bbox_coordinates[5] += parms->margin;
     
-    printf ("%f %f %f %f %f %f\n",
-        bbox[0], bbox[1], bbox[2], bbox[3], bbox[4], bbox[5]);
+    printf ("coordinates: %f %f %f %f %f %f\n",
+        bbox_coordinates[0], bbox_coordinates[1], bbox_coordinates[2],
+        bbox_coordinates[3], bbox_coordinates[4], bbox_coordinates[5]);
+
+    printf ("indices (no margin): %d %d %d %d %d %d\n",
+        bbox_indices[0], bbox_indices[1], bbox_indices[2],
+        bbox_indices[3], bbox_indices[4], bbox_indices[5]);
 
     if (parms->output_mask_fn != "") {
         UCharImageType::Pointer img_out = itk_image_clone_empty (img);
@@ -52,13 +58,16 @@ do_bbox (const Bbox_parms *parms)
             FloatPoint3DType point;
             UCharImageType::RegionType::IndexType idx = it.GetIndex();
             img_out->TransformIndexToPhysicalPoint (idx, point);
-            if (point[2] < bbox[2*2+0] || point[2] > bbox[2*2+1])
+            if (point[2] < bbox_coordinates[2*2+0]
+                || point[2] > bbox_coordinates[2*2+1])
             {
                 continue;
             }
             if ((parms->z_only)
-                || (point[0] > bbox[0*2+0] && point[0] < bbox[0*2+1]
-                    && point[1] > bbox[1*2+0] && point[1] < bbox[1*2+1]))
+                || (point[0] > bbox_coordinates[0*2+0]
+                    && point[0] < bbox_coordinates[0*2+1]
+                    && point[1] > bbox_coordinates[1*2+0]
+                    && point[1] < bbox_coordinates[1*2+1]))
             {
                 it.Set (1);
             }
@@ -88,7 +97,7 @@ parse_fn (
 
     /* Basic options */
     parser->add_long_option ("", "output",
-	"Location of output image", 1, "");
+	"Create an output image with a bounding box mask", 1, "");
     parser->add_long_option ("", "margin",
 	"Expand bounding box by margin (mm, may be negative)", 1, "0");
     parser->add_long_option ("", "z-only",

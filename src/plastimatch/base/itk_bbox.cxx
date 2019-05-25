@@ -10,12 +10,15 @@
 #include "itk_image.h"
 
 void
-itk_bbox (UCharImageType::Pointer img, float *bbox)
+itk_bbox (UCharImageType::Pointer img, float *bbox_coordinates,
+    int *bbox_indices)
 {
     for (int d = 0; d < 3; d++)
     {
-        bbox[2*d+0] =  FLT_MAX;
-        bbox[2*d+1] = -FLT_MAX;
+        bbox_coordinates[2*d+0] =  FLT_MAX;
+        bbox_coordinates[2*d+1] = -FLT_MAX;
+        bbox_indices[2*d+0] =  INT_MAX;
+        bbox_indices[2*d+1] = -INT_MAX;
     }
     
     UCharImageType::RegionType region = img->GetLargestPossibleRegion();
@@ -27,7 +30,18 @@ itk_bbox (UCharImageType::Pointer img, float *bbox)
         if (!c) {
             continue;
         }
-        /* If voxel is non-zero, loop through the eight corners of the 
+        /* If voxel is non-zero */
+        /* Update bbox indices */
+        itk::Index<3> idx = it.GetIndex();
+        for (int d = 0; d < 3; d++) {
+            if (idx[d] < bbox_indices[2*d+0]) {
+                bbox_indices[2*d+0] = idx[d];
+            }
+            if (idx[d] > bbox_indices[2*d+1]) {
+                bbox_indices[2*d+1] = idx[d];
+            }
+        }
+        /* loop through the eight corners of the 
            voxels, find their position, and set bounding box to contain */
         itk::ContinuousIndex<float,3> cidx = it.GetIndex();
         for (int i = 0; i < 8; i++) {
@@ -38,11 +52,11 @@ itk_bbox (UCharImageType::Pointer img, float *bbox)
             FloatPoint3DType point;
             img->TransformContinuousIndexToPhysicalPoint (cidx_corner, point);
             for (int d = 0; d < 3; d++) {
-                if (point[d] < bbox[2*d+0]) {
-                    bbox[2*d+0] = point[d];
+                if (point[d] < bbox_coordinates[2*d+0]) {
+                    bbox_coordinates[2*d+0] = point[d];
                 }
-                if (point[d] > bbox[2*d+1]) {
-                   bbox[2*d+1] = point[d];
+                if (point[d] > bbox_coordinates[2*d+1]) {
+                   bbox_coordinates[2*d+1] = point[d];
                 }
             }
         }

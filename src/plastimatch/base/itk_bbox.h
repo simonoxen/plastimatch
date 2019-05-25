@@ -8,6 +8,7 @@
 #include "itk_image_type.h"
 
 PLMBASE_API void
-itk_bbox (const UCharImageType::Pointer img, float *bbox);
+itk_bbox (UCharImageType::Pointer img, float *bbox_coordinates,
+    int *bbox_indices);
 
 #endif
