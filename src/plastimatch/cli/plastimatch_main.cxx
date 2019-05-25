@@ -26,6 +26,7 @@
 #include "pcmd_fdk.h"
 #include "pcmd_gamma.h"
 #include "pcmd_header.h"
+#include "pcmd_intersect.h"
 #include "pcmd_jacobian.h"
 #include "pcmd_lm_warp.h"
 #include "pcmd_mabs.h"
@@ -93,31 +94,32 @@ print_usage (int return_code)
         "  gamma       "
         "  header      "
         "\n"
+        "  intersect   "
         "  jacobian    "
         "  lm-warp     "
         "  mabs        "
         "  mask        "
-        "  maximum     "
         "\n"
+        "  maximum     "
         "  ml-convert  "
         "  multiply    "
         "  probe       "
         "  register    "
-        "  resample    "
         "\n"
+        "  resample    "
         "  scale       "
         "  segment     "
         "  sift        "
         "  stats       "
-        "  synth       "
         "\n"
+        "  synth       "
         "  synth-vf    "
         "  threshold   "
         "  thumbnail   "
         "  union       "
+        "\n"
         "  warp        "
 //        "  xio-dvh     "
-        "\n"
         "  xf-convert  "
         "  xf-invert   "
         "\n"
@@ -213,6 +215,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "header")) {
         do_command_header (argc, argv);
+    }
+    else if (!strcmp (command, "intersect")) {
+        do_command_intersect (argc, argv);
     }
     else if (!strcmp (command, "jacobian")) {
         do_command_jacobian (argc, argv);

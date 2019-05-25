@@ -4263,8 +4263,26 @@ set_tests_properties (plm-thumbnail-c-check PROPERTIES
   DEPENDS plm-thumbnail-c-stats)
 
 ## -------------------------------------------------------------------------
+## plm-intersect
 ## plm-union
 ## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-intersect"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "intersect;--output;${PLM_BUILD_TESTING_DIR}/plm-intersect.mha;${PLM_BUILD_TESTING_DIR}/rect-10-roi-1.mha;${PLM_BUILD_TESTING_DIR}/rect-11-roi.mha"
+  )
+plm_add_test (
+  "plm-intersect-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-intersect.mha"
+  )
+plmtest_check_interval ("plm-intersect-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-intersect-stats.stdout.txt"
+  "NONZERO *([-0-9.]*)"
+  "729"
+  "729"
+  )
+
 plm_add_test (
   "plm-union"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -4281,6 +4299,12 @@ plmtest_check_interval ("plm-union-check"
   "1271"
   "1271"
   )
+
+set_tests_properties (plm-intersect 
+  PROPERTIES DEPENDS "rect-10-roi-1;rect-11-roi")
+set_tests_properties (plm-intersect-stats PROPERTIES DEPENDS plm-intersect)
+set_tests_properties (plm-intersect-check PROPERTIES DEPENDS plm-intersect-stats)
+
 set_tests_properties (plm-union 
   PROPERTIES DEPENDS "rect-10-roi-1;rect-11-roi")
 set_tests_properties (plm-union-stats PROPERTIES DEPENDS plm-union)

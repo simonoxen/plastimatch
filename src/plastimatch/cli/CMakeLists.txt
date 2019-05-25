@@ -39,6 +39,7 @@ set (PLASTIMATCH_SRC
   pcmd_filter.cxx
   pcmd_gamma.cxx
   pcmd_header.cxx
+  pcmd_intersect.cxx
   pcmd_jacobian.cxx
   pcmd_lm_warp.cxx
   pcmd_mabs.cxx 
