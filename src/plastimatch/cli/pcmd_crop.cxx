@@ -109,8 +109,17 @@ crop_main (Crop_parms* parms)
 		= itk_crop_by_index (plm_image.m_itk_double, parms->crop_vox);
         }
 	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+        if (parms->have_coordinates) {
+            plm_image.m_itk_uchar_vec
+		= itk_crop_by_coord (plm_image.m_itk_uchar_vec, parms->crop_coords);
+        } else {
+            plm_image.m_itk_uchar_vec
+		= itk_crop_by_index (plm_image.m_itk_uchar_vec, parms->crop_vox);
+        }
+	break;
     default:
-	print_and_exit ("Unhandled image type in resample_main()\n");
+	print_and_exit ("Unhandled image type in crop_main()\n");
 	break;
     }
 

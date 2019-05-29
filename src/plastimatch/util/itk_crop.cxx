@@ -127,6 +127,7 @@ template PLMUTIL_API Int32ImageType::Pointer itk_crop_by_index (Int32ImageType::
 template PLMUTIL_API UInt32ImageType::Pointer itk_crop_by_index (UInt32ImageType::Pointer&, const int*);
 template PLMUTIL_API FloatImageType::Pointer itk_crop_by_index (FloatImageType::Pointer&, const int*);
 template PLMUTIL_API DoubleImageType::Pointer itk_crop_by_index (DoubleImageType::Pointer&, const int*);
+template PLMUTIL_API UCharVecImageType::Pointer itk_crop_by_index (UCharVecImageType::Pointer&, const int*);
 
 template PLMUTIL_API CharImageType::Pointer itk_crop_by_coord (CharImageType::Pointer&, const float*);
 template PLMUTIL_API UCharImageType::Pointer itk_crop_by_coord (UCharImageType::Pointer&, const float*);
@@ -136,3 +137,4 @@ template PLMUTIL_API Int32ImageType::Pointer itk_crop_by_coord (Int32ImageType::
 template PLMUTIL_API UInt32ImageType::Pointer itk_crop_by_coord (UInt32ImageType::Pointer&, const float*);
 template PLMUTIL_API FloatImageType::Pointer itk_crop_by_coord (FloatImageType::Pointer&, const float*);
 template PLMUTIL_API DoubleImageType::Pointer itk_crop_by_coord (DoubleImageType::Pointer&, const float*);
+template PLMUTIL_API UCharVecImageType::Pointer itk_crop_by_coord (UCharVecImageType::Pointer&, const float*);
