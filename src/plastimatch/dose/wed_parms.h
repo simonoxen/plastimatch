@@ -8,15 +8,15 @@
 #include <string>
 #include "plm_int.h"
 
-class PLMDOSE_API Wed_Parms {
+class PLMDOSE_API Wed_parms {
 public:
-    Wed_Parms ();
-    ~Wed_Parms ();
+    Wed_parms ();
+    ~Wed_parms ();
 
     bool parse_args (int argc, char** argv);
+    void parse_config (const char* config_fn);
 
 private:
-    void parse_config (const char* config_fn);
     int set_key_val (const char* key, const char* val, int section);
     int get_group_lines (char* groupfile);
 

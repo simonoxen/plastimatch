@@ -4972,22 +4972,22 @@ set_tests_properties (proton-dose-8d-check
 ## -------------------------------------------------------------------------
 plm_add_test (
   "wed-a"
-  ${PLM_PLASTIMATCH_PATH}/wed
-  "${PLM_BUILD_TESTING_DIR}/wed-a.txt"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch 
+  "wed;--command-file;${PLM_BUILD_TESTING_DIR}/wed-a.txt"
   )
 set_tests_properties (wed-a PROPERTIES DEPENDS lung-1)
 
 plm_add_test (
   "wed-b"
-  ${PLM_PLASTIMATCH_PATH}/wed
-  "${PLM_BUILD_TESTING_DIR}/wed-b.txt"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch 
+  "wed;--command-file;${PLM_BUILD_TESTING_DIR}/wed-b.txt"
   )
 set_tests_properties (wed-b PROPERTIES DEPENDS "lung-1;wed-a")
 
 plm_add_test (
   "wed-c"
-  ${PLM_PLASTIMATCH_PATH}/wed
-  "${PLM_BUILD_TESTING_DIR}/wed-c.txt"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch 
+  "wed;--command-file;${PLM_BUILD_TESTING_DIR}/wed-c.txt"
   )
 set_tests_properties (wed-c PROPERTIES DEPENDS "lung-1;wed-a")
 

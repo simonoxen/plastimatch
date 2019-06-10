@@ -48,6 +48,7 @@
 #include "pcmd_thumbnail.h"
 #include "pcmd_union.h"
 #include "pcmd_warp.h"
+#include "pcmd_wed.h"
 #include "pcmd_xf_convert.h"
 #include "pcmd_xf_invert.h"
 #include "pcmd_xio_dvh.h"
@@ -119,6 +120,7 @@ print_usage (int return_code)
         "  union       "
         "\n"
         "  warp        "
+        "  wed         "
 //        "  xio-dvh     "
         "  xf-convert  "
         "  xf-invert   "
@@ -288,6 +290,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "warp")) {
         /* convert and warp are the same */
         do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "wed")) {
+        do_command_wed (argc, argv);
     }
     else if (!strcmp (command, "xf-convert")) {
         do_command_xf_convert (argc, argv);

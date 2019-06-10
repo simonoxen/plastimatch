@@ -63,6 +63,7 @@ set (PLASTIMATCH_SRC
   pcmd_warp.cxx 
   pcmd_warp_dij.cxx 
   pcmd_warp_pointset.cxx 
+  pcmd_wed.cxx pcmd_wed.h
   pcmd_xio_dvh.cxx 
   pcmd_xf_convert.cxx 
   pcmd_xf_invert.cxx pcmd_xf_invert.h
