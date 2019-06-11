@@ -44,7 +44,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  CMake path
 ##-----------------------------------------------------------------------------
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##-----------------------------------------------------------------------------
 ##  Prevent in-source build
