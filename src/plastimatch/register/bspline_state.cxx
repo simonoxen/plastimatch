@@ -96,7 +96,7 @@ Bspline_state::initialize (
 
     this->ssd.set_num_coeff (bxf->num_coeff);
 
-    if (rparms->curvature_penalty > 0.0f) {
+    if (rparms->curvature_penalty > 0.0f || rparms->diffusion_penalty > 0.0f || rparms->lame_coefficient_1 > 0.0f || rparms->lame_coefficient_2 >0.0f || rparms->total_displacement_penalty>0.0f || rparms->third_order_penalty>0.0f) {
         rst->fixed_stiffness = parms->fixed_stiffness;
         rst->initialize (rparms, bxf);
     }

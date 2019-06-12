@@ -63,7 +63,8 @@ protected:
         const Bspline_xform* bxf);
 
     void analytic_init (
-        const Bspline_xform* bxf);
+        const Bspline_xform* bxf,
+	const Regularization_parms* reg_parms);
     void compute_score_analytic (
         Bspline_score *bspline_score, 
         const Regularization_parms* reg_parms,
