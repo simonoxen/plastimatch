@@ -1,11 +1,19 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _pcmd_wed_h_
-#define _pcmd_wed_h_
+#include "plmbase_config.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "plmcli_config.h"
+#include "beam_geometry.h"
+#include "plm_image.h"
 
-void do_command_wed (int argc, char *argv[]);
+Beam_geometry::Beam_geometry ()
+{
+}
 
-#endif
+Beam_geometry::~Beam_geometry ()
+{
+}
+

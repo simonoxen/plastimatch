@@ -17,6 +17,7 @@ include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
 set (PLMBASE_LIBRARY_SRC
   aperture.cxx aperture.h
   astroid_dose.cxx astroid_dose.h
+  beam_geometry.cxx beam_geometry.h
   bspline_header.cxx bspline_header.h
   bspline_interpolate.cxx bspline_interpolate.h
   bspline_warp.cxx bspline_warp.h

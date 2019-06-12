@@ -19,7 +19,7 @@
 #define NULL ((void*)0)
 #endif
 
-Wed_Parms::Wed_Parms ()
+Wed_parms::Wed_parms ()
 {
     this->debug = 0;
     this->group = 0;
@@ -61,7 +61,7 @@ Wed_Parms::Wed_Parms ()
     this->sinogram_res = 360;
 }
 
-Wed_Parms::~Wed_Parms ()
+Wed_parms::~Wed_parms ()
 {
 }
 
@@ -77,7 +77,7 @@ print_usage (void)
 }
 
 int
-Wed_Parms::get_group_lines(char* groupfile)
+Wed_parms::get_group_lines(char* groupfile)
 {
     std::string line;
     std::ifstream text(groupfile);
@@ -94,7 +94,7 @@ Wed_Parms::get_group_lines(char* groupfile)
 }
 
 int
-Wed_Parms::set_key_val (
+Wed_parms::set_key_val (
     const char* key, 
     const char* val, 
     int section
@@ -276,7 +276,7 @@ error_exit:
 }
 
 void
-Wed_Parms::parse_config (
+Wed_parms::parse_config (
     const char* config_fn
 )
 {
@@ -360,7 +360,7 @@ Wed_Parms::parse_config (
 }
 
 bool
-Wed_Parms::parse_args (int argc, char** argv)
+Wed_parms::parse_args (int argc, char** argv)
 {
     int i;
     for (i=1; i<argc; i++) {

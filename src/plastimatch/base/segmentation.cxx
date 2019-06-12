@@ -469,7 +469,7 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
     auto num_voxels = dims[0] * dims[1] * dims[2];
     std::vector<unsigned int> voi(num_voxels, 127);
 
-    std::vector<std::vector<int>> structure_indices_list;
+    std::vector<std::vector<int>> structure_indices_list(num_structures);
 
     for (size_t i = 0; i < num_structures; i++) {
         // Extract an ITK image for the structure
@@ -489,7 +489,7 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
             }
         }
         std::sort(indices.begin(), indices.end());
-        structure_indices_list.push_back(indices);
+        structure_indices_list[i] = indices;
 
         // Set the voxels in the structure to the structure index
         for (const auto index: indices) {

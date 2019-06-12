@@ -8,6 +8,7 @@
 
 #include "aperture.h"
 #include "plm_image.h"
+#include "plm_clp.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
 #include "proj_volume.h"
@@ -18,7 +19,7 @@
 #include "wed_parms.h"
 
 Volume* 
-create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
+create_wed_volume (Wed_parms* parms, Rpl_volume* rpl_vol)
 {
 
    /* water equivalent depth volume has the same x,y dimensions as the rpl
@@ -50,7 +51,7 @@ create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, const Volume::Pointer& patient_vol)
+create_dew_volume (Wed_parms* parms, const Volume::Pointer& patient_vol)
 {
     float dew_off[3];
     dew_off[0] = patient_vol->origin[0];
@@ -98,7 +99,7 @@ Volume* create_proj_wed_volume (Rpl_volume* rpl_vol)
 }
 
 Volume* 
-create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
+create_proj_sinogram_volume (Wed_parms* parms, Volume *proj_wed_vol)
 {
     float proj_wed_off[3];
     proj_wed_off[0] = proj_wed_vol->origin[0];
@@ -151,7 +152,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 void
 wed_ct_compute_mode_2 (
     const std::string& out_fn,
-    Wed_Parms* parms,
+    Wed_parms* parms,
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
@@ -180,7 +181,7 @@ wed_ct_compute_mode_2 (
 void
 wed_ct_compute_mode_3 (
     const std::string& out_fn,
-    Wed_Parms* parms,
+    Wed_parms* parms,
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
@@ -261,7 +262,7 @@ wed_ct_compute_mode_3 (
 #endif
 
 void
-do_wed (Wed_Parms *parms)
+do_wed (Wed_parms *parms)
 {
     float background[4];
 
@@ -413,17 +414,65 @@ do_wed (Wed_Parms *parms)
 
 }
 
-int
-main (int argc, char* argv[])
+static void
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    Wed_Parms *parms = new Wed_Parms();
-  
-    //sets parms if input with .cfg file, skips with group option
-    if (!parms->parse_args (argc, argv)) {
-        exit (0); 
+    std::cout << "Usage: plastimatch wed --command-file command-file\n";
+    std::cout << "       plastimatch wed [options]\n";
+    parser->print_options (std::cout);
+    std::cout << std::endl;
+}
+
+static void
+parse_fn (
+    Wed_parms *parms, 
+    dlib::Plm_clp *parser, 
+    int argc, 
+    char* argv[]
+)
+{
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    /* Input files */
+    parser->add_long_option ("", "command-file", 
+        "parse options from command file", 1, "");
+    
+    parser->add_long_option ("", "input-ct", 
+        "input CT image", 1, "");
+    parser->add_long_option ("", "input-dose", 
+        "input radiation dose image", 1, "");
+    parser->add_long_option ("", "input-proj-ct", 
+        "input CT image in beam projected coordinates", 1, "");
+    parser->add_long_option ("", "input-proj-dose", 
+        "input dose image in beam projected coordinates", 1, "");
+
+    /* Parse the command line arguments */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that an output file was given */
+    if (parser->option("command-file")) {
+        parms->parse_config (parser->get_string ("command-file").c_str());
+        /* GCS FIX: Should error out if any other options specified */
+        return;
     }
 
-    do_wed (parms);
+    /* Verify that input CT is available */
+    if (!parser->option("input-ct")) {
+        throw dlib::error ("Error, you must specify an --input-ct option.\n");
+    }
+    
+}
 
-    return 0;
+void
+do_command_wed (int argc, char* argv[])
+{
+    Wed_parms parms;
+
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
+
+    do_wed (&parms);
 }

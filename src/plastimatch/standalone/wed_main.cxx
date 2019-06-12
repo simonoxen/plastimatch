@@ -18,7 +18,7 @@
 #include "wed_parms.h"
 
 Volume* 
-create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
+create_wed_volume (Wed_parms* parms, Rpl_volume* rpl_vol)
 {
 
    /* water equivalent depth volume has the same x,y dimensions as the rpl
@@ -50,7 +50,7 @@ create_wed_volume (Wed_Parms* parms, Rpl_volume* rpl_vol)
 }
 
 static Volume*
-create_dew_volume (Wed_Parms* parms, const Volume::Pointer& patient_vol)
+create_dew_volume (Wed_parms* parms, const Volume::Pointer& patient_vol)
 {
     float dew_off[3];
     dew_off[0] = patient_vol->origin[0];
@@ -98,7 +98,7 @@ Volume* create_proj_wed_volume (Rpl_volume* rpl_vol)
 }
 
 Volume* 
-create_proj_sinogram_volume (Wed_Parms* parms, Volume *proj_wed_vol)
+create_proj_sinogram_volume (Wed_parms* parms, Volume *proj_wed_vol)
 {
     float proj_wed_off[3];
     proj_wed_off[0] = proj_wed_vol->origin[0];
@@ -151,7 +151,7 @@ skin_ct (Volume* ct_volume, Volume* skin_volume, float background)
 void
 wed_ct_compute_mode_2 (
     const std::string& out_fn,
-    Wed_Parms* parms,
+    Wed_parms* parms,
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
@@ -180,7 +180,7 @@ wed_ct_compute_mode_2 (
 void
 wed_ct_compute_mode_3 (
     const std::string& out_fn,
-    Wed_Parms* parms,
+    Wed_parms* parms,
     Plm_image::Pointer& ct_vol,  // This is not always ct, 
                                  //  sometimes it is dose or 
                                  //  sometimes it is target mask.
@@ -261,7 +261,7 @@ wed_ct_compute_mode_3 (
 #endif
 
 void
-do_wed (Wed_Parms *parms)
+do_wed (Wed_parms *parms)
 {
     float background[4];
 
@@ -416,7 +416,7 @@ do_wed (Wed_Parms *parms)
 int
 main (int argc, char* argv[])
 {
-    Wed_Parms *parms = new Wed_Parms();
+    Wed_parms *parms = new Wed_parms();
   
     //sets parms if input with .cfg file, skips with group option
     if (!parms->parse_args (argc, argv)) {
