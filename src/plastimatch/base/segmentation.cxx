@@ -442,7 +442,7 @@ Segmentation::save_labelmap(const std::string &labelmap_fn) {
     d_ptr->m_labelmap->save_image(labelmap_fn);
 }
 
-int
+unsigned int
 get_opt4d_flattened_index_from_3d_indices(itk::Index<3> index, itk::Size<3> image_size) {
     auto col = index[0];
     auto row = index[1];
@@ -467,9 +467,9 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
     auto dims = d_ptr->m_rtss->m_dim;
     auto num_structures = d_ptr->m_rtss->num_structures;
     auto num_voxels = dims[0] * dims[1] * dims[2];
-    std::vector<unsigned int> voi(num_voxels, 127);
+    std::vector<uint8_t> voi(num_voxels, 127);
 
-    std::vector<std::vector<int>> structure_indices_list(num_structures);
+    std::vector<std::vector<unsigned int>> structure_indices_list(num_structures);
 
     for (size_t i = 0; i < num_structures; i++) {
         // Extract an ITK image for the structure
@@ -482,7 +482,7 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
         // Get indices which belong to the structure
         itk::ImageRegionConstIteratorWithIndex<UCharImageType> it(prefix_img, prefix_img->GetLargestPossibleRegion());
         auto size = prefix_img->GetLargestPossibleRegion().GetSize();
-        std::vector<int> indices;
+        std::vector<unsigned int> indices;
         for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
             if ((unsigned int) it.Get() == 1) {
                 indices.push_back(get_opt4d_flattened_index_from_3d_indices(it.GetIndex(), size));
@@ -534,20 +534,23 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
     }
 
     // Use run-length encoding to write the vv file
-    for (size_t i = 0; i < num_structures; i++) {
-        auto indices = structure_indices_list[i];
+    for (const auto &indices: structure_indices_list) {
+        auto num_voxels = indices.size();
+        vv_file.write((char*)(&num_voxels), sizeof(int));
         if (indices.empty()) continue;
-        auto iter = indices.begin();
+
+        std::vector<unsigned int>::const_iterator iter = indices.begin();
         while (iter != indices.end()) {
+
             unsigned int range_start = *iter;
             unsigned char range_length = 0;
-            --range_length;
+
             do {
                 ++range_length;
                 ++iter;
             } while ((iter != indices.end()) && (*iter == (range_start + range_length)) && (range_length < 0xFF));
-            vv_file.write((char*)&range_start, sizeof(range_start));
-            vv_file.write((char*)&range_length, sizeof(range_length));
+            vv_file.write((char*)(&range_start), sizeof(range_start));
+            vv_file.write((char*)(&range_length), sizeof(range_length));
         }
     }
     vv_file.close();
