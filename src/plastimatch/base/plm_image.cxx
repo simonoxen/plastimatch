@@ -188,17 +188,29 @@ Plm_image::clone (void)
     case PLM_IMG_TYPE_ITK_UCHAR:
 	pli->m_itk_uchar = this->m_itk_uchar;
 	break;
-    case PLM_IMG_TYPE_ITK_SHORT:
-	pli->m_itk_short = this->m_itk_short;
+    case PLM_IMG_TYPE_ITK_CHAR:
+	pli->m_itk_char = this->m_itk_char;
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	pli->m_itk_ushort = this->m_itk_ushort;
 	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	pli->m_itk_short = this->m_itk_short;
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	pli->m_itk_uint32 = this->m_itk_uint32;
 	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	pli->m_itk_int32 = this->m_itk_int32;
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	pli->m_itk_float = this->m_itk_float;
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	pli->m_itk_double = this->m_itk_double;
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	pli->m_itk_uchar_vec = this->m_itk_uchar_vec;
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
@@ -1620,6 +1632,9 @@ Plm_image::set_header (const Plm_image_header* pih)
     case PLM_IMG_TYPE_ITK_DOUBLE:
         itk_image_set_header (this->m_itk_double, pih);
         return;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+        itk_image_set_header (this->m_itk_uchar_vec, pih);
+        return;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
     case PLM_IMG_TYPE_GPUIT_SHORT:
     case PLM_IMG_TYPE_GPUIT_UINT16:
@@ -1630,7 +1645,6 @@ Plm_image::set_header (const Plm_image_header* pih)
     case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
         d_ptr->m_vol->set_header (pih);
         return;
-    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
     default:
 	print_and_exit (
 	    "Unhandled call to Plm_image::set_header (type = %s)\n", 
