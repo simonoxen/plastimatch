@@ -1,7 +1,6 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <itkImageSliceConstIteratorWithIndex.h>
 #include "plm_config.h"
 #include "itkImageRegionConstIterator.h"
 #include "itkImageRegionIterator.h"
@@ -44,38 +43,41 @@ public:
     bool m_ss_img_valid;
 
 public:
-    Segmentation_private() {
+    Segmentation_private () {
         m_rtss_valid = false;
         m_ss_img_valid = false;
     }
-
-    ~Segmentation_private() {
+    ~Segmentation_private () {
     }
 };
 
 static std::string
-compose_prefix_fn(
-        const std::string &output_prefix,
-        const std::string &structure_name,
-        const char *extension
-) {
-    return string_format("%s/%s.%s",
-                         output_prefix.c_str(),
-                         structure_name.c_str(),
-                         extension);
+compose_prefix_fn (
+    const std::string& output_prefix, 
+    const std::string& structure_name,
+    const char* extension
+)
+{
+    return string_format ("%s/%s.%s", 
+        output_prefix.c_str(), 
+        structure_name.c_str(), 
+        extension);
 }
 
-Segmentation::Segmentation() {
+Segmentation::Segmentation ()
+{
     this->d_ptr = new Segmentation_private;
 }
 
-Segmentation::~Segmentation() {
-    clear();
+Segmentation::~Segmentation ()
+{
+    clear ();
     delete this->d_ptr;
 }
 
 void
-Segmentation::clear() {
+Segmentation::clear ()
+{
     d_ptr->m_rtss.reset();
     d_ptr->m_ss_img.reset();
     d_ptr->m_labelmap.reset();
@@ -84,44 +86,47 @@ Segmentation::clear() {
 }
 
 void
-Segmentation::load(const char *ss_img, const char *ss_list) {
+Segmentation::load (const char *ss_img, const char *ss_list)
+{
     /* Load ss_img */
     if (d_ptr->m_ss_img) {
         d_ptr->m_ss_img.reset();
     }
-    if (ss_img && file_exists(ss_img)) {
-        d_ptr->m_ss_img = plm_image_load_native(ss_img);
+    if (ss_img && file_exists (ss_img)) {
+        d_ptr->m_ss_img = plm_image_load_native (ss_img);
     }
 
     /* Load ss_list */
     if (d_ptr->m_rtss) {
         d_ptr->m_rtss.reset();
     }
-    if (ss_list && file_exists(ss_list)) {
-        lprintf("Trying to load ss_list: %s\n", ss_list);
-        d_ptr->m_rtss.reset(ss_list_load(0, ss_list));
+    if (ss_list && file_exists (ss_list)) {
+        lprintf ("Trying to load ss_list: %s\n", ss_list);
+        d_ptr->m_rtss.reset (ss_list_load (0, ss_list));
     }
 
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->free_all_polylines();
+        d_ptr->m_rtss->free_all_polylines ();
     }
     d_ptr->m_rtss_valid = false;
     d_ptr->m_ss_img_valid = true;
 }
 
 void
-Segmentation::load_prefix(const std::string &prefix_dir) {
-    this->load_prefix(prefix_dir.c_str());
+Segmentation::load_prefix (const std::string& prefix_dir)
+{
+    this->load_prefix (prefix_dir.c_str());
 }
 
 void
-Segmentation::load_prefix(const char *prefix_dir) {
+Segmentation::load_prefix (const char *prefix_dir)
+{
     /* Clear out any existing structures */
-    this->clear();
+    this->clear ();
 
     /* Load the list of files in the directory */
     Dir_list dl;
-    dl.load(prefix_dir);
+    dl.load (prefix_dir);
 
     /* Make a quick pass through the directory to find the number of 
        files.  This is used to size the ss_img. */
@@ -129,8 +134,9 @@ Segmentation::load_prefix(const char *prefix_dir) {
     for (int i = 0; i < dl.num_entries; i++) {
         /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-        if (!extension_is(entry, ".mha")
-            && !extension_is(entry, ".nrrd")) {
+	if (!extension_is (entry, ".mha") 
+            && !extension_is (entry, ".nrrd"))
+        {
             continue;
         }
         max_structures++;
@@ -146,76 +152,77 @@ Segmentation::load_prefix(const char *prefix_dir) {
     for (int i = 0; i < dl.num_entries; i++) {
         /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-        if (!extension_is(entry, ".mha")
-            && !extension_is(entry, ".nrrd")) {
+	if (!extension_is (entry, ".mha") 
+            && !extension_is (entry, ".nrrd"))
+        {
             continue;
         }
 
         /* Grab the structure name from the filename */
-        char *structure_name = strdup(entry);
-        strip_extension(structure_name);
-        lprintf("Loading structure: %s\n", structure_name);
+        char *structure_name = strdup (entry);
+        strip_extension (structure_name);
+        lprintf ("Loading structure: %s\n", structure_name);
 
         /* Load the file */
-        std::string input_fn = string_format("%s/%s", prefix_dir, entry);
-        Plm_image img(input_fn, PLM_IMG_TYPE_ITK_UCHAR);
-        Plm_image_header pih(img);
+        std::string input_fn = string_format ("%s/%s", prefix_dir, entry);
+        Plm_image img (input_fn, PLM_IMG_TYPE_ITK_UCHAR);
+        Plm_image_header pih (img);
 
         if (first) {
-            this->initialize_ss_image(pih, out_vec_len);
+            this->initialize_ss_image (pih, out_vec_len);
 
-            ss_img = d_ptr->m_ss_img->itk_uchar_vec();
-            Plm_image_header::clone(&ss_img_pih, &pih);
+            ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
+            Plm_image_header::clone (&ss_img_pih, &pih);
 
             first = false;
         } else {
             ss_img_pih.print();
-            if (!Plm_image_header::compare(&pih, &ss_img_pih)) {
-                print_and_exit("Image size mismatch when loading prefix_dir\n");
+            if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
+                print_and_exit ("Image size mismatch when loading prefix_dir\n");
             }
         }
 
         /* Add name to ss_list */
-        d_ptr->m_rtss->add_structure(
-                structure_name, "",
-                d_ptr->m_rtss->num_structures + 1,
-                bit);
-        free(structure_name);
+        d_ptr->m_rtss->add_structure (
+            structure_name, "", 
+            d_ptr->m_rtss->num_structures + 1,
+            bit);
+        free (structure_name);
 
         /* GCS FIX: This code is replicated in ss_img_extract */
         unsigned int uchar_no = bit / 8;
         unsigned int bit_no = bit % 8;
         unsigned char bit_mask = 1 << bit_no;
         if (uchar_no > ss_img->GetVectorLength()) {
-            print_and_exit("Error.  Ss_img vector is too small.\n");
+            print_and_exit ("Error.  Ss_img vector is too small.\n");
         }
 
         /* Set up iterators for looping through images */
-        typedef itk::ImageRegionConstIterator<UCharImageType>
-                UCharIteratorType;
-        typedef itk::ImageRegionIterator<UCharVecImageType>
-                UCharVecIteratorType;
+        typedef itk::ImageRegionConstIterator< UCharImageType > 
+            UCharIteratorType;
+        typedef itk::ImageRegionIterator< UCharVecImageType > 
+            UCharVecIteratorType;
         UCharImageType::Pointer uchar_img = img.itk_uchar();
-        UCharIteratorType uchar_img_it(uchar_img,
-                                       uchar_img->GetLargestPossibleRegion());
-        UCharVecIteratorType ss_img_it(ss_img,
-                                       ss_img->GetLargestPossibleRegion());
+        UCharIteratorType uchar_img_it (uchar_img, 
+            uchar_img->GetLargestPossibleRegion());
+        UCharVecIteratorType ss_img_it (ss_img, 
+            ss_img->GetLargestPossibleRegion());
 
         /* Loop through voxels, or'ing them into ss_img */
         /* GCS FIX: This is inefficient, due to undesirable construct 
            and destruct of itk::VariableLengthVector of each pixel */
         for (
-                uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
-                !uchar_img_it.IsAtEnd();
-                ++uchar_img_it, ++ss_img_it
-                ) {
-            unsigned char u = uchar_img_it.Get();
+            uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
+            !uchar_img_it.IsAtEnd();
+            ++uchar_img_it, ++ss_img_it
+        ) {
+            unsigned char u = uchar_img_it.Get ();
             if (!u) continue;
 
-            itk::VariableLengthVector<unsigned char> v
-                    = ss_img_it.Get();
+            itk::VariableLengthVector<unsigned char> v 
+                = ss_img_it.Get ();
             v[uchar_no] |= bit_mask;
-            ss_img_it.Set(v);
+            ss_img_it.Set (v);
         }
 
         /* Move to next bit */
@@ -223,27 +230,30 @@ Segmentation::load_prefix(const char *prefix_dir) {
     }
 
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->free_all_polylines();
+        d_ptr->m_rtss->free_all_polylines ();
     }
     d_ptr->m_rtss_valid = false;
     d_ptr->m_ss_img_valid = true;
 }
 
 void
-Segmentation::add_structure(
-        UCharImageType::Pointer itk_image,
-        const char *structure_name,
-        const char *structure_color) {
-    Plm_image_header pih(itk_image);
+Segmentation::add_structure (
+    UCharImageType::Pointer itk_image, 
+    const char *structure_name,
+    const char *structure_color)
+{
+    Plm_image_header pih (itk_image);
 
     /* Allocate image if this is the first structure */
     if (!d_ptr->m_ss_img) {
-        this->initialize_ss_image(pih, 2);
-    } else {
+        this->initialize_ss_image (pih, 2);
+    }
+
+    else {
         /* Make sure image size is the same */
-        Plm_image_header ss_img_pih(d_ptr->m_ss_img);
-        if (!Plm_image_header::compare(&pih, &ss_img_pih)) {
-            print_and_exit("Image size mismatch when adding structure\n");
+        Plm_image_header ss_img_pih (d_ptr->m_ss_img);
+        if (!Plm_image_header::compare (&pih, &ss_img_pih)) {
+            print_and_exit ("Image size mismatch when adding structure\n");
         }
     }
 
@@ -257,25 +267,26 @@ Segmentation::add_structure(
     int bit = d_ptr->m_rtss->num_structures; /* GCS FIX: I hope this is ok */
 
     /* Add structure to rtss */
-    d_ptr->m_rtss->add_structure(
-            structure_name, structure_color,
-            d_ptr->m_rtss->num_structures + 1,
-            bit);
+    d_ptr->m_rtss->add_structure (
+        structure_name, structure_color,
+        d_ptr->m_rtss->num_structures + 1,
+        bit);
 
     /* Set bit within ss_img */
-    this->set_structure_image(itk_image, bit);
+    this->set_structure_image (itk_image, bit);
 
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->free_all_polylines();
+        d_ptr->m_rtss->free_all_polylines ();
     }
     d_ptr->m_rtss_valid = false;
     d_ptr->m_ss_img_valid = true;
 }
 
 Rtss_roi *
-Segmentation::add_rtss_roi(
-        const char *structure_name,
-        const char *structure_color) {
+Segmentation::add_rtss_roi (
+    const char *structure_name,
+    const char *structure_color)
+{
     /* Allocate rtss if first time called */
     if (!d_ptr->m_rtss_valid) {
         /* GCS FIX: In principle, I should convert existing ss_image 
@@ -296,34 +307,37 @@ Segmentation::add_rtss_roi(
     int bit = d_ptr->m_rtss->num_structures;
 
     /* Add structure to rtss */
-    Rtss_roi *rtss_roi = d_ptr->m_rtss->add_structure(
-            structure_name, structure_color,
-            d_ptr->m_rtss->num_structures + 1,
-            bit);
+    Rtss_roi *rtss_roi = d_ptr->m_rtss->add_structure (
+        structure_name, structure_color,
+        d_ptr->m_rtss->num_structures + 1,
+        bit);
     return rtss_roi;
 }
 
 void
-Segmentation::load_cxt(const std::string &input_fn, Rt_study_metadata *rsm) {
+Segmentation::load_cxt (const std::string& input_fn, Rt_study_metadata *rsm)
+{
     d_ptr->m_rtss = Rtss::New();
-    cxt_load(d_ptr->m_rtss.get(), rsm, input_fn.c_str());
+    cxt_load (d_ptr->m_rtss.get(), rsm, input_fn.c_str());
 
     d_ptr->m_rtss_valid = true;
     d_ptr->m_ss_img_valid = false;
 }
 
 void
-Segmentation::load_xio(const Xio_studyset &studyset) {
+Segmentation::load_xio (const Xio_studyset& studyset)
+{
     d_ptr->m_rtss = Rtss::New();
-    lprintf("calling xio_structures_load\n");
-    xio_structures_load(d_ptr->m_rtss.get(), studyset);
+    lprintf ("calling xio_structures_load\n");
+    xio_structures_load (d_ptr->m_rtss.get(), studyset);
 
     d_ptr->m_rtss_valid = true;
     d_ptr->m_ss_img_valid = false;
 }
 
 size_t
-Segmentation::get_num_structures() {
+Segmentation::get_num_structures ()
+{
     if (d_ptr->m_rtss) {
         return d_ptr->m_rtss->num_structures;
     }
@@ -331,115 +345,127 @@ Segmentation::get_num_structures() {
 }
 
 std::string
-Segmentation::get_structure_name(size_t index) {
+Segmentation::get_structure_name (size_t index)
+{
     if (d_ptr->m_rtss) {
-        return d_ptr->m_rtss->get_structure_name(index);
+        return d_ptr->m_rtss->get_structure_name (index);
     }
     return 0;
 }
 
-void
-Segmentation::set_structure_name(size_t index, const std::string &name) {
+void 
+Segmentation::set_structure_name (size_t index, const std::string& name)
+{
     if (!d_ptr->m_rtss) {
         return;
     }
-    d_ptr->m_rtss->set_structure_name(index, name);
+    d_ptr->m_rtss->set_structure_name (index, name);
 }
 
 UCharImageType::Pointer
-Segmentation::get_structure_image(int index) {
+Segmentation::get_structure_image (int index)
+{
     if (!d_ptr->m_ss_img) {
-        print_and_exit(
-                "Error extracting unknown structure image (no ssi %d)\n", index);
+        print_and_exit (
+            "Error extracting unknown structure image (no ssi %d)\n", index);
     }
 
     if (!d_ptr->m_rtss) {
-        print_and_exit(
-                "Error extracting unknown structure image (no cxt %d)\n", index);
+        print_and_exit (
+            "Error extracting unknown structure image (no cxt %d)\n", index);
     }
 
     Rtss_roi *curr_structure = d_ptr->m_rtss->slist[index];
     int bit = curr_structure->bit;
 
     if (bit == -1) {
-        print_and_exit(
-                "Error extracting unknown structure image (no bit %d)\n", index);
+        print_and_exit (
+            "Error extracting unknown structure image (no bit %d)\n", index);
     }
-    UCharImageType::Pointer prefix_img
-            = ss_img_extract_bit(d_ptr->m_ss_img, bit);
+    UCharImageType::Pointer prefix_img 
+        = ss_img_extract_bit (d_ptr->m_ss_img, bit);
 
     return prefix_img;
 }
 
 void
-Segmentation::save_colormap(const std::string &colormap_fn) {
-    ss_list_save_colormap(d_ptr->m_rtss.get(), colormap_fn.c_str());
+Segmentation::save_colormap (const std::string& colormap_fn)
+{
+    ss_list_save_colormap (d_ptr->m_rtss.get(), colormap_fn.c_str());
 }
 
 void
-Segmentation::save_cxt(
-        const Rt_study_metadata::Pointer &rsm,
-        const std::string &cxt_fn,
-        bool prune_empty
-) {
-    cxt_save(d_ptr->m_rtss.get(), rsm, cxt_fn.c_str(), prune_empty);
+Segmentation::save_cxt (
+    const Rt_study_metadata::Pointer& rsm, 
+    const std::string& cxt_fn, 
+    bool prune_empty
+)
+{
+    cxt_save (d_ptr->m_rtss.get(), rsm, cxt_fn.c_str(), prune_empty);
 }
 
 void
-Segmentation::save_fcsv(
-        const Rtss_roi *curr_structure,
-        const std::string &fn
-) {
+Segmentation::save_fcsv (
+    const Rtss_roi *curr_structure, 
+    const std::string& fn
+)
+{
     Labeled_pointset pointset;
 
     for (size_t j = 0; j < curr_structure->num_contours; j++) {
         Rtss_contour *curr_polyline = curr_structure->pslist[j];
         for (size_t k = 0; k < curr_polyline->num_vertices; k++) {
-            pointset.insert_lps("", curr_polyline->x[k],
-                                curr_polyline->y[k], curr_polyline->z[k]);
+            pointset.insert_lps ("", curr_polyline->x[k],
+                curr_polyline->y[k], curr_polyline->z[k]);
         }
     }
 
-    pointset.save_fcsv(fn);
+    pointset.save_fcsv (fn);
 }
 
 void
-Segmentation::save_prefix_fcsv(const std::string &output_prefix) {
+Segmentation::save_prefix_fcsv (const std::string& output_prefix)
+{
     if (!d_ptr->m_rtss) {
-        print_and_exit(
-                "Error: save_prefix_fcsv() tried to save a RTSS without a CXT\n");
+        print_and_exit (
+            "Error: save_prefix_fcsv() tried to save a RTSS without a CXT\n");
     }
 
-    for (size_t i = 0; i < d_ptr->m_rtss->num_structures; i++) {
+    for (size_t i = 0; i < d_ptr->m_rtss->num_structures; i++)
+    {
         Rtss_roi *curr_structure = d_ptr->m_rtss->slist[i];
 
-        std::string fn =
-                compose_prefix_fn(output_prefix, curr_structure->name, "fcsv");
-        save_fcsv(curr_structure, fn);
+        std::string fn = 
+            compose_prefix_fn (output_prefix, curr_structure->name, "fcsv");
+        save_fcsv (curr_structure, fn);
     }
 }
 
 void
-Segmentation::save_ss_image(const std::string &ss_img_fn) {
+Segmentation::save_ss_image (const std::string& ss_img_fn)
+{
     if (!d_ptr->m_ss_img) {
-        print_and_exit(
-                "Error: save_ss_image() tried to write a non-existant ss_img\n");
+        print_and_exit (
+            "Error: save_ss_image() tried to write a non-existant ss_img\n");
     }
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) {
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    {
         /* Image type must be uchar vector */
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_UCHAR_VEC);
-    } else {
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    }
+    else {
         /* Image type must be uint32_t */
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_ULONG);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
-    d_ptr->m_ss_img->save_image(ss_img_fn);
+    d_ptr->m_ss_img->save_image (ss_img_fn);
 }
 
 void
-Segmentation::save_labelmap(const std::string &labelmap_fn) {
-    d_ptr->m_labelmap->save_image(labelmap_fn);
+Segmentation::save_labelmap (const std::string& labelmap_fn)
+{
+    d_ptr->m_labelmap->save_image (labelmap_fn);
 }
 
 unsigned int
@@ -455,8 +481,6 @@ get_opt4d_flattened_index_from_3d_indices(itk::Index<3> index, itk::Size<3> imag
 
 void
 Segmentation::save_opt4d(const std::string &opt4d_prefix) {
-
-
     auto file_name = opt4d_prefix + ".voi";
     std::ofstream voi_file(file_name, std::ios::binary);
     if (!voi_file.is_open()) {
@@ -556,75 +580,85 @@ Segmentation::save_opt4d(const std::string &opt4d_prefix) {
     vv_file.close();
 }
 
+
+
 void
-Segmentation::save_prefix(const std::string &output_prefix,
-                          const std::string &extension) {
+Segmentation::save_prefix (const std::string &output_prefix,
+    const std::string& extension)
+{
     if (!d_ptr->m_ss_img) {
         return;
     }
 
     if (!d_ptr->m_rtss) {
-        printf("WTF???\n");
+        printf ("WTF???\n");
     }
 
-    for (size_t i = 0; i < d_ptr->m_rtss->num_structures; i++) {
+    for (size_t i = 0; i < d_ptr->m_rtss->num_structures; i++)
+    {
         std::string fn;
         Rtss_roi *curr_structure = d_ptr->m_rtss->slist[i];
         int bit = curr_structure->bit;
 
         if (bit == -1) continue;
-        UCharImageType::Pointer prefix_img
-                = ss_img_extract_bit(d_ptr->m_ss_img, bit);
+        UCharImageType::Pointer prefix_img 
+            = ss_img_extract_bit (d_ptr->m_ss_img, bit);
 
-        fn = string_format("%s/%s.%s",
-                           output_prefix.c_str(),
-                           curr_structure->name.c_str(),
-                           extension.c_str());
-        itk_image_save(prefix_img, fn.c_str());
+        fn = string_format ("%s/%s.%s", 
+            output_prefix.c_str(),
+            curr_structure->name.c_str(),
+            extension.c_str());
+        itk_image_save (prefix_img, fn.c_str());
     }
 }
 
 void
-Segmentation::save_prefix(const char *output_prefix) {
-    this->save_prefix(std::string(output_prefix));
+Segmentation::save_prefix (const char *output_prefix)
+{
+    this->save_prefix (std::string (output_prefix));
 }
 
 void
-Segmentation::save_ss_list(const std::string &ss_list_fn) {
-    ss_list_save(d_ptr->m_rtss.get(), ss_list_fn.c_str());
+Segmentation::save_ss_list (const std::string& ss_list_fn)
+{
+    ss_list_save (d_ptr->m_rtss.get(), ss_list_fn.c_str());
 }
 
 void
-Segmentation::save_xio(
-        const Rt_study_metadata::Pointer &rsm,
-        Xio_ct_transform *xio_transform,
-        Xio_version xio_version,
-        const std::string &output_dir
-) {
-    xio_structures_save(rsm, d_ptr->m_rtss.get(), xio_transform,
-                        xio_version, output_dir.c_str());
+Segmentation::save_xio (
+    const Rt_study_metadata::Pointer& rsm,
+    Xio_ct_transform *xio_transform, 
+    Xio_version xio_version, 
+    const std::string &output_dir
+)
+{
+    xio_structures_save (rsm, d_ptr->m_rtss.get(), xio_transform,
+        xio_version, output_dir.c_str());
 }
 
 UInt32ImageType::Pointer
-Segmentation::get_ss_img_uint32(void) {
+Segmentation::get_ss_img_uint32 (void)
+{
     if (!d_ptr->m_ss_img) {
-        print_and_exit("Sorry, can't get_ss_img()\n");
+        print_and_exit ("Sorry, can't get_ss_img()\n");
     }
-    d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_ULONG);
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     return d_ptr->m_ss_img->m_itk_uint32;
 }
 
 UCharVecImageType::Pointer
-Segmentation::get_ss_img_uchar_vec(void) {
+Segmentation::get_ss_img_uchar_vec (void)
+{
     if (!d_ptr->m_ss_img) {
-        print_and_exit("Sorry, can't get_ss_img()\n");
+        print_and_exit ("Sorry, can't get_ss_img()\n");
     }
-    d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
     return d_ptr->m_ss_img->m_itk_uchar_vec;
 }
 
 void
-Segmentation::apply_dicom_dir(const Rt_study_metadata::Pointer &rsm) {
+Segmentation::apply_dicom_dir (const Rt_study_metadata::Pointer& rsm)
+{
     if (!d_ptr->m_rtss) {
         return;
     }
@@ -633,11 +667,12 @@ Segmentation::apply_dicom_dir(const Rt_study_metadata::Pointer &rsm) {
         return;
     }
 
-    d_ptr->m_rtss->apply_slice_list(rsm);
+    d_ptr->m_rtss->apply_slice_list (rsm);
 }
 
 void
-Segmentation::convert_ss_img_to_cxt(void) {
+Segmentation::convert_ss_img_to_cxt (void)
+{
     /* Only convert if ss_img found */
     if (!d_ptr->m_ss_img) {
         return;
@@ -647,155 +682,170 @@ Segmentation::convert_ss_img_to_cxt(void) {
     bool use_existing_bits;
     if (d_ptr->m_rtss) {
         use_existing_bits = true;
-    } else {
+    }
+    else {
         d_ptr->m_rtss = Rtss::New();
         use_existing_bits = false;
     }
 
     /* Copy geometry from ss_img to cxt */
-    d_ptr->m_rtss->set_geometry(d_ptr->m_ss_img);
+    d_ptr->m_rtss->set_geometry (d_ptr->m_ss_img);
 
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) {
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    {
         /* Image type must be uchar vector */
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 
         /* Do extraction */
-        lprintf("Doing extraction\n");
-        ::cxt_extract(d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uchar_vec,
-                      -1, use_existing_bits);
-    } else {
+        lprintf ("Doing extraction\n");
+        ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
+            -1, use_existing_bits);
+    }
+    else {
         /* Image type must be uint32_t */
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_ULONG);
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
         /* Do extraction */
-        lprintf("Doing extraction\n");
-        ::cxt_extract(d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32, -1,
-                      use_existing_bits);
+        lprintf ("Doing extraction\n");
+        ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
+            use_existing_bits);
     }
 
     d_ptr->m_rtss_valid = true;
 }
 
 void
-Segmentation::convert_to_uchar_vec(void) {
+Segmentation::convert_to_uchar_vec (void)
+{
     if (!d_ptr->m_ss_img) {
-        print_and_exit(
-                "Error: convert_to_uchar_vec() requires an image\n");
+        print_and_exit (
+            "Error: convert_to_uchar_vec() requires an image\n");
     }
-    d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_UCHAR_VEC);
+    d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 }
 
 void
-Segmentation::cxt_extract(void) {
+Segmentation::cxt_extract (void)
+{
     if (d_ptr->m_ss_img && !d_ptr->m_rtss_valid) {
-        this->convert_ss_img_to_cxt();
+        this->convert_ss_img_to_cxt ();
     }
 }
 
 void
-Segmentation::cxt_re_extract(void) {
-    d_ptr->m_rtss->free_all_polylines();
+Segmentation::cxt_re_extract (void)
+{
+    d_ptr->m_rtss->free_all_polylines ();
     if (d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_GPUIT_UCHAR_VEC
-        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) {
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_UCHAR_VEC);
-        ::cxt_extract(d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uchar_vec,
-                      d_ptr->m_rtss->num_structures, true);
-    } else {
-        d_ptr->m_ss_img->convert(PLM_IMG_TYPE_ITK_ULONG);
-        ::cxt_extract(d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32,
-                      d_ptr->m_rtss->num_structures, true);
+        || d_ptr->m_ss_img->m_type == PLM_IMG_TYPE_ITK_UCHAR_VEC) 
+    {
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+        ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uchar_vec, 
+            d_ptr->m_rtss->num_structures, true);
+    }
+    else {
+        d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+        ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32, 
+            d_ptr->m_rtss->num_structures, true);
     }
 
     d_ptr->m_rtss_valid = true;
 }
 
 void
-Segmentation::prune_empty(void) {
+Segmentation::prune_empty (void)
+{
     if (d_ptr->m_rtss && d_ptr->m_rtss_valid) {
-        d_ptr->m_rtss->prune_empty();
+        d_ptr->m_rtss->prune_empty ();
     }
 }
 
 void
-Segmentation::keyholize() {
+Segmentation::keyholize ()
+{
     if (d_ptr->m_rtss && d_ptr->m_rtss_valid) {
-        d_ptr->m_rtss->keyholize();
+        d_ptr->m_rtss->keyholize ();
     }
 }
 
 void
-Segmentation::rasterize(
-        Plm_image_header *pih,
-        bool want_labelmap,
-        bool xor_overlapping
-) {
+Segmentation::rasterize (
+    Plm_image_header *pih,
+    bool want_labelmap,
+    bool xor_overlapping
+)
+{
     /* Rasterize structure sets */
     Rasterizer rasterizer;
 
     bool use_ss_img_vec = true;
 
-    printf("Rasterizing...\n");
-    rasterizer.rasterize(d_ptr->m_rtss.get(), pih, false, want_labelmap, true,
-                         use_ss_img_vec, xor_overlapping);
+    printf ("Rasterizing...\n");
+    rasterizer.rasterize (d_ptr->m_rtss.get(), pih, false, want_labelmap, true,
+        use_ss_img_vec, xor_overlapping);
 
     /* Convert rasterized structure sets from vol to plm_image */
-    printf("Converting...\n");
+    printf ("Converting...\n");
     if (want_labelmap) {
         d_ptr->m_labelmap = Plm_image::New();
-        d_ptr->m_labelmap->set_volume(rasterizer.labelmap_vol);
+        d_ptr->m_labelmap->set_volume (rasterizer.labelmap_vol);
         rasterizer.labelmap_vol = 0;
     }
     d_ptr->m_ss_img = Plm_image::New();
 
     if (use_ss_img_vec) {
-        d_ptr->m_ss_img->set_itk(rasterizer.m_ss_img->m_itk_uchar_vec);
-    } else {
-        Volume::Pointer v = rasterizer.m_ss_img->get_volume();
-        d_ptr->m_ss_img->set_volume(v);
+        d_ptr->m_ss_img->set_itk (rasterizer.m_ss_img->m_itk_uchar_vec);
     }
-    lprintf("Finished rasterization.\n");
+    else {
+        Volume::Pointer v = rasterizer.m_ss_img->get_volume();
+        d_ptr->m_ss_img->set_volume (v);
+    }
+    lprintf ("Finished rasterization.\n");
 
     d_ptr->m_ss_img_valid = true;
 }
 
 void
-Segmentation::set_geometry(const Plm_image_header *pih) {
+Segmentation::set_geometry (const Plm_image_header *pih)
+{
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->set_geometry(pih);
+        d_ptr->m_rtss->set_geometry (pih);
     }
 }
 
 void
-Segmentation::find_rasterization_geometry(Plm_image_header *pih) {
+Segmentation::find_rasterization_geometry (Plm_image_header *pih)
+{
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->find_rasterization_geometry(pih);
+        d_ptr->m_rtss->find_rasterization_geometry (pih);
     }
 }
 
-Segmentation::Pointer
-Segmentation::warp_nondestructive(
-        const Xform::Pointer &xf,
-        Plm_image_header *pih,
-        bool use_itk) const {
-    Segmentation::Pointer rtss_warped = Segmentation::New();
+Segmentation::Pointer 
+Segmentation::warp_nondestructive (
+    const Xform::Pointer& xf, 
+    Plm_image_header *pih, 
+    bool use_itk) const
+{
+    Segmentation::Pointer rtss_warped = Segmentation::New ();
 
-    rtss_warped->d_ptr->m_rtss = Rtss::New(
-            Rtss::clone_empty(0, d_ptr->m_rtss.get()));
+    rtss_warped->d_ptr->m_rtss = Rtss::New (
+        Rtss::clone_empty (0, d_ptr->m_rtss.get()));
     rtss_warped->d_ptr->m_rtss_valid = false;
 
     if (d_ptr->m_labelmap) {
-        printf("Warping labelmap.\n");
+        printf ("Warping labelmap.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp(tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
         rtss_warped->d_ptr->m_labelmap = tmp;
-        rtss_warped->d_ptr->m_labelmap->convert(PLM_IMG_TYPE_ITK_ULONG);
+        rtss_warped->d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
     if (d_ptr->m_ss_img) {
-        printf("Warping ss_img.\n");
+        printf ("Warping ss_img.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp(tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
         rtss_warped->d_ptr->m_ss_img = tmp;
     }
 
@@ -803,79 +853,88 @@ Segmentation::warp_nondestructive(
 }
 
 void
-Segmentation::warp(
-        const Xform::Pointer &xf,
-        Plm_image_header *pih,
-        bool use_itk) {
+Segmentation::warp (
+    const Xform::Pointer& xf, 
+    Plm_image_header *pih, 
+    bool use_itk)
+{
     if (d_ptr->m_labelmap) {
-        printf("Warping labelmap.\n");
+        printf ("Warping labelmap.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp(tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_labelmap, 0, false, use_itk, 0);
         d_ptr->m_labelmap = tmp;
-        d_ptr->m_labelmap->convert(PLM_IMG_TYPE_ITK_ULONG);
+        d_ptr->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
     if (d_ptr->m_ss_img) {
-        printf("Warping ss_img.\n");
+        printf ("Warping ss_img.\n");
         Plm_image::Pointer tmp = Plm_image::New();
-        plm_warp(tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
+        plm_warp (tmp, 0, xf, pih, d_ptr->m_ss_img, 0, false, use_itk, 0);
         d_ptr->m_ss_img = tmp;
     }
 
     /* The cxt polylines are now obsolete */
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->free_all_polylines();
+        d_ptr->m_rtss->free_all_polylines ();
     }
     d_ptr->m_rtss_valid = false;
 }
 
 void
-Segmentation::warp(
-        const Xform::Pointer &xf,
-        Plm_image_header *pih,
-        Warp_parms *parms) {
-    this->warp(xf, pih, parms->use_itk);
+Segmentation::warp (
+    const Xform::Pointer& xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms)
+{
+    this->warp (xf, pih, parms->use_itk);
 }
 
 bool
-Segmentation::have_ss_img() {
+Segmentation::have_ss_img ()
+{
     return (bool) d_ptr->m_ss_img;
 }
 
 void
-Segmentation::set_ss_img(UCharImageType::Pointer ss_img) {
+Segmentation::set_ss_img (UCharImageType::Pointer ss_img)
+{
     d_ptr->m_ss_img = Plm_image::New();
-    d_ptr->m_ss_img->set_itk(ss_img);
+    d_ptr->m_ss_img->set_itk (ss_img);
 
     if (d_ptr->m_rtss) {
-        d_ptr->m_rtss->free_all_polylines();
+        d_ptr->m_rtss->free_all_polylines ();
     }
     d_ptr->m_rtss_valid = false;
     d_ptr->m_ss_img_valid = true;
 }
 
 Plm_image::Pointer
-Segmentation::get_ss_img() {
+Segmentation::get_ss_img ()
+{
     return d_ptr->m_ss_img;
 }
 
 bool
-Segmentation::have_structure_set() {
+Segmentation::have_structure_set ()
+{
     return (bool) d_ptr->m_rtss;
 }
 
-Rtss::Pointer &
-Segmentation::get_structure_set() {
+Rtss::Pointer&
+Segmentation::get_structure_set ()
+{
     return d_ptr->m_rtss;
 }
 
 Rtss *
-Segmentation::get_structure_set_raw() {
+Segmentation::get_structure_set_raw ()
+{
     return d_ptr->m_rtss.get();
 }
 
 void
-Segmentation::set_structure_set(Rtss::Pointer &rtss_ss) {
+Segmentation::set_structure_set (Rtss::Pointer& rtss_ss)
+{
     d_ptr->m_rtss = rtss_ss;
 
     d_ptr->m_rtss_valid = true;
@@ -883,60 +942,63 @@ Segmentation::set_structure_set(Rtss::Pointer &rtss_ss) {
 }
 
 void
-Segmentation::set_structure_set(Rtss *rtss_ss) {
-    d_ptr->m_rtss.reset(rtss_ss);
+Segmentation::set_structure_set (Rtss *rtss_ss)
+{
+    d_ptr->m_rtss.reset (rtss_ss);
 
     d_ptr->m_rtss_valid = true;
     d_ptr->m_ss_img_valid = false;
 }
 
 void
-Segmentation::set_structure_image(
-        UCharImageType::Pointer uchar_img,
-        unsigned int bit
-) {
+Segmentation::set_structure_image (
+    UCharImageType::Pointer uchar_img, 
+    unsigned int bit
+)
+{
     /* Figure out which bit of which byte to change */
     unsigned int uchar_no = bit / 8;
     unsigned int bit_no = bit % 8;
     unsigned char bit_mask = 1 << bit_no;
 
     /* Expand vector length if needed */
-    UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec();
+    UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
     if (uchar_no > ss_img->GetVectorLength()) {
-        this->broaden_ss_image(uchar_no);
+        this->broaden_ss_image (uchar_no);
     }
 
     /* Set up iterators for looping through images */
-    typedef itk::ImageRegionConstIterator<UCharImageType>
-            UCharIteratorType;
-    typedef itk::ImageRegionIterator<UCharVecImageType>
-            UCharVecIteratorType;
-    UCharIteratorType uchar_img_it(uchar_img,
-                                   uchar_img->GetLargestPossibleRegion());
-    UCharVecIteratorType ss_img_it(ss_img,
-                                   ss_img->GetLargestPossibleRegion());
+    typedef itk::ImageRegionConstIterator< UCharImageType > 
+        UCharIteratorType;
+    typedef itk::ImageRegionIterator< UCharVecImageType > 
+        UCharVecIteratorType;
+    UCharIteratorType uchar_img_it (uchar_img, 
+        uchar_img->GetLargestPossibleRegion());
+    UCharVecIteratorType ss_img_it (ss_img, 
+        ss_img->GetLargestPossibleRegion());
 
     /* Loop through voxels, or'ing them into ss_img */
     /* GCS FIX: This is inefficient, due to undesirable construct 
        and destruct of itk::VariableLengthVector of each pixel */
     for (uchar_img_it.GoToBegin(), ss_img_it.GoToBegin();
-         !uchar_img_it.IsAtEnd();
-         ++uchar_img_it, ++ss_img_it
-            ) {
-        unsigned char u = uchar_img_it.Get();
+        !uchar_img_it.IsAtEnd();
+        ++uchar_img_it, ++ss_img_it
+    ) {
+        unsigned char u = uchar_img_it.Get ();
         if (!u) continue;
 
-        itk::VariableLengthVector<unsigned char> v
-                = ss_img_it.Get();
+        itk::VariableLengthVector<unsigned char> v 
+            = ss_img_it.Get ();
         v[uchar_no] |= bit_mask;
-        ss_img_it.Set(v);
+        ss_img_it.Set (v);
     }
 }
 
 void
-Segmentation::resample(float spacing[3]) {
-    d_ptr->m_ss_img->set_itk(
-            resample_image(d_ptr->m_ss_img->itk_uchar_vec(), spacing));
+Segmentation::resample (float spacing[3])
+{
+    d_ptr->m_ss_img->set_itk (
+        resample_image (d_ptr->m_ss_img->itk_uchar_vec (), spacing));
 }
 
 
@@ -944,71 +1006,74 @@ Segmentation::resample(float spacing[3]) {
    Protected member functions
    ----------------------------------------------------------------------- */
 void
-Segmentation::initialize_ss_image(
-        const Plm_image_header &pih, int vector_length) {
+Segmentation::initialize_ss_image (
+    const Plm_image_header& pih, int vector_length)
+{
     UCharVecImageType::Pointer ss_img;
     Plm_image_header ss_img_pih;
 
     /* Create ss_image with same resolution as first image */
-    d_ptr->m_ss_img = Plm_image::New();
-    ss_img = UCharVecImageType::New();
-    itk_image_set_header(ss_img, pih);
-    ss_img->SetVectorLength(vector_length);
-    ss_img->Allocate();
+    d_ptr->m_ss_img = Plm_image::New ();
+    ss_img = UCharVecImageType::New ();
+    itk_image_set_header (ss_img, pih);
+    ss_img->SetVectorLength (vector_length);
+    ss_img->Allocate ();
 
     /* GCS NOTE: For some reason, ss_img->FillBuffer (0) 
        doesn't do what I want. */
     itk::VariableLengthVector<unsigned char> v;
-    v.SetSize(vector_length);
-    v.Fill(0);
-    ss_img->FillBuffer(v);
+    v.SetSize (vector_length);
+    v.Fill (0);
+    ss_img->FillBuffer (v);
 
-    d_ptr->m_ss_img->set_itk(ss_img);
-    Plm_image_header::clone(&ss_img_pih, &pih);
+    d_ptr->m_ss_img->set_itk (ss_img);
+    Plm_image_header::clone (&ss_img_pih, &pih);
 
     /* Create ss_list to hold strucure names */
     d_ptr->m_rtss = Rtss::New();
-    d_ptr->m_rtss->set_geometry(d_ptr->m_ss_img);
+    d_ptr->m_rtss->set_geometry (d_ptr->m_ss_img);
 }
 
 void
-Segmentation::broaden_ss_image(int new_vector_length) {
+Segmentation::broaden_ss_image (int new_vector_length)
+{
     /* Get old image */
-    UCharVecImageType::Pointer old_ss_img = d_ptr->m_ss_img->itk_uchar_vec();
-    Plm_image_header pih(old_ss_img);
+    UCharVecImageType::Pointer old_ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
+    Plm_image_header pih (old_ss_img);
 
     /* Create new image */
-    UCharVecImageType::Pointer new_ss_img = UCharVecImageType::New();
-    itk_image_set_header(new_ss_img, pih);
-    new_ss_img->SetVectorLength(new_vector_length);
-    new_ss_img->Allocate();
+    UCharVecImageType::Pointer new_ss_img = UCharVecImageType::New ();
+    itk_image_set_header (new_ss_img, pih);
+    new_ss_img->SetVectorLength (new_vector_length);
+    new_ss_img->Allocate ();
 
     /* Create "pixels" */
     itk::VariableLengthVector<unsigned char> v_old;
     itk::VariableLengthVector<unsigned char> v_new;
     int old_vector_length = old_ss_img->GetVectorLength();
-    v_old.SetSize(old_vector_length);
-    v_new.SetSize(new_vector_length);
-    v_new.Fill(0);
+    v_old.SetSize (old_vector_length);
+    v_new.SetSize (new_vector_length);
+    v_new.Fill (0);
 
     /* Loop through image */
-    typedef itk::ImageRegionIterator<
-            UCharVecImageType> UCharVecIteratorType;
-    UCharVecIteratorType it_old(
-            old_ss_img, old_ss_img->GetLargestPossibleRegion());
-    UCharVecIteratorType it_new(
-            new_ss_img, new_ss_img->GetLargestPossibleRegion());
-    for (it_old.GoToBegin(), it_new.GoToBegin();
-         !it_old.IsAtEnd();
-         ++it_old, ++it_new) {
+    typedef itk::ImageRegionIterator< 
+        UCharVecImageType > UCharVecIteratorType;
+    UCharVecIteratorType it_old (
+        old_ss_img, old_ss_img->GetLargestPossibleRegion());
+    UCharVecIteratorType it_new (
+        new_ss_img, new_ss_img->GetLargestPossibleRegion());
+    for (it_old.GoToBegin(), it_new.GoToBegin(); 
+         !it_old.IsAtEnd(); 
+         ++it_old, ++it_new)
+    {
         /* Copy old pixel bytes into new */
         v_old = it_old.Get();
         for (int i = 0; i < old_vector_length; i++) {
             v_new[i] = v_old[i];
         }
-        it_new.Set(v_new);
+        it_new.Set (v_new);
     }
 
     /* Fixate new image */
-    d_ptr->m_ss_img->set_itk(new_ss_img);
+    d_ptr->m_ss_img->set_itk (new_ss_img);
 }
