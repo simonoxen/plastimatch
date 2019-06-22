@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "path_util.h"
+#include "plm_math.h"
 #include "print_and_exit.h"
 #include "xio_studyset.h"
 
@@ -26,7 +28,6 @@ int Xio_studyset::gcd(int a, int b) {
     }
 
     return a;
-
 }
 
 Xio_studyset::Xio_studyset (const std::string& input_dir)
@@ -34,8 +35,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
     this->studyset_dir = input_dir;
 
     // Open index.dat file in input_dir
-    std::string indexdat(input_dir);
-    indexdat += "/index.dat";
+    std::string indexdat = compose_filename (input_dir, "index.dat");
     std::ifstream index (indexdat.c_str());
 
     int all_number_slices = 0;
@@ -64,45 +64,59 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
 	all_number_slices = 0;
     }
 
-    // Workaround for multiple slice thickness
-    // Create volume with uniform voxel sizes by finding greatest common divisor of slice thicknesses,
-    // and duplicating slices to obtain a uniform Z axis.
-
-    // Get slices thicknesses from CT files
-
-    std::vector<float> slice_thickness;
-
-    for (size_t i = 0; i < all_slices.size(); i++) {
-
-	std::string ct_file = this->studyset_dir + "/" + all_slices[i].filename_scan;
-	std::string line;
-
-	// Open file
-	std::ifstream ifs(ct_file.c_str(), std::ifstream::in);
-	if (ifs.fail()) {
-	    print_and_exit("Error opening CT file %s for read\n", ct_file.c_str());
-	} else {
-	    // Skip 14 lines
-	    for (int i = 0; i < 14; i++) {
-		getline(ifs, line);
-	    }
-
-	    getline(ifs, line);
-
-	    int dummy;
-	    float highres_thickness;
-
-	    if (sscanf(line.c_str(), "%d,%g", &dummy, &highres_thickness) != 2) {
-		print_and_exit("Error parsing slice thickness (%s)\n", line.c_str());
-	    }
-
-	    slice_thickness.push_back(highres_thickness);
-	}
-	
+    // Workaround for Xio position rounding.  Xio rounds positions to the
+    // nearest 0.1 mm.  This causes the inequal slice spacing workaround
+    // to unnecessarily trigger.
+    for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
+        long this_position = ROUND_INT (10.f * fabs(it->location));
+        long prev_position = 0;
+        long next_position = 0;
+        if (it != all_slices.begin()) {
+            prev_position = ROUND_INT (10.f * fabs(prev(it)->location));
+        }
+        if (next(it) != all_slices.end()) {
+            next_position = ROUND_INT (10.f * fabs(next(it)->location));
+        }
+        //printf ("%ld %ld %ld\n", prev_position, this_position, next_position);
+        long prev_modulo = prev_position % 10;
+        long this_modulo = this_position % 10;
+        long next_modulo = next_position % 10;
+        //printf (" -> %ld %ld %ld\n", prev_modulo, this_modulo, next_modulo);
+        if (it->location < 0) {
+            if ((this_modulo == 3 && (prev_modulo == 5 || next_modulo == 0))
+                || (this_modulo == 8 && (prev_modulo == 0 || next_modulo == 5)))
+            {
+                it->location += 0.05;
+            }
+        } else {
+            if ((this_modulo == 3 && (prev_modulo == 0 || next_modulo == 5))
+                || (this_modulo == 8 && (prev_modulo == 5 || next_modulo == 0)))
+            {
+                it->location -= 0.05;
+            }
+        }
+        //printf (" -> %f\n", it->location);
     }
-
+    
+    // Workaround for multiple slice thickness
+    // Create volume with uniform voxel sizes by finding greatest
+    // common divisor of slice thicknesses,
+    // and duplicating slices to obtain a uniform Z axis.
+    std::vector<float> slice_thickness;
+    for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
+        float prev_spacing = FLT_MAX;
+        float next_spacing = FLT_MAX;
+        if (it != all_slices.begin()) {
+            prev_spacing = it->location - prev(it)->location;
+        }
+        if (next(it) != all_slices.end()) {
+            next_spacing = next(it)->location - it->location;
+        }
+        //printf ("%f\n", std::min (prev_spacing, next_spacing));
+        slice_thickness.push_back (std::min (prev_spacing, next_spacing));
+    }
+    
     // Find greatest common divisor
-
     std::vector<int> slice_thickness_int;
     int slice_thickness_gcd = 1;
 
@@ -119,12 +133,11 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
     else if (all_slices.size() > 0) {
 	slice_thickness_gcd = gcd(slice_thickness_int[0], slice_thickness_int[1]);
 	for (size_t i = 2; i < all_slices.size(); i++) {
-		slice_thickness_gcd = gcd(slice_thickness_gcd, slice_thickness_int[i]);
+            slice_thickness_gcd = gcd(slice_thickness_gcd, slice_thickness_int[i]);
 	}
     }
 
     // Build new slice list, determining duplication needed for each slice
-
     thickness = slice_thickness_gcd / 1000.;
     number_slices = 0;
 
@@ -135,14 +148,14 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
 	    int duplicate = slice_thickness_int[i] / slice_thickness_gcd;
 
 	    for (int j = 0; j < duplicate; j++) {
-		    Xio_studyset_slice slice(all_slices[i].filename_scan, location);
-		    slices.push_back(slice);
-		    location += thickness;
-		    number_slices++;
+                Xio_studyset_slice slice(all_slices[i].filename_scan, location);
+                slices.push_back(slice);
+                location += thickness;
+                number_slices++;
 	    }
 	}
     }
-
+    
     // Initialize pixel spacing to zero.  This get set when the 
     // CT is loaded
     this->ct_pixel_spacing[0] = this->ct_pixel_spacing[1] = 0.f;

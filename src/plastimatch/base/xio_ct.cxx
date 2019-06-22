@@ -244,7 +244,6 @@ void
 xio_ct_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
     /* Transform coordinates of an XiO CT scan to DICOM coordinates */
-
     Volume *v = pli->get_vol ();
 
     /* Set origins */
