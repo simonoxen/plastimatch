@@ -353,6 +353,11 @@ report_score (
     /* First line, iterations, score, misc stats */
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
     if (rparms->curvature_penalty > 0
+	|| rparms->diffusion_penalty > 0
+        || rparms->lame_coefficient_1 > 0
+	|| rparms->lame_coefficient_2 > 0
+	|| rparms->total_displacement_penalty > 0
+	|| rparms->third_order_penalty > 0
         || blm->num_landmarks > 0
         || bst->similarity_data.size() > 1)
     {
@@ -368,7 +373,12 @@ report_score (
     
     /* Second line */
     if (rparms->curvature_penalty > 0
-        || blm->num_landmarks > 0
+        || rparms->diffusion_penalty > 0
+        || rparms->lame_coefficient_1 > 0
+	|| rparms->lame_coefficient_2 > 0
+	|| rparms->total_displacement_penalty > 0
+	|| rparms->third_order_penalty > 0
+	|| blm->num_landmarks > 0
         || bst->similarity_data.size() > 1)
     {
         logfile_printf ("         ");
@@ -384,25 +394,39 @@ report_score (
             logfile_print_score (it_mr->score);
             ++it_mr, ++it_st;
         }
-        if (ssd->metric_record.size() > 1
-            && (rparms->curvature_penalty > 0 || blm->num_landmarks > 0))
+        if (ssd->metric_record.size() > 1 && (rparms->curvature_penalty > 0 || blm->num_landmarks > 0 || rparms->diffusion_penalty > 0 || rparms->lame_coefficient_1 > 0 || rparms->lame_coefficient_2 > 0 || rparms->total_displacement_penalty > 0 || rparms->third_order_penalty > 0))
+
         {
             logfile_printf ("\n");
             logfile_printf ("         ");
         }
-        if (rparms->curvature_penalty > 0 || blm->num_landmarks > 0) {
+        if (rparms->curvature_penalty > 0 || blm->num_landmarks > 0 || rparms->diffusion_penalty > 0 || rparms->lame_coefficient_1 > 0 || rparms->lame_coefficient_2 > 0 || rparms->total_displacement_penalty > 0 || rparms->third_order_penalty > 0
+) {
             /* Part 2 - regularization metric */
-            if (rparms->curvature_penalty > 0) {
+	    /* Ask Dr. Sharp about linear elastic */		
+            if (rparms->curvature_penalty > 0){
                 logfile_printf ("RM %9.3f ", 
                     rparms->curvature_penalty * bst->ssd.rmetric);
-            }
+            } else if (rparms->diffusion_penalty > 0){
+                logfile_printf ("RM %9.3f ", 
+                    rparms->diffusion_penalty * bst->ssd.rmetric);
+            } else if (rparms->third_order_penalty > 0){
+                logfile_printf ("RM %9.3f ", 
+                    rparms->third_order_penalty * bst->ssd.rmetric);
+            } else if (rparms->total_displacement_penalty > 0){
+                logfile_printf ("RM %9.3f ", 
+                    rparms->total_displacement_penalty * bst->ssd.rmetric);
+            } else if (rparms->curvature_penalty > 0){
+                logfile_printf ("RM %9.3f ", 
+                    rparms->curvature_penalty * bst->ssd.rmetric);
+            } 
             /* Part 3 - landmark metric */
             if (blm->num_landmarks > 0) {
                 logfile_printf ("LM %9.3f ", 
                     blm->landmark_stiffness * bst->ssd.lmetric);
             }
             /* Part 4 - timing */
-            if (rparms->curvature_penalty > 0) {
+            if (rparms->curvature_penalty > 0 || rparms->diffusion_penalty > 0 || rparms->lame_coefficient_1 > 0 || rparms->lame_coefficient_2 > 0 || rparms->total_displacement_penalty > 0 || rparms->third_order_penalty > 0) {
                 logfile_printf ("[ %9.3f | %9.3f ]", 
                     total_smetric_time, ssd->time_rmetric);
             }
