@@ -19,7 +19,8 @@
 #define __itkESMDemonsRegistrationWithMaskFunction_txx
 
 #include "itkESMDemonsRegistrationWithMaskFunction.h"
-#include "itkExceptionObject.h"
+// #include "itkExceptionObject.h"
+#include "itkMacro.h"
 #include "vnl/vnl_math.h"
 #if ITK_VERSION_MAJOR >= 5
 #include "vcl_legacy_aliases.h"
