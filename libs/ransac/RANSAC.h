@@ -15,7 +15,8 @@
 #include "itkMultiThreader.h"
 #include "itkSimpleFastMutexLock.h"
 #endif
-#include "itkExceptionObject.h"
+// #include "itkExceptionObject.h"
+#include "itkMacro.h"
 
 /**
  * This class implements a multi-threaded version of the RAndom SAmple 
