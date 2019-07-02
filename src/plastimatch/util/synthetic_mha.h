@@ -25,7 +25,8 @@ enum Pattern_type {
     PATTERN_ZRAMP,
     PATTERN_NOISE,
     PATTERN_CYLINDER,
-    PATTERN_GABOR
+    PATTERN_GABOR,
+    PATTERN_TENT
 };
 
 class Synthetic_mha_parms_private;
@@ -60,14 +61,16 @@ public:
     bool m_want_dose_img;
     Image_normalization image_normalization;
 
+    // Generic parameters for {cylinder, sphere, tent}
+    float radius[3];
+    float center[3];
+
     float gauss_center[3];
     float gauss_std[3];
     float penumbra;
     float dose_size[6];
     float dose_center[3];
     float rect_size[6];
-    float sphere_center[3];
-    float sphere_radius[3];
     float donut_center[3];
     float donut_radius[3];
     int donut_rings;
@@ -75,8 +78,6 @@ public:
     float lung_tumor_pos[3];
     float noise_mean;
     float noise_std;
-    float cylinder_radius[3];
-    float cylinder_center[3];
     bool gabor_use_k_fib;
     int gabor_k_fib[2];
     float gabor_k[3];

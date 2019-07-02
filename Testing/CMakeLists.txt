@@ -582,27 +582,27 @@ plm_add_test (
 plm_add_test (
   "sphere-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--center;0 0 0;--radius;10 10 10"
   )
 plm_add_test (
   "sphere-2"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-2.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;50 50 50"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-2.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--center;0 0 0;--radius;50 50 50"
   )
 plm_add_test (
   "sphere-3"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;50 50 50"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--center;0 0 0;--radius;50 50 50"
   )
 plm_add_test (
     "sphere-4"
     ${PLM_PLASTIMATCH_PATH}/plastimatch
-    "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-4.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--sphere-center;0 0 0;--sphere-radius;150 150 150"
+    "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-4.mha;--output-type;float;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--center;0 0 0;--radius;150 150 150"
     )
 plm_add_test (
   "sphere-5"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-5.mha;--output-type;uchar;--pattern;sphere;--origin;-19 -19 -19;--dim;20 20 20;--spacing;2 2 2;--background;0;--foreground;1;--sphere-center;0 0 0;--sphere-radius;21"
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-5.mha;--output-type;uchar;--pattern;sphere;--origin;-19 -19 -19;--dim;20 20 20;--spacing;2 2 2;--background;0;--foreground;1;--center;0 0 0;--radius;21"
   )
 plm_add_test (
   "xramp-1"

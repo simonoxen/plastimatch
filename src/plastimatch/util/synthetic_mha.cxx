@@ -41,15 +41,15 @@ Synthetic_mha_parms::Synthetic_mha_parms ()
         spacing[i] = 5.0f;
         dim[i] = 100;
         origin[i] = 0.0f;
+
+        center[i] = 0.0f;
+        radius[i] = 50.0f;
+
         gauss_center[i] = 0.0f;
         gauss_std[i] = 100.0f;
-        sphere_center[i] = 0.0f;
-        sphere_radius[i] = 50.0f;
         donut_center[i] = 0.0f;
         lung_tumor_pos[i] = 0.0f;
         dose_center[i] = 0.0f;
-        cylinder_center[i] = 0.0f;
-        cylinder_radius[i] = 0.0f;
     }
     background = -1000.0f;
     foreground = 0.0f;
@@ -310,8 +310,8 @@ synth_sphere (
 {
     float f = 0;
     for (int d = 0; d < 3; d++) {
-        float f1 = phys[d] - parms->sphere_center[d];
-        f1 = f1 / parms->sphere_radius[d];
+        float f1 = phys[d] - parms->center[d];
+        f1 = f1 / parms->radius[d];
         f += f1 * f1;
     }
     if (f > 1.0) {
@@ -337,8 +337,8 @@ synth_multi_sphere (
 {
     float f = 0;
     for (int d = 0; d < 3; d++) {
-        float f1 = phys[d] - parms->sphere_center[d];
-        f1 = f1 / parms->sphere_radius[d];
+        float f1 = phys[d] - parms->center[d];
+        f1 = f1 / parms->radius[d];
         f += f1 * f1;
     }
     if (f > 1.0) {
@@ -498,8 +498,8 @@ synth_cylinder (
 {
     float f = 0;
     for (int d = 0; d < 2; d++) {
-        float f1 = phys[d] - parms->cylinder_center[d];
-        f1 = f1 / parms->cylinder_radius[d];
+        float f1 = phys[d] - parms->center[d];
+        f1 = f1 / parms->radius[d];
         f += f1 * f1;
     }
     if (f > 1.0) {
@@ -545,6 +545,28 @@ synth_gabor (
 
     /* Modulate by cos for real part, or sin for imaginary part */
     *intens *= cos(parms->d_ptr->gabor_freq * proj_dist);
+}
+
+static void 
+synth_tent (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    float f = 0.f;
+    float dist = 0.f;
+    for (int d = 0; d < 3; d++) {
+        float rel = 1.0f -
+            (fabs(phys[d] - parms->center[d]) / parms->radius[d]);
+        if (rel > f) {
+            f = rel;
+        }
+    }
+
+    *intens = (1 - f) * parms->background + f * parms->foreground;
+    *label = (f > 0.2) ? 1 : 0;
 }
 
 void
@@ -741,6 +763,9 @@ synthetic_mha (
             break;
         case PATTERN_GABOR:
             synth_gabor (&intens, &label_uchar, phys, parms);
+            break;
+        case PATTERN_TENT:
+            synth_tent (&intens, &label_uchar, phys, parms);
             break;
         default:
             intens = 0.0f;

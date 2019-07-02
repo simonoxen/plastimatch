@@ -145,7 +145,7 @@ parse_fn (
     parser->add_long_option ("", "pattern",
         "synthetic pattern to create: {"
         "cylinder, donut, dose, gabor, gauss, grid, lung, noise, "
-        "rect, sphere, xramp, yramp, zramp"
+        "rect, sphere, tent, xramp, yramp, zramp"
         "}, default is gauss", 
         1, "gauss");
 
@@ -168,6 +168,13 @@ parse_fn (
         "intensity of background region", 1, "-1000");
     parser->add_long_option ("", "foreground", 
         "intensity of foreground region", 1, "0");
+
+    /* Generic parameters for {cylinder, sphere, tent} */
+    parser->add_long_option ("", "center", 
+        "location of {cylinder,sphere,tent} center in mm \"x y z\"", 1,
+        "0 0 0");
+    parser->add_long_option ("", "radius", 
+        "radius of {cylinder,sphere,tent} in mm \"x [y z]\"", 1, "50");
 
     /* Donut options */
     parser->add_long_option ("", "donut-center", 
@@ -195,12 +202,6 @@ parse_fn (
         " or locations of rectangle corners in mm"
         " \"x1 x2 y1 y2 z1 z2\"", 1, "-50 50 -50 50 -50 50");
 
-    /* Sphere options */
-    parser->add_long_option ("", "sphere-center", 
-        "location of sphere center in mm \"x y z\"", 1, "0 0 0");
-    parser->add_long_option ("", "sphere-radius", 
-        "radius of sphere in mm \"x [y z]\"", 1, "50");
-
     /* Grid pattern options */
     parser->add_long_option ("", "grid-pattern", 
         "grid pattern spacing in voxels \"x [y z]\"", 1, "10");
@@ -224,12 +225,6 @@ parse_fn (
         "mean intensity of gaussian noise", 1, "0.0");
     parser->add_long_option ("", "noise-std", 
         "standard deviation of gaussian noise", 1, "1.0");
-
-    /* Cylinder options */
-    parser->add_long_option ("", "cylinder-center", 
-        "location of cylinder center in mm \"x [y z]\"", 1, "0 0 0");
-    parser->add_long_option ("", "cylinder-radius", 
-        "size of cylinder in mm \"x [y z]\"", 1, "50 50 0");	
 
     /* Metadata options */
     parser->add_long_option ("", "metadata",
@@ -376,6 +371,10 @@ parse_fn (
     sm_parms->background = parser->get_float ("background");
     sm_parms->foreground = parser->get_float ("foreground");
 
+    /* Generic options for {cylinder, sphere, tent} */
+    parser->assign_float_13 (sm_parms->center, "center");
+    parser->assign_float_13 (sm_parms->radius, "radius");
+
     /* Donut options */
     parser->assign_float_13 (sm_parms->donut_center, "donut-center");
     parser->assign_float_13 (sm_parms->donut_radius, "donut-radius");
@@ -414,10 +413,6 @@ parse_fn (
         throw (dlib::error ("Error. Option --rect_size must have "
                 "one, three, or six arguments\n"));
     }
-
-    /* Sphere options */
-    parser->assign_float_13 (sm_parms->sphere_center, "sphere-center");
-    parser->assign_float_13 (sm_parms->sphere_radius, "sphere-radius");
 
     /* Grid pattern options */
     parser->assign_int13 (sm_parms->grid_spacing, "grid-pattern");
@@ -483,10 +478,6 @@ parse_fn (
         throw (dlib::error ("Error. Option --noise-std must have "
                 "a floating point argument\n"));
     }
-
-    /* Cylinder options */
-    parser->assign_float_13 (sm_parms->cylinder_center, "cylinder-center");
-    parser->assign_float_13 (sm_parms->cylinder_radius, "cylinder-radius");
 
     /* Gabor options */
     if (parser->option ("gabor-k-fib")) {
