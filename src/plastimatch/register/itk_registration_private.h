@@ -5,7 +5,8 @@
 #define _itk_registration_private_h_
 
 #include "plmregister_config.h"
-#include "itkExceptionObject.h"
+// #include "itkExceptionObject.h"
+#include "itkMacro.h"
 #include "itkImageRegistrationMethod.h"
 #include "itk_image_type.h"
 #include "stage_parms.h"
