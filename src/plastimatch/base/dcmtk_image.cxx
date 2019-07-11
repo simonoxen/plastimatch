@@ -163,16 +163,6 @@ Dcmtk_rt_study::image_load ()
         return;
     }
 
-    float rescale_slope, rescale_intercept;
-    rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
-    if (!rc) {
-        rescale_intercept = 0;
-    }
-    rc = df->get_ds_float (DCM_RescaleSlope, &rescale_slope);
-    if (!rc) {
-        rescale_slope = 1;
-    }
-
 #if defined (commentout)
     lprintf ("Samp_per_pix: %d\n", (int) samp_per_pix);
     lprintf ("Phot_interp: %s\n", phot_interp);
@@ -441,6 +431,16 @@ Dcmtk_rt_study::image_load ()
 	    print_and_exit ("Oops.  Dicom image had wrong length "
 		"(%d vs. %d x %d).\n", length, dim[0], dim[1]);
 	}
+
+        float rescale_slope, rescale_intercept;
+        rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
+        if (!rc) {
+            rescale_intercept = 0;
+        }
+        rc = df->get_ds_float (DCM_RescaleSlope, &rescale_slope);
+        if (!rc) {
+            rescale_slope = 1;
+        }
 
         /* Apply slope and offset */
         if (bits_alloc == 8) {
