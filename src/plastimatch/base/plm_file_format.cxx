@@ -10,6 +10,7 @@
 #include <itkImageIOBase.h>
 
 #include "dicom_probe.h"
+#include "dir_list.h"
 #include "file_util.h"
 #include "itk_image.h"
 #include "path_util.h"
@@ -39,6 +40,19 @@ is_rt_study_directory (const char* path)
     }
 }
 
+static bool
+is_proj_image_dir (const char* path)
+{
+    Dir_list dir_list (path);
+    for (int i = 0; i < dir_list.num_entries; i++) {
+        std::string entry = dir_list.entry(i);
+        if (extension_is (entry, "his")) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Plm_file_format
 plm_file_format_deduce (const char* path)
 {
@@ -55,6 +69,9 @@ plm_file_format_deduce (const char* path)
 	if (is_rt_study_directory (path)) {
 	    return PLM_FILE_FMT_RT_STUDY_DIR;
 	}
+        if (is_proj_image_dir (path)) {
+	    return PLM_FILE_FMT_PROJ_IMG_DIR;
+        }
 	return PLM_FILE_FMT_DICOM_DIR;
     }
 
