@@ -394,6 +394,7 @@ report_score (
             logfile_print_score (it_mr->score);
             ++it_mr, ++it_st;
         }
+    }
         if (ssd->metric_record.size() > 1 && (rparms->curvature_penalty > 0 || blm->num_landmarks > 0 || rparms->diffusion_penalty > 0 || rparms->lame_coefficient_1 > 0 || rparms->lame_coefficient_2 > 0 || rparms->total_displacement_penalty > 0 || rparms->third_order_penalty > 0))
 
         {
@@ -401,25 +402,9 @@ report_score (
             logfile_printf ("         ");
         }
         if (rparms->curvature_penalty > 0 || blm->num_landmarks > 0 || rparms->diffusion_penalty > 0 || rparms->lame_coefficient_1 > 0 || rparms->lame_coefficient_2 > 0 || rparms->total_displacement_penalty > 0 || rparms->third_order_penalty > 0
-) {
-            /* Part 2 - regularization metric */
-	    /* Ask Dr. Sharp about linear elastic */		
-            if (rparms->curvature_penalty > 0){
-                logfile_printf ("RM %9.3f ", 
-                    rparms->curvature_penalty * bst->ssd.rmetric);
-            } else if (rparms->diffusion_penalty > 0){
-                logfile_printf ("RM %9.3f ", 
-                    rparms->diffusion_penalty * bst->ssd.rmetric);
-            } else if (rparms->third_order_penalty > 0){
-                logfile_printf ("RM %9.3f ", 
-                    rparms->third_order_penalty * bst->ssd.rmetric);
-            } else if (rparms->total_displacement_penalty > 0){
-                logfile_printf ("RM %9.3f ", 
-                    rparms->total_displacement_penalty * bst->ssd.rmetric);
-            } else if (rparms->curvature_penalty > 0){
-                logfile_printf ("RM %9.3f ", 
-                    rparms->curvature_penalty * bst->ssd.rmetric);
-            } 
+) {	
+	logfile_printf ("RM %9.3f ",  bst->ssd.rmetric);			
+  } 
             /* Part 3 - landmark metric */
             if (blm->num_landmarks > 0) {
                 logfile_printf ("LM %9.3f ", 
@@ -430,11 +415,8 @@ report_score (
                 logfile_printf ("[ %9.3f | %9.3f ]", 
                     total_smetric_time, ssd->time_rmetric);
             }
-        }
         logfile_printf ("\n");
-    }
 }
-
 void
 bspline_score (Bspline_optimize *bod)
 {
@@ -495,8 +477,7 @@ bspline_score (Bspline_optimize *bod)
     /* Compute regularization */
     if (rparms->implementation != '\0') {
         bst->rst.compute_score (&bst->ssd, rparms, bxf);
-        bst->ssd.total_score +=
-            rparms->curvature_penalty * bst->ssd.rmetric;
+	bst->ssd.total_score += bst->ssd.rmetric;
     }
 
     /* Compute landmark score/gradient to image score/gradient */
