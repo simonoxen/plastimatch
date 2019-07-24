@@ -6,7 +6,9 @@
 #include "itkImage.h"
 #include "itkResampleImageFilter.h"
 #include "itkAffineTransform.h"
+#if ITK_VERSION_MAJOR <= 4
 #include "itkVectorResampleImageFilter.h"
+#endif
 #include "itkNearestNeighborInterpolateImageFunction.h"
 
 #include "itk_image_type.h"
@@ -20,7 +22,11 @@ T
 vector_resample_image (const T& vf_image, const Plm_image_header* pih)
 {
     typedef typename T::ObjectType VFImageType;
+#if ITK_VERSION_MAJOR <= 4
     typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
+#else
+    typedef itk::ResampleImageFilter < VFImageType, VFImageType > FilterType;
+#endif
     typedef itk::VectorLinearInterpolateImageFunction< 
             VFImageType, double >  InterpolatorType;
 
