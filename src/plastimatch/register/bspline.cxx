@@ -417,8 +417,13 @@ report_score (
 	   || rparms->third_order_penalty > 0) 
 	{	
 	#if PLM_CONFIG_LEGACY_SQUARED_REGULARIZER
+		if (rparms->curvature_penalty>0){
 		logfile_printf ("RM %9.3f ",  
-				  rparms->curvature_penalty *bst->ssd.rmetric); 
+				  rparms->curvature_penalty *bst->ssd.rmetric);
+		}
+		else {
+			logfile_printf ("RM %9.3f ",  bst->ssd.rmetric); 
+		}
 	#else
         	logfile_printf ("RM %9.3f ",  bst->ssd.rmetric); 
 	#endif
@@ -504,9 +509,14 @@ bspline_score (Bspline_optimize *bod)
     if (rparms->implementation != '\0') {
         bst->rst.compute_score (&bst->ssd, rparms, bxf);
 	#if PLM_CONFIG_LEGACY_SQUARED_REGULARIZER
-		bst->ssd.total_score += 
-		    rparms->curvature_penalty*bst->ssd.rmetric;  
-	#else
+		if (rparms->curvature_penalty>0) {	
+			bst->ssd.total_score += 
+		    		rparms->curvature_penalty*bst->ssd.rmetric; 
+		}
+		else {
+			bst->ssd.total_score += bst->ssd.rmetric; 
+		}
+	#else 
         	bst->ssd.total_score += bst->ssd.rmetric; 
 	#endif
 	
