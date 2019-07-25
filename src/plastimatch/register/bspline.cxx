@@ -416,7 +416,14 @@ report_score (
 	   || rparms->total_displacement_penalty > 0 
 	   || rparms->third_order_penalty > 0) 
 	{	
-	logfile_printf ("RM %9.3f ",  bst->ssd.rmetric);			
+	#if PLM_CONFIG_LEGACY_SQUARED_REGULARIZER
+		logfile_printf ("RM %9.3f ",  
+				  rparms->curvature_penalty *bst->ssd.rmetric); 
+	#else
+        	logfile_printf ("RM %9.3f ",  bst->ssd.rmetric); 
+	#endif
+
+				
       	} 
             /* Part 3 - landmark metric */
             if (blm->num_landmarks > 0) {
