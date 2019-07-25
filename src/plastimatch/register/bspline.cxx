@@ -496,7 +496,13 @@ bspline_score (Bspline_optimize *bod)
     /* Compute regularization */
     if (rparms->implementation != '\0') {
         bst->rst.compute_score (&bst->ssd, rparms, bxf);
-	bst->ssd.total_score += bst->ssd.rmetric;
+	#if PLM_CONFIG_LEGACY_SQUARED_REGULARIZER
+		bst->ssd.total_score += 
+		    rparms->curvature_penalty*bst->ssd.rmetric;  
+	#else
+        	bst->ssd.total_score += bst->ssd.rmetric; 
+	#endif
+	
     }
 
     /* Compute landmark score/gradient to image score/gradient */
