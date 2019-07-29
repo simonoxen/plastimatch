@@ -76,8 +76,9 @@ Bspline_regularize::initialize (
 	this->numeric_init (bxf);
         break;
     case 'b':
+	this->analytic_init(bxf,reg_parms);
     case 'c':
-        this->analytic_init (bxf);
+        this->analytic_init (bxf,reg_parms);
         break;
     case 'd':
 	this->semi_analytic_init (bxf);

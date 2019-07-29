@@ -8,7 +8,6 @@
 #include "registration_data.h"
 #include "registration_parms.h"
 #include "xform.h"
-
 class Registration_private;
 
 class PLMREGISTER_API Registration {

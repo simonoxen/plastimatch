@@ -536,7 +536,7 @@ Registration_parms::set_key_value (
     else if (key == "lame_coefficient_2") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f",
-                &stage->regularization_parms.lame_coefficient_1) != 2) {
+                &stage->regularization_parms.lame_coefficient_2) != 1) {
             goto error_exit;
         }
     }

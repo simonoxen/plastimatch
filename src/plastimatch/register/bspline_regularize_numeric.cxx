@@ -49,6 +49,10 @@ compute_score_numeric_internal (
     float inv_dxdz = 0.25f / (dx*dz);
     float inv_dydz = 0.25f / (dy*dz);
 
+    float inv_dx = 0.5f / (dx);
+    float inv_dy = 0.5f / (dy);
+    float inv_dz = 0.5f / (dz);
+
     /* Index of current point-of-interest (POI) */
     int idx_poi;
 
@@ -82,6 +86,7 @@ compute_score_numeric_internal (
     float d2_dx2[3],  d2_dxdy[3];
     float d2_dy2[3],  d2_dxdz[3];
     float d2_dz2[3],  d2_dydz[3];
+    float d_dx[3], d_dy[3], d_dz[3];
 
     /* Voxel-specific stiffness */
     const float *fsimg = 0;
@@ -90,7 +95,7 @@ compute_score_numeric_internal (
     }
 
     /* Square of 2nd derivative */
-    float d2_sq;
+    float d2_sq,d1_sq,d0_sq,d_sq,d1_dz;
 
     /* Smoothness */
     float S;
@@ -198,6 +203,8 @@ compute_score_numeric_internal (
 
                 /* Compute components */
                 d2_sq = 0.0f;
+		d1_sq = 0.0f;
+		d0_sq = 0.0f;
                 for (c=0; c<3; c++) {
                     d2_dx2[c] = inv_dxdx 
 			* (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
@@ -212,6 +219,9 @@ compute_score_numeric_internal (
                         vec_inkn[c] - vec_inkp[c] - vec_ipkn[c] + vec_ipkp[c]);
                     d2_dydz[c] = inv_dydz * (
                         vec_jnkn[c] - vec_jnkp[c] - vec_jpkn[c] + vec_jpkp[c]);
+		    d_dx[c] = inv_dx * (vec_ip[c] - vec_in[c]);
+		    d_dy[c] = inv_dy * (vec_jp[c] - vec_jn[c]);
+		    //d1_dz[c] = inv_dz * (vec_kp[c] - vec_kn[c]);
 
 		    /* Accumulate score for this component, for this voxel */
                     d2_sq += 
@@ -223,8 +233,15 @@ compute_score_numeric_internal (
 			    d2_dxdz[c]*d2_dxdz[c] +
 			    d2_dydz[c]*d2_dydz[c]
                         );
+		    d_sq +=
+			d_dx[c]*d_dx[c] +
+		    	d_dy[c]*d_dy[c] +
+			d_dz[c]*d_dz[c]	; 
+		    d0_sq +=
+		 	vec_poi[c]*vec_poi[c];		
 
 		    /* Accumulate grad for this component, for this voxel */
+		    /*How will this change?*/
 		    dc_dv[c] = 
 			- 4 * dxdydz * inv_dxdx * d2_dx2[c] 
 			- 4 * dxdydz * inv_dydy * d2_dy2[c] 
