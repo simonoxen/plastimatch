@@ -82,9 +82,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
         long this_modulo = this_position % 10;
         long next_modulo = next_position % 10;
         //printf (" -> %ld %ld %ld\n", prev_modulo, this_modulo, next_modulo);
-        if ((this_modulo == 3 || this_modulo == 8)
-            && (prev_modulo == 0 || prev_modulo == 5
-                || next_modulo == 0 || next_modulo == 5))
+        if (this_modulo == 3 || this_modulo == 8)
         {
             if (it->location < 0) {
                 it->location += 0.05;
