@@ -108,5 +108,5 @@ int main
     rsm.set_patient_name ("Hello^World");
     rsm.set_patient_id ("ANON^Hello");
 
-    pli->save_short_dicom ("itk_dicom", &rsm);
+    //pli->save_short_dicom ("itk_dicom", &rsm);
 }
