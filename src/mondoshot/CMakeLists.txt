@@ -22,7 +22,7 @@ include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
 set (MONDOSHOT_SRC
-#  dcmtk_uid.cxx dcmtk_uid.h
+  dcmtk_uid.cxx dcmtk_uid.h
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )
@@ -40,8 +40,7 @@ endif ()
 ##  Executable targets
 ##-----------------------------------------------------------------------------
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
-if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND
-    AND NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
   target_link_libraries (mondoshot 
     ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES}

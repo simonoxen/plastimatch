@@ -452,8 +452,8 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
 bool MyFrame::OnInit ()
 {
     bool rc;
-    rc = this->RegisterHotKey (0xB000, 0, wxCharCodeWXToMSW(WXK_F11));
-
+//    rc = this->RegisterHotKey (0xB000, 0, wxCharCodeWXToMSW(WXK_F11));
+	rc = this->RegisterHotKey(0xB000, 0, VK_F11);
     wxSize screenSize = wxGetDisplaySize();
     this->m_bitmap.Create (screenSize.x, screenSize.y);
 
