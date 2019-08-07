@@ -68,20 +68,9 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
     // nearest 0.1 mm.  This causes the inequal slice spacing workaround
     // to unnecessarily trigger.
     for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
-        long this_position = ROUND_INT (10.f * fabs(it->location));
-        long prev_position = 0;
-        long next_position = 0;
-        if (it != all_slices.begin()) {
-            prev_position = ROUND_INT (10.f * fabs(prev(it)->location));
-        }
-        if (next(it) != all_slices.end()) {
-            next_position = ROUND_INT (10.f * fabs(next(it)->location));
-        }
-        //printf ("%ld %ld %ld\n", prev_position, this_position, next_position);
-        long prev_modulo = prev_position % 10;
-        long this_modulo = this_position % 10;
-        long next_modulo = next_position % 10;
-        //printf (" -> %ld %ld %ld\n", prev_modulo, this_modulo, next_modulo);
+        long this_location = ROUND_INT (10.f * fabs(it->location));
+        long this_modulo = this_location % 10;
+        printf ("%f", it->location);
         if (this_modulo == 3 || this_modulo == 8)
         {
             if (it->location < 0) {
@@ -90,7 +79,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
                 it->location -= 0.05;
             }
         }
-        //printf (" -> %f\n", it->location);
+        printf (" -> %f\n", it->location);
     }
     
     // Workaround for multiple slice thickness
@@ -107,7 +96,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
         if (next(it) != all_slices.end()) {
             next_spacing = next(it)->location - it->location;
         }
-        //printf ("%f\n", std::min (prev_spacing, next_spacing));
+        printf ("%f\n", std::min (prev_spacing, next_spacing));
         slice_thickness.push_back (std::min (prev_spacing, next_spacing));
     }
     
