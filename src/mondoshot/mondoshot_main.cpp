@@ -8,7 +8,7 @@
 #include <wx/wx.h>
 #include <wx/window.h>
 #include <wx/filename.h>
-#include <wx/config.h>
+#include <wx/fileconf.h>
 #include "mondoshot_main.h"
 #include "sqlite3.h"
 #include "plm_version.h"
@@ -676,8 +676,9 @@ void
 config_save (void)
 {
     /* Load from config file */
-    wxConfig *wxconfig = new wxConfig("Mondoshot");
-    wxconfig->Write ("remote_ip", ::config.remote_ip);
+	wxFileConfig *wxconfig = new wxFileConfig("Mondoshot", "Mondoshot",
+		"c:/tmp/mondoshot.ini", "c:/tmp/mondoshot.ini", wxCONFIG_USE_GLOBAL_FILE);
+	wxconfig->Write ("remote_ip", ::config.remote_ip);
     wxconfig->Write ("remote_port", ::config.remote_port);
     wxconfig->Write ("remote_aet", ::config.remote_aet);
     wxconfig->Write ("local_aet", ::config.local_aet);
@@ -699,8 +700,12 @@ config_save (void)
 void
 config_initialize (void)
 {
+	wxString data_directory = wxT("C:/tmp");
+	wxFileName::Mkdir(data_directory, wxPATH_MKDIR_FULL);
+
     /* Load from config file */
-    wxConfig *wxconfig = new wxConfig("Mondoshot");
+    wxFileConfig *wxconfig = new wxFileConfig("Mondoshot","Mondoshot", 
+        "c:/tmp/mondoshot.ini", "c:/tmp/mondoshot.ini", wxCONFIG_USE_GLOBAL_FILE);
     wxconfig->Read ("remote_ip", &::config.remote_ip, wxT("132.183.1.1"));
     wxconfig->Read ("remote_port", &::config.remote_port, wxT("104"));
     wxconfig->Read ("remote_aet", &::config.remote_aet, wxT("IMPAC_DCM_SCP"));
