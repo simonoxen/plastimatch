@@ -452,7 +452,7 @@ MyFrame::OnButtonSend (wxCommandEvent& event)
 bool MyFrame::OnInit ()
 {
     bool rc;
-//    rc = this->RegisterHotKey (0xB000, 0, wxCharCodeWXToMSW(WXK_F11));
+//    rc = this->RegisterHotKey (0xB000, 0, wxCharCodeWXToMSW(WXK_F11));r
 	rc = this->RegisterHotKey(0xB000, 0, VK_F11);
     wxSize screenSize = wxGetDisplaySize();
     this->m_bitmap.Create (screenSize.x, screenSize.y);
@@ -471,6 +471,7 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
     memDC.SelectObject (wxNullBitmap);
 
     this->Show (TRUE);
+	this->Raise();
 }
 
 void
@@ -701,7 +702,7 @@ void
 config_initialize (void)
 {
 	wxString data_directory = wxT("C:/tmp");
-	wxFileName::Mkdir(data_directory, wxPATH_MKDIR_FULL);
+	wxFileName::Mkdir(data_directory, wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 
     /* Load from config file */
     wxFileConfig *wxconfig = new wxFileConfig("Mondoshot","Mondoshot", 
