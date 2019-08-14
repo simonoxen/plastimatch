@@ -96,7 +96,7 @@ parse_fn (
     parser->add_long_option ("", "sid",
 	"The SID (source-image-distance) in mm (default: 1500)", 1, "1500");
     parser->add_long_option ("r", "dim",
-	"The output resolution in format \"row col\" (in mm)", 1, "128 128");
+	"The detector resolution in format \"row col\" (in mm)", 1, "128 128");
     parser->add_long_option ("s", "intensity-scale",
 	"Scaling factor for output image intensity", 1, "1.0");
     parser->add_long_option ("e", "exponential",
@@ -163,8 +163,9 @@ parse_fn (
     options->sad = parser->get_float ("sad");
     options->sid = parser->get_float ("sid");
     options->sid = parser->get_float ("sid");
-    parser->assign_int_2 (options->image_resolution, "dim");
+    parser->assign_int_2 (options->detector_resolution, "dim");
     options->manual_scale = parser->get_float ("intensity-scale");
+
     if (parser->have_option ("exponential")) {
         options->exponential_mapping = true;
     }
