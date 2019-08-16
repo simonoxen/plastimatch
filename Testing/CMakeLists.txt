@@ -29,6 +29,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-mse-k.txt"
   "plm-bsp-mse-l.txt"
   "plm-bsp-mi-c.txt"
+  "plm-bsp-mi-c-2.txt"
   "plm-bsp-mi-k.txt"
   "plm-bsp-gm-k.txt"
   "plm-bsp-dmap-k.txt"
@@ -2997,6 +2998,29 @@ set_tests_properties (plm-bsp-mi-c-check PROPERTIES
   DEPENDS plm-bsp-mi-c-stats)
 
 plm_add_test (
+  "plm-bsp-mi-c-2" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-2.txt"
+  )
+plm_add_test (
+  "plm-bsp-mi-c-2-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-2-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-mi-c-2-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-2-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-129.5"
+  "-128.5"
+  )
+set_property (TEST plm-bsp-mi-c-2 APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mi-c-2 APPEND PROPERTY DEPENDS gauss-3)
+set_tests_properties (plm-bsp-mi-c-2-stats PROPERTIES 
+  DEPENDS plm-bsp-mi-c-2)
+set_tests_properties (plm-bsp-mi-c-2-check PROPERTIES 
+  DEPENDS plm-bsp-mi-c-2-stats)
+
+plm_add_test (
   "plm-bsp-mi-k" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-k.txt"
@@ -4050,7 +4074,7 @@ set_tests_properties (plm-resample-b-check PROPERTIES
 plm_add_test (
   "plm-resample-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "resample;--input;${PLM_BUILD_TESTING_DIR}/bspline-mi-c-1-vf.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-resample-c-vf.mha;--fixed;${PLM_BUILD_TESTING_DIR}/black-1.mha"
+  "resample;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-mi-c-2-vf.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-resample-c-vf.mha;--fixed;${PLM_BUILD_TESTING_DIR}/black-1.mha"
   )
 plm_add_test (
   "plm-resample-c-stats"
@@ -4064,7 +4088,7 @@ plmtest_check_interval ("plm-resample-c-check"
   "6.74"
   )
 set_tests_properties (plm-resample-c PROPERTIES 
-  DEPENDS "bspline-mi-c-1;black-1")
+  DEPENDS "plm-bsp-mi-c-2;black-1")
 set_tests_properties (plm-resample-c-stats PROPERTIES DEPENDS plm-resample-c)
 set_tests_properties (plm-resample-c-check PROPERTIES 
   DEPENDS plm-resample-c-stats)
@@ -4363,7 +4387,7 @@ set_tests_properties (plm-warp-pointset-c PROPERTIES DEPENDS landmark-warp-c)
 plm_add_test (
   "plm-warp-a" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_BUILD_TESTING_DIR}/bspline_c_xf.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-a-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-2.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-a-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-a.mha"
   )
 plm_add_test (
   "plm-warp-a-stats"
@@ -4385,7 +4409,7 @@ set_tests_properties (plm-warp-a-check PROPERTIES DEPENDS plm-warp-a-stats)
 plm_add_test (
   "plm-warp-b" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_BUILD_TESTING_DIR}/bspline_c_xf.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-b-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-b.mha;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-2.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-b-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-b.mha;--default-value;0"
   )
 plm_add_test (
   "plm-warp-b-stats-1"
@@ -4420,7 +4444,7 @@ set_tests_properties (plm-warp-b-check-2 PROPERTIES DEPENDS plm-warp-b-stats-2)
 plm_add_test (
   "plm-warp-c" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_BUILD_TESTING_DIR}/bspline_c_xf.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-c-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-c.mha;--interpolation;nn;--default-value;0"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-2.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-c-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-c.mha;--interpolation;nn;--default-value;0"
   )
 plm_add_test (
   "plm-warp-c-stats"
@@ -4440,7 +4464,7 @@ set_tests_properties (plm-warp-c-check PROPERTIES DEPENDS plm-warp-c-stats)
 plm_add_test (
   "plm-warp-d" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_BUILD_TESTING_DIR}/bspline_c_xf.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-d-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-d.mha;--interpolation;nn;--default-value;0"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-2.txt;--output-vf;${PLM_BUILD_TESTING_DIR}/plm-warp-d-vf.mha;--input;${PLM_BUILD_TESTING_DIR}/sphere-1.mha;--output-img;${PLM_BUILD_TESTING_DIR}/plm-warp-d.mha;--interpolation;nn;--default-value;0"
   )
 plm_add_test (
   "plm-warp-d-stats"
