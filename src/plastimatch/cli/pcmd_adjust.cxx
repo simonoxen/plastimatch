@@ -96,13 +96,13 @@ adjust_main (Adjust_parms* parms)
     }
 
     if (parms->pw_linear != "") {
-        std::cout << "Applying piece-wise linear transform..." << std::flush;
+        std::cout << "Applying piece-wise linear transform...\n" << std::flush;
         img = itk_adjust (img, parms->pw_linear);
         plm_image->set_itk (img);
     }
 
     if (parms->do_hist_match) {
-        std::cout << "Performing histogram matching..." << std::flush;
+        std::cout << "Performing histogram matching...\n" << std::flush;
         img = itk_histogram_matching(img, ref_img, parms->hist_th,
             parms->hist_levels, parms->hist_points);
         plm_image->set_itk(img);
@@ -117,19 +117,21 @@ adjust_main (Adjust_parms* parms)
         itk_image_shift_scale(img, parms->shift, parms->scale);
     }
     if (parms->do_local) {
-        std::cout << "Applying local intensity matching..." << std::flush;
+        std::cout << "Applying local intensity matching...\n" << std::flush;
         FloatImageType::Pointer shift_img, scale_img;
         if (parms->mask_in_fn != "" || parms->mask_ref_fn != "") {
             if (parms->mask_in_fn == "")
                 mask_in = mask_ref;
             if (parms->mask_ref_fn == "")
                 mask_ref = mask_in;
-            img = itk_masked_local_intensity_correction(img, ref_img, parms->patch_size,
-                    mask_in, mask_ref, shift_img, scale_img, parms->blending,
-                    parms->median_radius);
+            img = itk_masked_local_intensity_correction (
+                img, ref_img, parms->patch_size,
+                mask_in, mask_ref, shift_img, scale_img, parms->blending,
+                parms->median_radius);
         } else {
-            img = itk_local_intensity_correction(img, ref_img, parms->patch_size, shift_img,
-                    scale_img, parms->blending, parms->median_radius);
+            img = itk_local_intensity_correction (
+                img, ref_img, parms->patch_size, shift_img,
+                scale_img, parms->blending, parms->median_radius);
         }
         plm_image->set_itk(img);
         if (parms->shift_out_fn != "")
@@ -303,7 +305,11 @@ parse_fn (
         if (parser->option("local-scale-out")) {
             parms->scale_out_fn = parser->get_string("local-scale-out");
         }
-        parms->blending = (bool) parser->option("local-blending-off");
+        if (parser->option("local-blending-off")) {
+            parms->blending = false;
+        } else {
+            parms->blending = true;
+        }
         /*if (parser->option("local-medianfilt")) {
             int filtsize[3];
             parser->assign_int13(filtsize, "local-medianfilt");

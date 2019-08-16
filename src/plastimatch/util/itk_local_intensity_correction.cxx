@@ -29,7 +29,7 @@ UCharImageType::Pointer GetFullMask(FloatImageType::Pointer img) {
     return mask;
 }
 
-void GetIntensityCorrectionField(
+void GetIntensityCorrectionField (
     FloatImageType::Pointer& source_image,
     FloatImageType::Pointer& reference_image,
     SizeType patch_size,
@@ -44,17 +44,22 @@ void GetIntensityCorrectionField(
     SizeType size = source_image->GetLargestPossibleRegion().GetSize();
 
     scale_field = FloatImageType::New();
-    scale_field->SetOrigin(source_image->GetOrigin());
+
     scale_field->SetDirection(source_image->GetDirection());
     IndexType index;
     index.Fill(0);
     SizeType field_size;
     SpacingType sp;
+    itk::ContinuousIndex<float, 3> ci;
     for (int i = 0; i < 3; ++i) {
+        ci[i] = (patch_size[i] - 1) / 2;
         field_size[i] = (size[i] + patch_size[i] - 1) / patch_size[i];
         sp[i] = source_image->GetSpacing()[i] * patch_size[i];
     }
     scale_field->SetSpacing(sp);
+    FloatPoint3DType og;
+    source_image->TransformContinuousIndexToPhysicalPoint (ci, og);
+    scale_field->SetOrigin(og);
     RegionType reg;
     reg.SetIndex(index);
     reg.SetSize(field_size);
@@ -68,7 +73,9 @@ void GetIntensityCorrectionField(
     RegionIteratorType it_scale(scale_field, scale_field->GetLargestPossibleRegion());
     RegionIteratorType it_shift(shift_field, shift_field->GetLargestPossibleRegion());
 
-    for (it_scale.GoToBegin(), it_shift.GoToBegin(); !it_scale.IsAtEnd(); ++it_scale, ++it_shift) {
+    for (it_scale.GoToBegin(), it_shift.GoToBegin();
+         !it_scale.IsAtEnd(); ++it_scale, ++it_shift)
+    {
         SizeType current_patch_size = patch_size;
         IndexType current_index = it_scale.GetIndex();
         for (int i = 0; i < 3; ++i) {
@@ -84,8 +91,11 @@ void GetIntensityCorrectionField(
 
         double avg_src = 0, avg_ref = 0, std_src = 0, std_ref = 0;
         int num_src = 0, num_ref = 0;
-        for (it_src.GoToBegin(), it_ref.GoToBegin(), it_src_mask.GoToBegin(), it_ref_mask.GoToBegin();
-             !it_src.IsAtEnd(); ++it_src, ++it_ref, ++it_src_mask, ++it_ref_mask) {
+        for (it_src.GoToBegin(), it_ref.GoToBegin(),
+                 it_src_mask.GoToBegin(), it_ref_mask.GoToBegin();
+             !it_src.IsAtEnd();
+             ++it_src, ++it_ref, ++it_src_mask, ++it_ref_mask)
+        {
             if (it_src_mask.Get() > 0) {
                 avg_src += double(it_src.Get());
                 ++num_src;
@@ -98,8 +108,11 @@ void GetIntensityCorrectionField(
         if (num_src > 0) avg_src /= num_src;  // if not, avg = 0
         if (num_ref > 0) avg_ref /= num_ref;
 
-        for (it_src.GoToBegin(), it_ref.GoToBegin(), it_src_mask.GoToBegin(), it_ref_mask.GoToBegin();
-             !it_src.IsAtEnd(); ++it_src, ++it_ref, ++it_src_mask, ++it_ref_mask) {
+        for (it_src.GoToBegin(), it_ref.GoToBegin(),
+                 it_src_mask.GoToBegin(), it_ref_mask.GoToBegin();
+             !it_src.IsAtEnd();
+             ++it_src, ++it_ref, ++it_src_mask, ++it_ref_mask)
+        {
             if (it_src_mask.Get() > 0) {
                 double d1 = it_src.Get() - avg_src;
                 std_src += (double) sqrt(d1 * d1);
@@ -139,12 +152,14 @@ FloatImageType::Pointer BlendField(
 
     TranslationTransformType::Pointer transform = TranslationTransformType::New();
     TranslationTransformType::OutputVectorType translation;
-    for (int i = 0; i < 3; ++i)
-        translation[i] = -0.5 * field->GetSpacing()[i];
+    for (int i = 0; i < 3; ++i) {
+        //translation[i] = -0.5 * field->GetSpacing()[i];
+        translation[i] = 0;
+    }
     transform->Translate(translation);
 
     ResampleImageFilterType::Pointer filter = ResampleImageFilterType::New();
-    filter->SetTransform(transform.GetPointer());
+//    filter->SetTransform(transform.GetPointer());
     filter->SetInput(field);
     filter->SetReferenceImage(source);
     filter->UseReferenceImageOn();
@@ -156,6 +171,7 @@ FloatImageType::Pointer BlendField(
     filter->UpdateLargestPossibleRegion();
     return filter->GetOutput();
 }
+
 void BlendIntensityCorrectionField(
     FloatImageType::Pointer& shift_field,
     FloatImageType::Pointer& scale_field,
@@ -188,7 +204,8 @@ void ApplyIntensityCorrectionField(
     }
 }
 
-FloatImageType::Pointer ApplyMedianFilter(FloatImageType::Pointer img, SizeType mediansize) {
+FloatImageType::Pointer ApplyMedianFilter (
+    FloatImageType::Pointer img, SizeType mediansize) {
     typedef itk::MedianImageFilter<FloatImageType, FloatImageType> MedianFilterType;
     MedianFilterType::RadiusType radius = mediansize;
     MedianFilterType::Pointer filter = MedianFilterType::New();
@@ -226,8 +243,10 @@ itk_local_intensity_correction (
        geometry here so that reference_mask will not be resampled */
     UCharImageType::Pointer reference_mask = GetFullMask(source_image);
 
-    return itk_masked_local_intensity_correction(source_image, reference_image,
-            patch_size, source_mask, reference_mask, shift_field, scale_field, blend, mediansize);
+    return itk_masked_local_intensity_correction (
+        source_image, reference_image,
+        patch_size, source_mask, reference_mask,
+        shift_field, scale_field, blend, mediansize);
 }
 
 FloatImageType::Pointer
@@ -246,9 +265,8 @@ itk_masked_local_intensity_correction(
     typedef itk::ImageRegionIterator<UCharImageType> MaskRegionIteratorType;
 
     if (!itk_image_header_compare (source_image, reference_image)) {
-        reference_image = itk_resample_image (reference_image, source_image, 0, 0);
-    } else {
-        reference_image = reference_image;
+        reference_image = itk_resample_image (
+            reference_image, source_image, 0, 0);
     }
     if (!itk_image_header_compare (source_image, source_mask)) {
         source_mask = itk_resample_image (source_mask, source_image, 0, 0);
@@ -260,16 +278,18 @@ itk_masked_local_intensity_correction(
     SizeType size = source_image->GetLargestPossibleRegion().GetSize();
     FloatImageType::Pointer out_image = itk_image_clone(source_image);
 
-    GetIntensityCorrectionField(
-            source_image, reference_image, patch_size, source_mask, reference_mask,
-            shift_field, scale_field);
+    GetIntensityCorrectionField (
+        source_image, reference_image, patch_size, source_mask, reference_mask,
+        shift_field, scale_field);
 
     if (mediansize[0] > 0) {
         shift_field = ApplyMedianFilter(shift_field, mediansize);
         scale_field = ApplyMedianFilter(scale_field, mediansize);
     }
 
-    BlendIntensityCorrectionField(shift_field, scale_field, source_image, source_mask, blend);
+    BlendIntensityCorrectionField (shift_field, scale_field,
+        source_image, source_mask, blend);
+
     ApplyIntensityCorrectionField(out_image, shift_field, scale_field);
 
     return out_image;

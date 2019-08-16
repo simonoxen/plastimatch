@@ -1283,6 +1283,7 @@ set_tests_properties (plm-add-vf-b-check PROPERTIES DEPENDS plm-add-vf-b-stats)
 ## plm-adjust-g     linear-match
 ## plm-adjust-h     linear-match with masking
 ## plm-adjust-i     local-match
+## plm-adjust-j     local-match, no blending
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-adjust-a"
@@ -1455,7 +1456,7 @@ set_tests_properties (plm-adjust-h-check PROPERTIES DEPENDS "plm-adjust-h-stats"
 plm_add_test (
   "plm-adjust-i"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-i.nrrd;--local-match;${PLM_BUILD_TESTING_DIR}/gauss-3.mha;--patch-size;3 3 3;--ref-mask;donut-2.mha"
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-i.nrrd;--local-match;${PLM_BUILD_TESTING_DIR}/gauss-3.mha;--patch-size;3 3 3;--ref-mask;${PLM_BUILD_TESTING_DIR}/donut-2.mha;--local-scale-out;${PLM_BUILD_TESTING_DIR}/plm-adjust-i-scale.nrrd;--local-shift-out;${PLM_BUILD_TESTING_DIR}/plm-adjust-i-shift.nrrd"
 )
 plm_add_test (
   "plm-adjust-i-stats"
@@ -1466,12 +1467,33 @@ plmtest_check_interval (
   "plm-adjust-i-check"
   "${PLM_BUILD_TESTING_DIR}/plm-adjust-i-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-921.2166"
-  "-921.2164"
+  "-921.5941"
+  "-921.5940"
 )
-set_tests_properties (plm-adjust-i PROPERTIES DEPENDS "gauss-4;gabor-3;donut-2")
+set_tests_properties (plm-adjust-i PROPERTIES DEPENDS "gauss-4;gauss-3;donut-2")
 set_tests_properties (plm-adjust-i-stats PROPERTIES DEPENDS "plm-adjust-i")
 set_tests_properties (plm-adjust-i-check PROPERTIES DEPENDS "plm-adjust-i-stats")
+
+plm_add_test (
+  "plm-adjust-j"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "adjust;--input;${PLM_BUILD_TESTING_DIR}/gauss-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-adjust-j.nrrd;--local-match;${PLM_BUILD_TESTING_DIR}/gauss-3.mha;--patch-size;3 3 3;--ref-mask;${PLM_BUILD_TESTING_DIR}/donut-2.mha;--local-scale-out;${PLM_BUILD_TESTING_DIR}/plm-adjust-j-scale.nrrd;--local-shift-out;${PLM_BUILD_TESTING_DIR}/plm-adjust-j-shift.nrrd;--local-blending-off"
+)
+plm_add_test (
+  "plm-adjust-j-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-adjust-j.nrrd"
+)
+plmtest_check_interval (
+  "plm-adjust-j-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-adjust-j-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-921.6276"
+  "-921.6274"
+)
+set_tests_properties (plm-adjust-j PROPERTIES DEPENDS "gauss-4;gauss-3;donut-2")
+set_tests_properties (plm-adjust-j-stats PROPERTIES DEPENDS "plm-adjust-j")
+set_tests_properties (plm-adjust-j-check PROPERTIES DEPENDS "plm-adjust-j-stats")
 
 ## -------------------------------------------------------------------------
 ## plastimatch boundary
