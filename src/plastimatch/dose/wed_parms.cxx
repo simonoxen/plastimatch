@@ -182,6 +182,15 @@ Wed_parms::set_key_val (
                 goto error_exit;
             }
         }
+        else if (!strcmp (key, "gantry-iec")) {
+            if (sscanf (val, "%f %f %f", 
+                    &(this->src[0]), 
+                    &(this->src[1]), 
+                    &(this->src[2])) != 3)
+            {
+                goto error_exit;
+            }
+        }
         else if (!strcmp (key, "isocenter")) {
             if (sscanf (val, "%f %f %f", 
                     &(this->isocenter[0]), 

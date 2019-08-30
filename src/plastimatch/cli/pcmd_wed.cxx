@@ -411,7 +411,6 @@ do_wed (Wed_parms *parms)
         rpl.compute_rpl_HU ();
         rpl.save (parms->output_proj_ct_fn);
     }
-
 }
 
 static void

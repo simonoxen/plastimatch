@@ -6,6 +6,7 @@
 
 #include "plmdose_config.h"
 #include <string>
+#include "beam_geometry.h"
 #include "plm_int.h"
 
 class PLMDOSE_API Wed_parms {
@@ -40,6 +41,7 @@ public:
     std::string output_ct_fn;        /* output: ct in world coordinates */
     std::string output_dew_ct_fn;    /* output: ct in world coordinates */
     std::string output_dew_dose_fn;  /* output: dose in world coordinates */
+
 
     /* [BEAM] */
     bool have_ray_step;
