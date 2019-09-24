@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "dir_list.h"
 #include "path_util.h"
 #include "plm_math.h"
 #include "print_and_exit.h"
@@ -57,12 +58,26 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
 	    Xio_studyset_slice slice (slice_filename_scan, slice_location);
 	    all_slices.push_back (slice);
 	}
-
-	// Sort slices in positive direction
-	std::sort (all_slices.begin(), all_slices.end());
+        index.close ();
     } else {
-	all_number_slices = 0;
+        // Older data has no index.dat file.  Use the filenames instead.
+        Dir_list d (input_dir);
+        for (int i = 0; i < d.num_entries; i++) {
+            std::string entry = d.entry(i);
+            if (extension_is (entry, "CT")) {
+                std::string fn = basename (entry);
+                std::string loc = fn.substr (2, fn.length()-4);
+                //printf ("loc = %s\n", loc.c_str());
+                float slice_location = std::stof (loc);
+                //printf ("%f %s\n", slice_location, fn.c_str());
+                Xio_studyset_slice slice (fn, slice_location);
+                all_slices.push_back (slice);
+            }
+        }
     }
+    
+    // Sort slices in positive direction
+    std::sort (all_slices.begin(), all_slices.end());
 
     // Workaround for Xio position rounding.  Xio rounds positions to the
     // nearest 0.1 mm.  This causes the inequal slice spacing workaround
