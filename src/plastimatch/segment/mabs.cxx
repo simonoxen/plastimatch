@@ -624,9 +624,17 @@ Mabs::run_registration_loop ()
             Plm_image_header fixed_pih (fixed_image);
             Plm_image::Pointer warped_image = Plm_image::New();
             timer.start();
+
+            /* Using the hardened transform for linear transforms 
+               does not seem to work well in this case.  See issue #58. */
+#if defined (commentout)
             plm_warp (warped_image, 0, xf_out, &fixed_pih, 
                 moving_image, 
                 regp->default_value, false, 0, 1);
+#endif
+            plm_warp (warped_image, 0, xf_out, &fixed_pih, 
+                moving_image, 
+                regp->default_value, true, 0, 1);
             d_ptr->time_warp_img += timer.report();
             
             /* Warp the structures */
