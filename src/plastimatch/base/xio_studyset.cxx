@@ -107,11 +107,13 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
         float next_spacing = FLT_MAX;
         if (it != all_slices.begin()) {
             prev_spacing = it->location - prev(it)->location;
+            prev_spacing = ROUND_INT (prev_spacing * 100) / 100.f;
         }
         if (next(it) != all_slices.end()) {
             next_spacing = next(it)->location - it->location;
+            next_spacing = ROUND_INT (next_spacing * 100) / 100.f;
         }
-        printf ("%f\n", std::min (prev_spacing, next_spacing));
+        printf ("-> %f\n", std::min (prev_spacing, next_spacing));
         slice_thickness.push_back (std::min (prev_spacing, next_spacing));
     }
     
