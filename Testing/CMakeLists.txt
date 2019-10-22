@@ -291,6 +291,7 @@ add_custom_target (speedtest
 ##   sphere-3          Standard, bg=0, fg=1
 ##   sphere-4          Standard, radius = 150
 ##   sphere-5          Uchar sphere, bg=0, fg=1, abutting image boundary
+##   sphere-6          Standard uchar sphere, centered
 ##   xramp-1           X ramp
 ##   yramp-1           Y ramp
 ##   zramp-1           Z ramp
@@ -604,6 +605,11 @@ plm_add_test (
   "sphere-5"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-5.mha;--output-type;uchar;--pattern;sphere;--origin;-19 -19 -19;--dim;20 20 20;--spacing;2 2 2;--background;0;--foreground;1;--center;0 0 0;--radius;21"
+  )
+plm_add_test (
+  "sphere-6"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-6.mha;--output-type;uchar;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--center;0 0 0;--radius;50 50 50"
   )
 plm_add_test (
   "xramp-1"
@@ -2290,8 +2296,8 @@ set_tests_properties (plm-crop-b-check-1 PROPERTIES DEPENDS plm-crop-b-stats)
 ## -------------------------------------------------------------------------
 ## plm-dice-a  dice, centered and off-centered rect
 ## plm-dice-b  dice, centered rects of different resolution
-## plm-dice-c  HD, centered and off-centered rect
-## plm-dice-d  95 HD, centered and off-centered rect
+## plm-dice-c  HD tests centered and off-centered rect
+## plm-dice-d  HD tests centered sphere and off-centered rect
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dice-a"
@@ -2338,9 +2344,72 @@ plmtest_check_interval ("plm-dice-c-check-2"
   "3.40"
   "3.41"
   )
+plmtest_check_interval ("plm-dice-c-check-3"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
+  "^Avg average Hausdorff distance \\\\(boundary\\\\) = *([-0-9.]*)"
+  "7.11"
+  "7.12"
+  )
+plmtest_check_interval ("plm-dice-c-check-4"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
+  "^Max average Hausdorff distance \\\\(boundary\\\\) = *([-0-9.]*)"
+  "8.53"
+  "8.54"
+  )
+plmtest_check_interval ("plm-dice-c-check-5"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-c.stdout.txt"
+  "^Percent .* \\\\(boundary\\\\) = *([-0-9.]*)"
+  "26.31"
+  "26.32"
+  )
 set_tests_properties (plm-dice-c PROPERTIES DEPENDS "rect-4;rect-8")
 set_tests_properties (plm-dice-c-check-1 PROPERTIES DEPENDS "plm-dice-c")
 set_tests_properties (plm-dice-c-check-2 PROPERTIES DEPENDS "plm-dice-c")
+set_tests_properties (plm-dice-c-check-3 PROPERTIES DEPENDS "plm-dice-c")
+set_tests_properties (plm-dice-c-check-4 PROPERTIES DEPENDS "plm-dice-c")
+set_tests_properties (plm-dice-c-check-5 PROPERTIES DEPENDS "plm-dice-c")
+
+plm_add_test (
+  "plm-dice-d"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;--hausdorff;${PLM_BUILD_TESTING_DIR}/sphere-6.mha;${PLM_BUILD_TESTING_DIR}/rect-8.mha"
+  )
+plmtest_check_interval ("plm-dice-d-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-d.stdout.txt"
+  "^Hausdorff distance = *([-0-9.]*)"
+  "45.575"
+  "45.585"
+  )
+plmtest_check_interval ("plm-dice-d-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-d.stdout.txt"
+  "^Avg average Hausdorff distance = *([-0-9.]*)"
+  "7.07"
+  "7.08"
+  )
+plmtest_check_interval ("plm-dice-d-check-3"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-d.stdout.txt"
+  "^Avg average Hausdorff distance \\\\(boundary\\\\) = *([-0-9.]*)"
+  "14.89"
+  "14.90"
+  )
+plmtest_check_interval ("plm-dice-d-check-4"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-d.stdout.txt"
+  "^Max average Hausdorff distance \\\\(boundary\\\\) = *([-0-9.]*)"
+  "18.38"
+  "18.39"
+  )
+plmtest_check_interval ("plm-dice-d-check-5"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-d.stdout.txt"
+  "^Percent .* \\\\(boundary\\\\) = *([-0-9.]*)"
+  "32.89"
+  "32.90"
+  )
+set_tests_properties (plm-dice-d PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-d-check-1 PROPERTIES DEPENDS "plm-dice-d")
+set_tests_properties (plm-dice-d-check-2 PROPERTIES DEPENDS "plm-dice-d")
+set_tests_properties (plm-dice-d-check-3 PROPERTIES DEPENDS "plm-dice-d")
+set_tests_properties (plm-dice-d-check-4 PROPERTIES DEPENDS "plm-dice-d")
+set_tests_properties (plm-dice-d-check-5 PROPERTIES DEPENDS "plm-dice-d")
 
 
 ## -------------------------------------------------------------------------

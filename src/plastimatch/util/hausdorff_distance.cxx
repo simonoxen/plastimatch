@@ -12,10 +12,13 @@
 #include "distance_map.h"
 #include "hausdorff_distance.h"
 #include "image_boundary.h"
+#include "itk_bbox.h"
+#include "itk_crop.h"
 #include "itk_image_header_compare.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_resample.h"
+#include "itk_union.h"
 #include "logfile.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -277,6 +280,16 @@ Hausdorff_distance::run ()
         d_ptr->ref_image = resample_image (d_ptr->ref_image, pih, 0, 0);
     }
 
+    /* Crop images to union bounding box containing both structures */
+    UCharImageType::Pointer union_image
+        = itk_union (d_ptr->cmp_image, d_ptr->ref_image);
+    float bbox_coordinates[6];
+    int bbox_indices[6];
+    itk_bbox (union_image, bbox_coordinates, bbox_indices);
+    d_ptr->ref_image = itk_crop_by_index (d_ptr->ref_image, bbox_indices);
+    d_ptr->cmp_image = itk_crop_by_index (d_ptr->cmp_image, bbox_indices);
+    
+    /* Compute distance maps and score the results */
     d_ptr->clear_statistics ();
     this->run_internal (d_ptr->ref_image, d_ptr->cmp_image);
     this->run_internal (d_ptr->cmp_image, d_ptr->ref_image);

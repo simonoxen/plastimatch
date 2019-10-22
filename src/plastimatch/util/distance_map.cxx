@@ -157,9 +157,6 @@ Distance_map_private::backward_propagate_i (
         float odist = SQ_DIST_I(vo,sp2);
         float ndist = SQ_DIST(vn,sp2);
         if (odist < ndist) {
-            if (i == 14 && j == 19 && k == 20) {
-                printf ("<<< %f %f\n", odist, ndist);
-            }
             COPY_I (vn, vo);
         }
     }
