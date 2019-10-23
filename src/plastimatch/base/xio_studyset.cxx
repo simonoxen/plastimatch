@@ -82,6 +82,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
     // Workaround for Xio position rounding.  Xio rounds positions to the
     // nearest 0.1 mm.  This causes the inequal slice spacing workaround
     // to unnecessarily trigger.
+#if defined (commentout)
     for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
         long this_location = ROUND_INT (10.f * fabs(it->location));
         long this_modulo = this_location % 10;
@@ -96,6 +97,7 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
         }
         printf (" -> %f\n", it->location);
     }
+#endif
     
     // Workaround for multiple slice thickness
     // Create volume with uniform voxel sizes by finding greatest
@@ -113,7 +115,18 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
             next_spacing = next(it)->location - it->location;
             next_spacing = ROUND_INT (next_spacing * 100) / 100.f;
         }
-        printf ("-> %f\n", std::min (prev_spacing, next_spacing));
+        // Workaround for Xio position rounding.  Xio rounds positions to the
+        // nearest 0.1 mm.  This causes the inequal slice spacing workaround
+        // to unnecessarily trigger.
+        float min_spacing = std::min (prev_spacing, next_spacing);
+        if (min_spacing >= 1.1 && min_spacing <= 1.4) {
+            min_spacing = 1.25;
+        }
+        if (min_spacing >= 3.6 && min_spacing <= 3.9) {
+            min_spacing = 3.75;
+        }
+        printf ("(%f) -> %f\n", it->location,
+            std::min (prev_spacing, next_spacing));
         slice_thickness.push_back (std::min (prev_spacing, next_spacing));
     }
     
