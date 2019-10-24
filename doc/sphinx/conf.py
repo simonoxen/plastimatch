@@ -25,7 +25,7 @@ from pygments import token
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.pngmath']
+extensions = ['sphinx.ext.imgmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -144,7 +144,7 @@ highlight_language = 'PLMLANG'
 
 # -- Options for HTML output ---------------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  Major themes that come with
+# The theme to use for HTML and HTML Help pages.  Major theme that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = 'default'
 
@@ -154,6 +154,7 @@ html_theme = 'default'
 html_theme_options = {
     "nosidebar": "true",
     "codebgcolor": "#f8f8f8",
+    "body_min_width": "100%",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
