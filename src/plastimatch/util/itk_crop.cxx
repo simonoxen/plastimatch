@@ -6,6 +6,7 @@
 #include "itkImage.h"
 
 #include "clamp.h"
+#include "itk_bbox.h"
 #include "itk_crop.h"
 #include "itk_image_type.h"
 
@@ -118,6 +119,17 @@ itk_crop_by_coord (
 }
 
 
+template <class T>
+PLMUTIL_API
+T
+itk_crop_by_image (T& image, const UCharImageType::Pointer& bbox_image)
+{
+    int bbox_indices[6];
+    float bbox_coordinates[6];
+    itk_bbox (bbox_image, bbox_coordinates, bbox_indices);
+    return itk_crop_by_coord (image, bbox_coordinates);
+}
+
 /* Explicit instantiations */
 template PLMUTIL_API CharImageType::Pointer itk_crop_by_index (CharImageType::Pointer&, const int*);
 template PLMUTIL_API UCharImageType::Pointer itk_crop_by_index (UCharImageType::Pointer&, const int*);
@@ -138,3 +150,13 @@ template PLMUTIL_API UInt32ImageType::Pointer itk_crop_by_coord (UInt32ImageType
 template PLMUTIL_API FloatImageType::Pointer itk_crop_by_coord (FloatImageType::Pointer&, const float*);
 template PLMUTIL_API DoubleImageType::Pointer itk_crop_by_coord (DoubleImageType::Pointer&, const float*);
 template PLMUTIL_API UCharVecImageType::Pointer itk_crop_by_coord (UCharVecImageType::Pointer&, const float*);
+
+template PLMUTIL_API CharImageType::Pointer itk_crop_by_image (CharImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API UCharImageType::Pointer itk_crop_by_image (UCharImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API ShortImageType::Pointer itk_crop_by_image (ShortImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API UShortImageType::Pointer itk_crop_by_image (UShortImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API Int32ImageType::Pointer itk_crop_by_image (Int32ImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API UInt32ImageType::Pointer itk_crop_by_image (UInt32ImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API FloatImageType::Pointer itk_crop_by_image (FloatImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API DoubleImageType::Pointer itk_crop_by_image (DoubleImageType::Pointer&, const UCharImageType::Pointer&);
+template PLMUTIL_API UCharVecImageType::Pointer itk_crop_by_image (UCharVecImageType::Pointer&, const UCharImageType::Pointer&);

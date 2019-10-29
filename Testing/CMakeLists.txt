@@ -2253,6 +2253,7 @@ set_tests_properties (plm-convert-dose-scale-check PROPERTIES
 ## -------------------------------------------------------------------------
 ## plm-crop-a  crop, with voxel indices
 ## plm-crop-b  crop, with world coordinates
+## plm-crop-c  crop to structure bounding box
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-crop-a"
@@ -2286,12 +2287,31 @@ plmtest_check_string ("plm-crop-b-check-1"
   "20 13 5"
   )
 
+plm_add_test (
+  "plm-crop-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "crop;--input;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-crop-c.mha;--structure;${PLM_BUILD_TESTING_DIR}/donut-2.mha"
+  )
+plm_add_test (
+  "plm-crop-c-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "header;plm-crop-c.mha"
+  )
+plmtest_check_string ("plm-crop-c-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-crop-c-stats.stdout.txt"
+  "^Size = (.*)$"
+  "20 13 5"
+  )
+
 set_tests_properties (plm-crop-a PROPERTIES DEPENDS gauss-1)
 set_tests_properties (plm-crop-a-stats PROPERTIES DEPENDS plm-crop-a)
 set_tests_properties (plm-crop-a-check-1 PROPERTIES DEPENDS plm-crop-a-stats)
 set_tests_properties (plm-crop-b PROPERTIES DEPENDS gauss-1)
 set_tests_properties (plm-crop-b-stats PROPERTIES DEPENDS plm-crop-b)
 set_tests_properties (plm-crop-b-check-1 PROPERTIES DEPENDS plm-crop-b-stats)
+set_tests_properties (plm-crop-c PROPERTIES DEPENDS "gauss-1;donut-2")
+set_tests_properties (plm-crop-c-stats PROPERTIES DEPENDS plm-crop-c)
+set_tests_properties (plm-crop-c-check-1 PROPERTIES DEPENDS plm-crop-c-stats)
 
 ## -------------------------------------------------------------------------
 ## plm-dice-a  dice, centered and off-centered rect

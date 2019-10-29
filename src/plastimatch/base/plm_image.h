@@ -93,6 +93,7 @@ public:
 
     /* Loading */
     bool load (const char* fname, Plm_image_type type);
+    bool load (const std::string& fname, Plm_image_type type);
     bool load_native (const char* fname);
     bool load_native (const std::string& fn);
     bool load_native_dicom (const char* fname);

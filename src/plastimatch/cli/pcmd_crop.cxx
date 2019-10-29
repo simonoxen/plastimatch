@@ -13,116 +13,90 @@
 class Crop_parms {
 public:
     std::string img_in_fn;
+    std::string structure_in_fn;
     std::string img_out_fn;
     bool have_coordinates;
+    bool have_vox;
+    bool have_zcrop;
     int crop_vox[6];
     float crop_coords[6];
+    float zcrop[2];
 public:
     Crop_parms () {
         img_in_fn = "";
         img_out_fn = "";
+        for (int i = 0; i < 2; i++) {
+            zcrop[i] = 0.f;
+        }
         for (int i = 0; i < 6; i++) {
             crop_vox[i] = 0;
-            crop_coords[i] = 0;
+            crop_coords[i] = 0.f;
         }
         have_coordinates = false;
+        have_zcrop = false;
     }
 };
+
+template <class T>
+void
+crop_image (Plm_image& plm_image, T& image,
+    const Plm_image& structure_image, const Crop_parms* parms)
+{
+    if (parms->have_coordinates) {
+        plm_image.set_itk (itk_crop_by_coord (image, parms->crop_coords));
+    } else if (parms->have_vox) {
+        plm_image.set_itk (itk_crop_by_index (image, parms->crop_vox));
+    } else if (parms->structure_in_fn != "") {
+        plm_image.set_itk (itk_crop_by_image (
+                image, structure_image.m_itk_uchar));
+    }
+}
 
 static void
 crop_main (Crop_parms* parms)
 {
     Plm_image plm_image;
+    Plm_image structure_image;
 
     plm_image.load_native (parms->img_in_fn);
+    if (parms->structure_in_fn != "") {
+        structure_image.load (parms->structure_in_fn, PLM_IMG_TYPE_ITK_UCHAR);
+    }
 
     switch (plm_image.m_type) {
     case PLM_IMG_TYPE_ITK_CHAR:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_char 
-                = itk_crop_by_coord (plm_image.m_itk_char, parms->crop_coords);
-        } else {
-            plm_image.m_itk_char 
-                = itk_crop_by_index (plm_image.m_itk_char, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_char, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_uchar 
-                = itk_crop_by_coord (plm_image.m_itk_uchar, parms->crop_coords);
-        } else {
-            plm_image.m_itk_uchar 
-                = itk_crop_by_index (plm_image.m_itk_uchar, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_uchar, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_short 
-		= itk_crop_by_coord (plm_image.m_itk_short, parms->crop_coords);
-        } else {
-            plm_image.m_itk_short 
-		= itk_crop_by_index (plm_image.m_itk_short, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_short, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_ushort 
-		= itk_crop_by_coord (plm_image.m_itk_ushort, parms->crop_coords);
-        } else {
-            plm_image.m_itk_ushort 
-		= itk_crop_by_index (plm_image.m_itk_ushort, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_ushort, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_LONG:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_int32 
-		= itk_crop_by_coord (plm_image.m_itk_int32, parms->crop_coords);
-        } else {
-            plm_image.m_itk_int32 
-		= itk_crop_by_index (plm_image.m_itk_int32, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_int32, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_uint32 
-		= itk_crop_by_coord (plm_image.m_itk_uint32, parms->crop_coords);
-        } else {
-            plm_image.m_itk_uint32 
-		= itk_crop_by_index (plm_image.m_itk_uint32, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_uint32, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_float 
-		= itk_crop_by_coord (plm_image.m_itk_float, parms->crop_coords);
-        } else {
-            plm_image.m_itk_float 
-		= itk_crop_by_index (plm_image.m_itk_float, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_float, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_DOUBLE:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_double 
-		= itk_crop_by_coord (plm_image.m_itk_double, parms->crop_coords);
-        } else {
-            plm_image.m_itk_double 
-		= itk_crop_by_index (plm_image.m_itk_double, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_double, structure_image, parms);
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
-        if (parms->have_coordinates) {
-            plm_image.m_itk_uchar_vec
-		= itk_crop_by_coord (plm_image.m_itk_uchar_vec, parms->crop_coords);
-        } else {
-            plm_image.m_itk_uchar_vec
-		= itk_crop_by_index (plm_image.m_itk_uchar_vec, parms->crop_vox);
-        }
+        crop_image (plm_image, plm_image.m_itk_uchar_vec,
+            structure_image, parms);
 	break;
     default:
 	print_and_exit ("Unhandled image type in crop_main()\n");
 	break;
     }
-
+    
     plm_image.convert_and_save (parms->img_out_fn, plm_image.m_type);
 }
 
@@ -148,6 +122,9 @@ parse_fn (
     /* Input files */
     parser->add_long_option ("", "input", 
         "input directory or filename", 1, "");
+    parser->add_long_option ("", "structure", 
+        "filename of segmentation image; the input image "
+        "will be cropped to the bounding box of the structure", 1, "");
 
     /* Output files */
     parser->add_long_option ("", "output", 
@@ -167,6 +144,11 @@ parse_fn (
         "\"x1 x2 y1 y2 z1 z2\"", 
         1, "");
 
+    /* Adjustment string */
+    parser->add_long_option ("", "zcrop",
+        "crop the superior and inferior z directions by an additional "
+        "amount, specified in the form \"zsup zinf\"", 1, "");
+
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -185,27 +167,42 @@ parse_fn (
 		"using the --output option"));
     }
 
-    /* Check that an output file was given */
-    if (!parser->option ("voxels") && !parser->option("coordinates")) {
-	throw (dlib::error ("Error.  Please specify the crop region "
-		"using the --voxels or --coordinates option"));
-    }
-
     /* Input files */
     parms->img_in_fn = parser->get_string("input").c_str();
+    parms->structure_in_fn = parser->get_string("structure").c_str();
 
     /* Output files */
     parms->img_out_fn = parser->get_string("output").c_str();
 
     /* Voxels option */
+    int cropping_options_specified = 0;
     if (parser->option("voxels")) {
+        parms->have_vox = true;
         parser->assign_int_6 (parms->crop_vox, "voxels");
+        cropping_options_specified++;
     }
     
     /* Coordinates option */
     if (parser->option("coordinates")) {
         parms->have_coordinates = true;
         parser->assign_float_6 (parms->crop_coords, "coordinates");
+        cropping_options_specified++;
+    }
+
+    if (parser->option("structure")) {
+        cropping_options_specified++;
+    }
+
+    /* Zcrop option */
+    if (parser->option("zcrop")) {
+        parms->have_zcrop = true;
+        parser->assign_float_2 (parms->zcrop, "zcrop");
+    }
+
+    if (cropping_options_specified != 1) {
+	throw (dlib::error ("Error.  Please specify the crop region "
+		"using one and only one of the options "
+                "--coordinates, --structure, or --voxels"));
     }
 }
 

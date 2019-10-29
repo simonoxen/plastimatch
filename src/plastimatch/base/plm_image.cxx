@@ -287,6 +287,12 @@ Plm_image::load (const char* fname, Plm_image_type type)
 }
 
 bool
+Plm_image::load (const std::string& fname, Plm_image_type type)
+{
+    return this->load (fname.c_str(), type);
+}
+
+bool
 Plm_image::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixel_type;
