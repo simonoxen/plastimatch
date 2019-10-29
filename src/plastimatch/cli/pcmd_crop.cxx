@@ -33,6 +33,7 @@ public:
             crop_coords[i] = 0.f;
         }
         have_coordinates = false;
+        have_vox = false;
         have_zcrop = false;
     }
 };
