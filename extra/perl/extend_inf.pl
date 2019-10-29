@@ -21,13 +21,16 @@ sub find_newest_dir {
 
 ##my $newest_dir = find_newest_dir ($input_base);
 my $newest_dir = shift;
-print ">> $newest_dir\n";
+if ($newest_dir eq "") {
+    die "Usage: extend_inf.pl input-dir";
+}
 
-my $ori_copy_dir = "$scratch_base/$newest_dir/ori";
+my $ori_copy_dir = "$input_base/$newest_dir";
 my $scratch_dir = "$scratch_base/$newest_dir/scratch";
 my $merged_dir = "$scratch_base/$newest_dir/merged";
 my $fixed_dir = "$scratch_base/$newest_dir/fixed";
-#File::Copy::Recursive::dircopy ("$input_base/$newest_dir", $ori_copy_dir) or die $!;
+
+(-d $ori_copy_dir) or die "Directory $ori_copy_dir does not exist!";
 
 opendir (DIR, $ori_copy_dir);
 my @list = sort readdir (DIR);
