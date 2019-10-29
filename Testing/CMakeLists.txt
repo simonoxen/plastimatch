@@ -2300,7 +2300,7 @@ plm_add_test (
 plmtest_check_string ("plm-crop-c-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-crop-c-stats.stdout.txt"
   "^Size = (.*)$"
-  "20 13 5"
+  "15 15 15"
   )
 
 set_tests_properties (plm-crop-a PROPERTIES DEPENDS gauss-1)
