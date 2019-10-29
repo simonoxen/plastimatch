@@ -2424,7 +2424,7 @@ plmtest_check_interval ("plm-dice-d-check-5"
   "32.89"
   "32.90"
   )
-set_tests_properties (plm-dice-d PROPERTIES DEPENDS "rect-4;rect-8")
+set_tests_properties (plm-dice-d PROPERTIES DEPENDS "sphere-6;rect-8")
 set_tests_properties (plm-dice-d-check-1 PROPERTIES DEPENDS "plm-dice-d")
 set_tests_properties (plm-dice-d-check-2 PROPERTIES DEPENDS "plm-dice-d")
 set_tests_properties (plm-dice-d-check-3 PROPERTIES DEPENDS "plm-dice-d")
