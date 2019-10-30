@@ -5,9 +5,9 @@ building official plastimatch windows binaries.
 
 You should have a working virtual machine, as described in :ref:`windows_vm`.
 
-As of plastimatch 1.7.3, the following build tools are used::
+As of plastimatch 1.8.1, the following build tools are used::
 
-  VirtualBox      5.1.30            (Debian host)
+  QEMU/KVM        3.1               (Debian host)
   MS Windows      10                (Windows 10 Pro)
   Visual Studio   14.0.25431.01     (Aka MSVC Community 2015 Update 3)
   CMake           3.12.0
@@ -16,9 +16,9 @@ As of plastimatch 1.7.3, the following build tools are used::
 And the following third party libraries are used::
 
   CUDA            8.0 GA2           (64 bit only)
-  DCMTK           3.6.2             (Build separate 32 & 64 bit)
+  DCMTK           3.6.4             (Build separate 32 & 64 bit)
   FFTW            3.3.5             (Download separate 32 & 64 bit)
-  ITK             4.13.0            (Build separate 32 & 64 bit)
+  ITK             4.13.2            (Build separate 32 & 64 bit)
 
 NVIDIA deprecated support for 32-bit CUDA as of version 7.0.
 Therefore, plastimatch does not offer CUDA in its 32-bit
@@ -36,7 +36,7 @@ binary download.
    #. Use fresh build directory
    #. Set BUILD_SHARED_LIBS to ON
    #. Set Module_ITKReview to ON
-   #. Set CMAKE_INSTALL_DIR c:/Users/grego/install/{32,64}/ITK-{version}
+   #. Set CMAKE_INSTALL_PREFIX c:/Users/grego/install/{32,64}/ITK-{version}
    #. Make and install
 
 #. Build plastimatch
