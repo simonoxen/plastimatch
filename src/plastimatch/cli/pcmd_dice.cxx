@@ -5,6 +5,8 @@
 
 #include "dice_statistics.h"
 #include "hausdorff_distance.h"
+#include "itk_bbox.h"
+#include "itk_crop.h"
 #include "itk_image_load.h"
 #include "itk_resample.h"
 #include "plm_clp.h"
@@ -114,8 +116,21 @@ do_command_dice (int argc, char *argv[])
         parms.reference_image_fn, 0);
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
-
-
+    int bbox_indices_1[6];
+    int bbox_indices_2[6];
+    float bbox_coordinates_1[6];
+    float bbox_coordinates_2[6];
+    itk_bbox(image_1,bbox_coordinates_1,bbox_indices_1);
+    itk_bbox(image_2,bbox_coordinates_2,bbox_indices_2);
+    /* Aply z-crop to the coordinates, assuming the array is [x-min,y-min.z-min,x-max,y-max,z-max] */
+    bbox_coordinates_1[2] -= parms.z_crop_low;
+    bbox_coordinates_2[2] -= parms.z_crop_low;
+    bbox_coordinates_1[5] += parms.z_crop_high;
+    bbox_coordinates_2[5] += parms.z_crop_high;
+    
+    image_1 = itk_crop_by_coord(image_1,bbox_coordinates_1);
+    image_2 = itk_crop_by_coord(image_2,bbox_coordinates_2);
+    
     if (parms.have_dice_option) {
         Dice_statistics ds;
         ds.set_reference_image (image_1);
