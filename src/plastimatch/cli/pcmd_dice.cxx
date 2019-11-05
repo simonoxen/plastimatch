@@ -17,11 +17,15 @@ public:
     bool have_hausdorff_option;
     std::string reference_image_fn;
     std::string test_image_fn;
+    float z_crop_low;
+    float z_crop_high;
 public:
     Pcmd_dice_parms () {
         commands_were_requested = false;
         have_dice_option = false;
         have_hausdorff_option = false;
+	z_crop_low = 0.0;
+	z_crop_high = 0.0;
     }
 };
 
@@ -53,7 +57,8 @@ parse_fn (
         "Compute Dice coefficient (default)", 0);
     parser->add_long_option ("", "hausdorff", 
         "Compute Hausdorff distances (max, average, boundary, etc.)", 0);
-
+    parser->add_long_option("","z_crop_low","crop the reference and the test image in the negative z dimension by this value (float)",1,"0.0");
+    parser->add_long_option("","z_crop_high","crop the reference and the test image in the positive z dimension by this value (float)",1,"0.0");
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -73,18 +78,25 @@ parse_fn (
         parms->have_dice_option = true;
         parms->have_hausdorff_option = true;
     }
+
+    if (parser->option("z_crop_low")) {
+	    parms->z_crop_low = parser->get_float("z_crop_low");
+    }
+    if (parser->option("z_crop_high")) {
+	    parms->z_crop_high = parser->get_float("z_crop_high");
+    }
     if (!parms->commands_were_requested) {
         parms->have_dice_option = true;
     }
-
     /* Check that two input files were given */
     if (parser->number_of_arguments() < 2) {
 	throw (dlib::error ("Error.  You must specify two input files"));
 	
-    } else if (parser->number_of_arguments() > 2) {
-	std::string extra_arg = (*parser)[1];
-	throw (dlib::error ("Error.  Extra argument " + extra_arg));
+    }   else if (parser->number_of_arguments() > 2) {
+	    std::string extra_arg = (*parser)[1];
+	    throw (dlib::error ("Error.  Extra argument " + extra_arg));
     }
+
 
     /* Copy values into output struct */
     parms->reference_image_fn = (*parser)[0];
@@ -102,6 +114,7 @@ do_command_dice (int argc, char *argv[])
         parms.reference_image_fn, 0);
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
+
 
     if (parms.have_dice_option) {
         Dice_statistics ds;
