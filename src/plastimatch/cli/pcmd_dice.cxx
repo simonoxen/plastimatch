@@ -122,9 +122,9 @@ do_command_dice (int argc, char *argv[])
     float bbox_coordinates_2[6];
     itk_bbox(image_1,bbox_coordinates_1,bbox_indices_1);
     itk_bbox(image_2,bbox_coordinates_2,bbox_indices_2);
-    /* Aply z-crop to the coordinates, assuming the array is [x-min,y-min.z-min,x-max,y-max,z-max] */
-    bbox_coordinates_1[2] -= parms.z_crop_low;
-    bbox_coordinates_2[2] -= parms.z_crop_low;
+    /* Apply z-crop to the coordinates, assuming the array is [x-min,x-max,y-min,y-max,z-min,z-max] */
+    bbox_coordinates_1[4] -= parms.z_crop_low;
+    bbox_coordinates_2[4] -= parms.z_crop_low;
     bbox_coordinates_1[5] += parms.z_crop_high;
     bbox_coordinates_2[5] += parms.z_crop_high;
     
