@@ -19,15 +19,17 @@ public:
     bool have_hausdorff_option;
     std::string reference_image_fn;
     std::string test_image_fn;
-    float z_crop_low;
-    float z_crop_high;
+    float zcrop[2];
+    bool have_zcrop;
 public:
     Pcmd_dice_parms () {
         commands_were_requested = false;
         have_dice_option = false;
         have_hausdorff_option = false;
-	z_crop_low = 0.0;
-	z_crop_high = 0.0;
+	for (int i = 0; i < 2; i++) {
+		zcrop[i] = 0.f;
+	}
+	have_zcrop = false;
     }
 };
 
@@ -59,8 +61,10 @@ parse_fn (
         "Compute Dice coefficient (default)", 0);
     parser->add_long_option ("", "hausdorff", 
         "Compute Hausdorff distances (max, average, boundary, etc.)", 0);
-    parser->add_long_option("","z_crop_low","crop the reference and the test image in the negative z dimension by this value (float)",1,"0.0");
-    parser->add_long_option("","z_crop_high","crop the reference and the test image in the positive z dimension by this value (float)",1,"0.0");
+    parser->add_long_option("","zcrop",
+	"crop the reference and the test image in the superior and "
+	"inferior z directions by an additional amount, specified " 
+	"in the form \"zsup zinf\"",1,"");
     /* Parse options */
     parser->parse (argc,argv);
 
@@ -81,12 +85,11 @@ parse_fn (
         parms->have_hausdorff_option = true;
     }
 
-    if (parser->option("z_crop_low")) {
-	    parms->z_crop_low = parser->get_float("z_crop_low");
+    if (parser->option("zcrop")) {
+	    parms->have_zcrop = true;
+	    parser->assign_float_2 (parms->zcrop, "zcrop");
     }
-    if (parser->option("z_crop_high")) {
-	    parms->z_crop_high = parser->get_float("z_crop_high");
-    }
+
     if (!parms->commands_were_requested) {
         parms->have_dice_option = true;
     }
@@ -123,10 +126,10 @@ do_command_dice (int argc, char *argv[])
     itk_bbox(image_1,bbox_coordinates_1,bbox_indices_1);
     itk_bbox(image_2,bbox_coordinates_2,bbox_indices_2);
     /* Apply z-crop to the coordinates, assuming the array is [x-min,x-max,y-min,y-max,z-min,z-max] */
-    bbox_coordinates_1[4] -= parms.z_crop_low;
-    bbox_coordinates_2[4] -= parms.z_crop_low;
-    bbox_coordinates_1[5] += parms.z_crop_high;
-    bbox_coordinates_2[5] += parms.z_crop_high;
+    bbox_coordinates_1[4] -= parms.zcrop[1];
+    bbox_coordinates_2[4] -= parms.zcrop[1];
+    bbox_coordinates_1[5] += parms.zcrop[0];
+    bbox_coordinates_2[5] += parms.zcrop[0];
     
     image_1 = itk_crop_by_coord(image_1,bbox_coordinates_1);
     image_2 = itk_crop_by_coord(image_2,bbox_coordinates_2);
