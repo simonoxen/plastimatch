@@ -15,6 +15,8 @@
 #include "file_util.h"
 #include "hausdorff_distance.h"
 #include "itk_adjust.h"
+#include "itk_bbox.h"
+#include "itk_crop.h"
 #include "itk_resample.h"
 #include "itk_image_save.h"
 #include "itk_threshold.h"
@@ -158,6 +160,15 @@ public:
     double time_warp_img;
     double time_warp_str;
 
+    /* Z crop values*/
+    float zcrop[2];
+
+    /* Bbox coordinates and indices*/
+    float bbox_coordinates_1[6];
+    float bbox_coordinates_2[6];
+    int bbox_indices_1[6];
+    int bbox_indices_2[6];
+
 public:
     Mabs_private () {
         parms = 0;
@@ -179,6 +190,17 @@ public:
         write_dicom_rt_struct = false;
 
         this->reset_timers ();
+
+	for (int i = 0; i < 2; i++) {
+		zcrop[i] = 0.f;
+	}
+
+	for (int i = 0; i < 6; i++) {
+		bbox_coordinates_1[i] = 0.f;
+		bbox_coordinates_2[i] = 0.f;
+		bbox_indices_1[i] = 0;
+		bbox_indices_2[i] = 0;
+	}
     }
     void reset_timers () {
         time_atlas_selection = 0;
@@ -364,6 +386,34 @@ Mabs_private::segmentation_threshold_weight (
     timer.start();
     this->extract_reference_image (mapped_name);
     this->time_extract += timer.report();
+    if (this->parms->structure_zcrop.count(mapped_name) == 0) {
+	this->zcrop[0] = 0.f;
+	this->zcrop[1] = 0.f;
+	}
+	else {
+		std::string zcrop1 
+			= this->parms->structure_zcrop.at(mapped_name);
+			//std::cout << zcrop1 << std::endl;
+		std::stringstream ss(zcrop1);
+		for (int i = 0; i < 2; i++) {
+			ss >> this->zcrop[i];
+		}
+
+	}
+	itk_bbox(clean_structure, 
+		this->bbox_coordinates_1, this->bbox_indices_1);	
+	itk_bbox(this->ref_structure_image, 
+		this->bbox_coordinates_2, this->bbox_indices_2);
+  	this->bbox_coordinates_1[4] -= this->zcrop[1];
+	this->bbox_coordinates_2[4] -= this->zcrop[1];
+	this->bbox_coordinates_1[5] += this->zcrop[0];
+	this->bbox_coordinates_1[5] += this->zcrop[0];
+
+	clean_structure = itk_crop_by_coord(
+		clean_structure, this->bbox_coordinates_1);
+	this->ref_structure_image = itk_crop_by_coord(
+		this->ref_structure_image, this->bbox_coordinates_2);
+
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
@@ -703,7 +753,35 @@ Mabs::run_registration_loop ()
                 lprintf ("Done extracting reference image.\n");
                 d_ptr->time_extract += timer.report();
 
-                /* Compute Dice, etc. */
+		if (d_ptr->parms->structure_zcrop.count(mapped_name) == 0) {
+			d_ptr->zcrop[0] = 0.f;
+			d_ptr->zcrop[1] = 0.f;
+		}
+		else {
+			std::string zcrop1 
+			   = d_ptr->parms->structure_zcrop.at(mapped_name);
+			//std::cout << zcrop1 << std::endl;
+			std::stringstream ss(zcrop1);
+			for (int i = 0; i < 2; i++) {
+				ss >> d_ptr->zcrop[i];
+			}
+
+		}
+		itk_bbox(structure_image, 
+			d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
+		itk_bbox(d_ptr->ref_structure_image, 
+			d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
+                d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+
+		structure_image = itk_crop_by_coord(
+			structure_image, d_ptr->bbox_coordinates_1);
+		d_ptr->ref_structure_image = itk_crop_by_coord(
+			d_ptr->ref_structure_image, d_ptr->bbox_coordinates_2);
+
+		/* Compute Dice, etc. */
                 timer.start();
                 if (d_ptr->have_ref_structure) {
 
@@ -1578,7 +1656,35 @@ Mabs::no_voting (
             continue;
         }
        
-        
+        if (d_ptr->parms->structure_zcrop.count(mapped_name) == 0) {
+			d_ptr->zcrop[0] = 0.f;
+			d_ptr->zcrop[1] = 0.f;
+		}
+		else {
+			std::string zcrop1 
+			   = d_ptr->parms->structure_zcrop.at(mapped_name);
+			//std::cout << zcrop1 << std::endl;
+			std::stringstream ss(zcrop1);
+			for (int i = 0; i < 2; i++) {
+				ss >> d_ptr->zcrop[i];
+			}
+
+		}
+		itk_bbox(ref_stru->itk_uchar(), 
+			d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
+		itk_bbox(warped_structure->itk_uchar(), 
+			d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
+                d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+
+		ref_stru->itk_uchar() = itk_crop_by_coord(
+			ref_stru->itk_uchar(), d_ptr->bbox_coordinates_1);
+		warped_structure->itk_uchar() = itk_crop_by_coord(
+			warped_structure->itk_uchar(), 
+			d_ptr->bbox_coordinates_2);
+
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
             "segmentation", /* Not used yet */
@@ -1946,7 +2052,37 @@ Mabs::staple_segmentation_label (
             /* User is not running train, so no statistics */
             continue;
         }
-       
+        if (d_ptr->parms->structure_zcrop.count(mapped_name) == 0) {
+			d_ptr->zcrop[0] = 0.f;
+			d_ptr->zcrop[1] = 0.f;
+		}
+		else {
+			std::string zcrop1 
+			   = d_ptr->parms->structure_zcrop.at(mapped_name);
+			//std::cout << zcrop1 << std::endl;
+			std::stringstream ss(zcrop1);
+			for (int i = 0; i < 2; i++) {
+				ss >> d_ptr->zcrop[i];
+			}
+
+		}
+		itk_bbox(ref_stru->itk_uchar(), 
+			d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
+		itk_bbox(staple_it->second->output_img->itk_uchar(), 
+			d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
+                d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+
+		ref_stru->itk_uchar() = itk_crop_by_coord(
+			ref_stru->itk_uchar(), d_ptr->bbox_coordinates_1);
+		staple_it->second->output_img->itk_uchar() = 
+			itk_crop_by_coord(
+			staple_it->second->output_img->itk_uchar(), 
+			d_ptr->bbox_coordinates_2);
+
+
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
             "segmentation", /* Not used yet */

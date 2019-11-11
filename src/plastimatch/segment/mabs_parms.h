@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 #include "mabs_seg_weights.h"
 #include "plm_return_code.h"
 
@@ -81,6 +82,8 @@ public:
     /* [STRUCTURES] */
     std::map<std::string, std::string> structure_map;
     std::set<std::string> structure_set;
+    std::map<std::string, std::string> structure_zcrop;
+    std::vector<std::string> structure_vector;
 
     /* [LABELING] */
     std::string labeling_input_fn;

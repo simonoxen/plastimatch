@@ -20,6 +20,10 @@ public:
     std::string reference_image_fn;
     std::string test_image_fn;
     float zcrop[2];
+    int bbox_indices_1[6];
+    int bbox_indices_2[6];
+    float bbox_coordinates_1[6];
+    float bbox_coordinates_2[6];
     bool have_zcrop;
 public:
     Pcmd_dice_parms () {
@@ -28,6 +32,12 @@ public:
         have_hausdorff_option = false;
 	for (int i = 0; i < 2; i++) {
 		zcrop[i] = 0.f;
+	}
+	for (int i = 0; i < 6; i++) {
+		bbox_indices_1[i] = 0;
+		bbox_indices_2[i] = 0;
+		bbox_coordinates_1[i] = 0.f;
+		bbox_coordinates_2[i] = 0.f;
 	}
 	have_zcrop = false;
     }
@@ -119,20 +129,17 @@ do_command_dice (int argc, char *argv[])
         parms.reference_image_fn, 0);
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
-    int bbox_indices_1[6];
-    int bbox_indices_2[6];
-    float bbox_coordinates_1[6];
-    float bbox_coordinates_2[6];
-    itk_bbox(image_1,bbox_coordinates_1,bbox_indices_1);
-    itk_bbox(image_2,bbox_coordinates_2,bbox_indices_2);
+
+    itk_bbox(image_1,parms.bbox_coordinates_1,parms.bbox_indices_1);
+    itk_bbox(image_2,parms.bbox_coordinates_2,parms.bbox_indices_2);
     /* Apply z-crop to the coordinates, assuming the array is [x-min,x-max,y-min,y-max,z-min,z-max] */
-    bbox_coordinates_1[4] -= parms.zcrop[1];
-    bbox_coordinates_2[4] -= parms.zcrop[1];
-    bbox_coordinates_1[5] += parms.zcrop[0];
-    bbox_coordinates_2[5] += parms.zcrop[0];
+    parms.bbox_coordinates_1[4] -= parms.zcrop[1];
+    parms.bbox_coordinates_2[4] -= parms.zcrop[1];
+    parms.bbox_coordinates_1[5] += parms.zcrop[0];
+    parms.bbox_coordinates_2[5] += parms.zcrop[0];
     
-    image_1 = itk_crop_by_coord(image_1,bbox_coordinates_1);
-    image_2 = itk_crop_by_coord(image_2,bbox_coordinates_2);
+    image_1 = itk_crop_by_coord(image_1,parms.bbox_coordinates_1);
+    image_2 = itk_crop_by_coord(image_2,parms.bbox_coordinates_2);
     
     if (parms.have_dice_option) {
         Dice_statistics ds;
