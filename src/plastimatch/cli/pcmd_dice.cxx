@@ -133,10 +133,10 @@ do_command_dice (int argc, char *argv[])
     itk_bbox(image_1,parms.bbox_coordinates_1,parms.bbox_indices_1);
     itk_bbox(image_2,parms.bbox_coordinates_2,parms.bbox_indices_2);
     /* Apply z-crop to the coordinates, assuming the array is [x-min,x-max,y-min,y-max,z-min,z-max] */
-    parms.bbox_coordinates_1[4] -= parms.zcrop[1];
-    parms.bbox_coordinates_2[4] -= parms.zcrop[1];
-    parms.bbox_coordinates_1[5] += parms.zcrop[0];
-    parms.bbox_coordinates_2[5] += parms.zcrop[0];
+    parms.bbox_coordinates_1[4] += parms.zcrop[1];
+    parms.bbox_coordinates_2[4] += parms.zcrop[1];
+    parms.bbox_coordinates_1[5] -= parms.zcrop[0];
+    parms.bbox_coordinates_2[5] -= parms.zcrop[0];
     
     image_1 = itk_crop_by_coord(image_1,parms.bbox_coordinates_1);
     image_2 = itk_crop_by_coord(image_2,parms.bbox_coordinates_2);
