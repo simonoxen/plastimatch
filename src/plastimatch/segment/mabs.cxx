@@ -407,7 +407,7 @@ Mabs_private::segmentation_threshold_weight (
   	this->bbox_coordinates_1[4] -= this->zcrop[1];
 	this->bbox_coordinates_2[4] -= this->zcrop[1];
 	this->bbox_coordinates_1[5] += this->zcrop[0];
-	this->bbox_coordinates_1[5] += this->zcrop[0];
+	this->bbox_coordinates_2[5] += this->zcrop[0];
 
 	clean_structure = itk_crop_by_coord(
 		clean_structure, this->bbox_coordinates_1);
@@ -771,21 +771,21 @@ Mabs::run_registration_loop ()
 			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
 			itk_bbox(d_ptr->ref_structure_image, 
 				d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
-                	d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
-			d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
-			d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
-			d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+                	d_ptr->bbox_coordinates_1[4] += d_ptr->zcrop[1];
+			d_ptr->bbox_coordinates_2[4] += d_ptr->zcrop[1];
+			d_ptr->bbox_coordinates_1[5] -= d_ptr->zcrop[0];
+			d_ptr->bbox_coordinates_2[5] -= d_ptr->zcrop[0];
 			
 			for (int i = 4; i < 6; i++) {
 				std::cout << d_ptr->bbox_coordinates_1[i] << std::endl;
 				std::cout << d_ptr->bbox_coordinates_2[i] << std::endl;
 			}
 			std::cout << "ERROR" << std::endl;
-			structure_image = itk_crop_by_coord(
-				structure_image, d_ptr->bbox_coordinates_1);
-			std::cout << "ERROR1" << std::endl;
 			d_ptr->ref_structure_image = itk_crop_by_coord(
 				d_ptr->ref_structure_image, d_ptr->bbox_coordinates_2);
+			std::cout << "ERROR1" << std::endl;
+			structure_image = itk_crop_by_coord(
+				structure_image, d_ptr->bbox_coordinates_1);
 			std::cout << "ERROR2" << std::endl;
 		}	
 		/* Compute Dice, etc. */
@@ -1684,7 +1684,7 @@ Mabs::no_voting (
                 d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
 		d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
 		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
-		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+		d_ptr->bbox_coordinates_2[5] += d_ptr->zcrop[0];
 
 		ref_stru->itk_uchar() = itk_crop_by_coord(
 			ref_stru->itk_uchar(), d_ptr->bbox_coordinates_1);
@@ -2080,7 +2080,7 @@ Mabs::staple_segmentation_label (
                 d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
 		d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
 		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
-		d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
+		d_ptr->bbox_coordinates_2[5] += d_ptr->zcrop[0];
 
 		ref_stru->itk_uchar() = itk_crop_by_coord(
 			ref_stru->itk_uchar(), d_ptr->bbox_coordinates_1);
