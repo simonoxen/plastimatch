@@ -765,21 +765,28 @@ Mabs::run_registration_loop ()
 			for (int i = 0; i < 2; i++) {
 				ss >> d_ptr->zcrop[i];
 			}
-			std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
+			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
 			itk_bbox(structure_image, 
 				d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
-			std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
+			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
 			itk_bbox(d_ptr->ref_structure_image, 
 				d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
                 	d_ptr->bbox_coordinates_1[4] -= d_ptr->zcrop[1];
 			d_ptr->bbox_coordinates_2[4] -= d_ptr->zcrop[1];
 			d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
 			d_ptr->bbox_coordinates_1[5] += d_ptr->zcrop[0];
-	
+			
+			for (int i = 4; i < 6; i++) {
+				std::cout << d_ptr->bbox_coordinates_1[i] << std::endl;
+				std::cout << d_ptr->bbox_coordinates_2[i] << std::endl;
+			}
+			std::cout << "ERROR" << std::endl;
 			structure_image = itk_crop_by_coord(
 				structure_image, d_ptr->bbox_coordinates_1);
+			std::cout << "ERROR1" << std::endl;
 			d_ptr->ref_structure_image = itk_crop_by_coord(
 				d_ptr->ref_structure_image, d_ptr->bbox_coordinates_2);
+			std::cout << "ERROR2" << std::endl;
 		}	
 		/* Compute Dice, etc. */
                 timer.start();
