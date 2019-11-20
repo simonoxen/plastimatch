@@ -3,9 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plmbase_config.h"
 #include <algorithm>
+#include <map>
 #include <fstream>
 #include <iostream>
-#include <algorithm>
 #include <string>
 #include <vector>
 #include <math.h>
@@ -79,97 +79,72 @@ Xio_studyset::Xio_studyset (const std::string& input_dir)
     // Sort slices in positive direction
     std::sort (all_slices.begin(), all_slices.end());
 
-    // Workaround for Xio position rounding.  Xio rounds positions to the
-    // nearest 0.1 mm.  This causes the inequal slice spacing workaround
-    // to unnecessarily trigger.
-#if defined (commentout)
     for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
-        long this_location = ROUND_INT (10.f * fabs(it->location));
-        long this_modulo = this_location % 10;
-        printf ("%f", it->location);
-        if (this_modulo == 3 || this_modulo == 8)
-        {
-            if (it->location < 0) {
-                it->location += 0.05;
-            } else {
-                it->location -= 0.05;
-            }
-        }
-        printf (" -> %f\n", it->location);
+        printf ("%f\n", it->location);
     }
-#endif
     
     // Workaround for multiple slice thickness
-    // Create volume with uniform voxel sizes by finding greatest
-    // common divisor of slice thicknesses,
-    // and duplicating slices to obtain a uniform Z axis.
-    std::vector<float> slice_thickness;
+    // Create volume with uniform voxel sizes by finding most common
+    // slice thickness and duplicating slices to obtain a uniform Z axis.
+    std::map<float,int> slice_thicknesses;
     for (auto it = all_slices.begin(); it != all_slices.end(); it++) {
-        float prev_spacing = FLT_MAX;
-        float next_spacing = FLT_MAX;
-        if (it != all_slices.begin()) {
-            prev_spacing = it->location - prev(it)->location;
-            prev_spacing = ROUND_INT (prev_spacing * 100) / 100.f;
+        if (it == all_slices.begin()) {
+            continue;
         }
-        if (next(it) != all_slices.end()) {
-            next_spacing = next(it)->location - it->location;
-            next_spacing = ROUND_INT (next_spacing * 100) / 100.f;
-        }
+        float spacing = it->location - prev(it)->location;
+        spacing = ROUND_INT (spacing * 100) / 100.f;
         // Workaround for Xio position rounding.  Xio rounds positions to the
-        // nearest 0.1 mm.  This causes the inequal slice spacing workaround
-        // to unnecessarily trigger.
-        float min_spacing = std::min (prev_spacing, next_spacing);
-        if (min_spacing >= 1.1 && min_spacing <= 1.4) {
-            min_spacing = 1.25;
+        // nearest 0.1 mm.
+        if (spacing >= 1.1 && spacing <= 1.4) {
+            spacing = 1.25;
         }
-        if (min_spacing >= 3.6 && min_spacing <= 3.9) {
-            min_spacing = 3.75;
+        if (spacing >= 3.6 && spacing <= 3.9) {
+            spacing = 3.75;
         }
-        printf ("(%f) -> %f\n", it->location,
-            std::min (prev_spacing, next_spacing));
-        slice_thickness.push_back (std::min (prev_spacing, next_spacing));
-    }
-    
-    // Find greatest common divisor
-    std::vector<int> slice_thickness_int;
-    int slice_thickness_gcd = 1;
-
-    for (size_t i = 0; i < all_slices.size(); i++) {
-	// 1/1000 mm resolution
-	int rounded_thickness = static_cast<int> (slice_thickness[i] * 1000.);
-	if (rounded_thickness == 0) rounded_thickness = 1;
-	slice_thickness_int.push_back(rounded_thickness);
+        if (slice_thicknesses.find(spacing) != slice_thicknesses.end()) {
+            slice_thicknesses[spacing]++;
+        } else {
+            slice_thicknesses[spacing] = 1;
+        }
     }
 
-    if (all_slices.size() == 1) {
-	slice_thickness_gcd = slice_thickness_int[0];
+    int best_count = 0;
+    float best_spacing = 2.5;
+    for (auto it = slice_thicknesses.begin(); it != slice_thicknesses.end(); it++) {
+        printf ("(%f) -> %d\n", it->first, it->second);
+        if (it->second > best_count) {
+            best_spacing = it->first;
+            best_count = it->second;
+        }
     }
-    else if (all_slices.size() > 0) {
-	slice_thickness_gcd = gcd(slice_thickness_int[0], slice_thickness_int[1]);
-	for (size_t i = 2; i < all_slices.size(); i++) {
-            slice_thickness_gcd = gcd(slice_thickness_gcd, slice_thickness_int[i]);
-	}
-    }
+    this->thickness = best_spacing;
 
-    // Build new slice list, determining duplication needed for each slice
-    thickness = slice_thickness_gcd / 1000.;
-    number_slices = 0;
-
+    this->number_slices = 0;
     if (all_slices.size() > 0) {
-	float location = all_slices[0].location - (slice_thickness[0] / 2.) + (thickness / 2.);
-
-	for (size_t i = 0; i < all_slices.size(); i++) {
-	    int duplicate = slice_thickness_int[i] / slice_thickness_gcd;
-
-	    for (int j = 0; j < duplicate; j++) {
-                Xio_studyset_slice slice(all_slices[i].filename_scan, location);
-                slices.push_back(slice);
-                location += thickness;
-                number_slices++;
-	    }
-	}
+        this->number_slices = ROUND_INT (
+            (all_slices.back().location - all_slices.front().location) / best_spacing) + 1;
+        printf ("Number of slices: (%f - %f) / %f = %d\n",
+            all_slices.back().location, all_slices.front().location, best_spacing,
+            this->number_slices);
     }
-    
+
+    auto it = all_slices.begin();
+    for (int i = 0; i < this->number_slices; i++) {
+        float location = all_slices[0].location + i * best_spacing;
+        while (next(it) != all_slices.end()) {
+            float curr_slice_dist = fabs(location - it->location);
+            float next_slice_dist = fabs(location - next(it)->location);
+            if (next_slice_dist < curr_slice_dist) {
+                it++;
+            } else {
+                break;
+            }
+        }
+        Xio_studyset_slice slice(it->filename_scan, location);
+        slices.push_back(slice);
+        printf ("%3d: %f, %f\n", i, location, it->location);
+    }
+
     // Initialize pixel spacing to zero.  This get set when the 
     // CT is loaded
     this->ct_pixel_spacing[0] = this->ct_pixel_spacing[1] = 0.f;
