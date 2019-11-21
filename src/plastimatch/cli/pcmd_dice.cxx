@@ -122,7 +122,9 @@ do_command_dice (int argc, char *argv[])
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
 
-    zcrop(image_1, image_2, parms.zcrop_vec);
+    if (parms.have_zcrop == true) {
+	    zcrop(image_1, image_2, parms.zcrop_vec);
+    }
     /*
     itk_bbox(image_1,parms.bbox_coordinates_1,parms.bbox_indices_1);
     itk_bbox(image_2,parms.bbox_coordinates_2,parms.bbox_indices_2);
