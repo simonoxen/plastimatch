@@ -42,7 +42,7 @@
 #include "segmentation.h"
 #include "string_util.h"
 #include "xform.h"
-
+#include "zcrop.h"
 class Mabs_private {
 public:
     /* These are the input parameters */
@@ -161,15 +161,9 @@ public:
     double time_warp_str;
 
     /* Z crop values*/
-    float zcrop[2];
+    float zcrop_vec[2];
 
-    /* Bbox coordinates and indices*/
-    float bbox_coordinates_1[6];
-    float bbox_coordinates_2[6];
-    int bbox_indices_1[6];
-    int bbox_indices_2[6];
-
-public:
+    public:
     Mabs_private () {
         parms = 0;
         train_segmentation = true;
@@ -192,15 +186,9 @@ public:
         this->reset_timers ();
 
 	for (int i = 0; i < 2; i++) {
-		zcrop[i] = 0.f;
+		zcrop_vec[i] = 0.f;
 	}
 
-	for (int i = 0; i < 6; i++) {
-		bbox_coordinates_1[i] = 0.f;
-		bbox_coordinates_2[i] = 0.f;
-		bbox_indices_1[i] = 0;
-		bbox_indices_2[i] = 0;
-	}
     }
     void reset_timers () {
         time_atlas_selection = 0;
@@ -392,9 +380,11 @@ Mabs_private::segmentation_threshold_weight (
 			//std::cout << zcrop1 << std::endl;
 		std::stringstream ss(zcrop1);
 		for (int i = 0; i < 2; i++) {
-			ss >> this->zcrop[i];
+			ss >> this->zcrop_vec[i];
 		}
 
+	zcrop(clean_structure, this->ref_structure_image, this->zcrop_vec);
+	/*
 	itk_bbox(clean_structure, 
 		this->bbox_coordinates_1, this->bbox_indices_1);	
 	itk_bbox(this->ref_structure_image, 
@@ -408,8 +398,8 @@ Mabs_private::segmentation_threshold_weight (
 		clean_structure, this->bbox_coordinates_1);
 	this->ref_structure_image = itk_crop_by_coord(
 		this->ref_structure_image, this->bbox_coordinates_2);
+		*/
     }
-
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
@@ -755,8 +745,10 @@ Mabs::run_registration_loop ()
 			//std::cout << zcrop1 << std::endl;
 			std::stringstream ss(zcrop1);
 			for (int i = 0; i < 2; i++) {
-				ss >> d_ptr->zcrop[i];
+				ss >> d_ptr->zcrop_vec[i];
 			}
+			zcrop(structure_image, d_ptr->ref_structure_image, d_ptr->zcrop_vec);
+			/*
 			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
 			itk_bbox(structure_image, 
 				d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
@@ -772,6 +764,7 @@ Mabs::run_registration_loop ()
 				d_ptr->ref_structure_image, d_ptr->bbox_coordinates_2);
 			structure_image = itk_crop_by_coord(
 				structure_image, d_ptr->bbox_coordinates_1);
+		*/
 		}	
 		/* Compute Dice, etc. */
                 timer.start();
@@ -1654,9 +1647,11 @@ Mabs::no_voting (
 			//std::cout << zcrop1 << std::endl;
 			std::stringstream ss(zcrop1);
 			for (int i = 0; i < 2; i++) {
-				ss >> d_ptr->zcrop[i];
+				ss >> d_ptr->zcrop_vec[i];
 			}
 
+		zcrop(ref_stru->itk_uchar(), warped_structure->itk_uchar(), d_ptr->zcrop_vec);
+		/*
 		itk_bbox(ref_stru->itk_uchar(), 
 			d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
 		itk_bbox(warped_structure->itk_uchar(), 
@@ -1671,6 +1666,7 @@ Mabs::no_voting (
 		warped_structure->itk_uchar() = itk_crop_by_coord(
 			warped_structure->itk_uchar(), 
 			d_ptr->bbox_coordinates_2);
+			*/
 	}
         /* Compute Dice, etc. */
         std::string stats_string = d_ptr->stats.compute_statistics (
@@ -2045,9 +2041,11 @@ Mabs::staple_segmentation_label (
 			//std::cout << zcrop1 << std::endl;
 			std::stringstream ss(zcrop1);
 			for (int i = 0; i < 2; i++) {
-				ss >> d_ptr->zcrop[i];
+				ss >> d_ptr->zcrop_vec[i];
 			}
 
+		zcrop(ref_stru->itk_uchar(), staple_it->second->output_img->itk_uchar(), d_ptr->zcrop_vec);
+		/*
 		itk_bbox(ref_stru->itk_uchar(), 
 			d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
 		itk_bbox(staple_it->second->output_img->itk_uchar(), 
@@ -2063,6 +2061,7 @@ Mabs::staple_segmentation_label (
 			itk_crop_by_coord(
 			staple_it->second->output_img->itk_uchar(), 
 			d_ptr->bbox_coordinates_2);
+		*/
 	}
 	
         /* Compute Dice, etc. */

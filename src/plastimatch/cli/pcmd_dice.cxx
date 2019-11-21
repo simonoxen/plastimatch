@@ -11,6 +11,7 @@
 #include "itk_resample.h"
 #include "plm_clp.h"
 #include "plm_image_header.h"
+#include "zcrop.h"
 
 class Pcmd_dice_parms {
 public:
@@ -19,11 +20,7 @@ public:
     bool have_hausdorff_option;
     std::string reference_image_fn;
     std::string test_image_fn;
-    float zcrop[2];
-    int bbox_indices_1[6];
-    int bbox_indices_2[6];
-    float bbox_coordinates_1[6];
-    float bbox_coordinates_2[6];
+    float zcrop_vec[2];
     bool have_zcrop;
 public:
     Pcmd_dice_parms () {
@@ -31,14 +28,9 @@ public:
         have_dice_option = false;
         have_hausdorff_option = false;
 	for (int i = 0; i < 2; i++) {
-		zcrop[i] = 0.f;
+		zcrop_vec[i] = 0.f;
 	}
-	for (int i = 0; i < 6; i++) {
-		bbox_indices_1[i] = 0;
-		bbox_indices_2[i] = 0;
-		bbox_coordinates_1[i] = 0.f;
-		bbox_coordinates_2[i] = 0.f;
-	}
+	
 	have_zcrop = false;
     }
 };
@@ -97,7 +89,7 @@ parse_fn (
 
     if (parser->option("zcrop")) {
 	    parms->have_zcrop = true;
-	    parser->assign_float_2 (parms->zcrop, "zcrop");
+	    parser->assign_float_2 (parms->zcrop_vec, "zcrop");
     }
 
     if (!parms->commands_were_requested) {
@@ -107,7 +99,7 @@ parse_fn (
     if (parser->number_of_arguments() < 2) {
 	throw (dlib::error ("Error.  You must specify two input files"));
 	
-    }   else if (parser->number_of_arguments() > 2) {
+    } else if (parser->number_of_arguments() > 2) {
 	    std::string extra_arg = (*parser)[1];
 	    throw (dlib::error ("Error.  Extra argument " + extra_arg));
     }
@@ -130,9 +122,11 @@ do_command_dice (int argc, char *argv[])
     UCharImageType::Pointer image_2 = itk_image_load_uchar (
         parms.test_image_fn, 0);
 
+    zcrop(image_1, image_2, parms.zcrop_vec);
+    /*
     itk_bbox(image_1,parms.bbox_coordinates_1,parms.bbox_indices_1);
     itk_bbox(image_2,parms.bbox_coordinates_2,parms.bbox_indices_2);
-    /* Apply z-crop to the coordinates, assuming the array is [x-min,x-max,y-min,y-max,z-min,z-max] */
+    
     parms.bbox_coordinates_1[4] += parms.zcrop[1];
     parms.bbox_coordinates_2[4] += parms.zcrop[1];
     parms.bbox_coordinates_1[5] -= parms.zcrop[0];
@@ -140,7 +134,7 @@ do_command_dice (int argc, char *argv[])
     
     image_1 = itk_crop_by_coord(image_1,parms.bbox_coordinates_1);
     image_2 = itk_crop_by_coord(image_2,parms.bbox_coordinates_2);
-    
+    */
     if (parms.have_dice_option) {
         Dice_statistics ds;
         ds.set_reference_image (image_1);
