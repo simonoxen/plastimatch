@@ -526,6 +526,13 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "curvature_mixed_weight") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (sscanf (val.c_str(), "%f",
+                &stage->regularization_parms.curvature_mixed_weight) != 1) {
+            goto error_exit;
+        }
+    }
     else if (key == "lame_coefficient_1") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         if (sscanf (val.c_str(), "%f",

@@ -25,6 +25,7 @@ public:
     float lame_coefficient_2;
     float linear_elastic_multiplier;
     float third_order_penalty;
+    float curvature_mixed_weight;
     
 public:
     Regularization_parms () {
@@ -37,6 +38,7 @@ public:
         this->lame_coefficient_2 = 0.f;
         this->linear_elastic_multiplier = 1.f;
         this->third_order_penalty = 0.f;
+	this->curvature_mixed_weight = 1.f;
     }
 };
 

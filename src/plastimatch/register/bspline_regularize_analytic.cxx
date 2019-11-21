@@ -735,19 +735,19 @@ Bspline_regularize::analytic_init (
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[3], X, Y, Z);
-    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty);
+    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[4], X, Y, Z);
-    scale_Vmatrix(this->V[4], reg_parms->curvature_penalty);
+    scale_Vmatrix(this->V[4], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[5], X, Y, Z);
-    scale_Vmatrix(this->V[5], reg_parms->curvature_penalty);
+    scale_Vmatrix(this->V[5], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
