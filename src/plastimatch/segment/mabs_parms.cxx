@@ -307,15 +307,24 @@ Mabs_parms_parser::set_key_value (
 
     /* [STRUCTURES] */
     if (section == "STRUCTURES") {
-        /* Add key to list of structures */
-        mp->structure_map[key] = key;
-        if (val != "") {
-            /* Key/value pair, so add for renaming */
-            mp->structure_map[val] = key;
-        }
-        /* Add key to the set */
-        mp->structure_set.insert (key);
-        /* There is no filtering of structures values */
+	    if (key != "zcrop") {
+        	/* Add key to list of structures */
+        	mp->structure_map[key] = key;
+        	if (val != "") {
+            		/* Key/value pair, so add for renaming */
+            		mp->structure_map[val] = key;
+        	}
+        	/* Add key to the set */
+        	mp->structure_set.insert (key);
+		mp->structure_vector.push_back (key);
+        	/* There is no filtering of structures values */
+	    }
+	    else {
+		std::vector<std::string>::reverse_iterator rit;
+	        rit = mp->structure_vector.rbegin();
+	    	mp->structure_zcrop[*rit] = val;
+	    }
+
     }
 
     /* [LABELING] */
