@@ -237,7 +237,9 @@ add_custom_target (speedtest
 ## Create synthetic images
 ##   black-1           All black, slightly different geometry
 ##   cyl-1             UChar cylinder full height
+##   cyl-mask-2        Mask for cyl-2
 ##   cyl-2             UChar cylinder masked to one z extent
+##   cyl-mask-3        Mask for cyl-3
 ##   cyl-3             UChar cylinder masked to different z extent
 ##   donut-1           Centered donut
 ##   donut-2           Centered donut mask (0s and 1s)
@@ -311,6 +313,28 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/cyl-1.nrrd;--output-type;uchar;--pattern;cylinder;--origin;-19.5 -19.5 -49.5;--dim;40 40 100;--spacing;1 1 1;--background;0;--foreground;1;--radius;10"
   )
+plm_add_test (
+  "cyl-mask-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/cyl-mask-2.nrrd;--output-type;uchar;--pattern;rect;--origin;-19.5 -19.5 -49.5;--dim;40 40 100;--spacing;1 1 1;--background;0;--foreground;1;--rect-size;-20 20 -20 20 -30 45"
+  )
+plm_add_test (
+  "cyl-2"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "mask;--input;${PLM_BUILD_TESTING_DIR}/cyl-1.nrrd;--mask;${PLM_BUILD_TESTING_DIR}/cyl-mask-2.nrrd;--output;${PLM_BUILD_TESTING_DIR}/cyl-2.nrrd"
+  )
+set_tests_properties (cyl-2 PROPERTIES DEPENDS "cyl-1;cyl-mask-2")
+plm_add_test (
+  "cyl-mask-3"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/cyl-mask-3.nrrd;--output-type;uchar;--pattern;rect;--origin;-19.5 -19.5 -49.5;--dim;40 40 100;--spacing;1 1 1;--background;0;--foreground;1;--rect-size;-20 20 -20 20 -45 40"
+  )
+plm_add_test (
+  "cyl-3"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "mask;--input;${PLM_BUILD_TESTING_DIR}/cyl-1.nrrd;--mask;${PLM_BUILD_TESTING_DIR}/cyl-mask-3.nrrd;--output;${PLM_BUILD_TESTING_DIR}/cyl-3.nrrd"
+  )
+set_tests_properties (cyl-3 PROPERTIES DEPENDS "cyl-1;cyl-mask-3")
 plm_add_test (
   "donut-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -2440,6 +2464,49 @@ set_tests_properties (plm-dice-d-check-3 PROPERTIES DEPENDS "plm-dice-d")
 set_tests_properties (plm-dice-d-check-4 PROPERTIES DEPENDS "plm-dice-d")
 set_tests_properties (plm-dice-d-check-5 PROPERTIES DEPENDS "plm-dice-d")
 
+plm_add_test (
+  "plm-dice-e"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;--all;--zcrop;0 0;${PLM_BUILD_TESTING_DIR}/cyl-2.nrrd;${PLM_BUILD_TESTING_DIR}/cyl-3.nrrd"
+  )
+plmtest_check_interval ("plm-dice-e-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-e.stdout.txt"
+  "^DICE: *([-0-9.]*)"
+  "0.96550"
+  "0.96555"
+  )
+plmtest_check_interval ("plm-dice-e-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-e.stdout.txt"
+  "^Hausdorff distance = *([-0-9.]*)"
+  "5"
+  "5"
+  )
+
+set_tests_properties (plm-dice-e PROPERTIES DEPENDS "cyl-2;cyl-3")
+set_tests_properties (plm-dice-e-check-1 PROPERTIES DEPENDS plm-dice-e)
+set_tests_properties (plm-dice-e-check-2 PROPERTIES DEPENDS plm-dice-e)
+
+plm_add_test (
+  "plm-dice-f"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dice;--all;--zcrop;10 10;${PLM_BUILD_TESTING_DIR}/cyl-2.nrrd;${PLM_BUILD_TESTING_DIR}/cyl-3.nrrd"
+  )
+plmtest_check_interval ("plm-dice-f-check-1"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-f.stdout.txt"
+  "^DICE: *([-0-9.]*)"
+  "1"
+  "1"
+  )
+plmtest_check_interval ("plm-dice-f-check-2"
+  "${PLM_BUILD_TESTING_DIR}/plm-dice-f.stdout.txt"
+  "^Hausdorff distance = *([-0-9.]*)"
+  "0"
+  "0"
+  )
+
+set_tests_properties (plm-dice-f PROPERTIES DEPENDS "cyl-2;cyl-3")
+set_tests_properties (plm-dice-f-check-1 PROPERTIES DEPENDS plm-dice-f)
+set_tests_properties (plm-dice-f-check-2 PROPERTIES DEPENDS plm-dice-f)
 
 ## -------------------------------------------------------------------------
 ## plm-dmap-a  distance map, itk maurer
