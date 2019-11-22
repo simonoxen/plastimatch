@@ -236,6 +236,9 @@ add_custom_target (speedtest
 ## -------------------------------------------------------------------------
 ## Create synthetic images
 ##   black-1           All black, slightly different geometry
+##   cyl-1             UChar cylinder full height
+##   cyl-2             UChar cylinder masked to one z extent
+##   cyl-3             UChar cylinder masked to different z extent
 ##   donut-1           Centered donut
 ##   donut-2           Centered donut mask (0s and 1s)
 ##   gabor-xx          Fibonacci Gabor
@@ -302,6 +305,11 @@ plm_add_test (
   "black-1"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/black-1.mha;--output-type;float;--pattern;rect;--origin;-25 -25 -25;--dim;40 40 40;--volume-size;50 50 50;--background;-1000;--foreground;-1000"
+  )
+plm_add_test (
+  "cyl-1"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/cyl-1.nrrd;--output-type;uchar;--pattern;cylinder;--origin;-19.5 -19.5 -49.5;--dim;40 40 100;--spacing;1 1 1;--background;0;--foreground;1;--radius;10"
   )
 plm_add_test (
   "donut-1"
@@ -2318,6 +2326,7 @@ set_tests_properties (plm-crop-c-check-1 PROPERTIES DEPENDS plm-crop-c-stats)
 ## plm-dice-b  dice, centered rects of different resolution
 ## plm-dice-c  HD tests centered and off-centered rect
 ## plm-dice-d  HD tests centered sphere and off-centered rect
+## plm-dice-e  dice, HD tests of cylinder with zcrop
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dice-a"
