@@ -70,6 +70,7 @@ Step 1: Test the debian build
 #. Download the candidate tarball and repack into correct version name::
 
      export V=1.7.4
+     cd ~/debian-med
      wget https://gitlab.com/plastimatch/plastimatch/-/archive/master/plastimatch-master.tar.gz
      tar xvf plastimatch-master.tar.gz
      rm plastimatch-master.tar.gz
