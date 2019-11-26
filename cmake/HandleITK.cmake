@@ -64,6 +64,13 @@ else ()
   set (ITK_BASE "${ITK_LIBRARY_DIRS_41}")
 endif ()
 
+# Fix VXL problem on newer GCC compilers
+if (NOT ${ITK_VERSION} VERSION_GREATER "4.13.2"
+    AND CMAKE_COMPILER_IS_GNUCC
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "8.3")
+  add_definitions (-D__GNUC__=8 -D__GNUC_MINOR__=3)
+endif ()
+
 message (STATUS "ITK_BASE = ${ITK_BASE}")
 if (NOT WIN32)
   set (ITK_DLL_DIR "")
