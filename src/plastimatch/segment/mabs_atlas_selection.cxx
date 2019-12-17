@@ -114,11 +114,9 @@ Mabs_atlas_selection::similarity_ranking()
          atl_it != this->atlas_dir_list.end(); atl_it++, i++)
     {	
         Rt_study* rtds_atl= new Rt_study;
-       	std::string path_atl = *atl_it;
-        std::string atlas_id = basename (path_atl);
-        std::string atlas_input_path = string_format ("%s/prealign/%s", 
-            this->atlas_dir.c_str(), atlas_id.c_str());
-        std::string fn = string_format ("%s/img.nrrd", atlas_input_path.c_str());
+        std::string atlas_id = basename (*atl_it);
+        std::string fn = string_format ("%s/img.nrrd", (*atl_it).c_str());
+        
         rtds_atl->load_image (fn.c_str());
         
         this->atlas = rtds_atl->get_image();
