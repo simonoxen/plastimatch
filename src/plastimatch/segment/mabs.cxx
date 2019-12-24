@@ -87,9 +87,9 @@ public:
     /* process_dir_list is a list of the input directories which 
        need to be processed, one directory per case
        - during the atlas_convert stage, it is the list of 
-         original (dicom) atlas directories
+       original (dicom) atlas directories
        - during the atlas_prealign stage, it is the list of 
-         converted atlas directories
+       converted atlas directories
        - <need more detail here for later stages>
     */
     std::list<std::string> process_dir_list;
@@ -102,7 +102,7 @@ public:
 
     /* Select atlas parameters */
     std::map<std::string, std::list<std::pair<std::string, double> > 
-             > selected_atlases_train;
+        > selected_atlases_train;
 
     std::list<std::pair<std::string, double> > selected_atlases;
 
@@ -163,7 +163,7 @@ public:
     /* Z crop values*/
     float zcrop_vec[2];
 
-    public:
+public:
     Mabs_private () {
         parms = 0;
         train_segmentation = true;
@@ -186,7 +186,7 @@ public:
         this->reset_timers ();
 
 	for (int i = 0; i < 2; i++) {
-		zcrop_vec[i] = 0.f;
+            zcrop_vec[i] = 0.f;
 	}
 
     }
@@ -220,6 +220,9 @@ public:
     void print_structure_map ();
     std::string map_structure_name (const std::string& ori_name);
     void extract_reference_image (const std::string& mapped_name);
+    std::string extract_and_crop_reference (
+        UCharImageType::Pointer& structure_image,
+        const std::string& mapped_name);
     void segmentation_threshold_weight (
         const std::string& label_output_dir, 
         FloatImageType::Pointer weight_image, 
@@ -303,6 +306,47 @@ Mabs_private::extract_reference_image (const std::string& mapped_name)
     }
 }
 
+std::string
+Mabs_private::extract_and_crop_reference (
+    UCharImageType::Pointer& structure_image,
+    const std::string& mapped_name)
+{
+    Plm_timer timer;
+
+    /* Extract reference structure as binary mask. */
+    timer.start();
+    lprintf ("Extracting reference image (%s)\n",
+        mapped_name.c_str());
+    this->extract_reference_image (mapped_name);
+    lprintf ("Done extracting reference image.\n");
+    this->time_extract += timer.report();
+
+    if (this->have_ref_structure) {
+        if (this->parms->structure_zcrop.count(mapped_name) > 0) {
+            std::string zcrop1 
+                = this->parms->structure_zcrop.at(mapped_name);
+            //std::cout << zcrop1 << std::endl;
+            std::stringstream ss(zcrop1);
+            for (int i = 0; i < 2; i++) {
+                ss >> this->zcrop_vec[i];
+            }
+            zcrop (structure_image, this->ref_structure_image, this->zcrop_vec);
+        }	
+        /* Compute Dice, etc. */
+        timer.start();
+
+        std::string stats_string 
+            = this->stats.compute_statistics (
+                registration_id,
+                this->ref_structure_image,
+                structure_image);
+        timer.start();
+        return stats_string;
+    }
+    return std::string();
+}
+
+
 void
 Mabs_private::segmentation_threshold_weight (
     const std::string& label_output_dir, 
@@ -370,39 +414,12 @@ Mabs_private::segmentation_threshold_weight (
         this->time_io += timer.report();
     }
 
-    /* Extract reference structure as binary mask. */
-    timer.start();
-    this->extract_reference_image (mapped_name);
-    this->time_extract += timer.report();
-    if (this->parms->structure_zcrop.count(mapped_name) > 0) {
-		std::string zcrop1 
-			= this->parms->structure_zcrop.at(mapped_name);
-			//std::cout << zcrop1 << std::endl;
-		std::stringstream ss(zcrop1);
-		for (int i = 0; i < 2; i++) {
-			ss >> this->zcrop_vec[i];
-		}
-
-	zcrop(clean_structure, this->ref_structure_image, this->zcrop_vec);
-	/*
-	itk_bbox(clean_structure, 
-		this->bbox_coordinates_1, this->bbox_indices_1);	
-	itk_bbox(this->ref_structure_image, 
-		this->bbox_coordinates_2, this->bbox_indices_2);
-  	this->bbox_coordinates_1[4] += this->zcrop[1];
-	this->bbox_coordinates_2[4] += this->zcrop[1];
-	this->bbox_coordinates_1[5] -= this->zcrop[0];
-	this->bbox_coordinates_2[5] -= this->zcrop[0];
-
-	clean_structure = itk_crop_by_coord(
-		clean_structure, this->bbox_coordinates_1);
-	this->ref_structure_image = itk_crop_by_coord(
-		this->ref_structure_image, this->bbox_coordinates_2);
-		*/
-    }
+    /* If we are training, zcrop the reference structure */
+    this->extract_and_crop_reference (clean_structure, mapped_name);
 
     /* Compute Dice, etc. */
     if (this->have_ref_structure) {
+        /* Compute statistics */
         std::string stats_string = this->stats.compute_statistics (
             "segmentation", /* Not used yet */
             this->ref_structure_image,
@@ -663,11 +680,6 @@ Mabs::run_registration_loop ()
 
             /* Using the hardened transform for linear transforms 
                does not seem to work well in this case.  See issue #58. */
-#if defined (commentout)
-            plm_warp (warped_image, 0, xf_out, &fixed_pih, 
-                moving_image, 
-                regp->default_value, false, 0, 1);
-#endif
             plm_warp (warped_image, 0, xf_out, &fixed_pih, 
                 moving_image, 
                 regp->default_value, true, 0, 1);
@@ -731,44 +743,12 @@ Mabs::run_registration_loop ()
                         curr_output_dir, mapped_name);
                 }
 
-                /* Extract reference structure as binary mask. */
-                timer.start();
-                lprintf ("Extracting reference image (%s)\n",
-                    mapped_name.c_str());
-                d_ptr->extract_reference_image (mapped_name);
-                lprintf ("Done extracting reference image.\n");
-                d_ptr->time_extract += timer.report();
-
-		if (d_ptr->parms->structure_zcrop.count(mapped_name) > 0) {
-			std::string zcrop1 
-			   = d_ptr->parms->structure_zcrop.at(mapped_name);
-			//std::cout << zcrop1 << std::endl;
-			std::stringstream ss(zcrop1);
-			for (int i = 0; i < 2; i++) {
-				ss >> d_ptr->zcrop_vec[i];
-			}
-			zcrop(structure_image, d_ptr->ref_structure_image, d_ptr->zcrop_vec);
-			/*
-			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
-			itk_bbox(structure_image, 
-				d_ptr->bbox_coordinates_1, d_ptr->bbox_indices_1);
-			//std::cout << d_ptr->bbox_coordinates_1[0] << std::endl;
-			itk_bbox(d_ptr->ref_structure_image, 
-				d_ptr->bbox_coordinates_2, d_ptr->bbox_indices_2);
-                	d_ptr->bbox_coordinates_1[4] += d_ptr->zcrop[1];
-			d_ptr->bbox_coordinates_2[4] += d_ptr->zcrop[1];
-			d_ptr->bbox_coordinates_1[5] -= d_ptr->zcrop[0];
-			d_ptr->bbox_coordinates_2[5] -= d_ptr->zcrop[0];
-			
-			d_ptr->ref_structure_image = itk_crop_by_coord(
-				d_ptr->ref_structure_image, d_ptr->bbox_coordinates_2);
-			structure_image = itk_crop_by_coord(
-				structure_image, d_ptr->bbox_coordinates_1);
-		*/
-		}	
-		/* Compute Dice, etc. */
-                timer.start();
+                /* If we are training, zcrop the reference structure */
+                d_ptr->extract_and_crop_reference (structure_image, mapped_name);
+                    
+                /* Compute Dice, etc. */
                 if (d_ptr->have_ref_structure) {
+                    timer.start();
 
                     std::string stats_string 
                         = d_ptr->stats.compute_statistics (
