@@ -69,6 +69,7 @@ public:
 
     /* segment_input_fn is the input location for a segmentation task */
     std::string segment_input_fn;
+    std::string segmentation_fn;
     /* outdir_base is the output directory when we are 
        doing a labeling task (i.e. not training) */
     std::string segment_outdir_base;
@@ -130,7 +131,7 @@ public:
     /* This configures the trainer to evaluate segmentation parameters,
        it is set to false when --train-registration is used */
     bool train_segmentation;
-
+    bool segmentation;
     /* Decide whether distance map should be computed during the 
        main registration loop */
     bool compute_distance_map;
@@ -170,7 +171,7 @@ public:
         have_ref_structure = false;
         convert_resample = false;
         prealign_resample = false;
-
+        segmentation = false;
         registration_id = "";
 
         ref_rtds = Rt_study::New ();
@@ -357,13 +358,13 @@ Mabs_private::segmentation_threshold_weight (
     float thresh_val
 )
 {
-    Plm_timer timer;
-
+    Plm_timer timer; 
+    Rt_study rtds;
     /* Threshold the weight image */
     timer.start();
     UCharImageType::Pointer thresh_img = itk_threshold_above (
         weight_image, thresh_val);
-
+    std::string seg_dice_log_fn; 
     /* Fill holes and remove islands from the computed contour 
      * PAOLO ZAFFINO July 3th 2015 */
        
@@ -413,7 +414,7 @@ Mabs_private::segmentation_threshold_weight (
         itk_image_save (clean_structure, thresh_img_fn.c_str());
         this->time_io += timer.report();
     }
-
+        
     /* If we are training, zcrop the reference structure */
     this->extract_and_crop_reference (clean_structure, mapped_name);
 
@@ -424,6 +425,9 @@ Mabs_private::segmentation_threshold_weight (
             "segmentation", /* Not used yet */
             this->ref_structure_image,
             clean_structure);
+	if (this->segmentation) {
+	    ref_id = segmentation_fn;
+	}
         std::string seg_log_string = string_format (
             "target=%s,reg=%s,struct=%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
@@ -439,9 +443,14 @@ Mabs_private::segmentation_threshold_weight (
         lprintf ("%s", seg_log_string.c_str());
 
         /* Update seg_dice file */
-        std::string seg_dice_log_fn = string_format (
+	if (!this->segmentation) {
+       	seg_dice_log_fn = string_format (
             "%s/seg_dice.csv",
-            this->mabs_train_dir.c_str());
+            this->mabs_train_dir.c_str());}
+	else {
+        seg_dice_log_fn = string_format (
+            "%s/seg_dice.csv",
+            label_output_dir.c_str());}
         FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
         fprintf (fp, "%s", seg_log_string.c_str());
         fclose (fp);
@@ -2379,7 +2388,7 @@ Mabs::set_parms (const Mabs_parms *parms)
 void
 Mabs::set_segment_input (const std::string& input_fn)
 {
-    d_ptr->segment_input_fn = input_fn;
+    d_ptr->segmentation_fn = input_fn;
 }
 
 void 
@@ -2509,16 +2518,19 @@ Mabs::train_internal ()
 
     logfile_close ();
 }
-
+/*Extract_ref_structure*/
 void
 Mabs::segment ()
 {
+    d_ptr->segmentation = true;
+    
     /* Yeah, I guess this is fine. */
     d_ptr->write_dicom_rt_struct = true;
     
     /* Prepare registration parameters */
     if (d_ptr->parms->optimization_result_reg != "") {
-        /* We know the best registration result from an optimization file */
+        /* We know the be:414
+	 * st registration result from an optimization file */
         std::string registration_fn = string_format ("%s/%s",
             d_ptr->parms->registration_config.c_str(),
             d_ptr->parms->optimization_result_reg.c_str());
@@ -2530,13 +2542,22 @@ Mabs::segment ()
 
     /* Load the image to be labeled.  For now, we'll assume this 
        is successful. */
+    Plm_timer timer;
+    timer.start();
+    d_ptr->segment_input_fn = string_format ("%s/img.nrrd",
+		    d_ptr->segmentation_fn.c_str());
     d_ptr->ref_rtds->load (d_ptr->segment_input_fn.c_str());
+    
+	std::string fn = string_format ("%s/structures", 
+            d_ptr->segmentation_fn.c_str());
+        d_ptr->ref_rtds->load_prefix (fn.c_str());
+        d_ptr->time_io += timer.report();
 
     /* GCS TBD: For now, we delete any existing structures. 
        This avoids (pushes into the future) any additional development
        needed to update existing structure sets.  */
     if (d_ptr->ref_rtds->have_segmentation()) {
-        d_ptr->ref_rtds->get_segmentation()->clear ();
+        //d_ptr->ref_rtds->get_segmentation()->clear ();
     }
 
     /* Parse atlas directory */
@@ -2578,7 +2599,7 @@ Mabs::segment ()
     d_ptr->output_dir = d_ptr->segment_outdir_base;
 
     /* Save it for debugging */
-    std::string fn = string_format ("%s/%s", 
+    fn = string_format ("%s/%s", 
         d_ptr->segment_outdir_base.c_str(), 
         "img.nrrd");
     d_ptr->ref_rtds->get_image()->save_image (fn.c_str());
