@@ -980,6 +980,7 @@ bspline_score_o_mse (
     //float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     float m_val, m_x, m_y, m_z;
+    float rx, ry, rz;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
        of the score requires double precision.  However, reduction 
@@ -1055,7 +1056,11 @@ bspline_score_o_mse (
                 /* Find linear index of "corner voxel" in moving image */
                 mvf = volume_index (moving->dim, mijk_f);
 
-                /* Compute moving image intensity using linear interpolation */
+		/* grid spacing */
+		rx = 1.0/bxf->grid_spac[0];
+                ry = 1.0/bxf->grid_spac[1];
+		rz = 1.0/bxf->grid_spac[2];
+		/* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
                 LI_VALUE (m_val, 
                     li_1[0], li_2[0],
@@ -1064,21 +1069,21 @@ bspline_score_o_mse (
                     mvf, m_img, moving);
 
                 LI_VALUE_x (m_x, 
-                    li_1[0], li_2[0],
+                    rx,
                     li_1[1], li_2[1],
                     li_1[2], li_2[2],
                     mvf, m_img, moving);
 		
 		LI_VALUE_y (m_y, 
                     li_1[0], li_2[0],
-                    li_1[1], li_2[1],
+                    ry,
                     li_1[2], li_2[2],
                     mvf, m_img, moving);
 		
 		LI_VALUE_z (m_z, 
                     li_1[0], li_2[0],
                     li_1[1], li_2[1],
-                    li_1[2], li_2[2],
+                    rz,
                     mvf, m_img, moving);
 
 		/* Compute linear index of fixed image voxel */
@@ -1182,7 +1187,7 @@ bspline_score_mse (
                 break;
             default:
 #if (OPENMP_FOUND)
-                bspline_score_g_mse (bod);
+                bspline_score_o_mse (bod);
 #else
                 bspline_score_h_mse (bod);
 #endif
