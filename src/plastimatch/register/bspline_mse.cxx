@@ -979,7 +979,7 @@ bspline_score_o_mse (
     float* m_img = (float*) moving->img;
     //float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
-    float m_val;
+    float m_val, m_x, m_y, m_z;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
        of the score requires double precision.  However, reduction 
