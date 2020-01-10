@@ -67,8 +67,9 @@ public:
     /* ".../train_dir/mabs-train" */
     std::string mabs_train_dir;
 
-    /* segment_input_fn is the input location for a segmentation task */
+    /* segment_input_fn is the input file (img.nrrd) for a segmentation task */
     std::string segment_input_fn;
+    /* segmentation_fn is the input directory for a segmentation task */
     std::string segmentation_fn;
     /* outdir_base is the output directory when we are 
        doing a labeling task (i.e. not training) */
@@ -131,6 +132,8 @@ public:
     /* This configures the trainer to evaluate segmentation parameters,
        it is set to false when --train-registration is used */
     bool train_segmentation;
+    /* This configures the trainer to display and write segmentation results,
+       it is set to true when --segmentation is used */
     bool segmentation;
     /* Decide whether distance map should be computed during the 
        main registration loop */
@@ -161,7 +164,7 @@ public:
     double time_warp_img;
     double time_warp_str;
 
-    /* Z crop values*/
+    /* Z crop values */
     float zcrop_vec[2];
 
 public:
@@ -425,10 +428,10 @@ Mabs_private::segmentation_threshold_weight (
             "segmentation", /* Not used yet */
             this->ref_structure_image,
             clean_structure);
-	if (this->segmentation) {
+        if (this->segmentation) {
 	    ref_id = segmentation_fn;
-	}
-        std::string seg_log_string = string_format (
+        }
+	std::string seg_log_string = string_format (
             "target=%s,reg=%s,struct=%s,"
             "rho=%f,sigma=%f,minsim=%f,thresh=%f,"
             "%s\n",
@@ -443,14 +446,18 @@ Mabs_private::segmentation_threshold_weight (
         lprintf ("%s", seg_log_string.c_str());
 
         /* Update seg_dice file */
+	/* If --segmentation is used update the seg_dice file in the output directory 
+	 * else update the seg_dice in the training directory */
 	if (!this->segmentation) {
        	seg_dice_log_fn = string_format (
             "%s/seg_dice.csv",
-            this->mabs_train_dir.c_str());}
+            this->mabs_train_dir.c_str());
+        }
 	else {
         seg_dice_log_fn = string_format (
             "%s/seg_dice.csv",
-            label_output_dir.c_str());}
+            label_output_dir.c_str());
+        }
         FILE *fp = fopen (seg_dice_log_fn.c_str(), "a");
         fprintf (fp, "%s", seg_log_string.c_str());
         fclose (fp);
