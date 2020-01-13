@@ -763,7 +763,7 @@ Mabs::run_registration_loop ()
                 d_ptr->extract_and_crop_reference (structure_image, mapped_name);
                     
                 /* Compute Dice, etc. */
-                if (d_ptr->have_ref_structure) {
+                if (!d_ptr->segmentation && d_ptr->have_ref_structure) {
                     timer.start();
 
                     std::string stats_string 
@@ -2536,8 +2536,7 @@ Mabs::segment ()
     
     /* Prepare registration parameters */
     if (d_ptr->parms->optimization_result_reg != "") {
-        /* We know the be:414
-	 * st registration result from an optimization file */
+        /* We know the best registration result from an optimization file */
         std::string registration_fn = string_format ("%s/%s",
             d_ptr->parms->registration_config.c_str(),
             d_ptr->parms->optimization_result_reg.c_str());
