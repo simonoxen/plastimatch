@@ -641,12 +641,16 @@ Mabs::run_registration_loop ()
             /* PAOLO ZAFFINO: align centers of gravity */
             if (d_ptr->input_roi_for_cog_prealignment) {
                 
-                /* Add STAGE only if a segment command is executed. Is it needed or we can define it into the configuration file? */
-                std::string command_string_plus_cog = "[STAGE]\nxform=align_center_of_gravity\n";
+                /* Add STAGE only if a segment command is executed. 
+		 * Is it needed or we can define it into the 
+		 * configuration file? */
+                std::string command_string_plus_cog = 
+			"[STAGE]\nxform=align_center_of_gravity\n";
                 command_string_plus_cog.append(command_string);
                 int rc_cog = reg.set_command_string (command_string_plus_cog);
                 if (rc_cog != PLM_SUCCESS) {
-                    lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", command_file.c_str());
+                    lprintf ("Skipping centers of gravity prealignment addition to command file \"%s\" \n", 
+				    command_file.c_str());
                     continue;
                 }
              
@@ -2535,6 +2539,7 @@ Mabs::segment ()
     d_ptr->write_dicom_rt_struct = true;
     
     /* Prepare registration parameters */
+#if defined (commentout)
     if (d_ptr->parms->optimization_result_reg != "") {
         /* We know the best registration result from an optimization file */
         std::string registration_fn = string_format ("%s/%s",
@@ -2545,7 +2550,20 @@ Mabs::segment ()
         /* Else, parse directory with registration files */
         this->parse_registration_dir (d_ptr->parms->registration_config);
     }
-
+#endif
+    /* Inorder to facilitate using other registrtion strategies for segmentation
+     * check if the config is a directory and append the best registration 
+     * strategy */
+    if (is_directory(d_ptr->parms->registration_config.c_str()) 
+		    && d_ptr->parms->optimization_result_reg != "") {
+	 std::string registration_fn = string_format ("%s/%s",
+            d_ptr->parms->registration_config.c_str(),
+            d_ptr->parms->optimization_result_reg.c_str());
+        this->parse_registration_dir (registration_fn);
+    } else {
+	/* Else, use the provided file as registration_dir*/    
+	    this->parse_registration_dir (d_ptr->parms->registration_config);
+    }
     /* Load the image to be labeled.  For now, we'll assume this 
        is successful. */
     Plm_timer timer;
@@ -2628,7 +2646,8 @@ Mabs::segment ()
        2) need better default values for rho, etc.
        3) need to read optimized values of rho, etc.
     */
-    if (d_ptr->parms->optimization_result_reg != "") {
+    if (is_directory(d_ptr->parms->registration_config.c_str()) && 
+			    d_ptr->parms->optimization_result_reg != "") {
         d_ptr->registration_id = d_ptr->parms->optimization_result_reg;
     }
     else {
