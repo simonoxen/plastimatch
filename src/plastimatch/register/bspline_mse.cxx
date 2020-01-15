@@ -229,11 +229,8 @@ bspline_score_i_mse (
                         moving->dim, ijk_moving_round);
 
                     // Calc. moving voxel intensity via linear interpolation
-                    LI_VALUE (
-                        m_val, 
-                        li_1[0], li_2[0],
-                        li_1[1], li_2[1],
-                        li_1[2], li_2[2],
+                    m_val = li_value ( 
+                        li_1, li_2,
                         idx_moving_floor,
                         m_img, moving
                     );
@@ -443,11 +440,8 @@ bspline_score_h_mse (
                     idx_moving_round = volume_index (moving->dim, ijk_moving_round);
 
                     // Calc. moving voxel intensity via linear interpolation
-                    LI_VALUE (
-                        m_val, 
-                        li_1[0], li_2[0],
-                        li_1[1], li_2[1],
-                        li_1[2], li_2[2],
+                    m_val = li_value ( 
+                        li_1, li_2,
                         idx_moving_floor,
                         m_img, moving
                     );
@@ -665,11 +659,8 @@ bspline_score_g_mse (
                         moving->dim, ijk_moving_round);
 
                     // Calc. moving voxel intensity via linear interpolation
-                    LI_VALUE (
-                        m_val, 
-                        li_1[0], li_2[0],
-                        li_1[1], li_2[1],
-                        li_1[2], li_2[2],
+                    m_val = li_value ( 
+                        li_1, li_2,
                         idx_moving_floor,
                         m_img, moving
                     );
@@ -839,12 +830,11 @@ bspline_score_c_mse (
 
                 /* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
-                LI_VALUE (m_val, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
-
+                m_val = li_value ( 
+                        li_1, li_2,
+                        mvf,
+                        m_img, moving
+                    );
                 /* Compute linear index of fixed image voxel */
                 fv = volume_index (fixed->dim, fijk);
 
@@ -947,7 +937,8 @@ bspline_score_n_mse (
    FUNCTION: bspline_score_o_mse()
 
    This is the older "fast" single-threaded MSE implementation, modified 
-   to respect direction cosines (and ROI support removed).
+   to respect direction cosines (and ROI support removed) and modified 
+   gradient calculations.
    ----------------------------------------------------------------------- */
 void
 bspline_score_o_mse (
@@ -1062,29 +1053,28 @@ bspline_score_o_mse (
 		rz = 1.0/bxf->grid_spac[2];
 		/* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
-                LI_VALUE (m_val, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
+                m_val = li_value ( 
+                        li_1, li_2,
+                        mvf,
+                        m_img, moving
+                    );
 
-                LI_VALUE_x (m_x, 
-                    rx,
-                    li_1[1], li_2[1],
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
+                m_x = li_value_x ( 
+                        li_1, li_2, rx, 
+                        mvf,
+                        m_img, moving
+                    );
 		
-		LI_VALUE_y (m_y, 
-                    li_1[0], li_2[0],
-                    ry,
-                    li_1[2], li_2[2],
-                    mvf, m_img, moving);
-		
-		LI_VALUE_z (m_z, 
-                    li_1[0], li_2[0],
-                    li_1[1], li_2[1],
-                    rz,
-                    mvf, m_img, moving);
+		m_y = li_value_y ( 
+                        li_1, li_2, ry, 
+                        mvf,
+                        m_img, moving
+                    );
+		m_z = li_value_z ( 
+                        li_1, li_2, rz, 
+                        mvf,
+                        m_img, moving
+                    );
 
 		/* Compute linear index of fixed image voxel */
                 fv = volume_index (fixed->dim, fijk);
@@ -1185,9 +1175,12 @@ bspline_score_mse (
             case 'n':
                 bspline_score_n_mse (bod);
                 break;
+	    case 'o':
+		bspline_score_o_mse (bod);
+		break;
             default:
 #if (OPENMP_FOUND)
-                bspline_score_o_mse (bod);
+                bspline_score_g_mse (bod);
 #else
                 bspline_score_h_mse (bod);
 #endif

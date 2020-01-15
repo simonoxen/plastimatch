@@ -46,12 +46,37 @@ PLMBASE_C_API void li_2d (
 );
 
 PLMBASE_C_API float li_value (
-    float fx1, float fx2,
-    float fy1, float fy2, 
-    float fz1, float fz2,
+    float f1[3],
+    float f2[3],
     plm_long mvf, 
     float *m_img,
     Volume *moving
 );
 
+PLMBASE_C_API float li_value_x (
+    float f1[3],
+    float f2[3],
+    float rx,
+    plm_long mvf, 
+    float *m_img,
+    Volume *moving
+);
+
+PLMBASE_C_API float li_value_y (
+    float f1[3],
+    float f2[3],
+    float ry,
+    plm_long mvf, 
+    float *m_img,
+    Volume *moving
+);
+
+PLMBASE_C_API float li_value_z (
+    float f1[3],
+    float f2[3],
+    float rz,
+    plm_long mvf, 
+    float *m_img,
+    Volume *moving
+);
 #endif

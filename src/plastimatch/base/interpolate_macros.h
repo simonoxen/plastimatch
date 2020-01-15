@@ -22,76 +22,76 @@
 
 #define LI_VALUE(m_val, fx1, fx2, fy1, fy2, fz1, fz2, mvf, m_img, moving) \
     do {								\
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
+        float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
+        float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
-	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];			\
-	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];			\
-	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+        m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];			\
+        m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];			\
+        m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
+        m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
+        m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+        m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+        m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+        m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+        m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
 		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
 #define LI_VALUE_x(m_val, rx, fy1, fy2, fz1, fz2, mvf, m_img, moving) \
     do {								\
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
+        float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
+        float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
-	m_x1y1z1 = (1/rx) * fy1 * fz1 * m_img[mvf];			\
-	m_x2y1z1 = -(1/rx) * fy1 * fz1 * m_img[mvf+1];			\
-	m_x1y2z1 = (1/rx) * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = -(1/rx) * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = (1/rx) * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = -(1/rx) * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = (1/rx) * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = -(1/rx) * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+        m_x1y1z1 = (1/rx) * fy1 * fz1 * m_img[mvf];			\
+        m_x2y1z1 = -(1/rx) * fy1 * fz1 * m_img[mvf+1];			\
+        m_x1y2z1 = (1/rx) * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
+        m_x2y2z1 = -(1/rx) * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
+        m_x1y1z2 = (1/rx) * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+        m_x2y1z2 = -(1/rx) * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+        m_x1y2z2 = (1/rx) * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+        m_x2y2z2 = -(1/rx) * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+        m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+                + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
 #define LI_VALUE_y(m_val, fx1, fx2, ry, fz1, fz2, mvf, m_img, moving) \
     do {								\
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
+        float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
+        float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
-	m_x1y1z1 = fx1 * (1/ry) * fz1 * m_img[mvf];			\
-	m_x2y1z1 = fx2 * (1/ry) * fz1 * m_img[mvf+1];			\
-	m_x1y2z1 = -fx1 * (1/ry) * fz1 * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = -fx2 * (1/ry) * fz1 * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = fx1 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = fx2 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = -fx1 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = -fx2 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+        m_x1y1z1 = fx1 * (1/ry) * fz1 * m_img[mvf];			\
+        m_x2y1z1 = fx2 * (1/ry) * fz1 * m_img[mvf+1];			\
+        m_x1y2z1 = -fx1 * (1/ry) * fz1 * m_img[mvf+moving->dim[0]];		\
+        m_x2y2z1 = -fx2 * (1/ry) * fz1 * m_img[mvf+moving->dim[0]+1];	\
+        m_x1y1z2 = fx1 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+        m_x2y1z2 = fx2 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+        m_x1y2z2 = -fx1 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+        m_x2y2z2 = -fx2 * (1/ry) * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+        m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+                + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
 #define LI_VALUE_z(m_val, fx1, fx2, fy1, fy2, rz, mvf, m_img, moving) \
     do {								\
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
+        float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
+        float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
 									\
-	m_x1y1z1 = fx1 * fy1 * (1/rz) * m_img[mvf];			\
-	m_x2y1z1 = fx2 * fy1 * (1/rz) * m_img[mvf+1];			\
-	m_x1y2z1 = fx1 * fy2 * (1/rz) * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = fx2 * fy2 * (1/rz) * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = -fx1 * fy1 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = -fx2 * fy1 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = -fx1 * fy2 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = -fx2 * fy2 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+        m_x1y1z1 = fx1 * fy1 * (1/rz) * m_img[mvf];			\
+        m_x2y1z1 = fx2 * fy1 * (1/rz) * m_img[mvf+1];			\
+        m_x1y2z1 = fx1 * fy2 * (1/rz) * m_img[mvf+moving->dim[0]];		\
+        m_x2y2z1 = fx2 * fy2 * (1/rz) * m_img[mvf+moving->dim[0]+1];	\
+        m_x1y1z2 = -fx1 * fy1 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+        m_x2y1z2 = -fx2 * fy1 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+        m_x1y2z2 = -fx1 * fy2 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+        m_x2y2z2 = -fx2 * fy2 * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+        m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+              + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
 #define LI_VALUE_ALT(m_val, fx1, fx2, fy1, fy2, fz1, fz2,		\
     mvf, m_img, moving, plane)						\
     do {								\
-	int idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;		\
+        int idx_x1y1z1, idx_x2y1z1, idx_x1y2z1, idx_x2y2z1;		\
 	int idx_x1y1z2, idx_x2y1z2, idx_x1y2z2, idx_x2y2z2;		\
 	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
 	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
