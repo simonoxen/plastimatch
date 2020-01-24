@@ -94,7 +94,11 @@ check_gradient (
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
     Bspline_state *bst = bod.get_bspline_state ();
+    Regularization_parms rparms;
 
+    /* Fixate rparms into parms */
+    parms->regularization_parms = &rparms;
+    
     /* Fixate images into bspline parms */
     Metric_state::Pointer sim = Metric_state::New();
     bst->similarity_data.push_back (sim);
@@ -145,6 +149,9 @@ check_gradient (
     }
     bod.set_bspline_xform (bxf);
     bod.set_bspline_parms (parms);
+
+    /* Fixate bxf and parms into bst */
+    bst->initialize (bxf, parms);
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
