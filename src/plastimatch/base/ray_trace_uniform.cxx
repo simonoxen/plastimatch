@@ -82,7 +82,7 @@ ray_trace_uniform (
 
         li_clamp_3d(mijk, mijk_f, mijk_r, li_frac1, li_frac2, vol);
         idx = volume_index (vol->dim, mijk_f);
-        pix_density = li_value (li_frac1[0], li_frac2[0], li_frac1[1], li_frac2[1], li_frac1[2], li_frac2[2], idx, img, vol);
+        pix_density = li_value (li_frac1, li_frac2, idx, img, vol);
 
         // I am passing the current step along the ray (z) through
         // vox_index here... not exactly great but not horrible.

@@ -1171,7 +1171,7 @@ Rpl_volume::compute_wed_volume (
 			// Find linear indices for moving image
 			idx_floor = volume_index (in_vol->dim, ijk_floor);
 
-			float value = li_value(li_1[0], li_2[0],li_1[1], li_2[1],li_1[2], li_2[2],idx_floor,in_vol_img,in_vol);
+			float value = li_value(li_1, li_2, idx_floor,in_vol_img,in_vol);
 
 			/* Write value to output image */
 			wed_vol_img[widx] = value;
