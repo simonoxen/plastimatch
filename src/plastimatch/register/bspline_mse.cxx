@@ -971,11 +971,11 @@ bspline_score_o_mse (
     //float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     float m_val, m_x, m_y, m_z;
-    float rx, ry, rz;
+    float inv_rx, inv_ry, inv_rz;
     /* grid spacing */
-    rx = 1.0/bxf->grid_spac[0];
-    ry = 1.0/bxf->grid_spac[1];
-    rz = 1.0/bxf->grid_spac[2];
+    inv_rx = 1.0/moving->spacing[0];
+    inv_ry = 1.0/moving->spacing[1];
+    inv_rz = 1.0/moving->spacing[2];
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
        of the score requires double precision.  However, reduction 
@@ -1060,18 +1060,18 @@ bspline_score_o_mse (
                     );
 
                 m_x = li_value_dx ( 
-                        li_1, li_2, rx, 
+                        li_1, li_2, inv_rx, 
                         mvf,
                         m_img, moving
                     );
 		
 		m_y = li_value_dy ( 
-                        li_1, li_2, ry, 
+                        li_1, li_2, inv_ry, 
                         mvf,
                         m_img, moving
                     );
 		m_z = li_value_dz ( 
-                        li_1, li_2, rz, 
+                        li_1, li_2, inv_rz, 
                         mvf,
                         m_img, moving
                     );
