@@ -3153,8 +3153,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mse-o-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-o-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  "${-742.0}"
+  "${-741.0}"
   )
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-2)

@@ -160,7 +160,7 @@ li_value (
 }
 
 float
-li_value_x (
+li_value_dx (
     float f1[3],           /* Input:  Fraction of upper voxel */
     float f2[3],           /* Input:  Fraction of lower voxel */
     float rx,              /* Input:  Grid spacing in x direction */ 
@@ -173,14 +173,14 @@ li_value_x (
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     float m_val;
 
-    m_x1y1z1 = (1/rx) * f1[1] * f1[2] * m_img[mvf];
-    m_x2y1z1 = -(1/rx) * f1[1] * f1[2] * m_img[mvf+1];
-    m_x1y2z1 = (1/rx) * f2[1] * f1[2] * m_img[mvf+moving->dim[0]];
-    m_x2y2z1 = -(1/rx) * f2[1] * f1[2] * m_img[mvf+moving->dim[0]+1];
-    m_x1y1z2 = (1/rx) * f1[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]];
-    m_x2y1z2 = -(1/rx) * f1[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-    m_x1y2z2 = (1/rx) * f2[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-    m_x2y2z2 = -(1/rx) * f2[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_x1y1z1 = -(1/rx) * f1[1] * f1[2] * m_img[mvf];
+    m_x2y1z1 = (1/rx) * f1[1] * f1[2] * m_img[mvf+1];
+    m_x1y2z1 = -(1/rx) * f2[1] * f1[2] * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = (1/rx) * f2[1] * f1[2] * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = -(1/rx) * f1[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = (1/rx) * f1[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = -(1/rx) * f2[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = (1/rx) * f2[1] * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
     m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
 	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
@@ -188,7 +188,7 @@ li_value_x (
 }
 
 float
-li_value_y (
+li_value_dy (
     float f1[3],           /* Input:  Fraction of upper voxel */
     float f2[3],           /* Input:  Fraction of lower voxel */
     float ry,              /* Input:  Grid spacing in y direction */
@@ -201,14 +201,14 @@ li_value_y (
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     float m_val;
 
-    m_x1y1z1 = f1[0] * (1/ry) * f1[2] * m_img[mvf];
-    m_x2y1z1 = f2[0] * (1/ry) * f1[2] * m_img[mvf+1];
-    m_x1y2z1 = -f1[0] * (1/ry) * f1[2] * m_img[mvf+moving->dim[0]];
-    m_x2y2z1 = -f2[0] * (1/ry) * f1[2] * m_img[mvf+moving->dim[0]+1];
-    m_x1y1z2 = f1[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]];
-    m_x2y1z2 = f2[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-    m_x1y2z2 = -f1[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-    m_x2y2z2 = -f2[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_x1y1z1 = -f1[0] * (1/ry) * f1[2] * m_img[mvf];
+    m_x2y1z1 = -f2[0] * (1/ry) * f1[2] * m_img[mvf+1];
+    m_x1y2z1 = f1[0] * (1/ry) * f1[2] * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = f2[0] * (1/ry) * f1[2] * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = -f1[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = -f2[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = f1[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = f2[0] * (1/ry) * f2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
     m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
 	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
@@ -216,7 +216,7 @@ li_value_y (
 }
 
 float
-li_value_z (
+li_value_dz (
     float f1[3],           /* Input:  Fraction of upper voxel */
     float f2[3],           /* Input:  Fraction of lower voxel */
     float rz,              /* Input:  Grid spacing in z direction */
@@ -229,14 +229,14 @@ li_value_z (
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     float m_val;
 
-    m_x1y1z1 = f1[0] * f1[1] * (1/rz) * m_img[mvf];
-    m_x2y1z1 = f2[0] * f1[1] * (1/rz) * m_img[mvf+1];
-    m_x1y2z1 = f1[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[0]];
-    m_x2y2z1 = f2[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[0]+1];
-    m_x1y1z2 = -f1[0] * f1[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]];
-    m_x2y1z2 = -f2[0] * f1[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-    m_x1y2z2 = -f1[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-    m_x2y2z2 = -f2[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_x1y1z1 = -f1[0] * f1[1] * (1/rz) * m_img[mvf];
+    m_x2y1z1 = -f2[0] * f1[1] * (1/rz) * m_img[mvf+1];
+    m_x1y2z1 = -f1[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = -f2[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = f1[0] * f1[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = f2[0] * f1[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = f1[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = f2[0] * f2[1] * (1/rz) * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
     m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
 	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 

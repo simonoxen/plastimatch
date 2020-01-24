@@ -1059,18 +1059,18 @@ bspline_score_o_mse (
                         m_img, moving
                     );
 
-                m_x = li_value_x ( 
+                m_x = li_value_dx ( 
                         li_1, li_2, rx, 
                         mvf,
                         m_img, moving
                     );
 		
-		m_y = li_value_y ( 
+		m_y = li_value_dy ( 
                         li_1, li_2, ry, 
                         mvf,
                         m_img, moving
                     );
-		m_z = li_value_z ( 
+		m_z = li_value_dz ( 
                         li_1, li_2, rz, 
                         mvf,
                         m_img, moving

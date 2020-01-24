@@ -53,7 +53,7 @@ PLMBASE_C_API float li_value (
     Volume *moving
 );
 
-PLMBASE_C_API float li_value_x (
+PLMBASE_C_API float li_value_dx (
     float f1[3],
     float f2[3],
     float rx,
@@ -62,7 +62,7 @@ PLMBASE_C_API float li_value_x (
     Volume *moving
 );
 
-PLMBASE_C_API float li_value_y (
+PLMBASE_C_API float li_value_dy (
     float f1[3],
     float f2[3],
     float ry,
@@ -71,7 +71,7 @@ PLMBASE_C_API float li_value_y (
     Volume *moving
 );
 
-PLMBASE_C_API float li_value_z (
+PLMBASE_C_API float li_value_dz (
     float f1[3],
     float f2[3],
     float rz,
