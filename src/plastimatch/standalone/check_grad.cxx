@@ -81,19 +81,19 @@ public:
 void
 check_gradient (
     Check_grad_opts *options, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
+    const Volume::Pointer fixed, 
+    const Volume::Pointer moving, 
+    const Volume::Pointer& moving_grad)
 {
     int i, j;
     float *x, *grad, *grad_fd;
     float score;
     FILE *fp;
     plm_long roi_offset[3];
-    Bspline_optimize bod;
+    Bspline_optimize *bod = new Bspline_optimize;
     Bspline_xform *bxf;
     Bspline_parms *parms = new Bspline_parms;
-    Bspline_state *bst = bod.get_bspline_state ();
+    Bspline_state *bst = bod->get_bspline_state ();
     Regularization_parms rparms;
 
     /* Fixate rparms into parms */
@@ -103,9 +103,9 @@ check_gradient (
     Metric_state::Pointer sim = Metric_state::New();
     bst->similarity_data.push_back (sim);
     parms->implementation = options->bsp_implementation;
-    sim->fixed_ss.reset (fixed);
-    sim->moving_ss.reset (moving);
-    sim->moving_grad.reset (moving_grad);
+    sim->fixed_ss = fixed;
+    sim->moving_ss = moving;
+    sim->moving_grad = moving_grad;
     sim->metric_type = options->bsp_metric;
 
     /* Maybe we got a roi too */
@@ -147,8 +147,8 @@ check_gradient (
             }
         }
     }
-    bod.set_bspline_xform (bxf);
-    bod.set_bspline_parms (parms);
+    bod->set_bspline_xform (bxf);
+    bod->set_bspline_parms (parms);
 
     /* Fixate bxf and parms into bst */
     bst->initialize (bxf, parms);
@@ -166,7 +166,7 @@ check_gradient (
     bst->initialize_mi_histograms ();
 
     /* Get score and gradient */
-    bspline_score (&bod);
+    bspline_score (bod);
     if (parms->debug) {
         bspline_save_debug_state (parms, bst, bxf);
     }
@@ -215,7 +215,7 @@ check_gradient (
             }
 
             /* Get score */
-            bspline_score (&bod);
+            bspline_score (bod);
             if (parms->debug) {
                 bspline_save_debug_state (parms, bst, bxf);
             }
@@ -248,7 +248,7 @@ check_gradient (
             bxf->coeff[i] = bxf->coeff[i] + options->step_size;
 
             /* Get score */
-            bspline_score (&bod);
+            bspline_score (bod);
             if (parms->debug) {
                 bspline_save_debug_state (parms, bst, bxf);
             }
@@ -267,6 +267,7 @@ check_gradient (
     free (x);
     free (grad);
     free (grad_fd);
+    delete bod;
     delete parms;
     delete bxf;
 }
@@ -423,7 +424,7 @@ main (int argc, char* argv[])
 {
     Check_grad_opts parms;
     Volume::Pointer moving, fixed;
-    Volume *moving_grad;
+    Volume::Pointer moving_grad;
 
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
 
@@ -436,13 +437,10 @@ main (int argc, char* argv[])
     moving = pli_moving->get_volume_float ();
 
     /* Compute spatial gradient */
-    moving_grad = volume_make_gradient (moving.get());
+    moving_grad = volume_gradient (moving);
 
     /* Check the gradient */
-    check_gradient (&parms, fixed.get(), moving.get(), moving_grad);
-
-    /* Free memory */
-    delete moving_grad;
+    check_gradient (&parms, fixed, moving, moving_grad);
 
     return 0;
 }
