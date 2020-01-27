@@ -525,6 +525,10 @@ Registration_parms::set_key_value (
                 &stage->regularization_parms.curvature_penalty) != 1) {
             goto error_exit;
         }
+#if PLM_CONFIG_LEGACY_SQUARED_REGULARIZER
+        stage->regularization_parms.curvature_penalty
+            *= stage->regularization_parms.curvature_penalty;
+#endif
     }
     else if (key == "curvature_mixed_weight") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
