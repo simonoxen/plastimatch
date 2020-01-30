@@ -1913,7 +1913,9 @@ bspline_score_mse (
 	    case 'q':
 		bspline_score_q_mse (bod);
 		break;
-
+	    case 'r':
+		bspline_score_r_mse (bod);
+		break;
             default:
 #if (OPENMP_FOUND)
                 bspline_score_g_mse (bod);
