@@ -972,7 +972,7 @@ bspline_score_o_mse (
     float dxyz[3];
     float m_val, m_x, m_y, m_z;
     float inv_rx, inv_ry, inv_rz;
-    /* grid spacing */
+    /* voxel spacing */
     inv_rx = 1.0/moving->spacing[0];
     inv_ry = 1.0/moving->spacing[1];
     inv_rz = 1.0/moving->spacing[2];
@@ -1122,6 +1122,735 @@ bspline_score_o_mse (
     bspline_score_normalize (bod, score_acc);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_score_p_mse()
+//
+// This is a multi-CPU implementation of CUDA implementation J.  OpenMP is
+// used.  The tile "condense" method is demonstrated.
+//
+// ** This is the fastest know CPU implmentation for multi core **
+//    (That does not require SSE)
+//
+// AUTHOR: James A. Shackleford
+// DATE: 11.22.2009
+//
+// 2012-06-10 (GCS): Updated to DCOS, only 0.15% increase in runtime, 
+//   judged not worth maintaining separate code.
+///////////////////////////////////////////////////////////////////////////////
+void
+bspline_score_p_mse (
+    Bspline_optimize *bod
+)
+{
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
+
+    Bspline_score* ssd = &bst->ssd;
+    double score_tile;
+
+    float* f_img = (float*)fixed->img;
+    float* m_img = (float*)moving->img;
+    float* m_grad = (float*)moving_grad->img;
+
+    int idx_tile;
+
+    float m_val, m_x, m_y, m_z;
+    float inv_rx, inv_ry, inv_rz;
+    
+    /* voxel spacing */
+    inv_rx = 1.0/moving->spacing[0];
+    inv_ry = 1.0/moving->spacing[1];
+    inv_rz = 1.0/moving->spacing[2];
+
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+    static int it = 0;
+
+    FILE* corr_fp = 0;
+
+    if (parms->debug) {
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
+        corr_fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
+    }
+
+    // Zero out accumulators
+    int num_vox = 0;
+    score_tile = 0;
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+
+    // Parallel across tiles
+#pragma omp parallel for reduction (+:num_vox,score_tile)
+    LOOP_THRU_VOL_TILES (idx_tile, bxf) {
+        int rc;
+
+        plm_long ijk_tile[3];
+        plm_long ijk_local[3];
+
+        float fxyz[3];
+        plm_long fijk[3];
+        plm_long idx_fixed;
+
+        float dxyz[3];
+
+        float xyz_moving[3];
+        float ijk_moving[3];
+        plm_long ijk_moving_floor[3];
+        plm_long ijk_moving_round[3];
+        plm_long idx_moving_floor;
+        plm_long idx_moving_round;
+
+        float li_1[3], li_2[3];
+        float diff;
+	float m_val, m_x, m_y, m_z;
+	float inv_rx, inv_ry, inv_rz;
+	
+	/* voxel spacing */
+	inv_rx = 1.0/moving->spacing[0];
+	inv_ry = 1.0/moving->spacing[1];
+	inv_rz = 1.0/moving->spacing[2];
+
+        float dc_dv[3];
+
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+        // Get tile coordinates from index
+        COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
+
+        // Serial through voxels in tile
+        LOOP_THRU_TILE_Z (ijk_local, bxf) {
+            LOOP_THRU_TILE_Y (ijk_local, bxf) {
+                LOOP_THRU_TILE_X (ijk_local, bxf) {
+
+                    // Construct coordinates into fixed image volume
+                    GET_VOL_COORDS (fijk, ijk_tile, ijk_local, bxf);
+
+                    // Make sure we are inside the image volume
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                        continue;
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                        continue;
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                        continue;
+
+                    // Compute physical coordinates of fixed image voxel
+                    POSITION_FROM_COORDS (fxyz, fijk, bxf->img_origin, 
+                        fixed->step);
+                    
+                    // Construct the image volume index
+                    idx_fixed = volume_index (fixed->dim, fijk);
+
+                    // Calc. deformation vector (dxyz) for voxel
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
+
+                    // Calc. moving image coordinate from the deformation 
+                    // vector
+                    /* To remove DCOS support, change function call to 
+                       bspline_find_correspondence() */
+                    rc = bspline_find_correspondence_dcos (
+                        xyz_moving, ijk_moving, fxyz, dxyz, moving);
+
+                    if (parms->debug) {
+                        fprintf (corr_fp, 
+                            "%d %d %d %f %f %f\n",
+                            (unsigned int) fijk[0], 
+                            (unsigned int) fijk[1], 
+                            (unsigned int) fijk[2], 
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                    }
+
+                    // Return code is 0 if voxel is pushed outside of 
+                    // moving image
+                    if (!rc) continue;
+
+                    // Compute linear interpolation fractions
+                    li_clamp_3d (
+                        ijk_moving,
+                        ijk_moving_floor,
+                        ijk_moving_round,
+                        li_1,
+                        li_2,
+                        moving
+                    );
+
+                    // Find linear indices for moving image
+                    idx_moving_floor = volume_index (
+                        moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (
+                        moving->dim, ijk_moving_round);
+
+                    // Calc. moving voxel intensity via linear interpolation
+                    m_val = li_value ( 
+                        li_1, li_2,
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_x = li_value_dx ( 
+                        li_1, li_2, inv_rx, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_y = li_value_dy ( 
+                        li_1, li_2, inv_ry, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_z = li_value_dz ( 
+                        li_1, li_2, inv_rz, 
+			idx_moving_floor,
+                        m_img, moving
+                    );
+
+		    // Compute intensity difference
+                    diff = m_val - f_img[idx_fixed];
+
+                    // Store the score!
+                    score_tile += diff * diff;
+                    num_vox++;
+
+                    // Compute dc_dv
+                    dc_dv[0] = diff * m_x;
+                    dc_dv[1] = diff * m_y;
+                    dc_dv[2] = diff * m_z;
+
+                    /* Generate condensed tile */
+                    bspline_update_sets_b (
+                        sets_x, sets_y, sets_z,
+                        ijk_local, dc_dv, bxf
+                    );
+
+                } /* LOOP_THRU_TILE_X */
+            } /* LOOP_THRU_TILE_Y */
+        } /* LOOP_THRU_TILE_Z */
+
+
+        // The tile is now condensed.  Now we will put it in the
+        // proper slot within the control point bin that it belong to.
+        bspline_sort_sets (
+            cond_x, cond_y, cond_z,
+            sets_x, sets_y, sets_z,
+            idx_tile, bxf
+        );
+
+    } /* LOOP_THRU_VOL_TILES */
+
+    ssd->curr_num_vox = num_vox;
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, score_tile);
+
+    if (parms->debug) {
+        fclose (corr_fp);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_score_q_mse()
+//
+// This is a single core CPU implementation of CUDA implementation J.
+// The tile "condense" method is demonstrated.
+//
+// ** This is the fastest know CPU implmentation for single core **
+//
+// See also:
+//   OpenMP implementation of CUDA J: bspline_score_g_mse()
+//
+// AUTHOR: James A. Shackleford
+// DATE: 11.22.2009
+///////////////////////////////////////////////////////////////////////////////
+void
+bspline_score_q_mse (
+    Bspline_optimize *bod
+)
+{
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
+
+    Bspline_score* ssd = &bst->ssd;
+    double score_tile;
+
+    float* f_img = (float*)fixed->img;
+    float* m_img = (float*)moving->img;
+    float* m_grad = (float*)moving_grad->img;
+
+    plm_long idx_tile;
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+    static int it = 0;
+
+    // Zero out accumulators
+    score_tile = 0;
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+
+    FILE* corr_fp = 0;
+
+    if (parms->debug) {
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
+        corr_fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
+    }
+
+    // Serial across tiles
+    LOOP_THRU_VOL_TILES (idx_tile, bxf) {
+        int rc;
+
+        int ijk_tile[3];
+        plm_long ijk_local[3];
+
+        float fxyz[3];
+        plm_long fijk[3];
+        plm_long idx_fixed;
+
+        float dxyz[3];
+
+        float xyz_moving[3];
+        float ijk_moving[3];
+        plm_long ijk_moving_floor[3];
+        plm_long ijk_moving_round[3];
+        plm_long idx_moving_floor;
+        plm_long idx_moving_round;
+
+        float li_1[3], li_2[3];
+	float m_val, m_x, m_y, m_z;
+	float inv_rx, inv_ry, inv_rz;
+	/* voxel spacing */
+	inv_rx = 1.0/moving->spacing[0];
+	inv_ry = 1.0/moving->spacing[1];
+	inv_rz = 1.0/moving->spacing[2];
+
+        float diff;
+    
+        float dc_dv[3];
+
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+        // Get tile coordinates from index
+        COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
+
+        // Serial through voxels in tile
+        LOOP_THRU_TILE_Z (ijk_local, bxf) {
+            LOOP_THRU_TILE_Y (ijk_local, bxf) {
+                LOOP_THRU_TILE_X (ijk_local, bxf) {
+
+                    // Construct coordinates into fixed image volume
+                    GET_VOL_COORDS (fijk, ijk_tile, ijk_local, bxf);
+
+                    // Make sure we are inside the region of interest
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                        continue;
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                        continue;
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                        continue;
+
+                    // Compute physical coordinates of fixed image voxel
+                    POSITION_FROM_COORDS (fxyz, fijk, bxf->img_origin, 
+                        fixed->step);
+
+                    // Construct the image volume index
+                    idx_fixed = volume_index (fixed->dim, fijk);
+
+                    // Calc. deformation vector (dxyz) for voxel
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
+
+                    // Calc. moving image coordinate from the deformation vector
+                    /* To remove DCOS support, change function call to 
+                       bspline_find_correspondence() */
+                    rc = bspline_find_correspondence_dcos (
+                        xyz_moving, ijk_moving, fxyz, dxyz, moving);
+
+                    // Return code is 0 if voxel is pushed outside of moving image
+                    if (!rc) continue;
+
+                    if (parms->debug) {
+                        fprintf (corr_fp, 
+                            "%d %d %d %f %f %f\n",
+                            (unsigned int) fijk[0], 
+                            (unsigned int) fijk[1], 
+                            (unsigned int) fijk[2], 
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                    }
+
+                    // Compute linear interpolation fractions
+                    li_clamp_3d (
+                        ijk_moving,
+                        ijk_moving_floor,
+                        ijk_moving_round,
+                        li_1,
+                        li_2,
+                        moving
+                    );
+
+                    // Find linear indices for moving image
+                    idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (moving->dim, ijk_moving_round);
+
+                    // Calc. moving voxel intensity via linear interpolation
+                    m_val = li_value ( 
+                        li_1, li_2,
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_x = li_value_dx ( 
+                        li_1, li_2, inv_rx, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_y = li_value_dy ( 
+                        li_1, li_2, inv_ry, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_z = li_value_dz ( 
+                        li_1, li_2, inv_rz, 
+			idx_moving_floor,
+                        m_img, moving
+                    );
+
+                    // Compute intensity difference
+                    diff = m_val - f_img[idx_fixed];
+
+                    // Store the score!
+                    score_tile += diff * diff;
+                    ssd->curr_num_vox++;
+
+                    // Compute dc_dv
+                    dc_dv[0] = diff * m_x;
+                    dc_dv[1] = diff * m_y;
+                    dc_dv[2] = diff * m_z;
+
+
+                    /* Generate condensed tile */
+                    bspline_update_sets_b (sets_x, sets_y, sets_z,
+                        ijk_local, dc_dv, bxf);
+
+                } /* LOOP_THRU_TILE_X */
+            } /* LOOP_THRU_TILE_Y */
+        } /* LOOP_THRU_TILE_Z */
+
+        // The tile is now condensed.  Now we will put it in the
+        // proper slot within the control point bin that it belong to.
+        bspline_sort_sets (
+            cond_x, cond_y, cond_z,
+            sets_x, sets_y, sets_z,
+            idx_tile, bxf
+        );
+
+    } /* LOOP_THRU_VOL_TILES */
+
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  A single bin summation is
+     * dc_dp for the single control point associated with the bin.
+     * The number of total bins is equal to the number of control
+     * points in the control grid.
+     */
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, score_tile);
+
+    if (parms->debug) {
+        fclose (corr_fp);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_score_r_mse()
+//
+// This is a multi-CPU implementation using OpenMP, using the tile 
+// "condense" method.  It is similar to flavor "p", but respects 
+// image rois.
+///////////////////////////////////////////////////////////////////////////////
+void
+bspline_score_r_mse (
+    Bspline_optimize *bod
+)
+{
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+
+    Volume *fixed = bst->fixed;
+    Volume *moving = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
+
+    Bspline_score* ssd = &bst->ssd;
+    double score_tile;
+
+    float* f_img = (float*)fixed->img;
+    float* m_img = (float*)moving->img;
+    float* m_grad = (float*)moving_grad->img;
+
+    int idx_tile;
+    
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
+
+    static int it = 0;
+
+    FILE* corr_fp = 0;
+
+    if (parms->debug) {
+        std::string fn = string_format ("%s/%02d_corr_mse_%03d_%03d.csv",
+            parms->debug_dir.c_str(), parms->debug_stage, bst->it, 
+            bst->feval);
+        corr_fp = plm_fopen (fn.c_str(), "wb");
+        it ++;
+    }
+
+    // Zero out accumulators
+    int num_vox = 0;
+    score_tile = 0;
+
+    plm_long cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+
+    // Parallel across tiles
+#pragma omp parallel for reduction (+:num_vox,score_tile)
+    LOOP_THRU_VOL_TILES (idx_tile, bxf) {
+        int rc;
+
+        plm_long ijk_tile[3];
+        plm_long ijk_local[3];
+
+        float fxyz[3];
+        plm_long fijk[3];
+        plm_long idx_fixed;
+
+        float dxyz[3];
+
+        float xyz_moving[3];
+        float ijk_moving[3];
+        plm_long ijk_moving_floor[3];
+        plm_long ijk_moving_round[3];
+        plm_long idx_moving_floor;
+        plm_long idx_moving_round;
+
+        float li_1[3], li_2[3];
+        float m_val, diff;
+	float m_x, m_y, m_z;
+        float inv_rx, inv_ry, inv_rz;
+       
+        /* voxel spacing */
+        inv_rx = 1.0/moving->spacing[0];
+        inv_ry = 1.0/moving->spacing[1];
+        inv_rz = 1.0/moving->spacing[2];
+
+	float dc_dv[3];
+
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+        // Get tile coordinates from index
+        COORDS_FROM_INDEX (ijk_tile, idx_tile, bxf->rdims); 
+
+        // Serial through voxels in tile
+        LOOP_THRU_TILE_Z (ijk_local, bxf) {
+            LOOP_THRU_TILE_Y (ijk_local, bxf) {
+                LOOP_THRU_TILE_X (ijk_local, bxf) {
+
+                    // Construct coordinates into fixed image volume
+                    GET_VOL_COORDS (fijk, ijk_tile, ijk_local, bxf);
+
+                    // Make sure we are inside the image volume
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0])
+                        continue;
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1])
+                        continue;
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2])
+                        continue;
+
+                    // Compute physical coordinates of fixed image voxel
+                    POSITION_FROM_COORDS (fxyz, fijk, bxf->img_origin, 
+                        fixed->step);
+
+                    /* JAS 2012.03.26: Tends to break the optimizer (PGTOL)   */
+                    /* Check to make sure the indices are valid (inside roi) */
+                    if (fixed_roi) {
+                        if (!inside_roi (fxyz, fixed_roi)) continue;
+                    }
+
+                    // Construct the image volume index
+                    idx_fixed = volume_index (fixed->dim, fijk);
+
+                    // Calc. deformation vector (dxyz) for voxel
+                    bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
+
+                    // Calc. moving image coordinate from the deformation 
+                    // vector
+                    rc = bspline_find_correspondence_dcos_roi (
+                        xyz_moving, ijk_moving, fxyz, dxyz, moving,
+                        moving_roi);
+
+                    if (parms->debug) {
+                        fprintf (corr_fp, 
+                            "%d %d %d %f %f %f\n",
+                            (unsigned int) fijk[0], 
+                            (unsigned int) fijk[1], 
+                            (unsigned int) fijk[2], 
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                    }
+
+                    /* If voxel is not inside moving image */
+                    if (!rc) continue;
+
+                    // Compute linear interpolation fractions
+                    li_clamp_3d (
+                        ijk_moving,
+                        ijk_moving_floor,
+                        ijk_moving_round,
+                        li_1,
+                        li_2,
+                        moving
+                    );
+
+                    // Find linear indices for moving image
+                    idx_moving_floor = volume_index (
+                        moving->dim, ijk_moving_floor);
+                    idx_moving_round = volume_index (
+                        moving->dim, ijk_moving_round);
+
+                    // Calc. moving voxel intensity via linear interpolation
+                    m_val = li_value ( 
+                        li_1, li_2,
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_x = li_value_dx ( 
+                        li_1, li_2, inv_rx, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_y = li_value_dy ( 
+                        li_1, li_2, inv_ry, 
+                        idx_moving_floor,
+                        m_img, moving
+                    );
+		    
+		    m_z = li_value_dz ( 
+                        li_1, li_2, inv_rz, 
+			idx_moving_floor,
+                        m_img, moving
+                    );
+
+                    // Compute intensity difference
+                    diff = m_val - f_img[idx_fixed];
+
+                    // Store the score!
+                    score_tile += diff * diff;
+                    num_vox++;
+
+                    // Compute dc_dv
+                    dc_dv[0] = diff * m_x;
+                    dc_dv[1] = diff * m_y;
+                    dc_dv[2] = diff * m_z;
+
+                    /* Generate condensed tile */
+                    bspline_update_sets_b (
+                        sets_x, sets_y, sets_z,
+                        ijk_local, dc_dv, bxf
+                    );
+
+                } /* LOOP_THRU_TILE_X */
+            } /* LOOP_THRU_TILE_Y */
+        } /* LOOP_THRU_TILE_Z */
+
+
+        // The tile is now condensed.  Now we will put it in the
+        // proper slot within the control point bin that it belong to.
+        bspline_sort_sets (
+            cond_x, cond_y, cond_z,
+            sets_x, sets_y, sets_z,
+            idx_tile, bxf
+        );
+
+    } /* LOOP_THRU_VOL_TILES */
+
+    ssd->curr_num_vox = num_vox;
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_condense_smetric_grad (cond_x, cond_y, cond_z, bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+    /* Normalize score for MSE */
+    bspline_score_normalize (bod, score_tile);
+
+    if (parms->debug) {
+        fclose (corr_fp);
+    }
+}
 
 
 void
@@ -1178,6 +1907,13 @@ bspline_score_mse (
 	    case 'o':
 		bspline_score_o_mse (bod);
 		break;
+	    case 'p':
+		bspline_score_p_mse (bod);
+		break;
+	    case 'q':
+		bspline_score_q_mse (bod);
+		break;
+
             default:
 #if (OPENMP_FOUND)
                 bspline_score_g_mse (bod);

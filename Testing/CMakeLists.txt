@@ -29,6 +29,7 @@ set (CONFIG_FILE_LIST
   "plm-bsp-mse-k.txt"
   "plm-bsp-mse-l.txt"
   "plm-bsp-mse-o.txt"
+  "plm-bsp-mse-q.txt"
   "plm-bsp-mi-c.txt"
   "plm-bsp-mi-c-2.txt"
   "plm-bsp-mi-k.txt"
@@ -3039,6 +3040,7 @@ set_tests_properties (plm-reg-itk-demons-sym-logd-check-1
 ##   plm-bsp-mse-k
 ##   plm-bsp-mse-l
 ##   plm-bsp-mse-o
+##   plm-bsp-mse-q
 ##   plm-bsp-openmp
 ##   plm-bsp-cuda
 ##   plm-bsp-resume
@@ -3162,6 +3164,29 @@ set_tests_properties (plm-bsp-mse-o-stats PROPERTIES
   DEPENDS plm-bsp-mse-o)
 set_tests_properties (plm-bsp-mse-o-check PROPERTIES 
   DEPENDS plm-bsp-mse-o-stats)
+
+plm_add_test (
+  "plm-bsp-mse-q" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q.txt"
+  )
+plm_add_test (
+  "plm-bsp-mse-q-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-img.mha"
+  )
+plmtest_check_interval ("plm-bsp-mse-q-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-742.0"
+  "-741.0"
+  )
+set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-1)
+set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-2)
+set_tests_properties (plm-bsp-mse-q-stats PROPERTIES 
+  DEPENDS plm-bsp-mse-q)
+set_tests_properties (plm-bsp-mse-q-check PROPERTIES 
+  DEPENDS plm-bsp-mse-q-stats)
 
 
 ## This test (and bsp-mi-k) fails on windows with 2008 compiler.
