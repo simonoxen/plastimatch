@@ -72,13 +72,13 @@ sub digest_file {
 	    }
 	    if ($val =~ /^95hd=(.*)/) {
 		$hd95 = $1;
-		if ($hd95 > $max_hd) {
-		    $hd95 = $max_hd;
-		}
 		next;
 	    }
 	    if ($val =~ /^95bhd=(.*)/) {
 		$bhd95 = $1;
+		if ($bhd95 > $max_bhd) {
+		    $bhd95 = $max_bhd;
+		}
 		next;
 	    }
 	    if ($val =~ /^ahd=(.*)/) {
@@ -154,7 +154,7 @@ GetOptions ("display-failures" => \$display_failures,
 
 $training_dir = shift;
 
-$max_hd = 200;
+$max_bhd = 200;
 
 %reghash = ();
 %seghash = ();
