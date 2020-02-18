@@ -1113,21 +1113,7 @@ Mabs::atlas_selection ()
         }
 
         fclose(ranking_file);
-    } else {
-	    FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
-	    
-	    fprintf(ranking_file, "%s: ", atlas_selector->subject_id.c_str());
-            /* Cycle over atlases */
-	    for (std::list<std::pair<std::string, double> >::iterator it_list = 
-			    d_ptr->selected_atlases.begin();
-			    it_list != ranked_atlases.end(); it_list++) {
-		    fprintf(ranking_file, "%s ", it_list->first.c_str());
-	    }
-	    fclose(ranking_file);
-    }
-
-
-
+    }     
     /* Delete object */
     delete atlas_selector;
 
