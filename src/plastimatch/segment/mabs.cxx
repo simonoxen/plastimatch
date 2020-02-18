@@ -724,9 +724,15 @@ Mabs::run_registration_loop ()
                         curr_output_dir.c_str());
                     warped_image->save_image (fn.c_str());
                 }
-
-                fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
-                xf_out->save (fn.c_str());
+				
+                /* Check whether xform is of type vector field
+		 * if yes, save as xf.nrrd, else xf.txt  */
+		if (xf_out->m_type == XFORM_GPUIT_VECTOR_FIELD) {
+			fn = string_format ("%s/xf.nrrd", curr_output_dir.c_str());
+		} else {
+			fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
+		}
+		xf_out->save (fn.c_str());
 
                 if (d_ptr->parms->write_warped_structures) {
                     fn = string_format ("%s/structures", 
@@ -1107,7 +1113,20 @@ Mabs::atlas_selection ()
         }
 
         fclose(ranking_file);
+    } else {
+	    FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
+	    
+	    fprintf(ranking_file, "%s: ", atlas_selector->subject_id.c_str());
+            /* Cycle over atlases */
+	    for (std::list<std::pair<std::string, double> >::iterator it_list = 
+			    d_ptr->selected_atlases.begin();
+			    it_list != ranked_atlases.end(); it_list++) {
+		    fprintf(ranking_file, "%s ", it_list->first.c_str());
+	    }
+	    fclose(ranking_file);
     }
+
+
 
     /* Delete object */
     delete atlas_selector;
@@ -1287,7 +1306,7 @@ Mabs::train_atlas_selection ()
     fclose(train_atlas_selection_log_file);
     
     /* Write the new ranking */
-    if (compute_new_ranking) {
+    //if (compute_new_ranking) {
 
         FILE *ranking_file = fopen (train_atlas_ranking_file_name.c_str(), "w");
        
@@ -1309,7 +1328,7 @@ Mabs::train_atlas_selection ()
         }
         
         fclose(ranking_file);
-    }
+    //}
 
     /* Stop timer */
     d_ptr->time_atlas_selection += timer.report();
@@ -1578,10 +1597,17 @@ Mabs::no_voting (
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Load xform */
+    std::string xf_fn;
     timer.start();
-    std::string xf_fn = string_format ("%s/%s",
-        curr_output_dir.c_str(),
-        "xf.txt");
+    xf_fn = string_format ("%s/%s",
+		    curr_output_dir.c_str(),
+		    "xf.nrrd");
+
+    if (!file_exists (xf_fn.c_str())){
+	    xf_fn = string_format ("%s/%s",
+			    curr_output_dir.c_str(),
+			    "xf.txt");
+    }
     lprintf ("Loading xform: %s\n", xf_fn.c_str());
     Xform::Pointer xf = xform_load (xf_fn);
     d_ptr->time_io += timer.report();
@@ -1720,10 +1746,17 @@ Mabs::gaussian_segmentation_vote (
     lprintf ("curr_output_dir: %s\n", curr_output_dir.c_str());
 
     /* Load xform */
+    std::string xf_fn;
     timer.start();
-    std::string xf_fn = string_format ("%s/%s",
-        curr_output_dir.c_str(),
-        "xf.txt");
+    xf_fn = string_format ("%s/%s",
+		    curr_output_dir.c_str(),
+		    "xf.nrrd");
+    if (!file_exists(xf_fn.c_str())){
+	    xf_fn = string_format ("%s/%s",
+		    curr_output_dir.c_str(),
+		    "xf.txt");
+    }
+
     lprintf ("Loading xform: %s\n", xf_fn.c_str());
     Xform::Pointer xf = xform_load (xf_fn);
     d_ptr->time_io += timer.report();
