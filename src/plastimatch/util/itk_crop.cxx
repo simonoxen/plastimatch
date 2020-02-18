@@ -29,9 +29,19 @@ itk_crop_by_index (
     filter->SetDirectionCollapseToGuess();
 #endif
 
+    // GCS FIX: Should use itk index
+    typename ImageType::RegionType current_region
+        = image->GetLargestPossibleRegion();
+
     for (int d = 0; d < 3; d++) {
 	extract_index[d] = new_size[d*2];
-	extract_size[d] = new_size[d*2+1] - new_size[d*2] + 1;
+        if (extract_index[d] < 0) {
+            extract_index[d] = 0;
+        }
+	extract_size[d] = new_size[d*2+1] - extract_index[d] + 1;
+        if (extract_size[d] > current_region.GetSize(d)-1) {
+            extract_size[d] = current_region.GetSize(d)-1;
+        }
     }
 
     extract_region.SetSize (extract_size);
@@ -46,7 +56,6 @@ itk_crop_by_index (
     catch(itk::ExceptionObject & ex) {
 	printf ("Exception running itkExtractImageFilter.\n");
 	std::cout << ex << std::endl;
-	getchar();
 	exit(1);
     }
 
@@ -73,7 +82,6 @@ itk_crop_by_coord (
     filter->SetDirectionCollapseToGuess();
 #endif
 
-
     // GCS FIX: Should use itk index
     typename ImageType::RegionType current_region
         = image->GetLargestPossibleRegion();
@@ -89,9 +97,9 @@ itk_crop_by_coord (
     image->TransformPhysicalPointToIndex (p1, i1);
     image->TransformPhysicalPointToIndex (p2, i2);
 
-    CLAMP2 (i1[0], i2[0], 0, current_region.GetSize(0));
-    CLAMP2 (i1[1], i2[1], 0, current_region.GetSize(1));
-    CLAMP2 (i1[2], i2[2], 0, current_region.GetSize(2));
+    CLAMP2 (i1[0], i2[0], 0, current_region.GetSize(0)-1);
+    CLAMP2 (i1[1], i2[1], 0, current_region.GetSize(1)-1);
+    CLAMP2 (i1[2], i2[2], 0, current_region.GetSize(2)-1);
 
     for (int d = 0; d < 3; d++) {
 	extract_index[d] = i1[d];
@@ -110,7 +118,13 @@ itk_crop_by_coord (
     catch(itk::ExceptionObject & ex) {
 	printf ("Exception running itkExtractImageFilter.\n");
 	std::cout << ex << std::endl;
-	getchar();
+	printf ("new_size = %f %f %f %f %f %f\n",
+            new_size[0], new_size[1], new_size[2], 
+            new_size[3], new_size[4], new_size[5]);
+	std::cout << image->GetOrigin() << "\n";
+	std::cout << image->GetSpacing() << "\n";
+	std::cout << current_region << std::endl;
+	std::cout << extract_region << std::endl;
 	exit(1);
     }
 
