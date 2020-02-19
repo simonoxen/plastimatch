@@ -1316,15 +1316,14 @@ Mabs::train_atlas_selection ()
         
         fclose(ranking_file);
     } else {
-	    FILE *ranking_file = fopen (train_atlas_ranking_file_name.c_str(), "w"); 
-	    FILE *temp = fopen (d_ptr->parms->precomputed_ranking_fn.c_str(), "r");
-	    char c = fgetc(temp); 
+	    std::string ranking_file = train_atlas_ranking_file_name.c_str(); 
+	    std::string temp = d_ptr->parms->precomputed_ranking_fn.c_str();
+	    /*char c = fgetc(temp); 
 	    while (c != EOF) {
 		    fputc(c, ranking_file); 
-		    c = fgetc(temp); 
-	    } 
-	    fclose(ranking_file);
-	    fclose(temp);
+		    c = fgetc(temp);
+	    }*/
+            copy_file (ranking_file, temp);	    
     }
 
     /* Stop timer */
