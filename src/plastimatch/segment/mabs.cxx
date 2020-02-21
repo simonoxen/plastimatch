@@ -1113,21 +1113,7 @@ Mabs::atlas_selection ()
         }
 
         fclose(ranking_file);
-    } else {
-	    FILE *ranking_file = fopen (atlas_ranking_file_name.c_str(), "w");
-	    
-	    fprintf(ranking_file, "%s: ", atlas_selector->subject_id.c_str());
-            /* Cycle over atlases */
-	    for (std::list<std::pair<std::string, double> >::iterator it_list = 
-			    d_ptr->selected_atlases.begin();
-			    it_list != ranked_atlases.end(); it_list++) {
-		    fprintf(ranking_file, "%s ", it_list->first.c_str());
-	    }
-	    fclose(ranking_file);
-    }
-
-
-
+    }     
     /* Delete object */
     delete atlas_selector;
 
@@ -1330,15 +1316,14 @@ Mabs::train_atlas_selection ()
         
         fclose(ranking_file);
     } else {
-	    FILE *ranking_file = fopen (train_atlas_ranking_file_name.c_str(), "w"); 
-	    FILE *temp = fopen (d_ptr->parms->precomputed_ranking_fn.c_str(), "r");
-	    char c = fgetc(temp); 
+	    std::string ranking_file = train_atlas_ranking_file_name.c_str(); 
+	    std::string temp = d_ptr->parms->precomputed_ranking_fn.c_str();
+	    /*char c = fgetc(temp); 
 	    while (c != EOF) {
 		    fputc(c, ranking_file); 
-		    c = fgetc(temp); 
-	    } 
-	    fclose(ranking_file);
-	    fclose(temp);
+		    c = fgetc(temp);
+	    }*/
+            copy_file (ranking_file, temp);	    
     }
 
     /* Stop timer */
