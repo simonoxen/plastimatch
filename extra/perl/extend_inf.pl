@@ -37,16 +37,10 @@ my $fixed_dir = "$scratch_base/$newest_dir/fixed";
 
 (-d $ori_copy_dir) or die "Directory $ori_copy_dir does not exist!";
 
-opendir (DIR, $ori_copy_dir);
-my @list = sort readdir (DIR);
-my $lowest_position;
-my $lowest_position_file = "";
-my $highest_position;
-my $highest_position_file = "";
-print "Searching directory for most inferior and superior slices\n";
-for (@list){
-    next if (($_ eq ".") or ($_ eq ".."));
-    my $cmd = "dcmdump -q $ori_copy_dir/$_ | grep ImagePositionPatient | sed -e 's/.*\\\\//g' | sed -e 's/\\].*//g'";
+sub process_file {
+    my ($fn) = @_;
+
+    my $cmd = "dcmdump -q $ori_copy_dir/$fn | grep ImagePositionPatient | sed -e 's/.*\\\\//g' | sed -e 's/\\].*//g'";
     my $cmd_output = `$cmd`;
     chomp ($cmd_output);
     if ($lowest_position_file eq "" or $lowest_position > $cmd_output) {
@@ -57,6 +51,15 @@ for (@list){
 	$highest_position_file = $_;
 	$highest_position = $cmd_output;
     }
+}
+
+
+opendir (DIR, $ori_copy_dir);
+my @list = sort readdir (DIR);
+print "Processing files in $ori_copy_dir\n";
+for (@list){
+    next if (($_ eq ".") or ($_ eq ".."));
+    process_file ($_);
 }
 closedir (DIR);
 
