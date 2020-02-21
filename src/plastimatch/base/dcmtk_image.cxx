@@ -639,11 +639,15 @@ Dcmtk_rt_study::image_save (
             all_integers = false;
         }
     }
+        if (vol_max - vol_min > UINT16_MAX) {
+            all_integers = false;
+        }
     /* Use a heuristic to determine intercept and offset.
        The heuristic is designed around the following principles:
        - prevent underflow when using low-precision DICOM string-encoded
          floating point numbers
        - map integers to integers
+       - keep integer values within range
     */
     if (meta_intercept != "") {
         int rc = sscanf (meta_intercept.c_str(), "%f", &dsd.intercept);
@@ -661,6 +665,9 @@ Dcmtk_rt_study::image_save (
     }
     else if (all_integers) {
         dsd.slope = 1;
+        if (vol_max - vol_min > INT16_MAX) {
+            dsd.intercept = vol_max - INT16_MAX;
+        }
     }
     else {
         float range = vol_max - dsd.intercept;
