@@ -505,6 +505,9 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
     /* XVI 4.5 requires a DCM_PositionReferenceIndicator */
     dataset->putAndInsertString (DCM_PositionReferenceIndicator, "SP");
 
+    /* General equipment module */
+    Dcmtk_module::set_general_equipment (dataset, image_metadata);
+
     /* General Image module */
     tmp = string_format ("%d", dsd->instance_no);
     dataset->putAndInsertString (DCM_InstanceNumber, tmp.c_str());
