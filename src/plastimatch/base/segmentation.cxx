@@ -153,20 +153,26 @@ Segmentation::load_prefix (const char *prefix_dir)
         /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
 	if (!extension_is (entry, ".mha") 
+            && !extension_is (entry, ".mhd")
+            && !extension_is (entry, ".nii")
+            && !extension_is (entry, ".nii.gz")
             && !extension_is (entry, ".nrrd"))
         {
             continue;
         }
 
-        /* Grab the structure name from the filename */
-        char *structure_name = strdup (entry);
-        strip_extension (structure_name);
-        lprintf ("Loading structure: %s\n", structure_name);
-
         /* Load the file */
         std::string input_fn = string_format ("%s/%s", prefix_dir, entry);
         Plm_image img (input_fn, PLM_IMG_TYPE_ITK_UCHAR);
         Plm_image_header pih (img);
+
+        /* Grab the structure name from the filename */
+        char *structure_name = strdup (entry);
+        if (extension_is (structure_name, "nii.gz")) {
+            strip_extension (structure_name);
+        }
+        strip_extension (structure_name);
+        lprintf ("Loading structure: %s\n", structure_name);
 
         if (first) {
             this->initialize_ss_image (pih, out_vec_len);
