@@ -376,8 +376,6 @@ Dcmtk_rt_study::dose_save (const char *dicom_dir)
     
     s = string_format ("%g\\%g\\%g", dose_volume->origin[0], 
         dose_volume->origin[1], dose_volume->origin[2]);
-    /* GCS FIX: PatientOrientation */
-    dataset->putAndInsertString (DCM_PatientOrientation, "L/P");
     dataset->putAndInsertString (DCM_ImagePositionPatient, s.c_str());
     s = string_format ("%g\\%g\\%g\\%g\\%g\\%g",
     dose_volume->direction_cosines[0],
