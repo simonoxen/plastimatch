@@ -42,6 +42,7 @@ public:
     std::string output_prefix_fcsv;
     std::string output_ss_img_fn;
     std::string output_ss_list_fn;
+    std::string output_study_dirname;
     std::string output_vf_fn;
     std::string output_xio_dirname;
 

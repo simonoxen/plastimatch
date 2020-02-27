@@ -168,6 +168,7 @@ warp_and_save_ss (
     if (parms->output_labelmap_fn != ""
         || parms->output_ss_img_fn != ""
         || parms->output_opt4d_fn != ""
+        || parms->output_study_dirname != ""
         || parms->xf_in_fn != ""
         || parms->output_prefix != "")
     {
@@ -474,9 +475,14 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
         seg->get_structure_set()->set_rasterization_geometry ();
     }
 
-    /* Warp and save structure set (except dicom) */
+    /* Warp and save structure set (except dicom and study formats) */
     lprintf ("Rt_study_warp: warp and save ss.\n");
     warp_and_save_ss (rt_study, xform, &pih, parms);
+
+    /* Save study format */
+    if (parms->output_study_dirname != "") {
+        rt_study->save (parms->output_study_dirname);
+    }
 
     /* Save dicom */
     if (parms->output_dicom != "") {

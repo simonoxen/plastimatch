@@ -460,10 +460,28 @@ Rt_study::save_dicom_dose (const char *dicom_dir)
 }
 
 void
+Rt_study::save (const std::string& output_dir)
+{
+    if (output_dir == "") {
+        return;
+    }
+    std::string s;
+    
+    s = compose_filename (output_dir, "img.nrrd");
+    this->save_image (s);
+    
+    s = compose_filename (output_dir, "dose.nrrd");
+    this->save_dose (s);
+
+    s = compose_filename (output_dir, "structures");
+    this->save_prefix (s, "nrrd");
+}
+
+void
 Rt_study::save_image (const std::string& fname)
 {
     if (fname != "") {
-        d_ptr->m_img->save_image (fname);
+        this->save_image (fname.c_str());
     }
 }
 
@@ -487,7 +505,7 @@ void
 Rt_study::save_dose (const std::string& fname)
 {
     if (fname != "") {
-        d_ptr->m_dose->save_image (fname);
+        this->save_dose (fname.c_str());
     }
 }
 

@@ -19,21 +19,23 @@ $overwrite_for = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_logos_v1";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/017-08-01";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T4D-QA";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
 
 $new_name = "";
 $new_id = "";
 $new_birth_date = "";
 $new_sex = "";
-$new_name = "LPcom_01^PBS";
-$new_id = "LPcom_01";
-$new_birth_date = "20180101";
-$new_sex = "O";
-#$new_name = "LPcom_02^PBS";
-#$new_id = "LPcom_02";
-#$new_birth_date = "20180725";
+#$new_name = "LPcom_01^PBS";
+#$new_id = "LPcom_01";
+#$new_birth_date = "20180101";
 #$new_sex = "O";
-$new_series_description = "FFS";
+$new_name = "LPcom_02^PBS";
+$new_id = "LPcom_02";
+$new_birth_date = "20180725";
+$new_sex = "O";
+
+$new_series_description = "Var Thick";
 
 $new_patient_position = "";
 $new_image_orientation = "";

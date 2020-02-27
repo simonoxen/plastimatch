@@ -62,6 +62,9 @@ public:
     void load_prefix (const char *input_fn);
     void load_prefix (const std::string& input_fn);
 
+    /*! \brief Save as directory of nrrd files */
+    void save (const std::string& output_dir);
+
     void save_dicom (const std::string& output_dir,
         bool filenames_with_uid = true);
     void save_dicom (const char *output_dir,

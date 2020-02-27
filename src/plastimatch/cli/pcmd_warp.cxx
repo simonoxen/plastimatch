@@ -97,6 +97,9 @@ parse_fn (
     parser->add_long_option ("", "output-ss-list", 
         "create a structure set list file containing names and colors", 
         1, "");
+    parser->add_long_option ("", "output-study",
+        "create a directory of nrrd files containing image, dose, and structures",
+        1, "");
     parser->add_long_option ("", "output-vf", 
         "create a vector field from the input xf", 1, "");
     parser->add_long_option ("", "output-xio", 
@@ -241,6 +244,7 @@ parse_fn (
         = parser->get_string("output-prefix-fcsv").c_str();
     parms->output_ss_img_fn = parser->get_string("output-ss-img");
     parms->output_ss_list_fn = parser->get_string("output-ss-list");
+    parms->output_study_dirname = parser->get_string("output-study");
     parms->output_vf_fn = parser->get_string("output-vf").c_str();
     parms->output_xio_dirname = parser->get_string("output-xio").c_str();
     
