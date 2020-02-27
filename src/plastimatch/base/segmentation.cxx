@@ -232,8 +232,12 @@ Segmentation::load_prefix (const char *prefix_dir)
     if (d_ptr->m_rtss) {
         d_ptr->m_rtss->free_all_polylines ();
     }
-    d_ptr->m_rtss_valid = false;
-    d_ptr->m_ss_img_valid = true;
+    if (first) {
+        /* We didn't get any valid images in this directory, so do nothing */
+    } else {
+        d_ptr->m_rtss_valid = false;
+        d_ptr->m_ss_img_valid = true;
+    }
 }
 
 void

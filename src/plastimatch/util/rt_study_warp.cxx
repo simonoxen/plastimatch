@@ -160,6 +160,9 @@ warp_and_save_ss (
     }
 
     Segmentation::Pointer seg = rt_study->get_segmentation();
+    if (!seg->have_structure_set ()) {
+        return;
+    }
 
     /* If we have need to create image outputs, or if we have to 
        warp something, then we need to rasterize the volume */
@@ -330,7 +333,7 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
         plm_long dim[3] = { 500, 500, 500 };
         float origin[3] = { -249.5, -249.5, -249.5 };
         float spacing[3] = { 1., 1., 1. };
-        lprintf ("Setting PIH from generic defaults");
+        lprintf ("Setting PIH from generic defaults\n");
         pih.set_from_gpuit (dim, origin, spacing, 0);
     }
 
@@ -454,25 +457,27 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
         /* Convert ss_img to cxt */
         lprintf ("Rt_study_warp: Convert ss_img to cxt.\n");
         seg->convert_ss_img_to_cxt ();
+        if (seg->have_structure_set()) {
+            
+            /* Delete empty structures */
+            if (parms->prune_empty) {
+                lprintf ("Rt_study_warp: Prune empty structures.\n");
+                seg->prune_empty ();
+            }
 
-        /* Delete empty structures */
-        if (parms->prune_empty) {
-            lprintf ("Rt_study_warp: Prune empty structures.\n");
-            seg->prune_empty ();
-        }
-
-        /* Set the DICOM reference info -- this sets the internal geometry 
-           of the ss_image so we rasterize on the same slices as the CT? */
-        lprintf ("Rt_study_warp: Apply dicom_dir.\n");
-        seg->apply_dicom_dir (rt_study->get_rt_study_metadata());
+            /* Set the DICOM reference info -- this sets the internal geometry 
+               of the ss_image so we rasterize on the same slices as the CT? */
+            lprintf ("Rt_study_warp: Apply dicom_dir.\n");
+            seg->apply_dicom_dir (rt_study->get_rt_study_metadata());
         
-        /* Set the output geometry */
-        lprintf ("Rt_study_warp: Set geometry from PIH.\n");
-        seg->set_geometry (&pih);
+            /* Set the output geometry */
+            lprintf ("Rt_study_warp: Set geometry from PIH.\n");
+            seg->set_geometry (&pih);
 
-        /* Set rasterization geometry */
-        lprintf ("Rt_study_warp: Set rasterization geometry.\n");
-        seg->get_structure_set()->set_rasterization_geometry ();
+            /* Set rasterization geometry */
+            lprintf ("Rt_study_warp: Set rasterization geometry.\n");
+            seg->get_structure_set()->set_rasterization_geometry ();
+        }
     }
 
     /* Warp and save structure set (except dicom and study formats) */
