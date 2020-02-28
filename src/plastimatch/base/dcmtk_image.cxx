@@ -170,7 +170,6 @@ Dcmtk_rt_study::image_load ()
     lprintf ("Bits_stored: %d\n", (int) bits_stored);
     lprintf ("High_bit: %d\n", (int) high_bit);
     lprintf ("Pixel_rep: %d\n", (int) pixel_rep);
-    lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
 #endif
     
     /* Some kinds of images we don't know how to deal with.  
@@ -442,14 +441,24 @@ Dcmtk_rt_study::image_load ()
             rescale_slope = 1;
         }
 
+#if defined (commentout)
+        lprintf ("S/I = %f/%f\n", rescale_slope, rescale_intercept);
+#endif
         /* Apply slope and offset */
-        if (bits_alloc == 8) {
-            for (plm_long j = 0; j < (plm_long) length; j++) {
+        for (plm_long j = 0; j < (plm_long) length; j++) {
+            if (bits_alloc == 8 && pixel_rep == 0) {
+                img[j] = rescale_slope * (uint8_t) pixel_data_8[j] 
+                    + rescale_intercept;
+            }
+            else if (bits_alloc == 8 && pixel_rep == 1) {
                 img[j] = rescale_slope * (int8_t) pixel_data_8[j] 
                     + rescale_intercept;
             }
-        } else if (bits_alloc == 16) {
-            for (plm_long j = 0; j < (plm_long) length; j++) {
+            else if (bits_alloc == 16 && pixel_rep == 0) {
+                img[j] = rescale_slope * (uint16_t) pixel_data_16[j] 
+                    + rescale_intercept;
+            }
+            else if (bits_alloc == 16 && pixel_rep == 1) {
                 img[j] = rescale_slope * (int16_t) pixel_data_16[j] 
                     + rescale_intercept;
             }
