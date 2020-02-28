@@ -20,7 +20,7 @@ $overwrite_for = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/017-08-01";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T4D-QA";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
 
 $new_name = "";
 $new_id = "";
@@ -30,12 +30,13 @@ $new_sex = "";
 #$new_id = "LPcom_01";
 #$new_birth_date = "20180101";
 #$new_sex = "O";
-$new_name = "LPcom_02^PBS";
-$new_id = "LPcom_02";
-$new_birth_date = "20180725";
-$new_sex = "O";
+#$new_name = "LPcom_02^PBS";
+#$new_id = "LPcom_02";
+#$new_birth_date = "20180725";
+#$new_sex = "O";
 
-$new_series_description = "Var Thick";
+$new_series_description = "Copy of plan 2";
+#$new_series_description = "Var Thick";
 
 $new_patient_position = "";
 $new_image_orientation = "";
@@ -85,11 +86,11 @@ sub reorient {
 sub change_isocenter {
     my ($x, $y, $z) = @_;
 
-    return (10, -14, 485);
+#    return (10, -14, 485);
 #    return (0, 0, 1000);
 #    return (10, 20, 30 - 10);
 #    return (-$x, -$y, $z);
-#    return ($x, $y, $z);
+    return ($x, $y, $z);
 #    return (0, 0, 0);
 }
 
