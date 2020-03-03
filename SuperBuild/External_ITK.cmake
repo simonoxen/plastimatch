@@ -3,8 +3,8 @@
 ##-----------------------------------------------------------------------------
 set (proj ITK)
 
-set (itk_url https://downloads.sourceforge.net/project/itk/itk/4.12/InsightToolkit-4.12.2.tar.gz)
-set (itk_md5sum 758206eeb458d11b7ba2d81d8a3ce212)
+set (itk_url https://downloads.sourceforge.net/project/plastimatch/Third%20Party/InsightToolkit-4.12.2-patch-1.tar.gz)
+set (itk_md5sum dfebf9edd19c4e53103c812aca2f8c9f)
 
 ExternalProject_Add (${proj}
   DOWNLOAD_DIR ${proj}-download
