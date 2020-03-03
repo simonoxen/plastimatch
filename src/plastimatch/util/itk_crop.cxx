@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
+#include "itkContinuousIndex.h"
 #include "itkExtractImageFilter.h"
 #include "itkImage.h"
 
@@ -74,8 +75,8 @@ itk_crop_by_coord (
     typedef itk::ExtractImageFilter < ImageType, ImageType > FilterType;
 
     typename FilterType::Pointer filter = FilterType::New();
-    typename ImageType::IndexType  extract_index;
-    typename ImageType::SizeType   extract_size;
+    typename ImageType::IndexType extract_index;
+    typename ImageType::SizeType extract_size;
     typename ImageType::RegionType extract_region;
 
 #if ITK_VERSION_MAJOR > 3
@@ -87,23 +88,25 @@ itk_crop_by_coord (
         = image->GetLargestPossibleRegion();
     
     itk::Point<double,3> p1, p2;
-    itk::Index<3> i1, i2;
+    itk::ContinuousIndex<double,3> i1, i2;
     p1[0] = new_size[0];
     p2[0] = new_size[1];
     p1[1] = new_size[2];
     p2[1] = new_size[3];
     p1[2] = new_size[4];
     p2[2] = new_size[5];
-    image->TransformPhysicalPointToIndex (p1, i1);
-    image->TransformPhysicalPointToIndex (p2, i2);
+    //image->TransformPhysicalPointToIndex (p1, i1);
+    //image->TransformPhysicalPointToIndex (p2, i2);
+    image->TransformPhysicalPointToContinuousIndex (p1, i1);
+    image->TransformPhysicalPointToContinuousIndex (p2, i2);
 
     CLAMP2 (i1[0], i2[0], 0, current_region.GetSize(0)-1);
     CLAMP2 (i1[1], i2[1], 0, current_region.GetSize(1)-1);
     CLAMP2 (i1[2], i2[2], 0, current_region.GetSize(2)-1);
-
+    
     for (int d = 0; d < 3; d++) {
-	extract_index[d] = i1[d];
-	extract_size[d] = i2[d] - i1[d] + 1;
+	extract_index[d] = std::ceil(i1[d]);
+	extract_size[d] = std::floor(i2[d]) - std::ceil(i1[d]) + 1;
     }
 
     extract_region.SetSize (extract_size);
@@ -141,7 +144,7 @@ itk_crop_by_image (T& image, const UCharImageType::Pointer& bbox_image)
     int bbox_indices[6];
     float bbox_coordinates[6];
     itk_bbox (bbox_image, bbox_coordinates, bbox_indices);
-    return itk_crop_by_coord (image, bbox_coordinates);
+    return itk_crop_by_index (image, bbox_indices);
 }
 
 /* Explicit instantiations */
