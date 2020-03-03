@@ -2790,6 +2790,20 @@ set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
 #set (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
 #set (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
 
+# ITK changed its behavior the precision used when # exporting MHA files,
+# which causes slight differences in registration results
+if (${ITK_VERSION} VERSION_LESS "4.13")
+  set (MSE_O_TEST_LOWER_THRESH "-741.6")
+  set (MSE_O_TEST_UPPER_THRESH "-741.3")
+  set (MSE_PQR_TEST_LOWER_THRESH "-741.6")
+  set (MSE_PQR_TEST_UPPER_THRESH "-741.3")
+else()
+  set (MSE_O_TEST_LOWER_THRESH "-743.3")
+  set (MSE_O_TEST_UPPER_THRESH "-743.0")
+  set (MSE_PQR_TEST_LOWER_THRESH "-740.1")
+  set (MSE_PQR_TEST_UPPER_THRESH "-739.8")
+endif()
+
 plm_add_test (
   "plm-reg-align-center"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -3210,8 +3224,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mse-o-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-o-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-742.0"
-  "-741.0"
+  "${MSE_O_TEST_LOWER_THRESH}"
+  "${MSE_O_TEST_UPPER_THRESH}"
   )
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-2)
@@ -3233,8 +3247,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mse-p-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-p-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-742.0"
-  "-741.0"
+  "${MSE_PQR_TEST_LOWER_THRESH}"
+  "${MSE_PQR_TEST_UPPER_THRESH}"
   )
 set_property (TEST plm-bsp-mse-p APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-p APPEND PROPERTY DEPENDS gauss-2)
@@ -3256,8 +3270,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mse-q-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-742.0"
-  "-741.0"
+  "${MSE_PQR_TEST_LOWER_THRESH}"
+  "${MSE_PQR_TEST_UPPER_THRESH}"
   )
 set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-2)
@@ -3279,8 +3293,8 @@ plm_add_test (
 plmtest_check_interval ("plm-bsp-mse-r-check"
   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-r-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-742.0"
-  "-741.0"
+  "${MSE_PQR_TEST_LOWER_THRESH}"
+  "${MSE_PQR_TEST_UPPER_THRESH}"
   )
 set_property (TEST plm-bsp-mse-r APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-r APPEND PROPERTY DEPENDS gauss-2)
