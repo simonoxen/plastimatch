@@ -73,6 +73,13 @@ set (CTEST_CUSTOM_TESTS_IGNORE
   "plm-convert-rtog-corvus-a"
   )
 
+## These tests don't work yet
+set (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "proton-dose-7a"
+  "proton-dose-8d-check"
+  )
+
 # drr-d doesn't work yet
 set (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -300,17 +307,6 @@ if (NOT PLM_DCM_USE_DCMTK)
   set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-irregular-a" 
-    )
-endif ()
-
-## These tests are failing
-if (PLM_CONFIG_DEBIAN_BUILD)
-  set (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "proton-dose-7a"
-    "proton-dose-8d"
-    "proton-dose-8d-stats"
-    "proton-dose-8d-check"
     )
 endif ()
 

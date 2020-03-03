@@ -2322,7 +2322,7 @@ plm_add_test (
 plmtest_check_string ("plm-crop-b-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-crop-b-stats.stdout.txt"
   "^Size = (.*)$"
-  "20 13 5"
+  "19 11 4"
   )
 
 plm_add_test (
@@ -2479,13 +2479,13 @@ plmtest_check_interval ("plm-dice-e-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-dice-e.stdout.txt"
   "^DICE: *([-0-9.]*)"
   "0.96550"
-  "0.96555"
+  "0.96554"
   )
 plmtest_check_interval ("plm-dice-e-check-2"
   "${PLM_BUILD_TESTING_DIR}/plm-dice-e.stdout.txt"
   "^Hausdorff distance = *([-0-9.]*)"
-  "5"
-  "5"
+  "4"
+  "4"
   )
 
 set_tests_properties (plm-dice-e PROPERTIES DEPENDS "cyl-2;cyl-3")
