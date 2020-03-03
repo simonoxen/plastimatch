@@ -2792,7 +2792,7 @@ set (PLM_BSPLINE_TEST_UPPER_THRESH "-744.5")
 
 # ITK changed its behavior the precision used when # exporting MHA files,
 # which causes slight differences in registration results
-if (${ITK_VERSION} VERSION_LESS "4.13")
+if (${ITK_FOUND} AND (${ITK_VERSION} VERSION_LESS "4.13"))
   set (MSE_O_TEST_LOWER_THRESH "-741.6")
   set (MSE_O_TEST_UPPER_THRESH "-741.3")
   set (MSE_PQR_TEST_LOWER_THRESH "-741.6")
