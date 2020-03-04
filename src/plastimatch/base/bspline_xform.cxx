@@ -241,8 +241,6 @@ bspline_xform_load (const char* filename)
         return 0;
     }
 
-    logfile_printf ("1\n");
-
     /* Allocate memory and build LUTs */
     Bspline_xform* bxf = new Bspline_xform;
     bxf->initialize (img_origin, img_spacing, img_dim,

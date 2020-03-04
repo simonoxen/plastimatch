@@ -352,14 +352,14 @@ report_score (
     
     /* First line, iterations, score, misc stats */
     logfile_printf ("[%2d,%3d] ", bst->it, bst->feval);
-    if (rparms->curvature_penalty > 0
-	|| rparms->diffusion_penalty > 0
-        || rparms->lame_coefficient_1 > 0
-	|| rparms->lame_coefficient_2 > 0
-	|| rparms->total_displacement_penalty > 0
-	|| rparms->third_order_penalty > 0
-        || blm->num_landmarks > 0
-        || bst->similarity_data.size() > 1)
+    if (blm->num_landmarks > 0 
+        || bst->similarity_data.size() > 1
+        || rparms->total_displacement_penalty > 0 
+        || rparms->diffusion_penalty > 0 
+        || rparms->curvature_penalty > 0 
+        || rparms->lame_coefficient_1 > 0 
+        || rparms->lame_coefficient_2 > 0 
+        || rparms->third_order_penalty > 0)
     {
         logfile_printf ("SCORE ");
     } else {
@@ -372,14 +372,14 @@ report_score (
         hack_num_vox, ssd_grad_mean, sqrt (ssd_grad_norm), total_time);
     
     /* Second line */
-    if (rparms->curvature_penalty > 0
-        || rparms->diffusion_penalty > 0
-        || rparms->lame_coefficient_1 > 0
-	|| rparms->lame_coefficient_2 > 0
-	|| rparms->total_displacement_penalty > 0
-	|| rparms->third_order_penalty > 0
-	|| blm->num_landmarks > 0
-        || bst->similarity_data.size() > 1)
+    if (blm->num_landmarks > 0 
+        || bst->similarity_data.size() > 1
+        || rparms->total_displacement_penalty > 0 
+        || rparms->diffusion_penalty > 0 
+        || rparms->curvature_penalty > 0 
+        || rparms->lame_coefficient_1 > 0 
+        || rparms->lame_coefficient_2 > 0 
+        || rparms->third_order_penalty > 0)
     {
         logfile_printf ("         ");
         /* Part 1 - smetric(s) */
@@ -396,24 +396,23 @@ report_score (
         }
     }
     if (ssd->metric_record.size() > 1 
-        && (rparms->curvature_penalty > 0 
-            || blm->num_landmarks > 0 
+        && (blm->num_landmarks > 0 
+            || rparms->total_displacement_penalty > 0 
             || rparms->diffusion_penalty > 0 
+            || rparms->curvature_penalty > 0 
             || rparms->lame_coefficient_1 > 0 
             || rparms->lame_coefficient_2 > 0 
-            || rparms->total_displacement_penalty > 0 
             || rparms->third_order_penalty > 0))
 
     {
         logfile_printf ("\n");
         logfile_printf ("         ");
     }
-    if (rparms->curvature_penalty > 0 
-        || blm->num_landmarks > 0 
+    if (rparms->total_displacement_penalty > 0 
         || rparms->diffusion_penalty > 0 
+        || rparms->curvature_penalty > 0 
         || rparms->lame_coefficient_1 > 0 
         || rparms->lame_coefficient_2 > 0 
-        || rparms->total_displacement_penalty > 0 
         || rparms->third_order_penalty > 0) 
     {	
         logfile_printf ("RM %9.3f ", bst->ssd.rmetric);
@@ -424,17 +423,26 @@ report_score (
             blm->landmark_stiffness * bst->ssd.lmetric);
     }
     /* Part 4 - timing */
-    if (rparms->curvature_penalty > 0 
+    if (rparms->total_displacement_penalty > 0 
         || rparms->diffusion_penalty > 0 
+        || rparms->curvature_penalty > 0 
         || rparms->lame_coefficient_1 > 0 
         || rparms->lame_coefficient_2 > 0 
-        || rparms->total_displacement_penalty > 0 
         || rparms->third_order_penalty > 0) 
     {
         logfile_printf ("[ %9.3f | %9.3f ]", 
             total_smetric_time, ssd->time_rmetric);
     }
-    logfile_printf ("\n");
+    if (blm->num_landmarks > 0 
+        || rparms->total_displacement_penalty > 0 
+        || rparms->diffusion_penalty > 0 
+        || rparms->curvature_penalty > 0 
+        || rparms->lame_coefficient_1 > 0 
+        || rparms->lame_coefficient_2 > 0 
+        || rparms->third_order_penalty > 0)
+    {
+        logfile_printf ("\n");
+    }
 }
 void
 bspline_score (Bspline_optimize *bod)
