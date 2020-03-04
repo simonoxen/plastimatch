@@ -973,31 +973,6 @@ itk_bsp_extend_to_region (
        existing grid */
     int eb[3], ea[3];
 
-#if PLM_CONFIG_LEGACY_BSPLINE_EXTEND
-    /* Figure out if we need to extend the bspline grid.  If so, compute
-       ea & eb, as well as new values of bsp_region and bsp_origin. */
-    for (int d = 0; d < 3; d++) {
-        float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
-        float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
-        float new_roi_origin = pih->origin(d) + roi->GetIndex()[d] * pih->spacing(d);
-        float new_roi_corner = new_roi_origin + (roi->GetSize()[d] - 1) * pih->spacing(d);
-        ea[d] = eb[d] = 0;
-        if (old_roi_origin > new_roi_origin) {
-            float diff = old_roi_origin - new_roi_origin;
-            eb[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
-            bsp_origin[d] -= eb[d] * bsp->GetGridSpacing()[d];
-            bsp_size[d] += eb[d];
-            extend_needed = 1;
-        }
-        if (old_roi_corner < new_roi_corner) {
-            float diff = new_roi_origin - old_roi_origin;
-            ea[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
-            bsp_size[d] += ea[d];
-            extend_needed = 1;
-        }
-    }
-
-#else
     /* Figure out if we need to extend the bspline grid.  If so, compute
        ea & eb, as well as new values of bsp_region and bsp_origin. */
     float new_roi_origin_idx[3], new_roi_corner_idx[3];
@@ -1026,10 +1001,11 @@ itk_bsp_extend_to_region (
         new_roi_origin[0], new_roi_origin[1], new_roi_origin[2]);
     printf ("New ROI Co: %g %g %g\n",
         new_roi_corner[0], new_roi_corner[1], new_roi_corner[2]);
-    printf ("New ROI Or Idx (inold): %g %g %g\n",
+    printf ("New ROI Or Idx (inold): %20.20g %20.20g %20.20g\n",
         new_roi_origin_idx_in_old[0], new_roi_origin_idx_in_old[1], new_roi_origin_idx_in_old[2]);
     printf ("New ROI Co Idx (inold): %g %g %g\n",
         new_roi_corner_idx_in_old[0], new_roi_corner_idx_in_old[1], new_roi_corner_idx_in_old[2]);
+    printf ("-- \n");
 #endif
 
     for (int d = 0; d < 3; d++) {
@@ -1048,16 +1024,12 @@ itk_bsp_extend_to_region (
     }
 
     if (extend_needed) {
-        /* Figure out new origin */
-        bsp_origin = bsp_pih.get_position (new_roi_corner_idx);
-        /* Figure out new size */
+        /* Figure out new origin and size */
         for (int d = 0; d < 3; d++) {
+            bsp_origin[d] -= eb[d] * bsp_spacing[d];
             bsp_size[d] += eb[d] + ea[d];
         }
-    }
-#endif
 
-    if (extend_needed) {
         /* Allocate new parameter array */
         BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
         BsplineTransformType::RegionType old_region = bsp->GetGridRegion();

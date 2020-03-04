@@ -94,21 +94,6 @@ do_xf_convert (Xf_convert_parms *parms)
     }
     if (xf_in->get_type() == XFORM_GPUIT_BSPLINE) {
         Bspline_xform* bxf = xf_in->get_gpuit_bsp();
-        printf ("vox_per_rgn = %u %u %u\n", 
-            (unsigned int) bxf->vox_per_rgn[0],
-            (unsigned int) bxf->vox_per_rgn[1],
-            (unsigned int) bxf->vox_per_rgn[2]
-        );
-        printf ("grid_spac = %g %g %g\n", 
-            bxf->grid_spac[0],
-            bxf->grid_spac[1],
-            bxf->grid_spac[2]
-        );
-        printf ("grid_spac = %g %g %g\n", 
-            xfc->m_grid_spac[0],
-            xfc->m_grid_spac[1],
-            xfc->m_grid_spac[2]
-        );
     }
 
     /* Set volume header as needed */
