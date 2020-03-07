@@ -58,6 +58,10 @@ set (CONFIG_FILE_LIST
   "plm-bsp-double.txt"
   "plm-bsp-regularize-numeric.txt"
   "plm-reg-align-center.txt"
+  "plm-reg-itk-demons.txt"
+  "plm-reg-itk-demons-diff.txt"
+  "plm-reg-itk-demons-logd.txt"
+  "plm-reg-itk-demons-sym-logd.txt"
   "plm-reg-itk-translation.txt"
   "plm-reg-roi-a.txt"
   "plm-reg-roi-b.txt"
@@ -2976,7 +2980,7 @@ set_tests_properties (plm-reg-itk-bspline-check-1 PROPERTIES
 plm_add_test (
   "plm-reg-itk-demons"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons.stdout.txt"
@@ -3006,7 +3010,7 @@ set_tests_properties (plm-reg-itk-demons-check-2
 plm_add_test (
   "plm-reg-itk-demons-diff"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-diff.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-diff.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-diff-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-diff.stdout.txt"
@@ -3022,7 +3026,7 @@ set_tests_properties (plm-reg-itk-demons-diff-check-1
 plm_add_test (
   "plm-reg-itk-demons-logd"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-logd.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-logd.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-logd-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-logd.stdout.txt"
@@ -3038,7 +3042,7 @@ set_tests_properties (plm-reg-itk-demons-logd-check-1
 plm_add_test (
   "plm-reg-itk-demons-sym-logd"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-reg-itk-demons-sym-logd.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym-logd.txt"
   )
 plmtest_check_interval ("plm-reg-itk-demons-sym-logd-check-1"
   "${PLM_BUILD_TESTING_DIR}/plm-reg-itk-demons-sym-logd.stdout.txt"
