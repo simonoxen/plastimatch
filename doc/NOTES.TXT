@@ -1,4 +1,98 @@
 ******************************************************************************
+ITK Demons
+
+Deep dive Part I: demons_insight impl
+-------------------------------------
+LDDemRFwME : LDDefRF
+  Set DemonsRegistrationFunctionType to ESMDemonsRegistrationWithMaskFunction
+  Add methods GetMaskImage, SetMaskImage
+
+SLDDRFwME : LDDefRF
+  Set DemonsRegistrationFunctionType to ESMDemonsRegistrationWithMaskFunction
+  Add methods GetMaskImage, SetMaskImage
+
+LDDefRF : PDEDRwMF
+  No other mention of masks
+
+DDRwMF : PDEDRwMF
+  Set DemonsRegistrationFunctionType to ESMDemonsRegistrationWithMaskFunction
+  Add methods GetMaskImage, SetMaskImage
+
+FSFDRwMF : PDEDRwMF
+  Set DemonsRegistrationFunctionType to ESMDemonsRegistrationWithMaskFunction
+
+PDEDRwMF : DenseFiniteDifferenceImageFilter
+  Add methods SetMovingMaskImage, SetFixedMaskImage but these are not implemented
+
+ESMDRwMFu : PDEDRFu
+  Add methods GetMaskImage, SetMaskImage
+  Implement masking
+
+
+Deep dive Part II: ITK v4 impl
+------------------------------
+CRFu : PDEDRFu
+DRFu : PDEDRFu
+ESMDRFu : PDEDRFu
+FSFDRfu : PDEDRFu
+LSMRFu : PDEDRFu
+SFDRFu : PDEDRFu
+PDEDRFu : (not copied)
+
+CRF : PDEDRF
+  Templated RegistrationFunctionType; organized slightly differently
+DRF : PDEDRF
+  Uses DRFu
+DDRF : PDEDRF
+  Uses EMSDRFu
+FSFDRF : PDEDRF
+  Uses EMSDRFu
+LSMRF : PDEDRF
+  Uses LSMRFu
+SFDRF : PDEDRF
+  Uses SFDRFu
+PDEDRF : DenseFiniteDifferenceImageFilter
+
+LDDRF : LDDefRF
+  Uses ESMDRF
+SLDDRF : LDDefRF
+  Uses ESMDRF
+LDDefRF : DenseFiniteDifferenceImageFilter
+  Uses PDEDRF
+
+
+Strategy to fix
+---------------
+PDEDRFu
+  Do nothing at this time
+ESMDRwMFu : PDEDRFu
+  Add methods GetMaskImage, SetMaskImage
+  Implement masking
+  Don't include functions that are not overridden
+
+PDEDRwMF : PDEDRF
+  Add GetMetric()
+  Add SetMovingMaskImage, SetFixedMaskImage
+DDRwMF : PDEDRwMF
+  Uses EMSDRwMFu
+  Don't include functions that are not overridden
+FSFDRwMF : PDEDRwMF
+  Uses EMSDRwMFu
+  Don't include functions that are not overridden
+
+LDDefRF : PDEDRwMF
+  Nothing else changes
+LDDRwMF : LDDefRF
+  Uses EMSDRwMFu
+  Add methods GetMaskImage, SetMaskImage
+  Don't include functions that are not overridden
+SLDDRwMF : LDDefRF
+  Uses EMSDRwMFu
+  Add methods GetMaskImage, SetMaskImage
+  Don't include functions that are not overridden
+
+
+******************************************************************************
 DRR, WED, BSTV = beam specific target volume
 
 DRR pro

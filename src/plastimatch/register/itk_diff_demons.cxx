@@ -18,8 +18,11 @@ void itk_diffeomorphic_demons_filter::update_specific_parameters(const Stage_par
 {
     //Setting gradient type
     DiffeomorphicDemonsFilterType* diff_demons_filter=dynamic_cast<DiffeomorphicDemonsFilterType*>(m_demons_filter.GetPointer());
-
+#if PLM_USE_NEW_ITK_DEMONS
+    diff_demons_filter->SetSmoothDisplacementField(stage->demons_smooth_deformation_field);
+#else
     diff_demons_filter->SetSmoothDeformationField(stage->demons_smooth_deformation_field);
+#endif
     diff_demons_filter->SetUseGradientType(static_cast<GradientType>(stage->demons_gradient_type));
     diff_demons_filter->SetMaximumUpdateStepLength(stage->demons_step_length);
 }

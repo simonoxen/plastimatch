@@ -23,5 +23,3 @@ void itk_log_domain_demons_filter::update_specific_parameters(const Stage_parms*
     log_filter->SetUseGradientType(static_cast<GradientType>(stage->demons_gradient_type));
     log_filter->SetMaximumUpdateStepLength(stage->demons_step_length);
 }
-
-

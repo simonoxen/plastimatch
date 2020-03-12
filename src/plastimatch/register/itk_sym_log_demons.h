@@ -4,17 +4,12 @@
 #ifndef _itk_sym_log_demons_h_
 #define _itk_sym_log_demons_h_
 
-#include "itkSymmetricLogDomainDemonsRegistrationFilterWithMaskExtension.h"
+#include "plmregister_config.h"
+#include "itk_demons_types.h"
 #include <itk_demons_registration_filter.h>
 
 class itk_sym_log_domain_demons_filter: public itk_demons_registration_filter
 {
-
-    typedef itk::SymmetricLogDomainDemonsRegistrationFilterWithMaskExtension<
-        FloatImageType,
-        FloatImageType,
-        DeformationFieldType> SymmetricLogDomainDemonsFilterType;
-
     typedef SymmetricLogDomainDemonsFilterType::DemonsRegistrationFunctionType SymmetricLogDomainDemonsFunctionType;
 
     typedef SymmetricLogDomainDemonsFunctionType::GradientType GradientType;

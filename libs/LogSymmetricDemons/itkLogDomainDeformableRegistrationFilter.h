@@ -1,7 +1,7 @@
 #ifndef __itkLogDomainDeformableRegistrationFilter_h
 #define __itkLogDomainDeformableRegistrationFilter_h
 
-#include "itkDenseFiniteDifferenceImageFilter.h"
+#include "itkPDEDeformableRegistrationWithMaskFilter.h"
 #include "itkExponentialDisplacementFieldImageFilter.h"
 #include "itkPDEDeformableRegistrationFunction.h"
 
@@ -71,13 +71,12 @@ namespace itk
  */
 template <class TFixedImage, class TMovingImage, class TField>
 class ITK_EXPORT LogDomainDeformableRegistrationFilter :
-  public DenseFiniteDifferenceImageFilter<TField, TField>
+        public PDEDeformableRegistrationWithMaskFilter<TFixedImage, TMovingImage, TField>
 {
 public:
   /** Standard class typedefs. */
   typedef LogDomainDeformableRegistrationFilter Self;
-  typedef DenseFiniteDifferenceImageFilter<
-    TField, TField>                                 Superclass;
+  typedef PDEDeformableRegistrationWithMaskFilter<TFixedImage, TMovingImage, TField> Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
 
@@ -86,7 +85,7 @@ public:
 
   /** Run-time type information (and related methods) */
   itkTypeMacro( LogDomainDeformableRegistrationFilter,
-                DenseFiniteDifferenceImageFilter );
+                PDEDeformableRegistrationWithMaskFilter );
 
   /** FixedImage image type. */
   typedef TFixedImage                           FixedImageType;

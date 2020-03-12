@@ -103,8 +103,8 @@ option (PLM_CONFIG_ENABLE_SUPERBUILD
 # Plastimatch software configuration options
 option (PLM_CONFIG_CLANG_COMPLETE
   "Generate .clang_complete for hipster Vim-ers" OFF)
-sb_option (PLM_CONFIG_PATCH_ITK_DEMONS
-  "Use the patched version of ITK demons files" OFF)
+sb_option (PLM_PREFER_NEW_ITK_DEMONS
+  "Prefer using the newer version of patched ITK demons files" OFF)
 sb_option (PLM_CONFIG_VOL_LIST
   "Native support for volumes with irregular slice thicknesses" OFF)
 sb_option (PLM_CONFIG_HARDEN_XFORM_BY_DEFAULT

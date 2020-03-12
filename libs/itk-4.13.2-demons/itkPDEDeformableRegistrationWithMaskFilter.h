@@ -20,6 +20,7 @@
 
 #include "itkDenseFiniteDifferenceImageFilter.h"
 #include "itkPDEDeformableRegistrationFunction.h"
+#include "itkImageMaskSpatialObject.h"
 
 namespace itk
 {
@@ -113,7 +114,7 @@ public:
   typedef typename Superclass::FiniteDifferenceFunctionType
   FiniteDifferenceFunctionType;
 
-  /** PDEDeformableRegistrationWithMaskFilterFunction type. */
+  /** PDEDeformableRegistrationFilterFunction type. */
   typedef PDEDeformableRegistrationFunction< FixedImageType, MovingImageType,
                                              DisplacementFieldType >  PDEDeformableRegistrationFunctionType;
 
@@ -320,6 +321,13 @@ private:
 
   /** Flag to indicate user stop registration request. */
   bool m_StopRegistrationFlag;
+
+public:
+  /** Extra stuff for plastimatch */
+  typedef itk::ImageMaskSpatialObject< 3 > MaskType;
+  virtual double GetMetric() const {return 0;}
+  virtual void SetMovingImageMask(MaskType *mask){};
+  virtual void SetFixedImageMask(MaskType *mask){};
 };
 } // end namespace itk
 

@@ -15,8 +15,8 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkESMDemonsRegistrationFunction_h
-#define itkESMDemonsRegistrationFunction_h
+#ifndef itkESMDemonsRegistrationWithMaskFunction_h
+#define itkESMDemonsRegistrationWithMaskFunction_h
 
 #include "itkPDEDeformableRegistrationFunction.h"
 #include "itkCentralDifferenceImageFunction.h"
@@ -25,7 +25,7 @@
 namespace itk
 {
 /**
- * \class ESMDemonsRegistrationFunction
+ * \class ESMDemonsRegistrationWithMaskFunction
  *
  * \brief Fast implementation of the symmetric demons registration force
  *
@@ -57,13 +57,12 @@ namespace itk
  * \ingroup ITKPDEDeformableRegistration
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
-class ITK_TEMPLATE_EXPORT ESMDemonsRegistrationFunction:
-  public PDEDeformableRegistrationFunction< TFixedImage,
-                                            TMovingImage, TDisplacementField >
+class ITK_TEMPLATE_EXPORT ESMDemonsRegistrationWithMaskFunction:
+  public PDEDeformableRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
 {
 public:
   /** Standard class typedefs. */
-  typedef ESMDemonsRegistrationFunction Self;
+  typedef ESMDemonsRegistrationWithMaskFunction Self;
   typedef PDEDeformableRegistrationFunction<
     TFixedImage, TMovingImage, TDisplacementField >    Superclass;
 
@@ -74,7 +73,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(ESMDemonsRegistrationFunction,
+  itkTypeMacro(ESMDemonsRegistrationWithMaskFunction,
                PDEDeformableRegistrationFunction);
 
   /** MovingImage image type. */
@@ -208,7 +207,7 @@ public:
     WarpedMoving = 2,
     MappedMoving = 3
     };
-
+  
   /** Set/Get the type of used image forces */
   virtual void SetUseGradientType(GradientType gtype)
   { m_UseGradientType = gtype; }
@@ -216,8 +215,8 @@ public:
   { return m_UseGradientType; }
 
 protected:
-  ESMDemonsRegistrationFunction();
-  ~ESMDemonsRegistrationFunction() ITK_OVERRIDE {}
+  ESMDemonsRegistrationWithMaskFunction();
+  ~ESMDemonsRegistrationWithMaskFunction() ITK_OVERRIDE {}
   void PrintSelf(std::ostream & os, Indent indent) const ITK_OVERRIDE;
 
   /** FixedImage image neighborhood iterator type. */
@@ -232,7 +231,7 @@ protected:
   };
 
 private:
-  ITK_DISALLOW_COPY_AND_ASSIGN(ESMDemonsRegistrationFunction);
+  ITK_DISALLOW_COPY_AND_ASSIGN(ESMDemonsRegistrationWithMaskFunction);
 
   /** Cache fixed image information. */
   PointType     m_FixedImageOrigin;
@@ -247,7 +246,7 @@ private:
   MovingImageGradientCalculatorPointer m_MappedMovingImageGradientCalculator;
 
   GradientType m_UseGradientType;
-
+  
   /** Function to interpolate the moving image. */
   InterpolatorPointer m_MovingImageInterpolator;
 
@@ -283,7 +282,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkESMDemonsRegistrationFunction.hxx"
+#include "itkESMDemonsRegistrationWithMaskFunction.hxx"
 #endif
 
 #endif

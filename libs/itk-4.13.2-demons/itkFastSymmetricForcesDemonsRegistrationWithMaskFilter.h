@@ -18,6 +18,7 @@
 #ifndef itkFastSymmetricForcesDemonsRegistrationWithMaskFilter_h
 #define itkFastSymmetricForcesDemonsRegistrationWithMaskFilter_h
 
+#include "plmregister_config.h"
 #include "itkPDEDeformableRegistrationWithMaskFilter.h"
 #include "itkESMDemonsRegistrationFunction.h"
 
@@ -70,9 +71,9 @@ namespace itk
  * \ingroup ITKPDEDeformableRegistration
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
-class ITK_TEMPLATE_EXPORT FastSymmetricForcesDemonsRegistrationWithMaskFilter:
-  public PDEDeformableRegistrationWithMaskFilter< TFixedImage, TMovingImage,
-                                          TDisplacementField >
+class ITK_TEMPLATE_EXPORT FastSymmetricForcesDemonsRegistrationWithMaskFilter 
+    : public PDEDeformableRegistrationWithMaskFilter<
+    TFixedImage, TMovingImage, TDisplacementField >
 {
 public:
   /** Standard class typedefs. */

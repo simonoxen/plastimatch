@@ -63,6 +63,9 @@
 /* Needed for dynamic loading */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
 
+/* Optionally use code change related to ITK 4.13 and higher */
+#cmakedefine PLM_USE_NEW_ITK_DEMONS 1
+
 /* Dicom attributes.  One and only one of these will be true. */
 #cmakedefine PLM_DCM_USE_DCMTK 1
 

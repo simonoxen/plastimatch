@@ -1,20 +1,21 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
+#include "plmregister_config.h"
 
 #include "itkArray.h"
 #include "itkCommand.h"
 #include "itkHistogramMatchingImageFilter.h"
-#include "itkPDEDeformableRegistrationWithMaskFilter.h"
+#include "itkImageMaskSpatialObject.h"
 
 #include "itk_demons.h"
+#include "itk_demons_types.h"
+#include "itk_demons_util.h"
+#include "itk_demons_registration_filter.h"
 #include "itk_diff_demons.h"
 #include "itk_log_demons.h"
 #include "itk_sym_log_demons.h"
 #include "itk_fsf_demons.h"
-#include "itk_demons_util.h"
-#include "itk_demons_registration_filter.h"
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image.h"
@@ -24,7 +25,6 @@
 #include "stage_parms.h"
 #include "xform.h"
 
-typedef itk::PDEDeformableRegistrationWithMaskFilter<FloatImageType,FloatImageType,DeformationFieldType>  PDEDeformableRegistrationFilterType;
 typedef itk::ImageMaskSpatialObject< 3 >                                                                  MaskType;
 typedef itk::HistogramMatchingImageFilter<FloatImageType,FloatImageType>                                  HistogramMatchingFilter;
 

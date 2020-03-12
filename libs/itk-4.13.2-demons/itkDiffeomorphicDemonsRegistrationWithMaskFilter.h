@@ -76,8 +76,7 @@ namespace itk
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 class ITK_TEMPLATE_EXPORT DiffeomorphicDemonsRegistrationWithMaskFilter:
-  public PDEDeformableRegistrationWithMaskFilter< TFixedImage, TMovingImage,
-                                          TDisplacementField >
+        public PDEDeformableRegistrationWithMaskFilter< TFixedImage, TMovingImage, TDisplacementField >
 {
 public:
   /** Standard class typedefs. */

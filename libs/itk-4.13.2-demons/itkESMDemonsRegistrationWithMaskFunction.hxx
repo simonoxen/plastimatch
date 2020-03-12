@@ -15,10 +15,10 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkESMDemonsRegistrationFunction_hxx
-#define itkESMDemonsRegistrationFunction_hxx
+#ifndef itkESMDemonsRegistrationWithMaskFunction_hxx
+#define itkESMDemonsRegistrationWithMaskFunction_hxx
 
-#include "itkESMDemonsRegistrationFunction.h"
+#include "itkESMDemonsRegistrationWithMaskFunction.h"
 #include "itkExceptionObject.h"
 #include "itkMath.h"
 
@@ -28,8 +28,8 @@ namespace itk
  * Default constructor
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
-::ESMDemonsRegistrationFunction()
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
+::ESMDemonsRegistrationWithMaskFunction()
 {
   RadiusType   r;
   unsigned int j;
@@ -58,7 +58,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
   // Gradient orientation will be taken care of explicitely
   m_MappedMovingImageGradientCalculator->UseImageDirectionOff();
 
-  this->m_UseGradientType = Symmetric;
+  this->m_UseGradientType = Superclass::Symmetric;
 
   typename DefaultInterpolatorType::Pointer interp =
     DefaultInterpolatorType::New();
@@ -84,7 +84,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 void
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
@@ -122,7 +122,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 void
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::SetIntensityDifferenceThreshold(double threshold)
 {
   m_IntensityDifferenceThreshold = threshold;
@@ -133,7 +133,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 double
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::GetIntensityDifferenceThreshold() const
 {
   return m_IntensityDifferenceThreshold;
@@ -144,7 +144,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 void
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::InitializeIteration()
 {
   if ( !this->GetMovingImage() || !this->GetFixedImage()
@@ -204,9 +204,9 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  * Compute update at a non boundary neighbourhood
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
-typename ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+typename ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::PixelType
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::ComputeUpdate( const NeighborhoodType & it, void *gd,
                  const FloatOffsetType & itkNotUsed(offset) )
 {
@@ -459,7 +459,7 @@ ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
  */
 template< typename TFixedImage, typename TMovingImage, typename TDisplacementField >
 void
-ESMDemonsRegistrationFunction< TFixedImage, TMovingImage, TDisplacementField >
+ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementField >
 ::ReleaseGlobalDataPointer(void *gd) const
 {
   GlobalDataStruct *globalData = (GlobalDataStruct *)gd;
