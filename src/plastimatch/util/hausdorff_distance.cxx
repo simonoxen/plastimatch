@@ -273,6 +273,7 @@ Hausdorff_distance::run ()
     /* Resample and/or expand images based on geometry of reference */
     if (!itk_image_header_compare (d_ptr->ref_image, d_ptr->cmp_image)) {
         Plm_image_header pih;
+        
         pih.set_geometry_to_contain (
             Plm_image_header (d_ptr->cmp_image),
             Plm_image_header (d_ptr->ref_image));

@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plmutil_config.h"
 #include "itkContinuousIndex.h"
-#include "itkExtractImageFilter.h"
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkImage.h"
 
 #include "clamp.h"
@@ -19,16 +19,12 @@ itk_crop_by_index (
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
-    typedef itk::ExtractImageFilter < ImageType, ImageType > FilterType;
+    typedef itk::RegionOfInterestImageFilter < ImageType, ImageType > FilterType;
 
     typename FilterType::Pointer filter = FilterType::New();
     typename ImageType::IndexType  extract_index;
     typename ImageType::SizeType   extract_size;
     typename ImageType::RegionType extract_region;
-
-#if ITK_VERSION_MAJOR > 3
-    filter->SetDirectionCollapseToGuess();
-#endif
 
     // GCS FIX: Should use itk index
     typename ImageType::RegionType current_region
@@ -49,13 +45,13 @@ itk_crop_by_index (
     extract_region.SetIndex (extract_index);
 
     filter->SetInput (image);
-    filter->SetExtractionRegion (extract_region);
+    filter->SetRegionOfInterest (extract_region);
 
     try {
 	filter->UpdateLargestPossibleRegion ();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running itkExtractImageFilter.\n");
+	printf ("Exception running itkRegionOfInterestImageFilter.\n");
 	std::cout << ex << std::endl;
 	exit(1);
     }
@@ -72,16 +68,12 @@ itk_crop_by_coord (
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
-    typedef itk::ExtractImageFilter < ImageType, ImageType > FilterType;
+    typedef itk::RegionOfInterestImageFilter < ImageType, ImageType > FilterType;
 
     typename FilterType::Pointer filter = FilterType::New();
     typename ImageType::IndexType extract_index;
     typename ImageType::SizeType extract_size;
     typename ImageType::RegionType extract_region;
-
-#if ITK_VERSION_MAJOR > 3
-    filter->SetDirectionCollapseToGuess();
-#endif
 
     // GCS FIX: Should use itk index
     typename ImageType::RegionType current_region
@@ -113,13 +105,13 @@ itk_crop_by_coord (
     extract_region.SetIndex (extract_index);
 
     filter->SetInput (image);
-    filter->SetExtractionRegion (extract_region);
+    filter->SetRegionOfInterest (extract_region);
 
     try {
 	filter->UpdateLargestPossibleRegion ();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception running itkExtractImageFilter.\n");
+	printf ("Exception running itkRegionOfInterestImageFilter.\n");
 	std::cout << ex << std::endl;
 	printf ("new_size = %f %f %f %f %f %f\n",
             new_size[0], new_size[1], new_size[2], 
