@@ -31,14 +31,15 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
 #endif
 
   this->SetNumberOfIterations(10);
-
+#if defined (commentout)
   unsigned int j;
   for( j = 0; j < ImageDimension; j++ )
     {
     m_StandardDeviations[j] = 1.0;
     m_UpdateFieldStandardDeviations[j] = 1.0;
     }
-
+#endif
+  
   m_TempField = VelocityFieldType::New();
   m_MaximumError = 0.1;
   m_MaximumKernelWidth = 30;
@@ -156,6 +157,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
   return num;
 }
 
+#if defined (commentout)
 // Set the standard deviations.
 template <class TFixedImage, class TMovingImage, class TField>
 void
@@ -209,6 +211,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
     }
 
 }
+#endif
 
 // Standard PrintSelf method.
 template <class TFixedImage, class TMovingImage, class TField>
@@ -217,6 +220,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
 ::PrintSelf(std::ostream& os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
+#if defined (commentout)
   os << indent << "Smooth velocity field: "
      << (m_SmoothVelocityField ? "on" : "off") << std::endl;
   os << indent << "Standard deviations: [";
@@ -234,6 +238,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
     os << m_UpdateFieldStandardDeviations[j] << ", ";
     }
   os << m_UpdateFieldStandardDeviations[j] << "]" << std::endl;
+#endif
   os << indent << "StopRegistrationFlag: ";
   os << m_StopRegistrationFlag << std::endl;
   os << indent << "MaximumError: ";
@@ -424,7 +429,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
 ::SmoothVelocityField()
 {
   // The output buffer will be overwritten with new data.
-  this->SmoothGivenField(this->GetVelocityField(), this->m_StandardDeviations);
+  this->SmoothGivenField(this->GetVelocityField(), Superclass::GetStandardDeviations());
 }
 
 // Smooth update field using a separable Gaussian kernel
@@ -434,14 +439,14 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
 ::SmoothUpdateField()
 {
   // The update buffer will be overwritten with new data.
-  this->SmoothGivenField(this->GetUpdateBuffer(), this->m_UpdateFieldStandardDeviations);
+  this->SmoothGivenField(this->GetUpdateBuffer(), Superclass::GetUpdateFieldStandardDeviations());
 }
 
 // Smooth velocity using a separable Gaussian kernel
 template <class TFixedImage, class TMovingImage, class TField>
 void
 LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
-::SmoothGivenField(VelocityFieldType * field, const double StandardDeviations[ImageDimension])
+::SmoothGivenField(VelocityFieldType * field, const StandardDeviationsType& standardDeviations)
 {
   typedef typename VelocityFieldType::PixelType        VectorType;
   typedef typename VectorType::ValueType               ScalarType;
@@ -477,7 +482,7 @@ LogDomainDeformableRegistrationFilter<TFixedImage, TMovingImage, TField>
     {
     // smooth along this dimension
     oper->SetDirection( j );
-    double variance = vnl_math_sqr( StandardDeviations[j] );
+    double variance = vnl_math_sqr( standardDeviations[j] );
     oper->SetVariance( variance );
     oper->SetMaximumError( m_MaximumError );
     oper->SetMaximumKernelWidth( m_MaximumKernelWidth );

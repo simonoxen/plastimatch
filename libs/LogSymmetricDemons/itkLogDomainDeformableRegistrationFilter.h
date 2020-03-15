@@ -121,6 +121,8 @@ public:
   /** Inherit some enums and typedefs from the superclass. */
   itkStaticConstMacro(ImageDimension, unsigned int, Superclass::ImageDimension);
 
+  typedef FixedArray< double, ImageDimension > StandardDeviationsType;
+
   /** Set the fixed image. */
   void SetFixedImage( const FixedImageType * ptr );
 
@@ -161,18 +163,20 @@ public:
   itkGetConstMacro( SmoothVelocityField, bool );
   itkBooleanMacro( SmoothVelocityField );
 
+#if defined (commentout)
   /** Set the Gaussian smoothing standard deviations for the
    * velocity field. The values are set with respect to pixel
    * coordinates. */
   itkSetVectorMacro( StandardDeviations, double, ImageDimension );
   virtual void SetStandardDeviations( double value );
-
+  
   /** Get the Gaussian smoothing standard deviations use for smoothing
    * the velocity field. */
   const double * GetStandardDeviations(void) const
   {
     return static_cast<const double *>(m_StandardDeviations);
   }
+#endif
 
   /** Set/Get whether the update field is smoothed
    * (regularized). Smoothing the update field yields a solution
@@ -183,6 +187,7 @@ public:
   itkGetConstMacro( SmoothUpdateField, bool );
   itkBooleanMacro( SmoothUpdateField );
 
+#if defined (commentout)
   /** Set the Gaussian smoothing standard deviations for the update
    * field. The values are set with respect to pixel coordinates. */
   itkSetVectorMacro( UpdateFieldStandardDeviations, double, ImageDimension );
@@ -194,7 +199,8 @@ public:
   {
     return static_cast<const double *>(m_UpdateFieldStandardDeviations);
   }
-
+#endif
+  
   /** Stop the registration after the current iteration. */
   virtual void StopRegistration()
   {
@@ -287,7 +293,8 @@ protected:
   /** Utility to smooth a velocity field  using a Gaussian operator.
    * The amount of smoothing can be specified by setting the
    * StandardDeviations. */
-  virtual void SmoothGivenField(VelocityFieldType * field, const double StandardDeviations[ImageDimension]);
+//  virtual void SmoothGivenField(VelocityFieldType * field, const double StandardDeviations[ImageDimension]);
+  virtual void SmoothGivenField(VelocityFieldType * field, const StandardDeviationsType& standardDeviations);
 
   /** This method is called after the solution has been generated. In this case,
    * the filter release the memory of the internal buffers. */
@@ -313,10 +320,12 @@ private:
   LogDomainDeformableRegistrationFilter(const Self &); // purposely not implemented
   void operator=(const Self &);                        // purposely not implemented
 
+#if defined (commentout)
   /** Standard deviation for Gaussian smoothing */
   double m_StandardDeviations[ImageDimension];
   double m_UpdateFieldStandardDeviations[ImageDimension];
-
+#endif
+  
   /** Modes to control smoothing of the update and velocity fields */
   bool m_SmoothVelocityField;
   bool m_SmoothUpdateField;

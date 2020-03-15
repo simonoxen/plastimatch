@@ -58,7 +58,7 @@ ESMDemonsRegistrationWithMaskFunction< TFixedImage, TMovingImage, TDisplacementF
   // Gradient orientation will be taken care of explicitely
   m_MappedMovingImageGradientCalculator->UseImageDirectionOff();
 
-  this->m_UseGradientType = Superclass::Symmetric;
+  this->m_UseGradientType = Symmetric;
 
   typename DefaultInterpolatorType::Pointer interp =
     DefaultInterpolatorType::New();
