@@ -28,9 +28,6 @@
 typedef itk::ImageMaskSpatialObject< 3 >                                                                  MaskType;
 typedef itk::HistogramMatchingImageFilter<FloatImageType,FloatImageType>                                  HistogramMatchingFilter;
 
-HistogramMatchingFilter::Pointer histo_equ;
-PDEDeformableRegistrationFilterType::Pointer m_filter;
-
 class Demons_Observer : public itk::Command
 {
 public:
@@ -85,6 +82,7 @@ public:
 static void 
 set_and_subsample_masks (
     Registration_data* regd,
+    PDEDeformableRegistrationFilterType::Pointer& m_filter,
     const Stage_parms* stage)
 {
     /* Subsample fixed & moving images */
@@ -116,8 +114,10 @@ set_and_subsample_masks (
     }
 }
 
-//*Setting fixed and moving image masks if available
-static void set_general_parameters (const Stage_parms* stage)
+static void
+set_general_parameters (
+    const Stage_parms* stage,
+    PDEDeformableRegistrationFilterType::Pointer& m_filter)
 {
     m_filter->SetNumberOfIterations (stage->max_its);
     m_filter->SetStandardDeviations (stage->demons_std);
@@ -128,6 +128,7 @@ static void set_general_parameters (const Stage_parms* stage)
 static void
 do_demons_stage_internal (
     Registration_data* regd,
+    PDEDeformableRegistrationFilterType::Pointer& m_filter,
     Xform *xf_out, 
     Xform *xf_in,
     const Stage_parms* stage)
@@ -149,6 +150,7 @@ do_demons_stage_internal (
             stage->default_value);
 
     if (stage->histoeq) {
+        HistogramMatchingFilter::Pointer histo_equ;
         histo_equ=HistogramMatchingFilter::New();
         histo_equ->SetInput(moving_ss);
         histo_equ->SetReferenceImage(fixed_ss);
@@ -181,10 +183,8 @@ do_demons_stage_internal (
     printf ("Done with registration.  Writing output...\n");
 
     DeformationFieldType::Pointer output_field=m_filter->GetOutput();
-    output_field->DisconnectPipeline();
 
     xf_out->set_itk_vf (output_field);
-    histo_equ=NULL;
 }
 
 Xform::Pointer
@@ -194,6 +194,7 @@ do_itk_demons_stage (
     const Stage_parms* stage)
 {
     Xform::Pointer xf_out = Xform::New ();
+    PDEDeformableRegistrationFilterType::Pointer m_filter;
     itk_demons_registration_filter* demons_filter = NULL;
     if(stage->optim_subtype == OPTIMIZATION_SUB_FSF)
     {
@@ -215,10 +216,10 @@ do_itk_demons_stage (
     m_filter=demons_filter->get_demons_filter_impl();
 
     //Set mask if available for implementation
-    set_and_subsample_masks(regd,stage);
+    set_and_subsample_masks(regd, m_filter, stage);
 
     //Set paramters that are used by all demons implementations
-    set_general_parameters(stage);
+    set_general_parameters(stage, m_filter);
 
     //Adding observer
     Demons_Observer::Pointer observer = Demons_Observer::New();
@@ -227,7 +228,7 @@ do_itk_demons_stage (
     //Let filter set filter specific parameters
     demons_filter->update_specific_parameters(stage);
 
-    do_demons_stage_internal (regd, xf_out.get(), xf_in.get(), stage);
+    do_demons_stage_internal (regd, m_filter, xf_out.get(), xf_in.get(), stage);
     printf ("Deformation stats (out)\n");
     itk_demons_util::deformation_stats (xf_out->get_itk_vf());
     delete demons_filter;
