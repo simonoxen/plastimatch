@@ -1,3 +1,22 @@
+Version 1.9.0 (tag 1.9.0)
+Wed 18 Mar 2020 05:20:55 PM EDT
+* Support for new regularization penalties in B-spline registration: linear elastic,
+  diffusion, total displacement, third order
+* Fix bug which inconsistently squared curvature penalty for MSE cost function
+* Fix bug which caused suboptimal conversion of B-spline grid spacing between stages
+* Fix crashes in ITK demons methods for ITK >= 4.13
+* New experimental MSE B-spline flavors which analytically computes cost function
+  gradient based on linearly interpolated intensity
+* New cropping options: world coordinate cropping, z-cropping, cropping of vector images
+* Substantial speed improvement in computing Dice/Hausdorff scores
+* Allow z-cropping for Dice/Hausdorff scores
+* Implement intersect command
+* Improve ability to warp pointset
+* Fix DICOM loading for images with varying slope/intercept
+* Fix DICOM loading for images with unsigned integer pixel representation
+* Fix DICOM saving slope/intercept bug
+* Many MABS bug fixes and enhancements
+
 Version 1.8.0 (tag 1.8.0)
 Tue Apr 30 09:18:59 EDT 2019
 * FDK, DRR and landmark-warp functionality is now included in the 
