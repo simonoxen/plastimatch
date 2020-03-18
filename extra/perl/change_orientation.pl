@@ -21,21 +21,23 @@ $overwrite_for = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T4D-QA";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/2D^CAL^PHANTOM";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/tmp";
 
 $new_name = "";
 $new_id = "";
 $new_birth_date = "";
 $new_sex = "";
-#$new_name = "LPcom_01^PBS";
-#$new_id = "LPcom_01";
-#$new_birth_date = "20180101";
-#$new_sex = "O";
+$new_name = "LPcom_01^PBS";
+$new_id = "LPcom_01";
+$new_birth_date = "20180101";
+$new_sex = "O";
 #$new_name = "LPcom_02^PBS";
 #$new_id = "LPcom_02";
 #$new_birth_date = "20180725";
 #$new_sex = "O";
 
-$new_series_description = "Copy of plan 2";
+$new_series_description = "Medcom phantom";
 #$new_series_description = "Var Thick";
 
 $new_patient_position = "";
@@ -79,8 +81,8 @@ sub reorient {
 #    return ($x, $y, $z-500);
 #    return ($x + 0.800000, $y - 3.900000, $z + 499.399994);
 #    return ($x + 0.34, $y - 1.24, $z + 500.61);
-#    return ($x + 0.8, $y - 3.9, $z + 499.4);
-    return ($x, $y, $z);
+    return ($x - 0.38, $y - 3.88, $z + 90);
+#    return ($x, $y, $z);
 }
 
 sub change_isocenter {
@@ -90,8 +92,8 @@ sub change_isocenter {
 #    return (0, 0, 1000);
 #    return (10, 20, 30 - 10);
 #    return (-$x, -$y, $z);
-    return ($x, $y, $z);
-#    return (0, 0, 0);
+#    return ($x, $y, $z);
+    return (0, 0, 0);
 }
 
 sub process_file {
@@ -150,7 +152,7 @@ sub process_file {
 	    next;
 	}
 	if ($key eq "0010,0040" and $new_sex ne "") {
-	    print FOUT "($key) CS [$new_sex]\n # PatientSex";
+	    print FOUT "($key) CS [$new_sex] # PatientSex\n";
 	    next;
 	}
 	if ($key eq "0018,5100" and $new_patient_position ne "") {
