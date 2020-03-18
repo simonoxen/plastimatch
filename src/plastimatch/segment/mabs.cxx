@@ -727,7 +727,8 @@ Mabs::run_registration_loop ()
 				
                 /* Check whether xform is of type vector field
 		 * if yes, save as xf.nrrd, else xf.txt  */
-		if (xf_out->m_type == XFORM_GPUIT_VECTOR_FIELD) {
+		if (xf_out->m_type == XFORM_ITK_VECTOR_FIELD ||
+				xf_out->m_type == XFORM_GPUIT_VECTOR_FIELD) {
 			fn = string_format ("%s/xf.nrrd", curr_output_dir.c_str());
 		} else {
 			fn = string_format ("%s/xf.txt", curr_output_dir.c_str());
