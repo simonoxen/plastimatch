@@ -367,13 +367,46 @@ specific parameters are available.
      - string
      - Implmentation variant for plastimatch B-spline regularization.
        Choices are { analytic, numeric, semi_analytic }.
-   * - regularization_lambda
+   * - diffusion_penalty
+     - bspline+any+plastimatch
+     - 0
+     - unitless
+     - Relative contribution of first derivative regularization 
+       as compared to metric.  
+   * - curvature_penalty
      - bspline+any+plastimatch
      - 0
      - unitless
      - Relative contribution of second derivative regularization 
-       as compared to metric.  A typical value would range between 0.005 
-       and 0.1.
+       as compared to metric.
+   * - linear_elastic_multiplier
+     - bspline+any+plastimatch
+     - 1
+     - unitless
+     - Relative contribution of linear-elastic regularization 
+       as compared to metric.
+   * - third_order_penalty
+     - bspline+any+plastimatch
+     - 0
+     - unitless
+     - Relative contribution of third derivative regularization 
+       as compared to metric.
+   * - total_displacement_penalty
+     - bspline+any+plastimatch
+     - 0
+     - unitless
+     - Relative contribution of total displacement regularization 
+       as compared to metric. 
+   * - lame_coefficient_1
+     - bspline+any+plastimatch
+     - 0
+     - Pa
+     - First Lame' coefficient
+   * - lame_coefficient_2
+     - bspline+any+plastimatch
+     - 0
+     - Pa
+     - Second Lame' coefficient   
    * - res
      -
      -
