@@ -1,6 +1,6 @@
 [GLOBAL]
-fixed=@PLM_BUILD_TESTING_DIR@/gauss-1.mha
-moving=@PLM_BUILD_TESTING_DIR@/gauss-2.mha
+fixed=@PLM_BUILD_TESTING_DIR@/speedtest-1.mha
+moving=@PLM_BUILD_TESTING_DIR@/speedtest-2.mha
 
 [STAGE]
 xform=bspline
@@ -8,7 +8,7 @@ optim=lbfgsb
 impl=plastimatch
 threading=single
 alg_flavor=c
-max_its=5
+max_its=0
 convergence_tol=3
 grad_tol=0.1
 grid_spac=30 30 30

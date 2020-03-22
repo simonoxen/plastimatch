@@ -1023,14 +1023,19 @@ bspline_score_o_mse (
                 qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
-                /* Compute moving image coordinate of fixed image voxel */
-                mxyz[2] = fxyz[2] + dxyz[2] - moving->origin[2];
-                mxyz[1] = fxyz[1] + dxyz[1] - moving->origin[1];
-                mxyz[0] = fxyz[0] + dxyz[0] - moving->origin[0];
-                mijk[2] = PROJECT_Z (mxyz, moving->proj);
-                mijk[1] = PROJECT_Y (mxyz, moving->proj);
-                mijk[0] = PROJECT_X (mxyz, moving->proj);
+#if defined (commentout)
+                // GCS FIX: If I do the below, it reduces accumulated error
+                // caused by incrementally adding step[] each LOOP_X.
+                // Is it faster to incrementally add step[]?
+                // Compute physical coordinates of fixed image voxel
+                POSITION_FROM_COORDS (fxyz, fijk, bxf->img_origin, 
+                    fixed->step);
+#endif
 
+                // Calc. moving image coordinate from the deformation vector
+                int rc = bspline_find_correspondence_dcos (
+                    mxyz, mijk, fxyz, dxyz, moving);
+                
                 if (parms->debug) {
                     fprintf (corr_fp, 
                         "%d %d %d, %f %f %f -> %f %f %f, %f %f %f\n",
@@ -1043,7 +1048,8 @@ bspline_score_o_mse (
                     );
                 }
 
-                if (!moving->is_inside (mijk)) continue;
+                // Return code is 0 if voxel is pushed outside of moving image
+                if (!rc) continue;
 
                 /* Compute interpolation fractions */
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
@@ -1054,27 +1060,27 @@ bspline_score_o_mse (
 		/* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
                 m_val = li_value ( 
-                        li_1, li_2,
-                        mvf,
-                        m_img, moving
-                    );
+                    li_1, li_2,
+                    mvf,
+                    m_img, moving
+                );
 
                 m_x = li_value_dx ( 
-                        li_1, li_2, inv_rx, 
-                        mvf,
-                        m_img, moving
-                    );
+                    li_1, li_2, inv_rx, 
+                    mvf,
+                    m_img, moving
+                );
 		
 		m_y = li_value_dy ( 
-                        li_1, li_2, inv_ry, 
-                        mvf,
-                        m_img, moving
-                    );
+                    li_1, li_2, inv_ry, 
+                    mvf,
+                    m_img, moving
+                );
 		m_z = li_value_dz ( 
-                        li_1, li_2, inv_rz, 
-                        mvf,
-                        m_img, moving
-                    );
+                    li_1, li_2, inv_rz, 
+                    mvf,
+                    m_img, moving
+                );
 
 		/* Compute linear index of fixed image voxel */
                 fv = volume_index (fixed->dim, fijk);
@@ -1261,20 +1267,20 @@ bspline_score_p_mse (
                     // Calc. deformation vector (dxyz) for voxel
                     bspline_interp_pix_c (dxyz, bxf, idx_tile, ijk_local);
 
-                    // Calc. moving image coordinate from the deformation 
-                    // vector
-                    /* To remove DCOS support, change function call to 
-                       bspline_find_correspondence() */
+                    // Calc. moving image coordinate from the deformation vector
                     rc = bspline_find_correspondence_dcos (
                         xyz_moving, ijk_moving, fxyz, dxyz, moving);
 
                     if (parms->debug) {
                         fprintf (corr_fp, 
-                            "%d %d %d %f %f %f\n",
+                            "%d %d %d, %f %f %f -> %f %f %f, %f %f %f\n",
                             (unsigned int) fijk[0], 
                             (unsigned int) fijk[1], 
                             (unsigned int) fijk[2], 
-                            ijk_moving[0], ijk_moving[1], ijk_moving[2]);
+                            fxyz[0], fxyz[1], fxyz[2],
+                            ijk_moving[0], ijk_moving[1], ijk_moving[2],
+                            fxyz[0] + dxyz[0], fxyz[1] + dxyz[1], fxyz[2] + dxyz[2]
+                        );
                     }
 
                     // Return code is 0 if voxel is pushed outside of 
