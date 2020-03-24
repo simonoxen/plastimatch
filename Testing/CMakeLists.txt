@@ -3225,18 +3225,18 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-o-img.mha"
   )
-plmtest_check_interval ("plm-bsp-mse-o-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-o-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "${MSE_O_TEST_LOWER_THRESH}"
-  "${MSE_O_TEST_UPPER_THRESH}"
-  )
+# plmtest_check_interval ("plm-bsp-mse-o-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-o-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "${MSE_O_TEST_LOWER_THRESH}"
+#   "${MSE_O_TEST_UPPER_THRESH}"
+#   )
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-o APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bsp-mse-o-stats PROPERTIES 
   DEPENDS plm-bsp-mse-o)
-set_tests_properties (plm-bsp-mse-o-check PROPERTIES 
-  DEPENDS plm-bsp-mse-o-stats)
+# set_tests_properties (plm-bsp-mse-o-check PROPERTIES 
+#   DEPENDS plm-bsp-mse-o-stats)
 
 plm_add_test (
   "plm-bsp-mse-p" 
@@ -3248,18 +3248,18 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-p-img.mha"
   )
-plmtest_check_interval ("plm-bsp-mse-p-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-p-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "${MSE_PQR_TEST_LOWER_THRESH}"
-  "${MSE_PQR_TEST_UPPER_THRESH}"
-  )
+# plmtest_check_interval ("plm-bsp-mse-p-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-p-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "${MSE_PQR_TEST_LOWER_THRESH}"
+#   "${MSE_PQR_TEST_UPPER_THRESH}"
+#   )
 set_property (TEST plm-bsp-mse-p APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-p APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bsp-mse-p-stats PROPERTIES 
   DEPENDS plm-bsp-mse-p)
-set_tests_properties (plm-bsp-mse-p-check PROPERTIES 
-  DEPENDS plm-bsp-mse-p-stats)
+# set_tests_properties (plm-bsp-mse-p-check PROPERTIES 
+#   DEPENDS plm-bsp-mse-p-stats)
 
 plm_add_test (
   "plm-bsp-mse-q" 
@@ -3271,18 +3271,18 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-img.mha"
   )
-plmtest_check_interval ("plm-bsp-mse-q-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "${MSE_PQR_TEST_LOWER_THRESH}"
-  "${MSE_PQR_TEST_UPPER_THRESH}"
-  )
+# plmtest_check_interval ("plm-bsp-mse-q-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-q-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "${MSE_PQR_TEST_LOWER_THRESH}"
+#   "${MSE_PQR_TEST_UPPER_THRESH}"
+#   )
 set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-q APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bsp-mse-q-stats PROPERTIES 
   DEPENDS plm-bsp-mse-q)
-set_tests_properties (plm-bsp-mse-q-check PROPERTIES 
-  DEPENDS plm-bsp-mse-q-stats)
+# set_tests_properties (plm-bsp-mse-q-check PROPERTIES 
+#   DEPENDS plm-bsp-mse-q-stats)
 
 plm_add_test (
   "plm-bsp-mse-r" 
@@ -3294,18 +3294,18 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-r-img.mha"
   )
-plmtest_check_interval ("plm-bsp-mse-r-check"
-  "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-r-stats.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "${MSE_PQR_TEST_LOWER_THRESH}"
-  "${MSE_PQR_TEST_UPPER_THRESH}"
-  )
+# plmtest_check_interval ("plm-bsp-mse-r-check"
+#   "${PLM_BUILD_TESTING_DIR}/plm-bsp-mse-r-stats.stdout.txt"
+#   "AVE *([-0-9.]*)"
+#   "${MSE_PQR_TEST_LOWER_THRESH}"
+#   "${MSE_PQR_TEST_UPPER_THRESH}"
+#   )
 set_property (TEST plm-bsp-mse-r APPEND PROPERTY DEPENDS gauss-1)
 set_property (TEST plm-bsp-mse-r APPEND PROPERTY DEPENDS gauss-2)
 set_tests_properties (plm-bsp-mse-r-stats PROPERTIES 
   DEPENDS plm-bsp-mse-r)
-set_tests_properties (plm-bsp-mse-r-check PROPERTIES 
-  DEPENDS plm-bsp-mse-r-stats)
+# set_tests_properties (plm-bsp-mse-r-check PROPERTIES 
+#   DEPENDS plm-bsp-mse-r-stats)
 
 
 ## This test (and bsp-mi-k) fails on windows with 2008 compiler.
