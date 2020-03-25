@@ -140,7 +140,8 @@ find_knots_3 (plm_long* knots, plm_long tile_num, const plm_long* cdims)
     // the tile in the control grid.
     tile_loc[0] = tile_num % num_tiles_x;
     tile_loc[1] = ((tile_num - tile_loc[0]) / num_tiles_x) % num_tiles_y;
-    tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / num_tiles_y) % num_tiles_z);
+    tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / 
+			    num_tiles_y) % num_tiles_z);
 
     /* GCS 2011-07-14: Why not remove the below three lines, and let i,j,k 
        run from 0 to 3? */
@@ -485,9 +486,12 @@ region_smoothness_elastic (
 	/* ------------------------------------------------ */
 
         /* dS/dp = Vp operation */
-	bspline_score->total_grad[3*knots[j]+0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] + 2 * X9[j];
-        bspline_score->total_grad[3*knots[j]+1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y7[j] + 2 * Y8[j] + 2 * Y9[j];
-        bspline_score->total_grad[3*knots[j]+2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z7[j] + 2 * Z8[j] + 2 * Z9[j];
+	bspline_score->total_grad[3*knots[j]+0] += Y1[j] + Y2[j] + Z3[j] + 
+		Z4[j] + 2 * X7[j] + 2 * X8[j] + 2 * X9[j];
+        bspline_score->total_grad[3*knots[j]+1] += X1[j] + X2[j] + Z5[j] + 
+		Z6[j] + 2 * Y7[j] + 2 * Y8[j] + 2 * Y9[j];
+        bspline_score->total_grad[3*knots[j]+2] += X3[j] + X4[j] + Y5[j] + 
+		Y6[j] + 2 * Z7[j] + 2 * Z8[j] + 2 * Z9[j];
     }
 
     bspline_score->rmetric += S;
@@ -584,9 +588,12 @@ region_smoothness_elastic_omp (
 	/* ------------------------------------------------ */
 
         /* dS/dp = 2Vp operation */
-        sets[3*j+0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] + 2 * X9[j];
-        sets[3*j+1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] + 2 * Y9[j];
-        sets[3*j+2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] + 2 * Z8[j];
+        sets[3*j+0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] + 
+		2 * X9[j];
+        sets[3*j+1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] + 
+		2 * Y9[j];
+        sets[3*j+2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] + 
+		2 * Z8[j];
     }
     return S;
 }
@@ -678,7 +685,9 @@ Bspline_regularize::analytic_init (
     this->V = (double**)malloc (32 * sizeof (double*));
 
     /* The fifteen 64 x 64 V matrices */
-    /*V[0] - V[5] -> Curvature, V[6] - V[8] -> Diffusion, V[9] - V[14] -> Linear Elastic , V[15] - V[20] -> Linear Elastic with complex weights (Diffusion)*/
+    /*V[0] - V[5] -> Curvature, V[6] - V[8] -> Diffusion, 
+     * V[9] - V[14] -> Linear Elastic , 
+     * V[15] - V[20] -> Linear Elastic with complex weights (Diffusion)*/
     this->V[0] = this->V_mats;
     this->V[1] = this->V[0] + 4096;
     this->V[2] = this->V[1] + 4096;
@@ -735,19 +744,22 @@ Bspline_regularize::analytic_init (
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[3], X, Y, Z);
-    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
+    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty * 
+		    reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[4], X, Y, Z);
-    scale_Vmatrix(this->V[4], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
+    scale_Vmatrix(this->V[4], reg_parms->curvature_penalty *
+		    reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[5], X, Y, Z);
-    scale_Vmatrix(this->V[5], reg_parms->curvature_penalty*reg_parms->curvature_mixed_weight);
+    scale_Vmatrix(this->V[5], reg_parms->curvature_penalty *
+		    reg_parms->curvature_mixed_weight);
     
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
@@ -771,73 +783,88 @@ Bspline_regularize::analytic_init (
     eval_integral (Y, this->QY[0], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[9], X, Y, Z);
-    scale_Vmatrix(this->V[9], reg_parms->lame_coefficient_1 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[9], reg_parms->lame_coefficient_1 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[0], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[10], X, Y, Z);
-    scale_Vmatrix(this->V[10], reg_parms->lame_coefficient_2 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[10], reg_parms->lame_coefficient_2 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[1], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[11], X, Y, Z);
-    scale_Vmatrix(this->V[11], reg_parms->lame_coefficient_1 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[11], reg_parms->lame_coefficient_1 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[0], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[12], X, Y, Z);
-    scale_Vmatrix(this->V[12], reg_parms->lame_coefficient_2 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[12], reg_parms->lame_coefficient_2 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[13], X, Y, Z);
-    scale_Vmatrix(this->V[13], reg_parms->lame_coefficient_1 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[13], reg_parms->lame_coefficient_1 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[14], X, Y, Z);
-    scale_Vmatrix(this->V[14], reg_parms->lame_coefficient_2 * reg_parms->linear_elastic_multiplier);
+    scale_Vmatrix(this->V[14], reg_parms->lame_coefficient_2 * 
+		    reg_parms->linear_elastic_multiplier);
     
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[15], X, Y, Z);
-    scale_Vmatrix(this->V[15], (reg_parms->linear_elastic_multiplier)*(2*reg_parms->lame_coefficient_1+reg_parms->lame_coefficient_2)/2);
+    scale_Vmatrix(this->V[15], (reg_parms->linear_elastic_multiplier) *
+		    (2*reg_parms->lame_coefficient_1 +
+		     reg_parms->lame_coefficient_2)/2);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[16], X, Y, Z);
-    scale_Vmatrix(this->V[16], (reg_parms->linear_elastic_multiplier)*(2*reg_parms->lame_coefficient_1+reg_parms->lame_coefficient_2)/2);
+    scale_Vmatrix(this->V[16], (reg_parms->linear_elastic_multiplier) *
+		    (2*reg_parms->lame_coefficient_1 + 
+		     reg_parms->lame_coefficient_2)/2);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[17], X, Y, Z);
-    scale_Vmatrix(this->V[17], (reg_parms->linear_elastic_multiplier)*(2*reg_parms->lame_coefficient_1+reg_parms->lame_coefficient_2)/2);
+    scale_Vmatrix(this->V[17], (reg_parms->linear_elastic_multiplier) *
+		    (2*reg_parms->lame_coefficient_1 +
+		     reg_parms->lame_coefficient_2)/2);
 
     eval_integral (X, this->QX[1], this->QX[1], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[18], X, Y, Z);
-    scale_Vmatrix(this->V[18], (reg_parms->linear_elastic_multiplier)*(reg_parms->lame_coefficient_1)/2);
+    scale_Vmatrix(this->V[18], (reg_parms->linear_elastic_multiplier) *
+		    (reg_parms->lame_coefficient_1)/2);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
     eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
     get_Vmatrix (this->V[19], X, Y, Z);
-    scale_Vmatrix(this->V[19], (reg_parms->linear_elastic_multiplier)*(reg_parms->lame_coefficient_1)/2);
+    scale_Vmatrix(this->V[19], (reg_parms->linear_elastic_multiplier) *
+		    (reg_parms->lame_coefficient_1)/2);
     
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
     eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
     get_Vmatrix (this->V[20], X, Y, Z);
-    scale_Vmatrix(this->V[20], (reg_parms->linear_elastic_multiplier)*(reg_parms->lame_coefficient_1)/2);
+    scale_Vmatrix(this->V[20], (reg_parms->linear_elastic_multiplier) *
+		    (reg_parms->lame_coefficient_1)/2);
 
     eval_integral (X, this->QX[0], this->QX[0], gs[0]);
     eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
@@ -951,7 +978,10 @@ Bspline_regularize::compute_score_analytic_omp (
 	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[6], knots);
 	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[7], knots);
 	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[8], knots);
-	S += region_smoothness_elastic_omp (sets, reg_parms, bxf, rst->V[9], rst->V[10], rst->V[11], rst->V[12], rst->V[13], rst->V[14], rst->V[15], rst->V[16], rst->V[17], rst->V[18], rst->V[19], rst->V[20], knots);
+	S += region_smoothness_elastic_omp (sets, reg_parms, bxf, rst->V[9], 
+			rst->V[10], rst->V[11], rst->V[12], rst->V[13], 
+			rst->V[14], rst->V[15], rst->V[16], rst->V[17], 
+			rst->V[18], rst->V[19], rst->V[20], knots);
         S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[21], knots);
 	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[22], knots);
 	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[23], knots);
@@ -1007,7 +1037,10 @@ Bspline_regularize::compute_score_analytic (
         region_smoothness (bspline_score, reg_parms, bxf, rst->V[6], knots);
 	region_smoothness (bspline_score, reg_parms, bxf, rst->V[7], knots);
 	region_smoothness (bspline_score, reg_parms, bxf, rst->V[8], knots);
-	region_smoothness_elastic (bspline_score, reg_parms, bxf, rst->V[9], rst->V[10], rst->V[11], rst->V[12], rst->V[13], rst->V[14], rst->V[15], rst->V[16], rst->V[17], rst->V[18], rst->V[19], rst->V[20], knots);
+	region_smoothness_elastic (bspline_score, reg_parms, bxf, rst->V[9], 
+			rst->V[10], rst->V[11], rst->V[12], rst->V[13], 
+			rst->V[14], rst->V[15], rst->V[16], rst->V[17], 
+			rst->V[18], rst->V[19], rst->V[20], knots);
     	region_smoothness (bspline_score, reg_parms, bxf, rst->V[21], knots);
 	region_smoothness (bspline_score, reg_parms, bxf, rst->V[22], knots);
 	region_smoothness (bspline_score, reg_parms, bxf, rst->V[23], knots);
