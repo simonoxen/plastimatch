@@ -59,7 +59,7 @@ Setting up a build system for the first time
        cmake \
        libblas-dev liblapack-dev libsqlite3-dev \
        libdcmtk-dev libdlib-dev libfftw3-dev \
-       libgdcm2-dev libinsighttoolkit4-dev \
+       libinsighttoolkit4-dev \
        libpng-dev libtiff-dev uuid-dev zlib1g-dev
 
    See this link for more information https://wiki.debian.org/git-pbuilder

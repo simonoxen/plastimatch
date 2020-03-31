@@ -5,18 +5,18 @@ building official plastimatch windows binaries.
 
 You should have a working virtual machine, as described in :ref:`windows_vm`.
 
-As of plastimatch 1.8.1, the following build tools are used::
+As of plastimatch 1.9.0, the following build tools are used::
 
   QEMU/KVM        3.1               (Debian host)
   MS Windows      10                (Windows 10 Pro)
   Visual Studio   14.0.25431.01     (Aka MSVC Community 2015 Update 3)
-  CMake           3.12.0
+  CMake           3.17.0
   WiX             3.11
   
 And the following third party libraries are used::
 
   CUDA            8.0 GA2           (64 bit only)
-  DCMTK           3.6.4             (Build separate 32 & 64 bit)
+  DCMTK           3.6.5             (Build separate 32 & 64 bit)
   FFTW            3.3.5             (Download separate 32 & 64 bit)
   ITK             4.13.2            (Build separate 32 & 64 bit)
 
