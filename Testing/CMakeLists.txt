@@ -819,7 +819,7 @@ set_tests_properties (plm-diff-a-check PROPERTIES DEPENDS plm-diff-a-stats)
 plm_add_test (
   "plm-diff-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "diff;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;${PLM_BUILD_TESTING_DIR}/gauss-2.mha;${PLM_BUILD_TESTING_DIR}/plm-diff-b-vf.mha"
+  "diff;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha;${PLM_BUILD_TESTING_DIR}/plm-diff-b-vf.mha"
   )
 plm_add_test ("plm-diff-b-stats"
   ${PLM_PLASTIMATCH_PATH}/plastimatch

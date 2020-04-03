@@ -7,6 +7,7 @@
 
 #include "diff.h"
 #include "itk_image_header_compare.h"
+#include "itk_image_save.h"
 #include "image_stats.h"
 #include "pcmd_diff.h"
 #include "plm_file_format.h"
@@ -45,7 +46,7 @@ diff_vf (Diff_parms* parms)
     }
 
     DeformationFieldType::Pointer vf_diff = diff_vf (vf1, vf2);
-//    vf_diff->save_image (parms->out_fn.c_str());
+    itk_image_save (vf_diff, parms->out_fn.c_str());
 }
 
 void
