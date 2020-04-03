@@ -6,16 +6,14 @@
 
 #include "plmutil_config.h"
 #include <string>
+#include "plm_image.h"
 
-class PLMUTIL_API Diff_parms {
-public:
-    std::string img_in_1_fn;
-    std::string img_in_2_fn;
-    std::string img_out_fn;
-public:
-    Diff_parms ();
-};
+PLMUTIL_API Plm_image::Pointer
+diff_image (const Plm_image::Pointer& pi1, const Plm_image::Pointer& pi2);
 
-PLMUTIL_API void diff_main (Diff_parms* parms);
+PLMUTIL_API DeformationFieldType::Pointer
+diff_vf (const DeformationFieldType::Pointer& vf1,
+    const DeformationFieldType::Pointer& vf2);
+    
 
 #endif

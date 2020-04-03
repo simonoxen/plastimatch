@@ -762,6 +762,80 @@ plmtest_check_interval ("vf-radial-1-check"
 set_property (TEST vf-radial-1-stats APPEND PROPERTY DEPENDS vf-radial-1)
 set_property (TEST vf-radial-1-check APPEND PROPERTY DEPENDS vf-radial-1-stats)
 
+
+## -------------------------------------------------------------------------
+## plm-compare-a    Compare two images
+## plm-compare-b    Compare two vector fields
+## plm-diff-a       Diff two images
+## plm-diff-b       Diff two vector fields
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-compare-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;${PLM_BUILD_TESTING_DIR}/gauss-2.mha"
+  )
+plmtest_check_interval ("plm-compare-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-compare-a.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "7.76"
+  "7.78"
+  )
+set_tests_properties (plm-compare-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-compare-a-check PROPERTIES DEPENDS plm-compare-a)
+
+plm_add_test (
+  "plm-compare-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha"
+  )
+plmtest_check_interval ("plm-compare-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-compare-b.stdout.txt"
+  "Vec len diff: *([-0-9.]*)"
+  "14.141"
+  "14.143"
+  )
+set_tests_properties (plm-compare-b PROPERTIES DEPENDS "vf-trans-1;vf-trans-2")
+set_tests_properties (plm-compare-b-check PROPERTIES DEPENDS plm-compare-b)
+
+plm_add_test (
+  "plm-diff-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "diff;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;${PLM_BUILD_TESTING_DIR}/gauss-2.mha;${PLM_BUILD_TESTING_DIR}/plm-diff-a-img.mha"
+  )
+plm_add_test ("plm-diff-a-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-diff-a-img.mha"
+  )
+plmtest_check_interval ("plm-diff-a-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-diff-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "7.76"
+  "7.78"
+  )
+set_tests_properties (plm-diff-a PROPERTIES DEPENDS "gauss-1;gauss-2")
+set_tests_properties (plm-diff-a-stats PROPERTIES DEPENDS plm-diff-a)
+set_tests_properties (plm-diff-a-check PROPERTIES DEPENDS plm-diff-a-stats)
+
+plm_add_test (
+  "plm-diff-b"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "diff;${PLM_BUILD_TESTING_DIR}/gauss-1.mha;${PLM_BUILD_TESTING_DIR}/gauss-2.mha;${PLM_BUILD_TESTING_DIR}/plm-diff-b-vf.mha"
+  )
+plm_add_test ("plm-diff-b-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-diff-b-vf.mha"
+  )
+plmtest_check_interval ("plm-diff-b-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-diff-b-stats.stdout.txt"
+  "Ave len: *([-0-9.]*)"
+  "14.141"
+  "14.143"
+  )
+set_tests_properties (plm-diff-b PROPERTIES DEPENDS "vf-trans-1;vf-trans-2")
+set_tests_properties (plm-diff-b-stats PROPERTIES DEPENDS plm-diff-b)
+set_tests_properties (plm-diff-b-check PROPERTIES DEPENDS plm-diff-b-stats)
+
+
 ## -------------------------------------------------------------------------
 ## demons
 ##   demons-a          gauss-1.mha, gauss-2.mha

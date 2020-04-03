@@ -11,32 +11,37 @@
 #include "plm_image.h"
 #include "print_and_exit.h"
 
-Diff_parms::Diff_parms ()
-{
+DeformationFieldType::Pointer
+diff_vf (
+    const DeformationFieldType::Pointer& vf1,
+    const DeformationFieldType::Pointer& vf2
+) {
+    
+    typedef itk::SubtractImageFilter< DeformationFieldType, DeformationFieldType, 
+				      DeformationFieldType > SubtractFilterType;
+    SubtractFilterType::Pointer sub_filter = SubtractFilterType::New();
+
+    sub_filter->SetInput1 (vf1);
+    sub_filter->SetInput2 (vf2);
+
+    try {
+	sub_filter->Update();
+    } catch (itk::ExceptionObject & excep) {
+	std::cerr << "ITK exception caught: " << excep << std::endl;
+	exit (-1);
+    }
+    DeformationFieldType::Pointer vf_diff = sub_filter->GetOutput ();
+    return vf_diff;
 }
 
-void
-diff_main (Diff_parms* parms)
-{
-    Plm_image::Pointer img1, img2;
-
-    img1 = plm_image_load_native (parms->img_in_1_fn);
-    if (!img1) {
-	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_1_fn.c_str());
-    }
-    img2 = plm_image_load_native (parms->img_in_2_fn);
-    if (!img2) {
-	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_2_fn.c_str());
-    }
-
-    if (!Plm_image::compare_headers (img1, img2)) {
-	print_and_exit ("Error: image sizes do not match\n");
-    }
-
-    FloatImageType::Pointer fi1 = img1->itk_float ();
-    FloatImageType::Pointer fi2 = img2->itk_float ();
+Plm_image::Pointer
+diff_image (
+    const Plm_image::Pointer& pi1,
+    const Plm_image::Pointer& pi2
+) {
+    
+    FloatImageType::Pointer fi1 = pi1->itk_float ();
+    FloatImageType::Pointer fi2 = pi2->itk_float ();
 
     typedef itk::SubtractImageFilter< FloatImageType, FloatImageType, 
 				      FloatImageType > SubtractFilterType;
@@ -52,7 +57,6 @@ diff_main (Diff_parms* parms)
 	exit (-1);
     }
     FloatImageType::Pointer diff = sub_filter->GetOutput ();
-
-    itk_image_save_float (diff, parms->img_out_fn.c_str());
+    Plm_image::Pointer pi_diff = Plm_image::New (diff);
+    return pi_diff;
 }
-
