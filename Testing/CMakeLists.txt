@@ -768,6 +768,7 @@ set_property (TEST vf-radial-1-check APPEND PROPERTY DEPENDS vf-radial-1-stats)
 ## -------------------------------------------------------------------------
 ## plm-compare-a    Compare two images
 ## plm-compare-b    Compare two vector fields
+## plm-compare-c    Compare two vector fields with ROI
 ## plm-diff-a       Diff two images
 ## plm-diff-b       Diff two vector fields
 ## -------------------------------------------------------------------------
@@ -798,6 +799,20 @@ plmtest_check_interval ("plm-compare-b-check"
   )
 set_tests_properties (plm-compare-b PROPERTIES DEPENDS "vf-trans-1;vf-trans-2")
 set_tests_properties (plm-compare-b-check PROPERTIES DEPENDS plm-compare-b)
+
+plm_add_test (
+  "plm-compare-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;--mask;${PLM_BUILD_TESTING_DIR}/rect-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-1.mha;${PLM_BUILD_TESTING_DIR}/vf-trans-2.mha"
+  )
+plmtest_check_interval ("plm-compare-c-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-compare-c.stdout.txt"
+  "Ave len: *([-0-9.]*)"
+  "14.141"
+  "14.143"
+  )
+set_tests_properties (plm-compare-c PROPERTIES DEPENDS "rect-1;vf-trans-1;vf-trans-2")
+set_tests_properties (plm-compare-c-check PROPERTIES DEPENDS plm-compare-c)
 
 plm_add_test (
   "plm-diff-a"
