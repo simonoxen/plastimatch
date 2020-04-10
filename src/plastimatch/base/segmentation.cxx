@@ -717,7 +717,7 @@ Segmentation::convert_ss_img_to_cxt (void)
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
         /* Do extraction */
-        lprintf ("Doing extraction\n");
+        lprintf ("Doing extraction -- this should never happen\n");
         ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
@@ -973,8 +973,9 @@ Segmentation::set_structure_image (
 
     /* Expand vector length if needed */
     UCharVecImageType::Pointer ss_img = d_ptr->m_ss_img->itk_uchar_vec ();
-    if (uchar_no > ss_img->GetVectorLength()) {
-        this->broaden_ss_image (uchar_no);
+    if ((uchar_no+1) > ss_img->GetVectorLength()) {
+        lprintf ("Broadening ss_image\n");
+        this->broaden_ss_image (uchar_no+1);
     }
 
     /* Set up iterators for looping through images */
