@@ -30,7 +30,6 @@ public:
     std::list<std::string> input_fns;
 };
 
-
 static void
 stats_vf_main (Stats_parms* parms, const std::string& current_fn)
 {

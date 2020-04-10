@@ -56,6 +56,8 @@ set (CONFIG_FILE_LIST
   "plm-bsp-landmark-d.txt"
   "plm-bsp-landmark-e.txt"
   "plm-bsp-double.txt"
+  "plm-bsp-regularize-none.txt"
+  "plm-bsp-regularize-analytic.txt"
   "plm-bsp-regularize-numeric.txt"
   "plm-reg-align-center.txt"
   "plm-reg-itk-demons.txt"
@@ -790,7 +792,7 @@ plm_add_test (
   )
 plmtest_check_interval ("plm-compare-b-check"
   "${PLM_BUILD_TESTING_DIR}/plm-compare-b.stdout.txt"
-  "Vec len diff: *([-0-9.]*)"
+  "Ave len: *([-0-9.]*)"
   "14.141"
   "14.143"
   )
@@ -3705,7 +3707,7 @@ set_tests_properties (plm-bsp-rect PROPERTIES DEPENDS "rect-2;rect-3")
 plm_add_test (
   "plm-bsp-regularize-none" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-none.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-regularize-none.txt"
   )
 plm_add_test (
   "plm-bsp-regularize-none-stats"
@@ -3729,7 +3731,7 @@ set_tests_properties (plm-bsp-regularize-none-check PROPERTIES
 plm_add_test (
   "plm-bsp-regularize-analytic" 
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bsp-regularize-analytic.txt"
+  "${PLM_BUILD_TESTING_DIR}/plm-bsp-regularize-analytic.txt"
   )
 plm_add_test (
   "plm-bsp-regularize-analytic-stats"

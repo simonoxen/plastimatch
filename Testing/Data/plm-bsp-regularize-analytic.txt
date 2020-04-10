@@ -1,9 +1,10 @@
 [GLOBAL]
-fixed=rect-3.mha
-moving=sphere-2.mha
-vf_out=plm-bsp-regularize-analytic-vf.mha
-xform_out=plm-bsp-regularize-analytic-xf.txt
-img_out=plm-bsp-regularize-analytic-img.mha
+fixed=@PLM_BUILD_TESTING_DIR@/rect-3.mha
+moving=@PLM_BUILD_TESTING_DIR@/sphere-2.mha
+
+vf_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-vf.mha
+xform_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-xf.txt
+img_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-img.mha
 
 [STAGE]
 xform=bspline

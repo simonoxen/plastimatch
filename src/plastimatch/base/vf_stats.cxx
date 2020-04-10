@@ -25,26 +25,26 @@ vf_analyze (const Volume* vol, const Volume *mask)
         mask_img = (unsigned char*) mask->img;
     }
 
-    float mean_av[3];
-    float mean_v[3];
+    double mean_av[3];
+    double mean_v[3];
     float mins[3];
     float maxs[3];
-    float mask_mean_av[3];
-    float mask_mean_v[3];
+    double mask_mean_av[3];
+    double mask_mean_v[3];
     float mask_mins[3];
     float mask_maxs[3];
-    float length_acc;
-    float length_mask_acc;
+    double length_acc;
+    double length_mask_acc;
 
     for (int d = 0; d < 3; d++) {
-	mean_av[d] = 0.f;
-        mean_v[d] = 0.f;
+	mean_av[d] = 0.;
+        mean_v[d] = 0.;
 	mins[d] = FLT_MAX;
-        maxs[d] = -FLT_MIN;
-	mask_mean_av[d] = 0.f;
-        mask_mean_v[d] = 0.f;
+        maxs[d] = -FLT_MAX;
+	mask_mean_av[d] = 0.;
+        mask_mean_v[d] = 0.;
 	mask_mins[d] = FLT_MAX;
-        mask_maxs[d] = -FLT_MIN;
+        mask_maxs[d] = -FLT_MAX;
     }
     length_acc = 0.f;
     length_mask_acc = 0.f;
@@ -59,7 +59,8 @@ vf_analyze (const Volume* vol, const Volume *mask)
 		    mean_av[d] += fabs(dxyz[d]);
 		    if (dxyz[d] > maxs[d]) {
 			maxs[d] = dxyz[d];
-		    } else if (dxyz[d] < mins[d]) {
+		    }
+                    if (dxyz[d] < mins[d]) {
 			mins[d] = dxyz[d];
 		    }
                     len += dxyz[d] * dxyz[d];
@@ -74,7 +75,8 @@ vf_analyze (const Volume* vol, const Volume *mask)
 		        mask_mean_av[d] += fabs(dxyz[d]);
 		        if (dxyz[d] > mask_maxs[d]) {
 			    mask_maxs[d] = dxyz[d];
-		        } else if (dxyz[d] < mask_mins[d]) {
+		        }
+                        if (dxyz[d] < mask_mins[d]) {
 			    mask_mins[d] = dxyz[d];
                         }
 		    }

@@ -6,100 +6,71 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 
+#include "diff.h"
+#include "itk_image_header_compare.h"
 #include "itk_image_type.h"
 #include "mha_io.h"
 #include "pcmd_compare.h"
+#include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
+#include "vf_stats.h"
 #include "volume.h"
+#include "xform.h"
 
-void
-vf_analyze (Volume* vol1, Volume* vol2)
-{
-    int d, i, j, k, v;
-    float* img1 = (float*) vol1->img;
-    float* img2 = (float*) vol2->img;
-    float max_vlen2 = 0.0f;
-    int max_vlen_idx_lin = 0;
-    int max_vlen_idx[3] = { 0, 0, 0 };
-
-    for (v = 0, k = 0; k < vol1->dim[2]; k++) {
-	for (j = 0; j < vol1->dim[1]; j++) {
-	    for (i = 0; i < vol1->dim[0]; i++, v++) {
-		float* dxyz1 = &img1[3*v];
-		float* dxyz2 = &img2[3*v];
-		float diff[3];
-		float vlen2 = 0.0f;
-		for (d = 0; d < 3; d++) {
-		    diff[d] = dxyz2[d] - dxyz1[d];
-		    vlen2 += diff[d] * diff[d];
-		}
-		if (vlen2 > max_vlen2) {
-		    max_vlen2 = vlen2;
-		    max_vlen_idx_lin = v;
-		    max_vlen_idx[0] = i;
-		    max_vlen_idx[1] = j;
-		    max_vlen_idx[2] = k;
-		}
-	    }
-	}
-    }
-
-    printf ("Max diff idx:  %4d %4d %4d [%d]\n", max_vlen_idx[0], max_vlen_idx[1], max_vlen_idx[2], max_vlen_idx_lin);
-    printf ("Vol 1:         %10.3f %10.3f %10.3f\n", img1[3*max_vlen_idx_lin], img1[3*max_vlen_idx_lin+1], img1[3*max_vlen_idx_lin+2]);
-    printf ("Vol 2:         %10.3f %10.3f %10.3f\n", img2[3*max_vlen_idx_lin], img2[3*max_vlen_idx_lin+1], img2[3*max_vlen_idx_lin+2]);
-    printf ("Vec len diff:  %10.3f\n", sqrt(max_vlen2));
-}
+class Compare_parms {
+public:
+    std::string input_1;
+    std::string input_2;
+    std::string mask_fn;
+};
 
 static void
 vf_compare (Compare_parms* parms)
 {
-    int d;
-    Volume *vol1, *vol2;
+    Xform xf1, xf2;
 
-    vol1 = read_mha (parms->img_in_1_fn.c_str());
-    if (!vol1) {
-	fprintf (stderr, 
-	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    parms->img_in_1_fn.c_str());
-	exit (-1);
-    }
-    if (vol1->pix_type != PT_VF_FLOAT_INTERLEAVED) {
-	fprintf (stderr, "Sorry, file \"%s\" is not an "
-	    "interleaved float vector field.\n", 
-	    parms->img_in_1_fn.c_str());
-	fprintf (stderr, "Type = %d\n", vol1->pix_type);
-	exit (-1);
+    xf1.load (parms->input_1);
+    if (xf1.m_type != XFORM_ITK_VECTOR_FIELD) {
+        print_and_exit ("Error: %s not loaded as a vector field\n",
+            parms->input_1.c_str());
     }
 
-    vol2 = read_mha (parms->img_in_2_fn.c_str());
-    if (!vol2) {
-	fprintf (stderr, 
-	    "Sorry, couldn't open file \"%s\" for read.\n", 
-	    parms->img_in_2_fn.c_str());
-	exit (-1);
-    }
-    if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
-	fprintf (stderr, "Sorry, file \"%s\" is not an "
-	    "interleaved float vector field.\n", 
-	    parms->img_in_2_fn.c_str());
-	fprintf (stderr, "Type = %d\n", vol2->pix_type);
-	exit (-1);
+    xf2.load (parms->input_2);
+    if (xf2.m_type != XFORM_ITK_VECTOR_FIELD) {
+        print_and_exit ("Error: %s not loaded as a vector field\n",
+            parms->input_2.c_str());
     }
 
-    for (d = 0; d < 3; d++) {
-	if (vol1->dim[d] != vol2->dim[d]) {
-	    fprintf (stderr, "Can't compare.  "
-		"Files have different dimensions.\n");
-	    exit (-1);
-	}
+    DeformationFieldType::Pointer vf1 = xf1.get_itk_vf();
+    DeformationFieldType::Pointer vf2 = xf2.get_itk_vf();
+
+    if (!itk_image_header_compare (vf1, vf2)) {
+	print_and_exit ("Error: vector field sizes do not match\n");
     }
 
-    vf_analyze (vol1, vol2);
+    DeformationFieldType::Pointer vf_diff = diff_vf (vf1, vf2);
 
-    delete vol1;
-    delete vol2;
+    /* GCS FIX: This logic should be moved inside of xform class */
+    Xform xf_diff;
+    xf_diff.set_itk_vf (vf_diff);
+    Plm_image_header pih;
+    pih.set_from_itk_image (vf_diff);
+    xform_to_gpuit_vf (&xf2, &xf_diff, &pih);
+    Volume *vol = xf2.get_gpuit_vf().get();
+
+    /* GCS FIX: This should be moved to base library; it is replicated in pcmd_stats */
+    if (parms->mask_fn == "") {
+    	vf_analyze (vol, 0);
+    }
+    else {
+        Plm_image::Pointer pli = Plm_image::New (new Plm_image(parms->mask_fn));
+        pli->convert (PLM_IMG_TYPE_GPUIT_UCHAR);
+        Volume* mask = pli->get_vol();
+	vf_analyze (vol, mask);
+    }
 }
 
 static void
@@ -107,15 +78,15 @@ img_compare (Compare_parms* parms)
 {
     Plm_image::Pointer img1, img2;
 
-    img1 = plm_image_load_native (parms->img_in_1_fn);
+    img1 = plm_image_load_native (parms->input_1);
     if (!img1) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_1_fn.c_str());
+	    parms->input_1.c_str());
     }
-    img2 = plm_image_load_native (parms->img_in_2_fn);
+    img2 = plm_image_load_native (parms->input_2);
     if (!img2) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-	    parms->img_in_2_fn.c_str());
+	    parms->input_2.c_str());
     }
 
     if (!Plm_image::compare_headers (img1, img2)) {
@@ -185,8 +156,8 @@ compare_main (Compare_parms* parms)
     Plm_file_format file_type_1, file_type_2;
 
     /* What is the input file type? */
-    file_type_1 = plm_file_format_deduce (parms->img_in_1_fn);
-    file_type_2 = plm_file_format_deduce (parms->img_in_2_fn);
+    file_type_1 = plm_file_format_deduce (parms->input_1);
+    file_type_2 = plm_file_format_deduce (parms->input_2);
 
     if (file_type_1 == PLM_FILE_FMT_VF 
 	&& file_type_2 == PLM_FILE_FMT_VF)
@@ -214,8 +185,49 @@ compare_parse_args (Compare_parms* parms, int argc, char* argv[])
 	compare_print_usage ();
     }
     
-    parms->img_in_1_fn = argv[2];
-    parms->img_in_2_fn = argv[3];
+    parms->input_1 = argv[2];
+    parms->input_2 = argv[3];
+}
+
+static void
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
+{
+    printf ("Usage: plastimatch %s [options] input_file input_file\n", 
+        argv[1]);
+    parser->print_options (std::cout);
+    std::cout << std::endl;
+}
+static void
+parse_fn (
+    Compare_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
+{
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    /* Output files */
+    parser->add_long_option ("", "mask", "Compare inputs within this ROI", 1, "");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that two input files were specified */
+    if (parser->number_of_arguments() != 2) {
+	throw (dlib::error ("Error.  You must specify at two input files."));
+    }
+
+    /* Copy input filenames to parms struct */
+    parms->input_1 = (*parser)[0];
+    parms->input_2 = (*parser)[1];
+
+    /* ROI */
+    parms->mask_fn = parser->get_string("mask");
 }
 
 void
@@ -223,7 +235,8 @@ do_command_compare (int argc, char *argv[])
 {
     Compare_parms parms;
     
-    compare_parse_args (&parms, argc, argv);
+    /* Parse command line parameters */
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     compare_main (&parms);
 }
