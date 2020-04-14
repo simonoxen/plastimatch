@@ -45,6 +45,7 @@ public:
     void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
     void run_itk_signed_native ();
+    void run_song_maurer ();
     void run ();
 protected:
     void native_danielsson_initialize_face_distances (
@@ -512,6 +513,12 @@ Distance_map_private::run_itk_signed_danielsson ()
 }
 
 void
+Distance_map_private::run_song_maurer ()
+{
+
+}
+
+void
 Distance_map_private::run_itk_signed_maurer ()
 {
     this->output = itk_distance_map_maurer (
@@ -533,6 +540,9 @@ Distance_map_private::run ()
     case Distance_map::MAURER:
         this->run_native_maurer ();
         break;
+    case Distance_map::SONG_MAURER:
+        this->run_song_maurer ();
+        break;	
     case Distance_map::ITK_MAURER:
     default:
         this->run_itk_signed_maurer ();

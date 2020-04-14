@@ -90,7 +90,7 @@ parse_fn (
         "\"itk-maurer\", "
         "\"danielsson\", "
         "\"itk-danielsson\" "
-	" or \"song-maurer""
+	" or \"song-maurer\" "
         "(default is \"danielsson\")",
         1, "danielsson");
     parser->add_long_option ("A", "threading",
