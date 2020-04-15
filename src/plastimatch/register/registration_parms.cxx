@@ -960,6 +960,18 @@ Registration_parms::set_key_value (
             goto error_exit;
         }
     }
+    else if (key == "lut_type") {
+        if (!section_stage) goto key_only_allowed_in_section_stage;
+        if (value == "3d aligned") {
+            stage->lut_type = Bspline_xform::LUT_3D_ALIGNED;
+        } else if (value == "1d aligned") {
+            stage->lut_type = Bspline_xform::LUT_1D_ALIGNED;
+        } else if (value == "1d unaligned") {
+            stage->lut_type = Bspline_xform::LUT_1D_UNALIGNED;
+        } else {
+            goto error_exit;
+        }
+    }
     else if (key == "histo_equ") {
         if (!section_stage) goto key_only_allowed_in_section_stage;
         stage->histoeq = string_value_true (val);

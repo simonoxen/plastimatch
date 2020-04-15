@@ -107,6 +107,10 @@ Stage_parms::Stage_parms ()
     demons_smooth_deformation_field = true;
     num_approx_terms_log_demons = 2;
     demons_gradient_type = SYMMETRIC;
+    histoeq = false;         // by default, don't do it
+    thresh_mean_intensity = false;
+    num_matching_points = 500;
+    num_hist_levels = 1000;
     /* GPUIT demons */
     demons_acceleration = 1.0;
     demons_homogenization = 1.0;
@@ -118,11 +122,8 @@ Stage_parms::Stage_parms ()
     /* Bspline parms */
     grid_spac[0] = 20.;
     grid_spac[1] = 20.;
-    grid_spac[2] = 20.; 
-    histoeq = false;         // by default, don't do it
-    thresh_mean_intensity = false;
-    num_matching_points = 500;
-    num_hist_levels = 1000;
+    grid_spac[2] = 20.;
+    lut_type = Bspline_xform::LUT_3D_ALIGNED;
     /* Native grid search */
     gridsearch_strategy = GRIDSEARCH_STRATEGY_AUTO;
     gridsearch_min_overlap[0] = 0.5;

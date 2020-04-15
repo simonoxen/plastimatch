@@ -29,8 +29,9 @@ public:
     ~Bspline_xform ();
 public:
     enum Lut_type {
-        LUT_ALIGNED,
-        LUT_UNALIGNED
+        LUT_3D_ALIGNED,
+        LUT_1D_ALIGNED,
+        LUT_1D_UNALIGNED
     };
 public:
     /** Array of B-spline coefficients. */

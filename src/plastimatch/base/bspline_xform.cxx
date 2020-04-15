@@ -28,7 +28,7 @@ Bspline_xform::Bspline_xform ()
 {
     this->coeff = 0;
 
-    this->lut_type = LUT_ALIGNED;
+    this->lut_type = LUT_3D_ALIGNED;
 
     this->cidx_lut = 0;
     this->c_lut = 0;
