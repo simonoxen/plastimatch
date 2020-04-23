@@ -108,6 +108,8 @@ if (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   set_source_files_properties (vf_invert.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  set_source_files_properties (distance_map.cxx
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 endif ()
 
 ##-----------------------------------------------------------------------------
