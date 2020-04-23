@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "bspline.h"
+#include "bspline_xform.h"
 #include "joint_histogram.h"
 #include "plm_image_type.h"
 #include "plm_return_code.h"

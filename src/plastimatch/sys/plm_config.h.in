@@ -33,6 +33,7 @@
 #cmakedefine DCMTK_FOUND 1
 #cmakedefine DCMTK_HAVE_CFUNIX_H 1
 #cmakedefine DCMTK_HAS_EC_INVALIDVALUE 1
+#cmakedefine DCMTK_HAS_DCM_BEAMDOSESPECIFICATIONPOINT 1
 #cmakedefine DLIB_FOUND 1
 #cmakedefine DLIB_HAVE_LIBRARY 1
 #cmakedefine FFTW_FOUND 1
