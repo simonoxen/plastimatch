@@ -954,9 +954,14 @@ Distance_map_private::run_song_maurer ()
         vb->spacing[1] * vb->spacing[1],
         vb->spacing[2] * vb->spacing[2]
     };
-
-    float *dmap_img = (float *)malloc(vb->spacing[0] * vb->spacing[1] *
-		    vb->spacing[2] * sizeof(float));
+    /* Fill in output image */
+    Plm_image::Pointer dmap = Plm_image::New (
+        new Plm_image (
+            new Volume (Volume_header (vb), PT_FLOAT, 1)));
+    Volume::Pointer dmap_vol = dmap->get_volume_float ();
+    float *dmap_img = (float*) dmap_vol->img;
+    //float *dmap_img = (float *)malloc(vb->spacing[0] * vb->spacing[1] *
+//		    vb->spacing[2] * sizeof(float));
     for (int i = 0; i < vb->spacing[0] * vb->spacing[1] *
 		    vb->spacing[2]; i++){
 	    dmap_img[i] = -1.0;
@@ -967,29 +972,10 @@ Distance_map_private::run_song_maurer ()
 
     distTransform(imgb, sp2, vb->spacing[0], vb->spacing[1], vb->spacing[2],
 		    dmap_img);
-    /* Fill in output image*
-    Plm_image::Pointer dmap = Plm_image::New (
-        new Plm_image (
-            new Volume (Volume_header (vb), PT_FLOAT, 1)));
-    Volume::Pointer dmap_vol = dmap->get_volume_float ();
-    float *dmap_img = (float*) dmap_vol->img;
-    for (plm_long v = 0; v < vb->npix; v++) {
-        if (!this->use_squared_distance) {
-            dmap_img[v] = sqrt(SQ_DIST(v,sp2));
-        }
-        if (dmap_img[v] >= maximum_distance) {
-            dmap_img[v] = maximum_distance;
-        }
-        if ((this->inside_is_positive && !imgs[v])
-            || (!this->inside_is_positive && imgs[v]))
-        {
-            dmap_img[v] = -dmap_img[v];
-        }
-    }*/
     
     /* Fixate distance map into private class */
-    //this->output = dmap_img->itk_float();
 
+    this->output = dmap->itk_float();
 
 }
 
