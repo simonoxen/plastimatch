@@ -962,15 +962,15 @@ Distance_map_private::run_song_maurer ()
     float *dmap_img = (float*) dmap_vol->img;
     //float *dmap_img = (float *)malloc(vb->spacing[0] * vb->spacing[1] *
 //		    vb->spacing[2] * sizeof(float));
-    for (int i = 0; i < vb->spacing[0] * vb->spacing[1] *
-		    vb->spacing[2]; i++){
+    for (int i = 0; i < vb->dim[0] * vb->dim[1] *
+		    vb->dim[2]; i++){
 	    dmap_img[i] = -1.0;
     }
 
-    maurerFT(imgb, sp2, vb->spacing[0], vb->spacing[1], vb->spacing[2],
+    maurerFT(imgb, sp2, vb->dim[0], vb->dim[1], vb->dim[2],
 		    dmap_img);
 
-    distTransform(imgb, sp2, vb->spacing[0], vb->spacing[1], vb->spacing[2],
+    distTransform(imgb, sp2, vb->dim[0], vb->dim[1], vb->dim[2],
 		    dmap_img);
     
     /* Fixate distance map into private class */
