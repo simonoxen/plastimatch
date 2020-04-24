@@ -549,7 +549,6 @@ Distance_map_private::run_native_maurer ()
     }
 #endif
 }
-#if (OPENMP_FOUND)
 void
 Distance_map_private::run_itk_signed_danielsson ()
 {
@@ -608,9 +607,7 @@ Distance_map_private::runVoronoiFT1D(unsigned char *vol, float *sp2,
 	}
 	}
 }
-#endif
 
-#if(OPENMP_FOUND)
 void 
 Distance_map_private::runVoronoiFT2D(float *sp2, 
 		int height, int width, int depth, 
@@ -700,9 +697,7 @@ Distance_map_private::runVoronoiFT2D(float *sp2,
 	}
 	}
 }
-#endif
 
-#if(OPENMP_FOUND)
 void 
 Distance_map_private::runVoronoiFT3D(float *sp2, int height, int width, int depth, float *vol)
 {
@@ -790,7 +785,6 @@ Distance_map_private::runVoronoiFT3D(float *sp2, int height, int width, int dept
 	}
 	}
 }
-#endif
 
 int 
 Distance_map_private::removeFT2D(float *sp2, std::deque<std::vector<int>> &g_nodes, int *w, int *Rd)
@@ -882,7 +876,6 @@ Distance_map_private::maurerFT(unsigned char *vol, float *sp2, int height,
 	       voronoiFT(dim, vol, sp2, height, width, depth, output);
 	}
 }
-#if(OPENMP_FOUND)
 void 
 Distance_map_private::distTransform(unsigned char *vol, float *sp2,
 		int height, int width, int depth, float *ed_out)
@@ -923,7 +916,6 @@ Distance_map_private::distTransform(unsigned char *vol, float *sp2,
 	}
 	}
 }
-#endif
 
 double 
 Distance_map_private::calcDist(float *sp2,
