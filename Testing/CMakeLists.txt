@@ -2616,6 +2616,7 @@ set_tests_properties (plm-dice-f-check-2 PROPERTIES DEPENDS plm-dice-f)
 ## -------------------------------------------------------------------------
 ## plm-dmap-a  distance map, itk maurer
 ## plm-dmap-b  distance map, native danielsson
+## plm-dmap-c  distance map, song maurer
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dmap-a"
@@ -2630,6 +2631,14 @@ plm_add_test (
   "dmap;--algorithm;danielsson;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-b.mha"
   )
 set_tests_properties (plm-dmap-b PROPERTIES DEPENDS "rect-4")
+
+plm_add_test (
+  "plm-dmap-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dmap;--algorithm;song_maurer;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-c.mha"
+  )
+set_tests_properties (plm-dmap-c PROPERTIES DEPENDS "rect-4")
+
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list

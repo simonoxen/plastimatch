@@ -28,6 +28,7 @@ public:
         MAURER,
         ITK_DANIELSSON,
         ITK_MAURER,
+        SONG_MAURER,
     };
 
 public:
