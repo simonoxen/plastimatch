@@ -21,6 +21,7 @@ class Distance_map_private {
 public:
     Distance_map_private () {
         inside_is_positive = false;
+        absolute_distance = false;
         use_squared_distance = false;
         maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
@@ -31,6 +32,7 @@ public:
 public:
     Distance_map::Algorithm algorithm;
     bool inside_is_positive;
+    bool absolute_distance;
     bool use_squared_distance;
     float maximum_distance;
     Volume_boundary_behavior vbb;
@@ -482,6 +484,9 @@ Distance_map_private::run_native_danielsson ()
         {
             dmap_img[v] = -dmap_img[v];
         }
+        if (this->absolute_distance) {
+            dmap_img[v] = fabs(dmap_img[v]);
+        }
     }
     
     /* Free temporary memory */
@@ -609,6 +614,12 @@ void
 Distance_map::set_inside_is_positive (bool inside_is_positive)
 {
     d_ptr->inside_is_positive = inside_is_positive;
+}
+
+void 
+Distance_map::set_absolute_distance (bool absolute_distance)
+{
+    d_ptr->absolute_distance = absolute_distance;
 }
 
 void 
