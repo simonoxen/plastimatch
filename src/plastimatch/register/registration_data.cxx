@@ -344,7 +344,7 @@ void populate_similarity_list (
         }
 
         /* Distance map is MSE on distance map images */
-        if (ssi->metric_type == SIMILARITY_METRIC_DMAP) {
+        if (ssi->metric_type == SIMILARITY_METRIC_DMAP_DMAP) {
             ssi->fixed_ss = make_dmap (ssi->fixed_ss);
             ssi->moving_ss = make_dmap (ssi->moving_ss);
         }

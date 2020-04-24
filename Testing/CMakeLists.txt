@@ -85,6 +85,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
   "plm-reg-gw-a.txt"
+  "plm-reg-point-dmap-a.txt"
   "proton-dose-1.txt"
   "proton-dose-2.txt"
   "proton-dose-4a.txt"
@@ -2350,12 +2351,15 @@ set_tests_properties (plm-warp-xio-a-check-6 PROPERTIES DEPENDS plm-warp-xio-a)
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-prefix-fcsv
 ## -------------------------------------------------------------------------
+file (WRITE "${PLM_BUILD_TESTING_DIR}/sphere-3-list.txt"
+  "0|255 0 0|sphere-3")
+
 plm_add_test (
   "plm-convert-prefix-fcsv"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv"
+  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/sphere-3.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/sphere-3-list.txt;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv;--simplify-perc;0.5"
   )
-set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS donut-1)
+set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS sphere-3)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-dose-scale
@@ -4341,6 +4345,20 @@ set_tests_properties (plm-reg-autores-b-check PROPERTIES
 #   ${PLM_PLASTIMATCH_PATH}/plastimatch
 #   "${PLM_BUILD_TESTING_DIR}/plm-reg-gw-a.txt"
 #   )
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 13)
+##   plm-reg-point-dmap-a    Map points to distance map
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-point-dmap-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-point-dmap-a.txt"
+  )
+
+
+set_tests_properties (plm-reg-point-dmap-a PROPERTIES
+  DEPENDS "sphere-2;rect-3;plm-convert-prefix-fcsv;plm-dmap-b")
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose

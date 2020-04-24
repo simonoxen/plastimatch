@@ -17,7 +17,7 @@ Plm_return_code
 Metric_parms::set_metric_type (const std::string& val)
 {
     if (val == "dm" || val == "dmap") {
-        this->metric_type = SIMILARITY_METRIC_DMAP;
+        this->metric_type = SIMILARITY_METRIC_DMAP_DMAP;
         return PLM_SUCCESS;
     }
     else if (val == "gm") {
@@ -46,6 +46,10 @@ Metric_parms::set_metric_type (const std::string& val)
     }
     else if (val == "nmi" || val == "NMI") {
         this->metric_type = SIMILARITY_METRIC_NMI;
+        return PLM_SUCCESS;
+    }
+    else if (val == "pd") {
+        this->metric_type = SIMILARITY_METRIC_POINT_DMAP;
         return PLM_SUCCESS;
     }
     else {

@@ -470,7 +470,7 @@ bspline_score (Bspline_optimize *bod)
         timer.start ();
 
         switch ((*it_sd)->metric_type) {
-        case SIMILARITY_METRIC_DMAP:
+        case SIMILARITY_METRIC_DMAP_DMAP:
         case SIMILARITY_METRIC_MSE:
             bspline_score_mse (bod);
             break;
