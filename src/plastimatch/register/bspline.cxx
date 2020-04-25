@@ -56,6 +56,28 @@
 #include "volume.h"
 #include "volume_macros.h"
 
+
+/* Stub */
+void bspline_score_pd (Bspline_optimize *bod)
+{
+    printf ("Hello from bspline_score_pd!\n");
+    
+    Bspline_parms *parms = bod->get_bspline_parms ();
+    Bspline_state *bst = bod->get_bspline_state ();
+
+    Volume* fixed_roi  = bst->fixed_roi;
+    Volume* moving_roi = bst->moving_roi;
+    bool have_roi = fixed_roi || moving_roi;
+
+    printf ("fixed = %p\n", bst->fixed);
+    printf ("moving = %p\n", bst->moving);
+    printf ("fixed_pointset = %p\n", bst->fixed_pointset);
+    if (bst->fixed_pointset) {
+        printf ("fixed_pointset has %zd points\n", bst->fixed_pointset->get_count());
+    }
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: calc_offsets()
 //
@@ -479,6 +501,9 @@ bspline_score (Bspline_optimize *bod)
             break;
         case SIMILARITY_METRIC_GM:
             bspline_score_gm (bod);
+            break;
+        case SIMILARITY_METRIC_POINT_DMAP:
+            bspline_score_pd (bod);
             break;
         default:
             print_and_exit (

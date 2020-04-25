@@ -37,6 +37,7 @@ public:
 
     /*! \brief Current similarity images.  These are raw pointers 
      because they are passed to CUDA code.  */
+    Labeled_pointset *fixed_pointset;
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;

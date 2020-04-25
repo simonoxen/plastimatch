@@ -55,6 +55,8 @@ public:
     void set_fixed_image (const Plm_image::Pointer& image);
     void set_fixed_image (const std::string& index,
         const Plm_image::Pointer& image);
+    void set_fixed_pointset (const std::string& index,
+        const Labeled_pointset::Pointer& image);
     void set_moving_image (const Plm_image::Pointer& image);
     void set_moving_image (const std::string& index,
         const Plm_image::Pointer& image);
@@ -66,6 +68,7 @@ public:
         const Plm_image::Pointer& image);
     Plm_image::Pointer& get_fixed_image ();
     Plm_image::Pointer& get_fixed_image (const std::string& index);
+    Labeled_pointset::Pointer& get_fixed_pointset (const std::string& index);
     Plm_image::Pointer& get_moving_image ();
     Plm_image::Pointer& get_moving_image (const std::string& index);
     Plm_image::Pointer& get_fixed_roi ();
