@@ -67,6 +67,7 @@ void bspline_score_pd (Bspline_optimize *bod)
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
+    Bspline_score *ssd;
     Volume* fixed_image  = bst->fixed;
     Volume* moving_image = bst->moving;
     float* m_image = (float*) moving_image->img;
@@ -85,6 +86,9 @@ void bspline_score_pd (Bspline_optimize *bod)
     float mxyz[3];
     plm_long mijk_f[3], mvf;
     plm_long mijk_r[3], mvr;
+    plm_long p[3], pidx;
+    plm_long q[3], qidx;
+
     float dc_dv[3];
     float li_1[3];
     float li_2[3];
@@ -108,54 +112,65 @@ void bspline_score_pd (Bspline_optimize *bod)
 	    printf("%g,%g,%g\n",landmark_ijk[0],landmark_ijk[1],landmark_ijk[2]);
 	    idx = volume_index(moving_image->dim, landmark_ijk[0],
 			    landmark_ijk[1], landmark_ijk[2]);
-	    moving_value = &m_image[3*idx];
+	    moving_value = &m_image[idx];
 	    score_acc += moving_value[0] + moving_value[1] + moving_value[2];
 	    printf("%f",score_acc);
     }
     
     LOOP_Z (fijk, fxyz, fixed_image) {
-        LOOP_Y (fijk, fxyz, fixed_image) {
-            LOOP_X (fijk, fxyz, fixed_image) {
+	    p[2] = REGION_INDEX_Z (fijk, bxf);
+	    q[2] = REGION_OFFSET_Z (fijk, bxf);
+	    LOOP_Y (fijk, fxyz, fixed_image) {
+		    p[1] = REGION_INDEX_Y (fijk, bxf);
+		    q[1] = REGION_OFFSET_Y (fijk, bxf);
+		    LOOP_X (fijk, fxyz, fixed_image) {
+			    p[0] = REGION_INDEX_X (fijk, bxf);
+			    q[0] = REGION_OFFSET_X (fijk, bxf);
 
-
-                /* Compute interpolation fractions */
-                li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving_image);
-	        mvf = volume_index(moving_image->dim, mijk_f);	
-		/* Compute moving image intensity using linear interpolation */
-                /* Macro is slightly faster than function */
-
-                m_x = li_value_dx ( 
-                    li_1, li_2, inv_rx, 
-                    mvf,
-                    m_image, moving_image
-                );
+			    pidx = volume_index (bxf->rdims, p);
+			    qidx = volume_index (bxf->vox_per_rgn, q);
+			    
+			    /* Compute interpolation fractions */
+			    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving_image);
+			    mvf = volume_index(moving_image->dim, mijk_f);	
+			    /* Compute moving image intensity using linear interpolation */
+			    /* Macro is slightly faster than function */
+			    
+			    m_x = li_value_dx ( 
+				li_1, li_2, inv_rx, 
+			        mvf,
+		  	        m_image, moving_image
+		        	);
 		
-		m_y = li_value_dy ( 
-                    li_1, li_2, inv_ry, 
-                    mvf,
-                    m_image, moving_image
-                );
-		m_z = li_value_dz ( 
-                    li_1, li_2, inv_rz, 
-                    mvf,
-                    m_image, moving_image
-                );
+		            m_y = li_value_dy ( 
+                                li_1, li_2, inv_ry, 
+                                mvf,
+                                m_image, moving_image
+                                );
 
-                /* Compute spatial gradient using nearest neighbors */
+		            m_z = li_value_dz ( 
+                                li_1, li_2, inv_rz, 
+                                mvf,
+                                m_image, moving_image
+                                );
+
+                            /* Compute spatial gradient using nearest neighbors */
                 //mvr = volume_index (moving->dim, mijk_r);
-                dc_dv[0] = m_x;  /* x component */
-                dc_dv[1] = m_y;  /* y component */
-                dc_dv[2] = m_z;  /* z component */
+                            dc_dv[0] = m_x;  /* x component */
+                            dc_dv[1] = m_y;  /* y component */
+                            dc_dv[2] = m_z;  /* z component */
 
-                //bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
+                            bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
 
             } /* LOOP_THRU_ROI_X */
         } /* LOOP_THRU_ROI_Y */
     } /* LOOP_THRU_ROI_Z */
 
     /* Normalize score for MSE */
-    //bspline_score_normalize (bod, score_acc);
-
+    ssd->curr_smetric = score_acc / num_points;
+    for (int i = 0; i < num_points; i++) {
+	    ssd->curr_smetric_grad[i] = ssd->curr_smetric_grad[i] / num_points;
+    }
 }
 
 

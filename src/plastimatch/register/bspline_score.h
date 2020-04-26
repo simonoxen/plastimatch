@@ -41,7 +41,6 @@ public:
 
     float lmetric;         /* Landmark metric */
     float rmetric;         /* Regularization metric */
-    float pdmetric;        /* Point to dmap metric */
 
     /*! \brief The metric_record keeps track of score statistics 
       for reporting purposes */
