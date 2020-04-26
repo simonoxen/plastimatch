@@ -5,6 +5,7 @@
 #define _metric_state_h_
 
 #include "plmregister_config.h"
+#include "pointset.h"
 #include "similarity_metric_type.h"
 #include "volume.h"
 
@@ -18,6 +19,7 @@ public:
     Metric_state ();
     ~Metric_state ();
 public:
+    Labeled_pointset::Pointer fixed_pointset;
     Volume::Pointer fixed_ss;
     Volume::Pointer moving_ss;
     Volume::Pointer fixed_grad;

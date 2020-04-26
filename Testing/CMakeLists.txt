@@ -85,6 +85,7 @@ set (CONFIG_FILE_LIST
   "plm-reg-autores-a.txt"
   "plm-reg-autores-b.txt"
   "plm-reg-gw-a.txt"
+  "plm-reg-point-dmap-a.txt"
   "proton-dose-1.txt"
   "proton-dose-2.txt"
   "proton-dose-4a.txt"
@@ -309,6 +310,7 @@ add_custom_target (speedtest
 ##   sphere-4          Standard, radius = 150
 ##   sphere-5          Uchar sphere, bg=0, fg=1, abutting image boundary
 ##   sphere-6          Standard uchar sphere, centered
+##   sphere-7          Uchar sphere, bg=0, fg=1
 ##   xramp-1           X ramp
 ##   yramp-1           Y ramp
 ##   zramp-1           Z ramp
@@ -654,6 +656,11 @@ plm_add_test (
   "sphere-6"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-6.mha;--output-type;uchar;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--center;0 0 0;--radius;50 50 50"
+  )
+plm_add_test (
+  "sphere-7"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_BUILD_TESTING_DIR}/sphere-7.mha;--output-type;uchar;--pattern;sphere;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--center;0 0 0;--radius;50 50 50"
   )
 plm_add_test (
   "xramp-1"
@@ -2350,12 +2357,15 @@ set_tests_properties (plm-warp-xio-a-check-6 PROPERTIES DEPENDS plm-warp-xio-a)
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-prefix-fcsv
 ## -------------------------------------------------------------------------
+file (WRITE "${PLM_BUILD_TESTING_DIR}/sphere-7-list.txt"
+  "0|255 0 0|sphere-7")
+
 plm_add_test (
   "plm-convert-prefix-fcsv"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/donut-1-ss.mha;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv"
+  "convert;--input-ss-img;${PLM_BUILD_TESTING_DIR}/sphere-7.mha;--input-ss-list;${PLM_BUILD_TESTING_DIR}/sphere-7-list.txt;--output-prefix-fcsv;${PLM_BUILD_TESTING_DIR}/plm-convert-prefix-fcsv;--simplify-perc;0.5"
   )
-set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS donut-1)
+set_tests_properties (plm-convert-prefix-fcsv PROPERTIES DEPENDS sphere-7)
 
 ## -------------------------------------------------------------------------
 ## plastimatch-convert-dose-scale
@@ -2612,6 +2622,7 @@ set_tests_properties (plm-dice-f-check-2 PROPERTIES DEPENDS plm-dice-f)
 ## -------------------------------------------------------------------------
 ## plm-dmap-a  distance map, itk maurer
 ## plm-dmap-b  distance map, native danielsson
+## plm-dmap-c  distance map, song maurer
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-dmap-a"
@@ -2623,9 +2634,17 @@ set_tests_properties (plm-dmap-a PROPERTIES DEPENDS "rect-4")
 plm_add_test (
   "plm-dmap-b"
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "dmap;--algorithm;danielsson;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-b.mha"
+  "dmap;--algorithm;danielsson;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-b.mha;--absolute-distance"
   )
 set_tests_properties (plm-dmap-b PROPERTIES DEPENDS "rect-4")
+
+plm_add_test (
+  "plm-dmap-c"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "dmap;--algorithm;song_maurer;--input;${PLM_BUILD_TESTING_DIR}/rect-4.mha;--output;${PLM_BUILD_TESTING_DIR}/plm-dmap-c.mha"
+  )
+set_tests_properties (plm-dmap-c PROPERTIES DEPENDS "rect-4")
+
 
 ## -------------------------------------------------------------------------
 ## plm-dvh-a  ss-img, without ss-list
@@ -4341,6 +4360,19 @@ set_tests_properties (plm-reg-autores-b-check PROPERTIES
 #   ${PLM_PLASTIMATCH_PATH}/plastimatch
 #   "${PLM_BUILD_TESTING_DIR}/plm-reg-gw-a.txt"
 #   )
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 13)
+##   plm-reg-point-dmap-a    Map points to distance map
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-reg-point-dmap-a"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_BUILD_TESTING_DIR}/plm-reg-point-dmap-a.txt"
+  )
+
+set_tests_properties (plm-reg-point-dmap-a PROPERTIES
+  DEPENDS "sphere-2;rect-3;plm-convert-prefix-fcsv;plm-dmap-b")
 
 ## -------------------------------------------------------------------------
 ## plastimatch compose

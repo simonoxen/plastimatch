@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include "compiler_warnings.h"
+#include "smart_pointer.h"
 
 class Pstring;
 
@@ -60,11 +61,15 @@ public:
 template<class T>
 class PLMBASE_API Pointset {
 public:
+    SMART_POINTER_SUPPORT (Pointset);
+public:
     Pointset();
+    Pointset(const std::string& s);
     ~Pointset();
 public:
     std::vector<T> point_list;
 public:
+    void load (const std::string& s);
     void load (const char *fn);
     void load_txt (const char *fn);
     void load_fcsv (const char *fn);

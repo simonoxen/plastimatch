@@ -5,6 +5,7 @@
 
 #include "distance_map.h"
 #include "logfile.h"
+#include "plm_file_format.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
@@ -74,15 +75,22 @@ Registration_data::load_shared_input_files (const Shared_parms* shared)
         }
         
         /* Load images */
-        logfile_printf ("Loading fixed image [%s]: %s\n", 
-            index.c_str(), mp.fixed_fn.c_str());
-        this->set_fixed_image (index,
-            Plm_image::New (mp.fixed_fn, PLM_IMG_TYPE_ITK_FLOAT));
+        Plm_file_format fixed_format = plm_file_format_deduce (mp.fixed_fn);
+        if (fixed_format == PLM_FILE_FMT_POINTSET) {
+            logfile_printf ("Loading fixed pointset [%s]: %s\n", 
+                index.c_str(), mp.fixed_fn.c_str());
+            this->set_fixed_pointset (index,
+                Labeled_pointset::New (mp.fixed_fn));
+        } else {
+            logfile_printf ("Loading fixed image [%s]: %s\n", 
+                index.c_str(), mp.fixed_fn.c_str());
+            this->set_fixed_image (index,
+                Plm_image::New (mp.fixed_fn, PLM_IMG_TYPE_ITK_FLOAT));
+        }
         logfile_printf ("Loading moving image [%s]: %s\n", 
             index.c_str(), mp.moving_fn.c_str());
         this->set_moving_image (index,
             Plm_image::New (mp.moving_fn, PLM_IMG_TYPE_ITK_FLOAT));
-        
         /* Load rois */
         if (mp.fixed_roi_fn != "") {
             logfile_printf ("Loading fixed roi [%s]: %s\n", 
@@ -166,6 +174,14 @@ Registration_data::set_fixed_image (
 }
 
 void
+Registration_data::set_fixed_pointset (
+    const std::string& index,
+    const Labeled_pointset::Pointer& pointset)
+{
+    this->get_similarity_images(index)->fixed_pointset = pointset;
+}
+
+void
 Registration_data::set_moving_image (const Plm_image::Pointer& image)
 {
     this->set_moving_image (DEFAULT_IMAGE_KEY, image);
@@ -220,6 +236,13 @@ Registration_data::get_fixed_image (
     return this->get_similarity_images(index)->fixed;
 }
 
+Labeled_pointset::Pointer&
+Registration_data::get_fixed_pointset (
+    const std::string& index)
+{
+    return this->get_similarity_images(index)->fixed_pointset;
+}
+
 Plm_image::Pointer&
 Registration_data::get_moving_image ()
 {
@@ -269,12 +292,15 @@ Registration_data::get_similarity_indices ()
     for (it = d_ptr->similarity_images.begin();
          it != d_ptr->similarity_images.end(); ++it)
     {
-        if (it->second->fixed && it->second->moving) {
+        const Registration_similarity_data::Pointer& rsd = it->second;
+        if ((rsd->fixed || rsd->fixed_pointset) && it->second->moving) {
             if (it->first == DEFAULT_IMAGE_KEY) {
                 d_ptr->similarity_indices.push_front (it->first);
             } else {
                 d_ptr->similarity_indices.push_back (it->first);
             }
+        } else {
+            print_and_exit ("Error: Similarity index %s did not have both fixed and moving\n", it->first.c_str());
         }
     }
     return d_ptr->similarity_indices;
@@ -318,16 +344,21 @@ void populate_similarity_list (
     {
         Plm_image::Pointer fixed_image = regd->get_fixed_image (*ind_it);
         Plm_image::Pointer moving_image = regd->get_moving_image (*ind_it);
-        Volume::Pointer& fixed = fixed_image->get_volume_float ();
-        Volume::Pointer& moving = moving_image->get_volume_float ();
-
+        Labeled_pointset::Pointer& fixed_pointset = regd->get_fixed_pointset (*ind_it);
         Metric_state::Pointer ssi = Metric_state::New();
 
         /* Subsample images */
-        ssi->fixed_ss = registration_resample_volume (
-            fixed, stage, stage->resample_rate_fixed);
+        if (fixed_image) {
+            Volume::Pointer& fixed = fixed_image->get_volume_float ();
+            ssi->fixed_ss = registration_resample_volume (
+                fixed, stage, stage->resample_rate_fixed);
+        }
+        Volume::Pointer& moving = moving_image->get_volume_float ();
         ssi->moving_ss = registration_resample_volume (
             moving, stage, stage->resample_rate_moving);
+
+        /* Fixed pointset */
+        ssi->fixed_pointset = fixed_pointset;
 
         /* Metric */
         const Metric_parms& metric_parms = shared->metric.find(*ind_it)->second;
@@ -344,7 +375,7 @@ void populate_similarity_list (
         }
 
         /* Distance map is MSE on distance map images */
-        if (ssi->metric_type == SIMILARITY_METRIC_DMAP) {
+        if (ssi->metric_type == SIMILARITY_METRIC_DMAP_DMAP) {
             ssi->fixed_ss = make_dmap (ssi->fixed_ss);
             ssi->moving_ss = make_dmap (ssi->moving_ss);
         }

@@ -261,7 +261,6 @@ bspline_optimize_lbfgsb (
             old_best_score = ssd->total_score;
 
             /* Update line search start location */
-            printf ("Update lss_coeff\n");
             for (int i = 0; i < bxf->num_coeff; i++) {
                 lss_coeff[i] = (float) optimizer.x[i];
             }

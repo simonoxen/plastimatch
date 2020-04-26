@@ -24,6 +24,12 @@ Pointset<T>::Pointset ()
 }
 
 template<class T>
+Pointset<T>::Pointset (const std::string& s)
+{
+    load (s.c_str());
+}
+
+template<class T>
 Pointset<T>::~Pointset ()
 {
 }

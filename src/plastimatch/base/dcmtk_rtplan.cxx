@@ -352,8 +352,13 @@ Dcmtk_rt_study::rtplan_save (const char *dicom_dir)
         Rtplan_beam *beam = rtplan->beamlist[b];
         dcmtk_put (rbs_item, DCM_BeamMeterset, 
             beam->final_cumulative_meterset_weight);
+#if DCMTK_HAS_DCM_BEAMDOSESPECIFICATIONPOINT
 	dcmtk_put (rbs_item, DCM_BeamDoseSpecificationPoint, 
 	    beam->beam_dose_specification_point);
+#else
+	dcmtk_put (rbs_item, DCM_RETIRED_BeamDoseSpecificationPoint, 
+	    beam->beam_dose_specification_point);
+#endif
 	dcmtk_put (rbs_item, DCM_BeamDose,
 	    beam->beam_dose);
     }

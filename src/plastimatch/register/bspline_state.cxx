@@ -153,6 +153,7 @@ void
 Bspline_state::set_metric_state (const Metric_state::Pointer& ms)
 {
     this->fixed = ms->fixed_ss.get();
+    this->fixed_pointset = ms->fixed_pointset.get();
     this->moving = ms->moving_ss.get();
     this->moving_grad = ms->moving_grad.get();
     this->fixed_roi = ms->fixed_roi.get();

@@ -20,12 +20,14 @@ public:
     bool have_maximum_distance;
     float maximum_distance;
     bool inside_positive;
+    bool absolute_distance;
     Threading threading;
     Volume_boundary_behavior vbb;
     Volume_boundary_type vbt;
 public:
     Dmap_parms () {
         inside_positive = false;
+        absolute_distance = false;
         have_maximum_distance = false;
         maximum_distance = FLT_MAX;
         squared_distance = false;
@@ -43,6 +45,7 @@ dmap_main (Dmap_parms* parms)
     dmap.set_algorithm (parms->algorithm);
 
     dmap.set_inside_is_positive (parms->inside_positive);
+    dmap.set_absolute_distance (parms->absolute_distance);
     dmap.set_use_squared_distance (parms->squared_distance);
     if (parms->have_maximum_distance) {
         dmap.set_maximum_distance (parms->maximum_distance);
@@ -89,7 +92,8 @@ parse_fn (
         "\"maurer\", "
         "\"itk-maurer\", "
         "\"danielsson\", "
-        " or \"itk-danielsson\" "
+        "\"itk-danielsson\" "
+	" or \"song-maurer\" "
         "(default is \"danielsson\")",
         1, "danielsson");
     parser->add_long_option ("A", "threading",
@@ -97,8 +101,10 @@ parse_fn (
     parser->add_long_option ("", "squared-distance",
         "return the squared distance instead of distance", 0);
     parser->add_long_option ("", "inside-positive",
-        "voxels inside the structure should be positive"
-        " (by default they are negative)", 0);
+        "voxels inside the structure are positive and outside the structure "
+        "are negative", 0);
+    parser->add_long_option ("", "absolute-distance",
+        "all distances are positive", 0);
     parser->add_long_option ("", "maximum-distance",
         "voxels with distances greater than this number will have the "
         "distance truncated to this number", 1, "");
@@ -149,6 +155,9 @@ parse_fn (
     }
     if (parser->option("inside-positive")) {
         parms->inside_positive = true;
+    }
+    if (parser->option("absolute-distance")) {
+        parms->absolute_distance = true;
     }
     if (parser->option("maximum-distance")) {
         parms->have_maximum_distance = true;

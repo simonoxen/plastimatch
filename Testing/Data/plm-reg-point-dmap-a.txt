@@ -1,0 +1,19 @@
+[GLOBAL]
+fixed[0]=@PLM_BUILD_TESTING_DIR@/sphere-2.mha
+moving[0]=@PLM_BUILD_TESTING_DIR@/rect-3.mha
+fixed[1]=@PLM_BUILD_TESTING_DIR@/plm-convert-prefix-fcsv/sphere-3.fcsv
+moving[1]=@PLM_BUILD_TESTING_DIR@/plm-dmap-b.mha
+
+vf_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-vf.nrrd
+img_out=@PLM_BUILD_TESTING_DIR@/@PLM_TEST_NAME@-img.nrrd
+
+[STAGE]
+metric[0]=mse
+metric[1]=pd
+metric_lambda[0]=1
+metric_lambda[1]=30
+xform=bspline
+impl=plastimatch
+max_its=5
+grid_spac=10 10 10
+res=1 1 1

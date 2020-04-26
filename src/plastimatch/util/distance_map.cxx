@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <deque>
+#include <vector>
 #include "itkImage.h"
 
 #include "image_boundary.h"
@@ -21,6 +23,7 @@ class Distance_map_private {
 public:
     Distance_map_private () {
         inside_is_positive = false;
+        absolute_distance = false;
         use_squared_distance = false;
         maximum_distance = FLT_MAX;
         algorithm = Distance_map::DANIELSSON;
@@ -31,6 +34,7 @@ public:
 public:
     Distance_map::Algorithm algorithm;
     bool inside_is_positive;
+    bool absolute_distance;
     bool use_squared_distance;
     float maximum_distance;
     Volume_boundary_behavior vbb;
@@ -45,6 +49,7 @@ public:
     void run_itk_signed_danielsson ();
     void run_itk_signed_maurer ();
     void run_itk_signed_native ();
+    void run_song_maurer ();
     void run ();
 protected:
     void native_danielsson_initialize_face_distances (
@@ -71,6 +76,51 @@ protected:
         const Volume::Pointer& vb,
         const float* sp2,
         plm_long k);
+    void maurerFT (
+        unsigned char *vol,
+	float *sp2,
+	int height, int width, int depth,
+	float *output);
+    void voronoiFT (
+	int dim, 
+        unsigned char *vol, 
+        float *sp2,
+	int height, int width, int depth, 
+	float *output);
+    void runVoronoiFT1D (
+        unsigned char *vol, 
+	float *sp2,
+	int height, int width, int depth, 
+	float *output);
+    void runVoronoiFT2D ( 
+	float *sp2,
+	int height, int width, int depth, 
+	float *output);
+    void runVoronoiFT3D (
+	float *sp2,
+	int height, int width, int depth, 
+	float *output);
+    int removeFT2D (
+	float *sp2,
+	std::deque<std::vector<int>> &g_nodes,
+	int *w, int *Rd);
+    int removeFT3D (
+	float *sp2,
+	std::deque<std::vector<int>> &g_nodes,
+	int *w, int *Rd);
+    double ED (
+	float *sp2,
+	int vol_i, int vol_j, int vol_k,
+	std::vector<int> &fv);
+    void distTransform (
+	unsigned char *vol, 
+	float *sp2,
+	int height, int width, int depth, 
+	float *ed_out);
+    double calcDist (
+	float *sp2,
+	double i, double j, double k,
+	double target_i, double target_j, double target_k);
 };
 
 /* Define some macros */
@@ -482,6 +532,9 @@ Distance_map_private::run_native_danielsson ()
         {
             dmap_img[v] = -dmap_img[v];
         }
+        if (this->absolute_distance) {
+            dmap_img[v] = fabs(dmap_img[v]);
+        }
     }
     
     /* Free temporary memory */
@@ -501,7 +554,6 @@ Distance_map_private::run_native_maurer ()
     }
 #endif
 }
-
 void
 Distance_map_private::run_itk_signed_danielsson ()
 {
@@ -509,6 +561,427 @@ Distance_map_private::run_itk_signed_danielsson ()
         this->input,
         this->use_squared_distance,
         this->inside_is_positive);
+}
+void 
+Distance_map_private::runVoronoiFT1D(unsigned char *vol, float *sp2,
+		int height, int width, int depth,
+		float *output)
+{
+	// GNodes
+	std::deque<std::vector<int>> g_nodes;
+
+	// Distance between slices
+	int slice_stride = height * width;
+
+	int k;
+
+	#pragma omp parallel shared(vol, sp2, output) private(g_nodes,k)
+	{
+	#pragma omp for
+	for (k = 0; k < depth; k++){
+		int i;
+		for (i = 0; i < height; i++){
+			int j;
+			for (j = 0; j < width; j++){
+				if (vol[k * slice_stride + i * width + j] != 0){
+					std::vector<int> fv {i, j, k};
+					g_nodes.push_back(fv);
+				}
+			}
+
+			if (g_nodes.size() == 0){
+				continue;
+			}
+
+			// Query partial voronoi diagram
+			for (j = 0; j < width; j++){
+				int ite = 0;
+				while ((ite < (g_nodes.size() - 1)) &&
+					(ED(sp2, i, j, k, g_nodes[ite]) >
+					ED(sp2, i, j, k, g_nodes[ite+1]))){
+					ite++;
+				}
+
+				output[k * slice_stride + i * width + j] =
+					double(g_nodes[ite][2] * slice_stride +
+					g_nodes[ite][0] * width +
+					g_nodes[ite][1]);
+			}
+			g_nodes.clear();
+		}
+	}
+	}
+}
+
+void 
+Distance_map_private::runVoronoiFT2D(float *sp2, 
+		int height, int width, int depth, 
+		float *vol)
+{
+	std::deque<std::vector<int>> g_nodes;
+	
+	int Rd[3];
+	int w[3];
+
+	// Distance between slices
+	int slice_stride = height * width;
+
+	int k;
+	#pragma omp parallel shared(sp2, vol) private(g_nodes, Rd, w, k)
+    	{
+	#pragma omp for
+	for (k = 0; k < depth; k++){
+		int j;
+		for (j = 0; j < width; j++){
+			int i;
+			for (i = 0; i < height; i++){
+				if (vol[k * slice_stride + i * width + j] != -1.0){
+					int fv_k = int(vol[k * slice_stride + i * width + j])
+							/ slice_stride;
+					
+					int fv_i = (int(vol[k * slice_stride + i * width + j])
+							% slice_stride) / width;
+					
+					int fv_j = (int(vol[k * slice_stride + i * width + j])
+							% slice_stride) % width;
+					
+					if(g_nodes.size() < 2){
+						std::vector<int> fv {fv_i, fv_j, fv_k};
+
+						g_nodes.push_back(fv);
+					}
+					else{
+						w[0] = fv_i;
+						w[1] = fv_j;
+						w[2] = fv_k;
+
+						Rd[0] = i;
+						Rd[1] = j;
+						Rd[2] = k;
+
+						while (g_nodes.size() >= 2 && 
+							removeFT2D(sp2, g_nodes, w, Rd)){
+							g_nodes.pop_back();
+						}
+
+						std::vector<int> fv {fv_i, fv_j, fv_k};
+
+						g_nodes.push_back(fv);
+
+					}
+				}
+			}
+
+			if (g_nodes.size() == 0){
+				continue;
+			}
+
+			// Query partial voronoi diagram
+			for (i = 0; i < height; i++){
+				double minDist = DBL_MAX;
+				int minIndex = -1;
+
+				int ite = 0;
+				while(ite < g_nodes.size()){
+					double tempDist = ED(sp2, i, j, k, g_nodes[ite]);
+
+					if(tempDist < minDist){
+						minDist = tempDist;
+						minIndex = ite;
+					}
+					ite++;
+				}
+
+				vol[k * slice_stride + i * width + j] = \
+					double(g_nodes[minIndex][2] * slice_stride +
+					g_nodes[minIndex][0] * width +
+					g_nodes[minIndex][1]);
+			}
+			g_nodes.clear();
+		}
+	}
+	}
+}
+
+void 
+Distance_map_private::runVoronoiFT3D(float *sp2, int height, int width, int depth, float *vol)
+{
+	std::deque<std::vector<int>> g_nodes;
+
+	int Rd[3];
+	int w[3];
+
+	// Distance between slices
+	int slice_stride = height * width;
+
+	int i;
+	#pragma omp parallel shared(sp2, vol) private(g_nodes, Rd, w, i)
+    	{
+	#pragma omp for
+	for (i = 0; i < height; i++){
+		int j;
+		for (j = 0; j < width; j++){
+			int k;
+			for (k = 0; k < depth; k++){
+				if (vol[k * slice_stride + i * width + j] != -1.0){
+					int fv_k = int(vol[k * slice_stride + i * width + j])
+							/ slice_stride;
+
+					int fv_i = (int(vol[k * slice_stride + i * width + j])
+							% slice_stride) / width;
+
+					int fv_j = (int(vol[k * slice_stride + i * width + j])
+							% slice_stride) % width;
+					
+					if(g_nodes.size() < 2){
+						std::vector<int> fv {fv_i, fv_j, fv_k};
+
+						g_nodes.push_back(fv);
+					}
+					else{
+						w[0] = fv_i;
+						w[1] = fv_j;
+						w[2] = fv_k;
+
+						Rd[0] = i;
+						Rd[1] = j;
+						Rd[2] = k;
+
+						while (g_nodes.size() >= 2 && 
+							removeFT3D(sp2, g_nodes, w, Rd)){
+							g_nodes.pop_back();
+						}
+
+						std::vector<int> fv {fv_i, fv_j, fv_k};
+
+						g_nodes.push_back(fv);
+
+					}
+				}
+			}
+				
+			if (g_nodes.size() == 0){
+				continue;
+			}
+
+			// Query partial voronoi diagram
+			for (k = 0; k < depth; k++){
+				double minDist = DBL_MAX;
+				int minIndex = -1;
+
+				int ite = 0;
+				while(ite < g_nodes.size()){
+					double tempDist = ED(sp2, i, j, k, g_nodes[ite]);
+
+					if(tempDist < minDist){
+						minDist = tempDist;
+						minIndex = ite;
+					}
+					ite++;
+				}
+
+				vol[k * slice_stride + i * width + j] = \
+					double(g_nodes[minIndex][2] * slice_stride + \
+					g_nodes[minIndex][0] * width + \
+					g_nodes[minIndex][1]);
+			}
+			g_nodes.clear();
+		}
+	}
+	}
+}
+
+int 
+Distance_map_private::removeFT2D(float *sp2, std::deque<std::vector<int>> &g_nodes, int *w, int *Rd)
+{
+	std::vector<int> u = g_nodes[g_nodes.size() - 2];
+	std::vector<int> v = g_nodes[g_nodes.size() - 1];
+
+	double a = (v[0] - u[0]) * sqrt(sp2[0]);
+	double b = (w[0] - v[0]) * sqrt(sp2[0]);
+	double c = a + b;
+
+	double vRd = 0.0;
+	double uRd = 0.0;
+	double wRd = 0.0;
+
+	int i = 1;
+	for (i; i < 3; i++){
+		vRd += (v[i] - Rd[i]) * (v[i] - Rd[i]) * sp2[i];
+		uRd += (u[i] - Rd[i]) * (u[i] - Rd[i]) * sp2[i];
+		wRd += (w[i] - Rd[i]) * (w[i] - Rd[i]) * sp2[i];
+	}
+
+	return (c * vRd - b * uRd - a * wRd - a * b * c > 0.0);
+
+}
+
+int 
+Distance_map_private::removeFT3D(float *sp2, std::deque<std::vector<int>> &g_nodes, int *w, int *Rd)
+{
+	std::vector<int> u = g_nodes[g_nodes.size() - 2];
+	std::vector<int> v = g_nodes[g_nodes.size() - 1];
+
+	double a = (v[2] - u[2]) * sqrt(sp2[2]);
+	double b = (w[2] - v[2]) * sqrt(sp2[2]);
+	double c = a + b;
+
+	double vRd = 0;
+	double uRd = 0;
+	double wRd = 0;
+
+	int i = 0;
+	for (i; i < 2; i++){
+		vRd += (v[i] - Rd[i]) * (v[i] - Rd[i]) * sp2[i];
+		uRd += (u[i] - Rd[i]) * (u[i] - Rd[i]) * sp2[i];
+		wRd += (w[i] - Rd[i]) * (w[i] - Rd[i]) * sp2[i];
+	}
+
+	return (c * vRd - b * uRd - a * wRd - a * b * c > 0.0);
+}
+
+double 
+Distance_map_private::ED(float *sp2, 
+		int vol_i, int vol_j, int vol_k, 
+		std::vector<int> &fv)
+{
+	double temp = 0;
+
+        temp = (fv[0] - vol_i) * (fv[0] - vol_i) * sp2[0] +\
+                        (fv[1] - vol_j) * (fv[1] - vol_j) * sp2[1] +\
+                        (fv[2] - vol_k) * (fv[2] - vol_k) * sp2[2];
+
+        return sqrt(temp);
+}
+void 
+Distance_map_private::voronoiFT(int dim, unsigned char *vol, float *sp2,
+		int height, int width, int depth, float *output)
+{
+	switch (dim)
+	{
+		case 1:
+			runVoronoiFT1D(vol, sp2, height, width, depth, output);
+			break;	
+		case 2:				
+			runVoronoiFT2D(sp2, height, width, depth, output);
+			break;
+		case 3:					
+			runVoronoiFT3D(sp2, height, width, depth, output);
+			break;									
+		default:								
+			break;								
+	}
+}
+void
+Distance_map_private::maurerFT(unsigned char *vol, float *sp2, int height,
+		int width, int depth, float *output)
+{
+	int dim;
+	for (dim = 1; dim < 4; dim++){
+	       voronoiFT(dim, vol, sp2, height, width, depth, output);
+	}
+}
+void 
+Distance_map_private::distTransform(unsigned char *vol, float *sp2,
+		int height, int width, int depth, float *ed_out)
+{
+	int slice_stride = height * width;
+
+	int k;
+	#pragma omp parallel private(k)
+	{
+	
+	#pragma omp for
+	for (k = 0; k < depth; k++){
+		int i;
+		for (i = 0; i < height; i++){
+			int j;
+			for (j = 0; j < width; j++){
+				int dep_id = int(ed_out[k * slice_stride + i * width + j])
+					    	 / slice_stride;
+				
+				int row_id = int(ed_out[k * slice_stride + i * width + j])
+						% slice_stride / width;
+
+				int col_id = int(ed_out[k * slice_stride + i * width + j])
+					     	% slice_stride % width;
+				
+				if (row_id == i && col_id == j && k == dep_id){
+					ed_out[k * slice_stride + i * width + j] = 0.0;
+				}
+				else{
+                                        ed_out[k * slice_stride + i * width + j] =
+						calcDist(
+						sp2,
+						i, j, k,
+						row_id, col_id, dep_id); 
+				}
+			}
+		}
+	}
+	}
+}
+
+double 
+Distance_map_private::calcDist(float *sp2,
+		double i, double j, double k,
+		double target_i, double target_j, double target_k)
+{
+	double result = (i - target_i) * (i - target_i) * sp2[0] +
+			(j - target_j) * (j - target_j) * sp2[1] +
+			(k - target_k) * (k - target_k) * sp2[2];
+
+	return sqrt(result);
+}
+void
+Distance_map_private::run_song_maurer ()
+{
+    /* Compute boundary of image
+       vb = volume of boundary, imgb = img of boundary */
+    Image_boundary ib;
+    ib.set_volume_boundary_type (vbt);
+    ib.set_volume_boundary_behavior (vbb);
+    ib.set_input_image (this->input);
+    ib.run ();
+    UCharImageType::Pointer itk_ib = ib.get_output_image ();
+    Plm_image pib (itk_ib);
+    Volume::Pointer vb = pib.get_volume_uchar();
+    unsigned char *imgb = (unsigned char*) vb->img;
+    
+    /* Convert image to native volume 
+       vs = volume of set, imgs = img of set */
+    Plm_image pi (this->input);
+    Volume::Pointer vs = pi.get_volume_uchar();
+    unsigned char *imgs = (unsigned char*) vs->img;
+
+    float sp2[3] = {
+        vb->spacing[0] * vb->spacing[0],
+        vb->spacing[1] * vb->spacing[1],
+        vb->spacing[2] * vb->spacing[2]
+    };
+    /* Fill in output image */
+    Plm_image::Pointer dmap = Plm_image::New (
+        new Plm_image (
+            new Volume (Volume_header (vb), PT_FLOAT, 1)));
+    Volume::Pointer dmap_vol = dmap->get_volume_float ();
+    float *dmap_img = (float*) dmap_vol->img;
+    //float *dmap_img = (float *)malloc(vb->spacing[0] * vb->spacing[1] *
+//		    vb->spacing[2] * sizeof(float));
+    for (int i = 0; i < vb->dim[0] * vb->dim[1] *
+		    vb->dim[2]; i++){
+	    dmap_img[i] = -1.0;
+    }
+
+    maurerFT(imgb, sp2, vb->dim[0], vb->dim[1], vb->dim[2],
+		    dmap_img);
+
+    distTransform(imgb, sp2, vb->dim[0], vb->dim[1], vb->dim[2],
+		    dmap_img);
+    
+    /* Fixate distance map into private class */
+
+    this->output = dmap->itk_float();
+
 }
 
 void
@@ -533,6 +1006,9 @@ Distance_map_private::run ()
     case Distance_map::MAURER:
         this->run_native_maurer ();
         break;
+    case Distance_map::SONG_MAURER:
+        this->run_song_maurer ();
+        break;	
     case Distance_map::ITK_MAURER:
     default:
         this->run_itk_signed_maurer ();
@@ -612,6 +1088,12 @@ Distance_map::set_inside_is_positive (bool inside_is_positive)
 }
 
 void 
+Distance_map::set_absolute_distance (bool absolute_distance)
+{
+    d_ptr->absolute_distance = absolute_distance;
+}
+
+void 
 Distance_map::set_algorithm (const std::string& algorithm)
 {
     if (algorithm == "danielsson" || algorithm == "native_danielsson") {
@@ -628,6 +1110,9 @@ Distance_map::set_algorithm (const std::string& algorithm)
     }
     else if (algorithm == "itk-maurer" || algorithm == "itk_maurer") {
         d_ptr->algorithm = Distance_map::ITK_MAURER;
+    }
+    else if (algorithm == "song-maurer" || algorithm == "song_maurer") {
+        d_ptr->algorithm = Distance_map::SONG_MAURER;
     }
     /* Else do nothing */
 }

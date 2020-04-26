@@ -28,6 +28,7 @@ public:
         MAURER,
         ITK_DANIELSSON,
         ITK_MAURER,
+        SONG_MAURER,
     };
 
 public:
@@ -47,6 +48,8 @@ public:
     /*! \brief Choose whether the inside is positive or negative.  
       The default is inside negative */
     void set_inside_is_positive (bool inside_is_positive);
+    /*! \brief Choose whether the output is unsigned distance */
+    void set_absolute_distance (bool absolute_distance);
     /*! \brief Choose which algorithm to use */
     void set_algorithm (const std::string& algorithm);
     /*! \brief Set maximum distance */
