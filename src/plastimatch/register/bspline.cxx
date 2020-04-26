@@ -62,7 +62,7 @@
 /* Stub */
 void bspline_score_pd (Bspline_optimize *bod)
 {
-    printf ("Hello from bspline_score_pd!\n");
+    //printf ("Hello from bspline_score_pd!\n");
     
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
@@ -77,12 +77,12 @@ void bspline_score_pd (Bspline_optimize *bod)
     float* m_grad = (float*) moving_grad->img;
     Labeled_pointset* fixed_pointset = bst->fixed_pointset;
     
-    printf ("fixed = %p\n", bst->fixed);
-    printf ("moving = %p\n", bst->moving);
-    printf ("fixed_pointset = %p\n", bst->fixed_pointset);
-    if (bst->fixed_pointset) {
+    //printf ("fixed = %p\n", bst->fixed);
+    //printf ("moving = %p\n", bst->moving);
+    //printf ("fixed_pointset = %p\n", bst->fixed_pointset);
+    /*if (bst->fixed_pointset) {
         printf ("fixed_pointset has %zd points\n", bst->fixed_pointset->get_count());
-    }
+    }*/
     
     plm_long fijk[3];
     float mijk[3];
@@ -126,12 +126,12 @@ void bspline_score_pd (Bspline_optimize *bod)
 	    landmark_xyz[1] = fp.p[1];
 	    landmark_xyz[2] = fp.p[2];
 	    GET_VOXEL_INDICES (landmark_ijk, landmark_xyz, bxf);
-	    printf("%g,%g,%g\n",landmark_ijk[0],landmark_ijk[1],landmark_ijk[2]);
+	    /*printf("%g,%g,%g\n",landmark_ijk[0],landmark_ijk[1],landmark_ijk[2]);*/
 	    idx = volume_index(moving_image->dim, landmark_ijk[0],
 			    landmark_ijk[1], landmark_ijk[2]);
 	    moving_value = &m_image[idx];
 	    score_acc += moving_value[0] + moving_value[1] + moving_value[2];
-	    printf("%f",score_acc);
+	    //printf("%f",score_acc);
 	    
 	    /*
 	    m_x = li_value_dx ( 
@@ -153,9 +153,9 @@ void bspline_score_pd (Bspline_optimize *bod)
 
 	    /* Compute spatial gradient using nearest neighbors */
 	    //mvr = volume_index (moving->dim, mijk_r);
-	    dc_dv[0] = -m_grad[3 * idx + 0];  /* x component */
-	    dc_dv[1] = -m_grad[3 * idx + 1];  /* y component */
-	    dc_dv[2] = -m_grad[3 * idx + 2];  /* z component */
+	    dc_dv[0] = -m_grad[idx + 0];  /* x component */
+	    dc_dv[1] = -m_grad[idx + 1];  /* y component */
+	    dc_dv[2] = -m_grad[idx + 2];  /* z component */
 
 	    bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
     }
