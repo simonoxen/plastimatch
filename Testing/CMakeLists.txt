@@ -5131,7 +5131,21 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-h.nrrd;--fixed;${PLM_BUILD_TESTING_DIR}/rect-3.mha;--output-type;vf"
   )
+plm_add_test (
+  "plm-xf-convert-h-stats"
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-h.nrrd"
+  )
+plmtest_check_interval (
+  "plm-xf-convert-h-check"
+  "${PLM_BUILD_TESTING_DIR}/plm-xf-convert-h-stats.stdout.txt"
+  "Min: *([-0-9.]*)"
+  "20"
+  "20"
+  )
 set_tests_properties (plm-xf-convert-h PROPERTIES DEPENDS "rect-3")
+set_tests_properties (plm-xf-convert-h-stats PROPERTIES DEPENDS "plm-xf-convert-h")
+set_tests_properties (plm-xf-convert-h-check PROPERTIES DEPENDS "plm-xf-convert-h-stats")
 
 ## -------------------------------------------------------------------------
 ## xf-invert
