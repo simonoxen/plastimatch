@@ -37,6 +37,7 @@
 #include "bspline_gm.h"
 #include "bspline_interpolate.h"
 #include "bspline_landmarks.h"
+#include "bspline_macros.h"
 #include "bspline_mi.h"
 #include "bspline_mse.h"
 #include "bspline_optimize.h"
@@ -46,6 +47,7 @@
 #include "bspline_xform.h"
 #include "delayload.h"
 #include "file_util.h"
+#include "interpolate.h"
 #include "interpolate_macros.h"
 #include "joint_histogram.h"
 #include "logfile.h"
@@ -60,23 +62,124 @@
 /* Stub */
 void bspline_score_pd (Bspline_optimize *bod)
 {
-    printf ("Hello from bspline_score_pd!\n");
+    //printf ("Hello from bspline_score_pd!\n");
     
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
+    Bspline_xform *bxf = bod->get_bspline_xform ();
+    Bspline_score *ssd = &bst->ssd;
+    
+    Volume *fixed_image  = bst->fixed;
+    Volume *moving_image = bst->moving;
+    Volume *moving_grad = bst->moving_grad;
 
-    Volume* fixed_roi  = bst->fixed_roi;
-    Volume* moving_roi = bst->moving_roi;
-    bool have_roi = fixed_roi || moving_roi;
+    float* m_image = (float*) moving_image->img;
+    float* m_grad = (float*) moving_grad->img;
+    Labeled_pointset* fixed_pointset = bst->fixed_pointset;
+    
+    //printf ("fixed = %p\n", bst->fixed);
+    //printf ("moving = %p\n", bst->moving);
+    //printf ("fixed_pointset = %p\n", bst->fixed_pointset);
+    /*if (bst->fixed_pointset) {
+      printf ("fixed_pointset has %zd points\n", bst->fixed_pointset->get_count());
+      }*/
+    
+    plm_long fijk[3];
+    float mijk[3];
+    float fxyz[3];
+    float mxyz[3];
+    plm_long mijk_f[3], mvf;
+    plm_long mijk_r[3], mvr;
+    plm_long p[3], pidx;
+    plm_long q[3], qidx;
 
-    printf ("fixed = %p\n", bst->fixed);
-    printf ("moving = %p\n", bst->moving);
-    printf ("fixed_pointset = %p\n", bst->fixed_pointset);
-    if (bst->fixed_pointset) {
-        printf ("fixed_pointset has %zd points\n", bst->fixed_pointset->get_count());
+    float dc_dv[3];
+    float li_1[3];
+    float li_2[3];
+    float m_x, m_y, m_z;
+    float inv_rx, inv_ry, inv_rz;
+    inv_rx = 1.0/moving_image->spacing[0];
+    inv_ry = 1.0/moving_image->spacing[1];
+    inv_rz = 1.0/moving_image->spacing[2];
+    double score_acc =0.;
+    int num_points = bst->fixed_pointset->get_count();
+    int idx;
+    float *moving_value;
+
+    /* Compute interpolation fractions */
+    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving_image);
+    mvf = volume_index(moving_image->dim, mijk_f);	
+
+    int points_used = 0;
+    for (int i = 0; i < num_points; i++) {
+        const Labeled_point& fp = bst->fixed_pointset->point_list[i];
+        plm_long landmark_ijk[3];
+        float landmark_xyz[3];
+        landmark_xyz[0] = fp.p[0];
+        landmark_xyz[1] = fp.p[1];
+        landmark_xyz[2] = fp.p[2];
+        bool is_inside = false;
+        fixed_image->get_ijk_from_xyz (landmark_ijk, landmark_xyz, &is_inside);
+        if (!is_inside) {
+            continue;
+        }
+
+        plm_long *fijk = landmark_ijk;
+        p[2] = REGION_INDEX_Z (fijk, bxf);
+        q[2] = REGION_OFFSET_Z (fijk, bxf);
+        p[1] = REGION_INDEX_Y (fijk, bxf);
+        q[1] = REGION_OFFSET_Y (fijk, bxf);
+        p[0] = REGION_INDEX_X (fijk, bxf);
+        q[0] = REGION_OFFSET_X (fijk, bxf);
+        pidx = volume_index (bxf->rdims, p);
+        qidx = volume_index (bxf->vox_per_rgn, q);
+        
+        /*printf("%g,%g,%g\n",landmark_ijk[0],landmark_ijk[1],landmark_ijk[2]);*/
+        
+        idx = moving_image->get_idx_from_xyz (landmark_xyz, &is_inside);
+        if (!is_inside) {
+            continue;
+        }
+        score_acc += m_image[idx];
+        //printf("%f",score_acc);
+	    
+        /*
+          m_x = li_value_dx ( 
+          li_1, li_2, inv_rx, 
+          mvf,
+          m_image, moving_image,
+          );
+		
+          m_y = li_value_dy ( 
+          li_1, li_2, inv_ry, 
+          mvf,
+          m_image, moving_image
+          );
+          m_z = li_value_dz ( 
+          li_1, li_2, inv_rz, 
+          mvf,
+          m_image, moving_image
+          );*/
+
+        /* Compute spatial gradient using nearest neighbors */
+        //mvr = volume_index (moving->dim, mijk_r);
+        dc_dv[0] = -m_grad[3*idx + 0];  /* x component */
+        dc_dv[1] = -m_grad[3*idx + 1];  /* y component */
+        dc_dv[2] = -m_grad[3*idx + 2];  /* z component */
+
+        bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
+
+        points_used++;
+    }
+
+    /* Normalize score for MSE */
+    if (points_used > 0) {
+        ssd->curr_smetric = score_acc / points_used;
+        for (int i = 0; i < num_points; i++) {
+            ssd->curr_smetric_grad[i] = ssd->curr_smetric_grad[i] / points_used;
+        }
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: calc_offsets()
