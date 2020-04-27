@@ -44,6 +44,12 @@ Xform_convert::set_input_xform (const Xform::Pointer& xf_in)
 }
 
 void
+Xform_convert::set_geometry (const Plm_image_header *pih)
+{
+    pih->get_volume_header (&this->m_volume_header);
+}
+
+void
 Xform_convert::run ()
 {
     Plm_image_header pih;

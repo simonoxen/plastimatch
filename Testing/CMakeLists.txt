@@ -5027,6 +5027,7 @@ set_tests_properties (plm-warp-i-check-1 PROPERTIES DEPENDS plm-warp-i-stats-1)
 ## plm-xf-convert-e    itk rigid to dicom rigid (referenced dicom images)
 ## plm-xf-convert-f    itk rigid to dicom rigid (exported dicom images)
 ## plm-xf-convert-g    vector field to dicom deformable (referenced dicom)
+## plm-xf-convert-h    itk rigid to vector field (fixed reference)
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-xf-convert-a" 
@@ -5124,6 +5125,13 @@ plm_add_test (
   "xf-convert;--filenames-without-uids;--input;${PLM_BUILD_TESTING_DIR}/plm-bsp-rect-vf.nrrd;--output-dicom;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-g;--fixed-rcs;${PLM_BUILD_TESTING_DIR}/rect-2-dicom;--moving-rcs;${PLM_BUILD_TESTING_DIR}/rect-3-dicom"
   )
 set_tests_properties (plm-xf-convert-g PROPERTIES DEPENDS "rect-2;rect-3;plm-bsp-rect")
+
+plm_add_test (
+  "plm-xf-convert-h" 
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--filenames-without-uids;--input;${PLM_TESTING_DATA_DIR}/itk-rigid-a.tfm;--output;${PLM_BUILD_TESTING_DIR}/plm-xf-convert-h.nrrd;--fixed;${PLM_BUILD_TESTING_DIR}/rect-3.mha;--output-type;vf"
+  )
+set_tests_properties (plm-xf-convert-h PROPERTIES DEPENDS "rect-3")
 
 ## -------------------------------------------------------------------------
 ## xf-invert

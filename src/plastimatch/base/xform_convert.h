@@ -24,6 +24,7 @@ public:
 public:
     void run ();
     void set_input_xform (const Xform::Pointer& xf_in);
+    void set_geometry (const Plm_image_header *pih);
     Xform::Pointer& get_output_xform ();
 };
 
