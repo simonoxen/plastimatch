@@ -848,11 +848,19 @@ Volume::get_ijk_value (const float ijk[3]) const
 
 /* GCS FIX: These functions are incorrect, they ignore direction cosines */
 void 
-Volume::get_xyz_from_ijk (double xyz[3], const int ijk[3])
+Volume::get_xyz_from_ijk (double xyz[3], const plm_long ijk[3])
 {
     xyz[0] = this->origin[0] + ijk[0] * this->spacing[0];
     xyz[1] = this->origin[1] + ijk[1] * this->spacing[1];
     xyz[2] = this->origin[2] + ijk[2] * this->spacing[2];
+}
+
+plm_long
+Volume::get_idx_from_xyz (const float xyz[3], bool* in)
+{
+    plm_long ijk[3];
+    this->get_ijk_from_xyz (ijk, xyz, in);
+    return this->index (ijk);
 }
 
 void
@@ -873,13 +881,13 @@ Volume::get_ijk_from_xyz (float ijk[3], const float xyz[3], bool* in)
 }
 
 void
-Volume::get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in)
+Volume::get_ijk_from_xyz (plm_long ijk[3], const float xyz[3], bool* in)
 {
     *in = true;
 
     for (int i = 0; i < 3; i++)
     {
-        ijk[i] = (int) floor(xyz[i]-this->origin[i])/this->spacing[i];
+        ijk[i] = (plm_long) floor(xyz[i]-this->origin[i])/this->spacing[i];
         if (ijk[i] < 0 || ijk[i] >= this->dim[i])
         {
             *in = false;
