@@ -62,8 +62,6 @@
 /* Stub */
 void bspline_score_pd (Bspline_optimize *bod)
 {
-    //printf ("Hello from bspline_score_pd!\n");
-    
     Bspline_parms *parms = bod->get_bspline_parms ();
     Bspline_state *bst = bod->get_bspline_state ();
     Bspline_xform *bxf = bod->get_bspline_xform ();
@@ -96,20 +94,15 @@ void bspline_score_pd (Bspline_optimize *bod)
     float dc_dv[3];
     float li_1[3];
     float li_2[3];
-    float m_x, m_y, m_z;
+    float m_val;
     float inv_rx, inv_ry, inv_rz;
     inv_rx = 1.0/moving_image->spacing[0];
     inv_ry = 1.0/moving_image->spacing[1];
     inv_rz = 1.0/moving_image->spacing[2];
     double score_acc =0.;
     int num_points = bst->fixed_pointset->get_count();
-    int idx;
-    float *moving_value;
 
-    /* Compute interpolation fractions */
-    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving_image);
-    mvf = volume_index(moving_image->dim, mijk_f);	
-
+    float dxyz[3];
     int points_used = 0;
     for (int i = 0; i < num_points; i++) {
         const Labeled_point& fp = bst->fixed_pointset->point_list[i];
@@ -119,59 +112,52 @@ void bspline_score_pd (Bspline_optimize *bod)
         landmark_xyz[1] = fp.p[1];
         landmark_xyz[2] = fp.p[2];
         bool is_inside = false;
-        fixed_image->get_ijk_from_xyz (landmark_ijk, landmark_xyz, &is_inside);
-        if (!is_inside) {
-            continue;
-        }
-
-        plm_long *fijk = landmark_ijk;
-        p[2] = REGION_INDEX_Z (fijk, bxf);
-        q[2] = REGION_OFFSET_Z (fijk, bxf);
-        p[1] = REGION_INDEX_Y (fijk, bxf);
-        q[1] = REGION_OFFSET_Y (fijk, bxf);
-        p[0] = REGION_INDEX_X (fijk, bxf);
-        q[0] = REGION_OFFSET_X (fijk, bxf);
+	//landmark_ijk[0] = PROJECT_X (landmark_xyz, proj);
+	GET_VOXEL_INDICES (landmark_ijk, landmark_xyz, bxf);
+        p[2] = REGION_INDEX_Z (landmark_ijk, bxf);
+        q[2] = REGION_OFFSET_Z (landmark_ijk, bxf);
+        p[1] = REGION_INDEX_Y (landmark_ijk, bxf);
+        q[1] = REGION_OFFSET_Y (landmark_ijk, bxf);
+        p[0] = REGION_INDEX_X (landmark_ijk, bxf);
+        q[0] = REGION_OFFSET_X (landmark_ijk, bxf);
         pidx = volume_index (bxf->rdims, p);
         qidx = volume_index (bxf->vox_per_rgn, q);
         
-        /*printf("%g,%g,%g\n",landmark_ijk[0],landmark_ijk[1],landmark_ijk[2]);*/
-        
-        idx = moving_image->get_idx_from_xyz (landmark_xyz, &is_inside);
-        if (!is_inside) {
-            continue;
-        }
-        score_acc += m_image[idx];
-        //printf("%f",score_acc);
-	    
-        /*
-          m_x = li_value_dx ( 
-          li_1, li_2, inv_rx, 
-          mvf,
-          m_image, moving_image,
-          );
-		
-          m_y = li_value_dy ( 
-          li_1, li_2, inv_ry, 
-          mvf,
-          m_image, moving_image
-          );
-          m_z = li_value_dz ( 
-          li_1, li_2, inv_rz, 
-          mvf,
-          m_image, moving_image
-          );*/
+        //printf("%g,%g,%g\n",landmark_xyz[0],landmark_xyz[1],landmark_xyz[2]);
+        bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+	
+	mxyz[2] = landmark_xyz[2] + dxyz[2] - moving_image->origin[2];
+	mxyz[1] = landmark_xyz[1] + dxyz[1] - moving_image->origin[1];
+	mxyz[0] = landmark_xyz[0] + dxyz[0] - moving_image->origin[0];
+	mijk[2] = PROJECT_Z(landmark_xyz, moving_image->proj);
+	mijk[1] = PROJECT_Y(landmark_xyz, moving_image->proj);
+	mijk[0] = PROJECT_X(landmark_xyz, moving_image->proj);
+	/*if (i%1000==0){
+		printf("%i,%f,%f,%f\n",i,moving_image->origin[0], moving_image->origin[1], 
+				moving_image->origin[2]);
+	}*/
+	//if (!moving_image->is_inside (mijk)) continue;
+	li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving_image);
+	mvr = volume_index (moving_image->dim, mijk_r);
+	mvf = volume_index (moving_image->dim, mijk_f);
+	m_val = li_value (
+		li_1, li_2,
+		mvf,
+		m_image, moving_image);
+	score_acc += m_val;
+        points_used++;
+	//printf("%f\n",score_acc/points_used);
 
         /* Compute spatial gradient using nearest neighbors */
         //mvr = volume_index (moving->dim, mijk_r);
-        dc_dv[0] = -m_grad[3*idx + 0];  /* x component */
-        dc_dv[1] = -m_grad[3*idx + 1];  /* y component */
-        dc_dv[2] = -m_grad[3*idx + 2];  /* z component */
-
+        dc_dv[0] = -m_grad[3*mvr + 0];  /* x component */
+        dc_dv[1] = -m_grad[3*mvr + 1];  /* y component */
+        dc_dv[2] = -m_grad[3*mvr + 2];  /* z component */
+	/*if (i%1000==0){
+		printf("%f,%f,%f\n",dc_dv[0], dc_dv[1], dc_dv[2]);
+	}*/
         bst->ssd.update_smetric_grad_b (bxf, pidx, qidx, dc_dv);
-
-        points_used++;
     }
-
     /* Normalize score for MSE */
     if (points_used > 0) {
         ssd->curr_smetric = score_acc / points_used;
