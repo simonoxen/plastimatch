@@ -129,9 +129,9 @@ void bspline_score_pd (Bspline_optimize *bod)
 	mxyz[2] = landmark_xyz[2] + dxyz[2] - moving_image->origin[2];
 	mxyz[1] = landmark_xyz[1] + dxyz[1] - moving_image->origin[1];
 	mxyz[0] = landmark_xyz[0] + dxyz[0] - moving_image->origin[0];
-	mijk[2] = PROJECT_Z(landmark_xyz, moving_image->proj);
-	mijk[1] = PROJECT_Y(landmark_xyz, moving_image->proj);
-	mijk[0] = PROJECT_X(landmark_xyz, moving_image->proj);
+	mijk[2] = PROJECT_Z(mxyz, moving_image->proj);
+	mijk[1] = PROJECT_Y(mxyz, moving_image->proj);
+	mijk[0] = PROJECT_X(mxyz, moving_image->proj);
 	/*if (i%1000==0){
 		printf("%i,%f,%f,%f\n",i,moving_image->origin[0], moving_image->origin[1], 
 				moving_image->origin[2]);
@@ -150,9 +150,9 @@ void bspline_score_pd (Bspline_optimize *bod)
 
         /* Compute spatial gradient using nearest neighbors */
         //mvr = volume_index (moving->dim, mijk_r);
-        dc_dv[0] = -m_grad[3*mvr + 0];  /* x component */
-        dc_dv[1] = -m_grad[3*mvr + 1];  /* y component */
-        dc_dv[2] = -m_grad[3*mvr + 2];  /* z component */
+        dc_dv[0] = m_grad[3*mvr + 0];  /* x component */
+        dc_dv[1] = m_grad[3*mvr + 1];  /* y component */
+        dc_dv[2] = m_grad[3*mvr + 2];  /* z component */
 	/*if (i%1000==0){
 		printf("%f,%f,%f\n",dc_dv[0], dc_dv[1], dc_dv[2]);
 	}*/
