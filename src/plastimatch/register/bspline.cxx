@@ -161,7 +161,7 @@ void bspline_score_pd (Bspline_optimize *bod)
     /* Normalize score for MSE */
     if (points_used > 0) {
         ssd->curr_smetric = score_acc / points_used;
-        for (int i = 0; i < num_points; i++) {
+        for (int i = 0; i < bxf->num_coeff; i++) {
             ssd->curr_smetric_grad[i] = ssd->curr_smetric_grad[i] / points_used;
         }
     }
