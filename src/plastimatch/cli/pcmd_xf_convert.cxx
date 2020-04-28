@@ -6,6 +6,7 @@
 
 #include "bspline_xform.h"
 #include "dcmtk_sro.h"
+#include "geometry_chooser.h"
 #include "logfile.h"
 #include "pcmd_xf_convert.h"
 #include "plm_clp.h"
@@ -23,6 +24,7 @@ public:
     std::string output_fn;
     std::string output_dicom_dir;
 
+    std::string fixed_fn;
     std::string fixed_image;
     std::string moving_image;
     std::string fixed_rcs;
@@ -33,6 +35,7 @@ public:
     bool dicom_filenames_with_uids;
 
     /* Geometry options */
+    Geometry_chooser geometry_chooser;
     bool m_have_dim;
     bool m_have_origin;
     bool m_have_spacing;
@@ -97,16 +100,17 @@ do_xf_convert (Xf_convert_parms *parms)
     }
 
     /* Set volume header as needed */
-    xf_in->get_volume_header (&xfc->m_volume_header);
+    parms->geometry_chooser.set_fixed_image (parms->fixed_fn);
     if (parms->m_have_dim) {
-        xfc->m_volume_header.set_dim (parms->m_vh.get_dim());
+        parms->geometry_chooser.set_dim (parms->m_vh.get_dim());
     }
     if (parms->m_have_origin) {
-        xfc->m_volume_header.set_origin (parms->m_vh.get_origin());
+        parms->geometry_chooser.set_origin (parms->m_vh.get_origin());
     }
     if (parms->m_have_spacing) {
-        xfc->m_volume_header.set_spacing (parms->m_vh.get_spacing());
+        parms->geometry_chooser.set_spacing (parms->m_vh.get_spacing());
     }
+    xfc->set_geometry (parms->geometry_chooser.get_geometry());
     
     /* Do conversion */
     /* GCS FIX: This is not quite right.  Probably one should be 
@@ -204,6 +208,8 @@ parse_fn (
         "Directory for output of dicom spatial registration IOD, and "
         "optionally, fixed and/or moving images", 1, "");
 
+    parser->add_long_option ("", "fixed",
+        "Match vector field output size and geometry to this image", 1, "");
     parser->add_long_option ("", "dim", 
         "Size of output image in voxels \"x [y z]\"", 1, "");
     parser->add_long_option ("", "origin", 
@@ -271,6 +277,7 @@ parse_fn (
     parms->output_type = parser->get_string("output-type").c_str();
 
     /* Geometry options */
+    parms->fixed_fn = parser->get_string("fixed");
     if (parser->option ("dim")) {
         parms->m_have_dim = true;
         parser->assign_plm_long_13 (parms->m_vh.get_dim(), "dim");

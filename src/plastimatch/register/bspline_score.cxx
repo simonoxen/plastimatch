@@ -52,6 +52,7 @@ Bspline_score::reset_score ()
     memset (this->total_grad, 0, this->num_coeff * sizeof(float));
     this->lmetric = 0;
     this->rmetric = 0;
+    
     this->metric_record.clear();
     this->curr_num_vox = 0;
     this->curr_smetric = 0;

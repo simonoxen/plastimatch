@@ -205,9 +205,10 @@ public:
       tri-linearly interpolated.  Only applies to float volumes.
     */
     float get_ijk_value (const float xyz[3]) const;
-    void get_xyz_from_ijk (double xyz[3], const int ijk[3]);
+    void get_xyz_from_ijk (double xyz[3], const plm_long ijk[3]);
 
-    void get_ijk_from_xyz (int ijk[3], const float xyz[3], bool* in);
+    plm_long get_idx_from_xyz (const float xyz[3], bool* in);
+    void get_ijk_from_xyz (plm_long ijk[3], const float xyz[3], bool* in);
     void get_ijk_from_xyz (float ijk[3], const float xyz[3], bool* in);
 
     /*! \brief Return true if continuous index ijk is inside volume */

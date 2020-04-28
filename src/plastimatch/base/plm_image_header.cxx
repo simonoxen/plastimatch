@@ -33,6 +33,7 @@ public:
 Plm_image_header::Plm_image_header ()
 {
     d_ptr = new Plm_image_header_private;
+    this->m_direction.SetIdentity ();
 }
 
 Plm_image_header::Plm_image_header (

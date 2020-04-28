@@ -90,6 +90,8 @@ Geometry_chooser::set_compare_image (
 void 
 Geometry_chooser::set_fixed_image (const char* image_fn)
 {
+    if (!image_fn) return;
+    
     Plm_file_format ff = plm_file_format_deduce (image_fn);
     if (ff == PLM_FILE_FMT_VF) {
         DeformationFieldType::Pointer fixed = itk_image_load_float_field (
@@ -107,6 +109,7 @@ Geometry_chooser::set_fixed_image (const char* image_fn)
 void 
 Geometry_chooser::set_fixed_image (const std::string& image_fn)
 {
+    if (image_fn == "") return;
     this->set_fixed_image (image_fn.c_str());
 }
 
