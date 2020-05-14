@@ -175,7 +175,7 @@ warp_and_save_ss (
         || parms->xf_in_fn != ""
         || parms->output_prefix != "")
     {
-
+        lprintf ("Warp_and_save_ss: seg->rasterize\n");
         /* In the following cases, we should use the default 
            rasterization geometry (i.e. cxt->rast_xxx):
            (a) Warping
@@ -187,18 +187,20 @@ warp_and_save_ss (
            In the other cases we can directly rasterize to the output 
            geometry.
         */
-        Plm_image_header pih;
         Rtss *cxt = seg->get_structure_set_raw ();
         if (parms->xf_in_fn != "") {
+            Plm_image_header pih;
             pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
                 cxt->rast_spacing, 0);
+            seg->rasterize (&pih,
+                parms->output_labelmap_fn != "",
+                parms->xor_contours);
         } else {
-            pih.set_from_gpuit (cxt->m_dim, cxt->m_offset, cxt->m_spacing, 0);
+            /* Use pih passed as argument */
+            seg->rasterize (pih,
+                parms->output_labelmap_fn != "",
+                parms->xor_contours);
         }
-        lprintf ("Warp_and_save_ss: seg->rasterize\n");
-        seg->rasterize (&pih,
-            parms->output_labelmap_fn != "",
-            parms->xor_contours);
     }
 
     /* Do the warp */

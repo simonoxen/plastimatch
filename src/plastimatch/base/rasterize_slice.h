@@ -7,15 +7,15 @@
 #include "plmbase_config.h"
 #include "plm_int.h"
 
+class Plm_image_header;
 
 PLMBASE_C_API void rasterize_slice (
     unsigned char* acc_img,
-    plm_long* dims,
-    float* spacing,
-    float* offset,
+    Plm_image_header *pih,
     size_t num_vertices,
     const float* x_in,           /* polygon vertices in mm */
-    const float* y_in            /* polygon vertices in mm */
+    const float* y_in,
+    const float* z_in
 );
 
 bool point_in_polygon (

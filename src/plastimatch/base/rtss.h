@@ -31,6 +31,7 @@ public:
     plm_long m_dim[3];
     float m_spacing[3];
     float m_offset[3];
+    Direction_cosines m_dc;
     /* Rasterization geometry */
     plm_long rast_dim[3];
     float rast_spacing[3];

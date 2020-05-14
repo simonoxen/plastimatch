@@ -19,6 +19,7 @@
 #include "rtss_contour.h"
 #include "rtss_roi.h"
 #include "volume.h"
+#include "volume_header.h"
 
 Rasterizer::Rasterizer ()
 {
@@ -63,11 +64,9 @@ Rasterizer::init (
 {
     int slice_voxels;
 
-    pih->get_origin (this->origin);
-    pih->get_spacing (this->spacing);
-    pih->get_dim (this->dim);
-
-    slice_voxels = this->dim[0] * this->dim[1];
+    this->pih = pih;
+    
+    slice_voxels = pih->dim(0) * pih->dim(1);
 
     this->want_prefix_imgs = want_prefix_imgs;
     this->want_labelmap = want_labelmap;
@@ -80,8 +79,10 @@ Rasterizer::init (
 
     /* Create output volume for mask image.  This is reused for each 
        structure */
-    this->uchar_vol = new Volume (this->dim, this->origin, 
-	this->spacing, 0, PT_UCHAR, 1);
+    Volume_header vh;
+    pih->get_volume_header (&vh);
+    this->uchar_vol = new Volume (vh, PT_UCHAR, 1);
+    
     if (this->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
     }
@@ -89,8 +90,7 @@ Rasterizer::init (
     /* Create output volume for labelmap */
     this->labelmap_vol = 0;
     if (want_labelmap) {
-	this->labelmap_vol = new Volume (this->dim, 
-	    this->origin, this->spacing, 0, PT_UINT32, 1);
+	this->labelmap_vol = new Volume (&vh, PT_UINT32, 1);
 	if (this->labelmap_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
@@ -115,8 +115,7 @@ Rasterizer::init (
             this->m_ss_img->set_itk (ss_img);
         }
         else {
-            Volume *vol = new Volume (this->dim, 
-                this->origin, this->spacing, 0, PT_UINT32, 1);
+            Volume *vol = new Volume (&vh, PT_UINT32, 1);
             if (vol == 0) {
                 print_and_exit ("ERROR: failed allocating ss_img volume");
             }
@@ -153,10 +152,9 @@ Rasterizer::process_next (
     }
 
     curr_structure = cxt->slist[this->curr_struct_no];
-    slice_voxels = this->dim[0] * this->dim[1];
+    slice_voxels = pih->dim(0) * pih->dim(1);
 
-    memset (uchar_img, 0, this->dim[0] * this->dim[1] 
-	* this->dim[2] * sizeof(unsigned char));
+    memset (uchar_img, 0, slice_voxels * pih->dim(2) * sizeof(unsigned char));
 
     /* Loop through polylines in this structure */
     for (size_t i = 0; i < curr_structure->num_contours; i++) {
@@ -168,22 +166,26 @@ Rasterizer::process_next (
 	if (curr_contour->num_vertices == 0) {
 	    continue;
 	}
-	slice_no = ROUND_PLM_LONG(
-            (curr_contour->z[0] - this->origin[2]) / this->spacing[2]);
-	if (slice_no < 0 || slice_no >= this->dim[2]) {
+        FloatPoint3DType pos;
+        pos[0] = curr_contour->x[0];
+        pos[1] = curr_contour->y[0];
+        pos[2] = curr_contour->z[0];
+        FloatPoint3DType index = this->pih->get_index (pos);
+
+	slice_no = ROUND_PLM_LONG (index[2]);
+	if (slice_no < 0 || slice_no >= pih->dim(2)) {
 	    continue;
 	}
 
 	/* Render contour to binary */
 	memset (this->acc_img, 0, slice_voxels * sizeof(unsigned char));
 	rasterize_slice (
-	    this->acc_img, 
-	    this->dim, 
-	    this->spacing, 
-	    this->origin,
+	    this->acc_img,
+            this->pih, 
 	    curr_contour->num_vertices, 
 	    curr_contour->x, 
-	    curr_contour->y);
+	    curr_contour->y,
+            curr_contour->z);
 
 	/* Copy from acc_img into mask image */
 	if (this->want_prefix_imgs) {
@@ -249,10 +251,10 @@ Rasterizer::process_next (
                 }
 #else
                 for (idx.m_Index[1] = 0; 
-                     idx.m_Index[1] < this->dim[1]; 
+                     idx.m_Index[1] < pih->dim(1); 
                      idx.m_Index[1]++) {
                     for (idx.m_Index[0] = 0; 
-                         idx.m_Index[0] < this->dim[0]; 
+                         idx.m_Index[0] < pih->dim(0); 
                          idx.m_Index[0]++) {
                         if (this->acc_img[k]) {
                             itk::VariableLengthVector<unsigned char> v 

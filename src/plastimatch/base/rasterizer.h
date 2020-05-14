@@ -24,10 +24,14 @@ class PLMBASE_API Rasterizer {
        this member to true if you want to "xor" instead */
     bool xor_overlapping;
 
+    
+    Plm_image_header *pih; /* Not owned by rasterizer */
+#if defined (commentout)
     float origin[3];
     float spacing[3];
     plm_long dim[3];
-
+#endif
+    
     unsigned char* acc_img;
     Volume* uchar_vol;
     Volume* labelmap_vol;

@@ -13,6 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "itk_point.h"
+#include "plm_image_header.h"
 #include "rasterize_slice.h"
 
 typedef struct edge Edge;
@@ -112,12 +114,11 @@ point_in_polygon (
 void
 rasterize_slice (
     unsigned char* acc_img,
-    plm_long* dims,
-    float* spacing,
-    float* offset,
+    Plm_image_header *pih,
     size_t num_vertices,
     const float* x_in,          /* polygon vertices in mm */
-    const float* y_in           /* polygon vertices in mm */
+    const float* y_in,
+    const float* z_in
 )
 {
     unsigned char* imgp;
@@ -132,17 +133,23 @@ rasterize_slice (
     }
 
     /* Convert from mm to pixel coordinates */
+
     x = (float*) malloc (sizeof (float) * num_vertices);
     y = (float*) malloc (sizeof (float) * num_vertices);
     for (size_t i = 0; i < num_vertices; i++) {
-	x[i] = (x_in[i] - offset[0]) / spacing[0];
-	y[i] = (y_in[i] - offset[1]) / spacing[1];
+        FloatPoint3DType pos;
+        pos[0] = x_in[i];
+        pos[1] = y_in[i];
+        pos[2] = z_in[i];
+        FloatPoint3DType index = pih->get_index (pos);
+	x[i] = index[0];
+	y[i] = index[1];
     }
 
     /* Make edge table */
-    edge_table = (Edge**) malloc (dims[1] * sizeof(Edge*));
+    edge_table = (Edge**) malloc (pih->dim(1) * sizeof(Edge*));
     edge_list = (Edge*) malloc (num_vertices * sizeof(Edge));
-    memset (edge_table, 0, dims[1] * sizeof(Edge*));
+    memset (edge_table, 0, pih->dim(1) * sizeof(Edge*));
     for (size_t i = 0; i < num_vertices; i++) {
 	int ymin, ymax;
 	size_t a = i, b = (i==num_vertices-1 ? 0 : i+1);
@@ -151,7 +158,7 @@ rasterize_slice (
 	if (y[a] < y[b]) a = b, b = i;
 	/* Reject segments too high or too low */
 	ymin = (int) ceil(y[b]);
-	if (ymin > dims[1]-1) continue;
+	if (ymin > pih->dim(1)-1) continue;
 	ymax = (int) floor(y[a]);
 	if (ymax < 0) continue;
 	/* If upper y lies on scan line, don't count it as an intersection */
@@ -160,7 +167,7 @@ rasterize_slice (
 	if (ymax < ymin) continue;
 	/* Clip segments against image boundary */
 	if (ymin < 0) ymin = 0;
-	if (ymax > dims[1]-1) ymax = dims[1]-1;
+	if (ymax > pih->dim(1)-1) ymax = pih->dim(1)-1;
 	/* Shorten the segment & fill in edge data */
 	edge_list[i].ymax = ymax;
 	edge_list[i].xincr = (x[a] - x[b]) / (y[a] - y[b]);
@@ -190,7 +197,7 @@ rasterize_slice (
     /* Loop through scanline, rendering each */
     imgp = acc_img;
     ael = 0;
-    for (plm_long i = 0; i < dims[1]; i++) {
+    for (plm_long i = 0; i < pih->dim(1); i++) {
 	int x, num_crossings;
 	Edge *n, *c;
 	/* Remove old edges from AEL */
@@ -212,11 +219,11 @@ rasterize_slice (
 	printf ("%d ", i);
 	print_edges (ael);
 #endif
-	while (x < dims[0]) {
+	while (x < pih->dim(0)) {
 	    int next_x;
 	    while (1) {
 		if (!c) {
-		    next_x = dims[0];
+		    next_x = pih->dim(0);
 		    break;
 		} else if (x >= c->x) {
 		    c = c->next;
@@ -224,7 +231,7 @@ rasterize_slice (
 		    continue;
 		} else {
 		    next_x = (int) floor (c->x) + 1;
-		    if (next_x > dims[0]) next_x = dims[0];
+		    if (next_x > pih->dim(0)) next_x = pih->dim(0);
 		    break;
 		}
 	    }
