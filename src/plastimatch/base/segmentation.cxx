@@ -716,8 +716,8 @@ Segmentation::convert_ss_img_to_cxt (void)
         /* Image type must be uint32_t */
         d_ptr->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
-        /* Do extraction */
-        lprintf ("Doing extraction -- this should never happen\n");
+        /* Do extraction -- this branch is used by plastimatch synth */
+        lprintf ("Doing extraction\n");
         ::cxt_extract (d_ptr->m_rtss.get(), d_ptr->m_ss_img->m_itk_uint32, -1, 
             use_existing_bits);
     }
