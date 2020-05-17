@@ -230,11 +230,11 @@ Rasterizer::process_next (
                 UCharVecImageType::IndexType idx = {{0, 0, slice_no}};
                 size_t k = 0;
 #if (ITK_VERSION_MAJOR >= 5)
-                for (idx.m_InternalArray[1] = 0; 
-                     idx.m_InternalArray[1] < this->dim(1);
+                for (idx.m_InternalArray[1] = 0;
+                     idx.m_InternalArray[1] < pih->dim(1);
                      idx.m_InternalArray[1]++) {
-                    for (idx.m_InternalArray[0] = 0; 
-                         idx.m_InternalArray[0] < this->dim(0);
+                    for (idx.m_InternalArray[0] = 0;
+                         idx.m_InternalArray[0] < pih->dim(0);
                          idx.m_InternalArray[0]++) {
                         if (this->acc_img[k]) {
                             itk::VariableLengthVector<unsigned char> v 
