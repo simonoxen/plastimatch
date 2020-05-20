@@ -134,9 +134,7 @@ Segmentation::load_prefix (const char *prefix_dir)
     for (int i = 0; i < dl.num_entries; i++) {
         /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-	if (!extension_is (entry, ".mha") 
-            && !extension_is (entry, ".nrrd"))
-        {
+        if (!Segmentation::valid_extension (entry)) {
             continue;
         }
         max_structures++;
@@ -152,12 +150,7 @@ Segmentation::load_prefix (const char *prefix_dir)
     for (int i = 0; i < dl.num_entries; i++) {
         /* Look at filename, make sure it is an mha or nrrd file */
         const char *entry = dl.entries[i];
-	if (!extension_is (entry, ".mha") 
-            && !extension_is (entry, ".mhd")
-            && !extension_is (entry, ".nii")
-            && !extension_is (entry, ".nii.gz")
-            && !extension_is (entry, ".nrrd"))
-        {
+        if (!Segmentation::valid_extension (entry)) {
             continue;
         }
 
@@ -343,6 +336,16 @@ Segmentation::load_xio (const Xio_studyset& studyset)
 
     d_ptr->m_rtss_valid = true;
     d_ptr->m_ss_img_valid = false;
+}
+
+bool
+Segmentation::valid_extension (const char *filename)
+{
+    return extension_is (filename, ".mha") 
+        || extension_is (filename, ".mhd")
+        || extension_is (filename, ".nii")
+        || extension_is (filename, ".nii.gz")
+        || extension_is (filename, ".nrrd");
 }
 
 size_t

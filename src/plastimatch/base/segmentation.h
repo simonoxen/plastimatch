@@ -36,6 +36,7 @@ public:
     void load_prefix (const char *prefix_dir);
     void load_prefix (const std::string& prefix_dir);
     void load_xio (const Xio_studyset& xio_studyset);
+    static bool valid_extension (const char *filename);
 
     size_t get_num_structures ();
 
