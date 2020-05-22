@@ -4,6 +4,7 @@ use File::Copy qw(copy move);
 
 $push_to_mim = 0;
 $overwrite_for = 1;
+$overwrite_study = 1;
 
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-14";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_tt000_v2";
@@ -22,9 +23,11 @@ $overwrite_for = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/2D^CAL^PHANTOM";
-#$dicom_dir = "/PHShome/gcs6/shared/ben-1/tmp";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/MOR-QA-06-2";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/tmp";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/MOR-QA-06-2";
 #$dicom_dir = "/PHShome/gcs6/build/plastimatch/moving";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/2020-05-11-a";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_H20art";
 
 $new_name = "";
 $new_id = "";
@@ -40,9 +43,10 @@ $new_series_description = "";
 #$new_id = "LPcom_02";
 #$new_birth_date = "20180725";
 #$new_sex = "O";
-$new_name = "Mobius^DoseLab";
-$new_id = "LN5-MB-IUS";
+#$new_name = "Mobius^DoseLab";
+#$new_id = "LN5-MB-IUS";
 
+$new_series_description = "G270-G330 v2";
 #$new_series_description = "Medcom phantom";
 #$new_series_description = "Var Thick";
 
@@ -64,6 +68,8 @@ unlink glob "$txtdir/*";
 
 $overwrite_for_uid = `dicom_uid`;
 chomp($overwrite_for_uid);
+$overwrite_study_uid = `dicom_uid`;
+chomp($overwrite_study_uid);
 
 %uid_map = {};
 
@@ -128,6 +134,10 @@ sub process_file {
 	    $value = get_value ($_);
 	    if (($key eq "0020,0052" or $key eq "3006,0024") and $overwrite_for) {
 		print FOUT "($key) UI [$overwrite_for_uid]\n";
+		next;
+	    }
+	    if ($key eq "0020,000d" and $overwrite_study) {
+		print FOUT "($key) UI [$overwrite_study_uid]\n";
 		next;
 	    }
 	    if (not exists ($uid_map {$value})) {
