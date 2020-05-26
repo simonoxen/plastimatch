@@ -68,6 +68,7 @@ set (PLASTIMATCH_SRC
   pcmd_xf_convert.cxx 
   pcmd_xf_invert.cxx pcmd_xf_invert.h
   plastimatch_main.cxx
+  plastimatch_startup.cxx
   )
 
 set (LANDMARK_WARP_SRC

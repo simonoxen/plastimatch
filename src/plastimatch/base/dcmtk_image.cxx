@@ -8,6 +8,7 @@
 #include "dcmtk_config.h"
 #include "dcmtk/ofstd/ofstream.h"
 #include "dcmtk/dcmdata/dctk.h"
+#include "dcmtk/dcmimgle/dcmimage.h"
 
 #include "dcmtk_file.h"
 #include "dcmtk_metadata.h"
@@ -412,11 +413,42 @@ Dcmtk_rt_study::image_load ()
 	    (*best_slice_it)->get_z_position(), z_pos);
 #endif
 
-        /* GCS FIX: This should probably use DicomImage::getOutputData()
+        /* Using DicomImage makes it easy to support compressed and other 
+           types of images.  But I can't figure out how to make it 
+           render signed Pixel Data with Pixel Represenation of 1.
            cf. http://support.dcmtk.org/docs/mod_dcmimage.html */
+//#define USE_DICOMIMAGE 1
 	const uint8_t* pixel_data_8;
 	const uint16_t* pixel_data_16;
 	unsigned long length = 0;
+        
+#if defined (USE_DICOMIMAGE)
+        DicomImage di (df->get_dataset(), EXS_Unknown);
+        length = di.getOutputDataSize(8);
+        if (((long) length) != dim[0] * dim[1]) {
+            print_and_exit ("Oops.  Dicom image had wrong length "
+                "(%d vs. %d x %d).\n", length, dim[0], dim[1]);
+        }
+        if (di.getStatus() != EIS_Normal) {
+            printf ("Status is: %s\n", di.getString (di.getStatus()));
+            print_and_exit ("Oops.  DicomImage status is not EIS_Normal.\n");
+        }
+        //const void* pixel_data = di.getInterData()->getData();
+        if (bits_alloc == 8) {
+            pixel_data_8 = (const uint8_t*) di.getOutputData (bits_stored);
+            //pixel_data_8 = (const uint8_t*) pixel_data;
+            if (!pixel_data_8) {
+                print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
+            }
+        } else if (bits_alloc == 16) {
+            pixel_data_16 = (const uint16_t*) di.getOutputData (bits_stored);
+            //pixel_data_16 = (const uint16_t*) pixel_data;
+            if (!pixel_data_16) {
+                print_and_exit ("Oops.  Error reading pixel data.  Punting.\n");
+            }
+        }
+#else
+        df->get_dataset()->chooseRepresentation (EXS_LittleEndianExplicit, nullptr);
         rc = 0;
         if (bits_alloc == 8) {
             rc = df->get_uint8_array (DCM_PixelData, &pixel_data_8, &length);
@@ -430,6 +462,7 @@ Dcmtk_rt_study::image_load ()
 	    print_and_exit ("Oops.  Dicom image had wrong length "
 		"(%d vs. %d x %d).\n", length, dim[0], dim[1]);
 	}
+#endif /* USE_DICOMIMAGE */
 
         float rescale_slope, rescale_intercept;
         rc = df->get_ds_float (DCM_RescaleIntercept, &rescale_intercept);
@@ -464,7 +497,7 @@ Dcmtk_rt_study::image_load ()
             }
         }
 	img += length;
-
+        
 	/* Store slice UID */
         if (d_ptr->rt_study_metadata) {
             d_ptr->rt_study_metadata->set_slice_uid (i, df->get_cstr (DCM_SOPInstanceUID));

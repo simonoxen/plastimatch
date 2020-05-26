@@ -52,6 +52,7 @@
 #include "pcmd_xf_convert.h"
 #include "pcmd_xf_invert.h"
 #include "pcmd_xio_dvh.h"
+#include "plastimatch_startup.h"
 #include "plm_exception.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
@@ -321,6 +322,7 @@ int
 main (int argc, char *argv[])
 {
     try {
+        plastimatch_startup ();
         do_command (argc, argv);
     } catch (const Plm_exception& pe) {
         //fprintf (stderr, "%s", pe.what());
