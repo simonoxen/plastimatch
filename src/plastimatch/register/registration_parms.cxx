@@ -953,10 +953,8 @@ Registration_parms::set_key_value (
         || key == "grid_spacing")
     {
         if (!section_stage) goto key_only_allowed_in_section_stage;
-        if (sscanf (val.c_str(), "%g %g %g", 
-                &(stage->grid_spac[0]), 
-                &(stage->grid_spac[1]), 
-                &(stage->grid_spac[2])) != 3) {
+        Plm_return_code rc = parse_float13 (stage->grid_spac, val.c_str());
+        if (rc != PLM_SUCCESS) {
             goto error_exit;
         }
     }
