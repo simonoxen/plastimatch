@@ -55,9 +55,11 @@ set (PLMBASE_LIBRARY_SRC
   itk_image_load_double.cxx
   itk_image_load_float.cxx
   itk_image_load_int32.cxx
+  itk_image_load_int64.cxx
   itk_image_load_short.cxx
   itk_image_load_uchar.cxx
   itk_image_load_uint32.cxx
+  itk_image_load_uint64.cxx
   itk_image_load_ushort.cxx
   itk_image_load_vec.cxx
   itk_image_origin.cxx itk_image_origin.h

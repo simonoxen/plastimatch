@@ -30,23 +30,27 @@ itk_image_origin (const T* image)
 
 
 /* Explicit instantiations */
-template PLMBASE_API OriginType itk_image_origin (const CharImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const UCharImageType::Pointer& image);
-template PLMBASE_API OriginType itk_image_origin (const ShortImageType::Pointer& image);
+template PLMBASE_API OriginType itk_image_origin (const CharImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const UShortImageType::Pointer& image);
-template PLMBASE_API OriginType itk_image_origin (const Int32ImageType::Pointer& image);
+template PLMBASE_API OriginType itk_image_origin (const ShortImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const UInt32ImageType::Pointer& image);
+template PLMBASE_API OriginType itk_image_origin (const Int32ImageType::Pointer& image);
+template PLMBASE_API OriginType itk_image_origin (const UInt64ImageType::Pointer& image);
+template PLMBASE_API OriginType itk_image_origin (const Int64ImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const FloatImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const DoubleImageType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const DeformationFieldType::Pointer& image);
 template PLMBASE_API OriginType itk_image_origin (const UCharVecImageType::Pointer& image);
 
-template PLMBASE_API OriginType itk_image_origin (const CharImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const UCharImageType* image);
-template PLMBASE_API OriginType itk_image_origin (const ShortImageType* image);
+template PLMBASE_API OriginType itk_image_origin (const CharImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const UShortImageType* image);
-template PLMBASE_API OriginType itk_image_origin (const Int32ImageType* image);
+template PLMBASE_API OriginType itk_image_origin (const ShortImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const UInt32ImageType* image);
+template PLMBASE_API OriginType itk_image_origin (const Int32ImageType* image);
+template PLMBASE_API OriginType itk_image_origin (const UInt64ImageType* image);
+template PLMBASE_API OriginType itk_image_origin (const Int64ImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const FloatImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const DoubleImageType* image);
 template PLMBASE_API OriginType itk_image_origin (const DeformationFieldType* image);

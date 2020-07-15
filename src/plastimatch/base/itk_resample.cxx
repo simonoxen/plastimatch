@@ -15,6 +15,7 @@
 #include "itk_resample.h"
 #include "logfile.h"
 #include "plm_image_header.h"
+#include "plm_timer.h"
 #include "ss_img_extract.h"
 
 template <class T>
@@ -85,7 +86,9 @@ resample_image (
     typedef itk::NearestNeighborInterpolateImageFunction < ImageType, double >  NNInterpType;
 
     typename FilterType::Pointer filter = FilterType::New();
-
+    Plm_timer t;
+    t.start();
+    
     filter->SetOutputOrigin (origin);
     filter->SetOutputSpacing (spacing);
     filter->SetSize (size);
@@ -118,6 +121,8 @@ resample_image (
     }
 
     T out_image = filter->GetOutput();
+    float f = t.report();
+    printf ("Time = %f seconds\n", f);
     return out_image;
 }
 

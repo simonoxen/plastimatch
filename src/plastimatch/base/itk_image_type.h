@@ -37,6 +37,13 @@ typedef itk::Image < unsigned int, 3 > UInt32ImageType;
 typedef itk::Image < long, 3 > Int32ImageType;
 typedef itk::Image < unsigned long, 3 > UInt32ImageType;
 #endif
+#if (CMAKE_SIZEOF_ULONG == 8)
+typedef itk::Image < long, 3 > Int64ImageType;
+typedef itk::Image < unsigned long, 3 > UInt64ImageType;
+#else
+typedef itk::Image < long long, 3 > Int64ImageType;
+typedef itk::Image < unsigned long long, 3 > UInt64ImageType;
+#endif
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < double, 3 > DoubleImageType;
 
@@ -52,6 +59,13 @@ typedef itk::Image < unsigned int, 2 > UInt32Image2DType;
 #else
 typedef itk::Image < long, 2 > Int32Image2DType;
 typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
+#endif
+#if (CMAKE_SIZEOF_ULONG == 8)
+typedef itk::Image < long, 2 > Int64Image2DType;
+typedef itk::Image < unsigned long, 2 > UInt64Image2DType;
+#else
+typedef itk::Image < long long, 2 > Int64Image2DType;
+typedef itk::Image < unsigned long long, 2 > UInt64Image2DType;
 #endif
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;

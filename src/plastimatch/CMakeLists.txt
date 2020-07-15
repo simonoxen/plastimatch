@@ -29,6 +29,7 @@ include (TestBigEndian)
 
 check_type_size ("unsigned int" CMAKE_SIZEOF_UINT)
 check_type_size ("unsigned long" CMAKE_SIZEOF_ULONG)
+check_type_size ("unsigned long long" CMAKE_SIZEOF_ULONGLONG)
 check_type_size ("size_t" CMAKE_SIZEOF_SIZE_T)
 if (NOT APPLE)
   if (CMAKE_SIZEOF_VOID_P EQUAL 4)

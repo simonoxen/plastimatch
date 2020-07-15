@@ -191,6 +191,7 @@ template PLMBASE_API UCharImageType::Pointer cast_uchar (UShortImageType::Pointe
 template PLMBASE_API UCharImageType::Pointer cast_uchar (ShortImageType::Pointer);
 template PLMBASE_API UCharImageType::Pointer cast_uchar (UInt32ImageType::Pointer);
 template PLMBASE_API UCharImageType::Pointer cast_uchar (Int32ImageType::Pointer);
+template PLMBASE_API UCharImageType::Pointer cast_uchar (Int64ImageType::Pointer);
 template PLMBASE_API UCharImageType::Pointer cast_uchar (FloatImageType::Pointer);
 template PLMBASE_API UCharImageType::Pointer cast_uchar (DoubleImageType::Pointer);
 template PLMBASE_API CharImageType::Pointer cast_char (UCharImageType::Pointer);

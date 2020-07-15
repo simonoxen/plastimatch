@@ -207,8 +207,10 @@ template PLMBASE_API UCharImageType::Pointer itk_image_fix_negative_spacing (UCh
 template PLMBASE_API CharImageType::Pointer itk_image_fix_negative_spacing (CharImageType::Pointer image);
 template PLMBASE_API UShortImageType::Pointer itk_image_fix_negative_spacing (UShortImageType::Pointer image);
 template PLMBASE_API ShortImageType::Pointer itk_image_fix_negative_spacing (ShortImageType::Pointer image);
-template PLMBASE_API Int32ImageType::Pointer itk_image_fix_negative_spacing (Int32ImageType::Pointer image);
 template PLMBASE_API UInt32ImageType::Pointer itk_image_fix_negative_spacing (UInt32ImageType::Pointer image);
+template PLMBASE_API Int32ImageType::Pointer itk_image_fix_negative_spacing (Int32ImageType::Pointer image);
+template PLMBASE_API UInt64ImageType::Pointer itk_image_fix_negative_spacing (UInt64ImageType::Pointer image);
+template PLMBASE_API Int64ImageType::Pointer itk_image_fix_negative_spacing (Int64ImageType::Pointer image);
 template PLMBASE_API FloatImageType::Pointer itk_image_fix_negative_spacing (FloatImageType::Pointer image);
 template PLMBASE_API DoubleImageType::Pointer itk_image_fix_negative_spacing (DoubleImageType::Pointer image);
 template PLMBASE_API UCharVecImageType::Pointer itk_image_fix_negative_spacing (UCharVecImageType::Pointer image);

@@ -23,11 +23,12 @@ $overwrite_study = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/T1";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/var_thick";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/2D^CAL^PHANTOM";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/tmp";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/tmp";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/MOR-QA-06-2";
 #$dicom_dir = "/PHShome/gcs6/build/plastimatch/moving";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/2020-05-11-a";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_H20art";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-12";
 
 $new_name = "";
 $new_id = "";
@@ -45,8 +46,10 @@ $new_series_description = "";
 #$new_sex = "O";
 #$new_name = "Mobius^DoseLab";
 #$new_id = "LN5-MB-IUS";
+$new_birth_date = "20190112";
+$new_sex = "O";
 
-$new_series_description = "G270-G330 v2";
+$new_series_description = "2020-06-29 Mock CSI";
 #$new_series_description = "Medcom phantom";
 #$new_series_description = "Var Thick";
 

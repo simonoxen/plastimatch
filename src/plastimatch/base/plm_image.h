@@ -54,6 +54,8 @@ public:
     ShortImageType::Pointer m_itk_short;
     UInt32ImageType::Pointer m_itk_uint32;
     Int32ImageType::Pointer m_itk_int32;
+    UInt64ImageType::Pointer m_itk_uint64;
+    Int64ImageType::Pointer m_itk_int64;
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
     UCharVecImageType::Pointer m_itk_uchar_vec;

@@ -262,17 +262,23 @@ Plm_image_header::set_from_plm_image (const Plm_image *pli)
     case PLM_IMG_TYPE_ITK_UCHAR:
 	this->set_from_itk_image (pli->m_itk_uchar);
 	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	this->set_from_itk_image (pli->m_itk_ushort);
+	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	this->set_from_itk_image (pli->m_itk_short);
 	break;
-    case PLM_IMG_TYPE_ITK_USHORT:
-	this->set_from_itk_image (pli->m_itk_ushort);
+    case PLM_IMG_TYPE_ITK_ULONG:
+	this->set_from_itk_image (pli->m_itk_uint32);
 	break;
     case PLM_IMG_TYPE_ITK_LONG:
 	this->set_from_itk_image (pli->m_itk_int32);
 	break;
-    case PLM_IMG_TYPE_ITK_ULONG:
-	this->set_from_itk_image (pli->m_itk_uint32);
+    case PLM_IMG_TYPE_ITK_UINT64:
+	this->set_from_itk_image (pli->m_itk_uint64);
+	break;
+    case PLM_IMG_TYPE_ITK_INT64:
+	this->set_from_itk_image (pli->m_itk_int64);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->set_from_itk_image (pli->m_itk_float);
@@ -696,23 +702,27 @@ template PLMBASE_API Plm_image_header::Plm_image_header (DoubleImageType::Pointe
 template PLMBASE_API Plm_image_header::Plm_image_header (DeformationFieldType::Pointer image);
 template PLMBASE_API Plm_image_header::Plm_image_header (UCharVecImageType::Pointer image);
 
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharImageType::Pointer& image);
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UShortImageType::Pointer& image);
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt32ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt64ImageType::Pointer& image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int64ImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const FloatImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const DoubleImageType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const DeformationFieldType::Pointer& image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharVecImageType::Pointer& image);
 
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UCharImageType* image);
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const CharImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UShortImageType* image);
-template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const ShortImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt32ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int32ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const UInt64ImageType* image);
+template PLMBASE_API void Plm_image_header::set_from_itk_image (const Int64ImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const FloatImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const DoubleImageType* image);
 template PLMBASE_API void Plm_image_header::set_from_itk_image (const DeformationFieldType* image);

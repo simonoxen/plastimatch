@@ -350,25 +350,35 @@ Plm_image::load_native (const char* fname)
     }
 
     switch (component_type) {
+    case itk::ImageIOBase::UCHAR:
+	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
+	this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+	break;
     case itk::ImageIOBase::CHAR:
 	this->m_itk_char = itk_image_load_char (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_CHAR;
 	this->m_type = PLM_IMG_TYPE_ITK_CHAR;
 	break;
-    case itk::ImageIOBase::UCHAR:
-	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
-	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
-	this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+    case itk::ImageIOBase::USHORT:
+	this->m_itk_ushort = itk_image_load_ushort (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
+	this->m_type = PLM_IMG_TYPE_ITK_USHORT;
 	break;
     case itk::ImageIOBase::SHORT:
 	this->m_itk_short = itk_image_load_short (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
 	this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 	break;
-    case itk::ImageIOBase::USHORT:
-	this->m_itk_ushort = itk_image_load_ushort (fname, 0);
-	this->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
-	this->m_type = PLM_IMG_TYPE_ITK_USHORT;
+#if (CMAKE_SIZEOF_UINT == 4)
+    case itk::ImageIOBase::UINT:
+#endif
+#if (CMAKE_SIZEOF_ULONG == 4)
+    case itk::ImageIOBase::ULONG:
+#endif
+	this->m_itk_uint32 = itk_image_load_uint32 (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
+	this->m_type = PLM_IMG_TYPE_ITK_ULONG;
 	break;
 #if (CMAKE_SIZEOF_UINT == 4)
     case itk::ImageIOBase::INT:
@@ -380,15 +390,29 @@ Plm_image::load_native (const char* fname)
 	this->m_original_type = PLM_IMG_TYPE_ITK_LONG;
 	this->m_type = PLM_IMG_TYPE_ITK_LONG;
 	break;
-#if (CMAKE_SIZEOF_UINT == 4)
-    case itk::ImageIOBase::UINT:
-#endif
-#if (CMAKE_SIZEOF_ULONG == 4)
+#if (CMAKE_SIZEOF_ULONG == 8)
     case itk::ImageIOBase::ULONG:
 #endif
-	this->m_itk_uint32 = itk_image_load_uint32 (fname, 0);
-	this->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
-	this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+#if (ITK_VERSION_MAJOR > 4) || (ITK_VERSION_MAJOR == 4 && ITK_VERSION_MINOR > 12)
+#  if (CMAKE_SIZEOF_ULONGLONG == 8)
+    case itk::ImageIOBase::ULONGLONG:
+#  endif
+#endif
+	this->m_itk_uint64 = itk_image_load_uint64 (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_UINT64;
+	this->m_type = PLM_IMG_TYPE_ITK_UINT64;
+	break;
+#if (CMAKE_SIZEOF_ULONG == 8)
+    case itk::ImageIOBase::LONG:
+#endif
+#if (ITK_VERSION_MAJOR > 4) || (ITK_VERSION_MAJOR == 4 && ITK_VERSION_MINOR > 12)
+#  if (CMAKE_SIZEOF_ULONGLONG == 8)
+    case itk::ImageIOBase::LONGLONG:
+#  endif
+#endif
+	this->m_itk_int64 = itk_image_load_int64 (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_INT64;
+	this->m_type = PLM_IMG_TYPE_ITK_INT64;
 	break;
     case itk::ImageIOBase::FLOAT:
 	this->m_itk_float = itk_image_load_float (fname, 0);
@@ -814,6 +838,9 @@ Plm_image::convert_to_itk_uchar (void)
 	break;
     case PLM_IMG_TYPE_ITK_LONG:
 	CONVERT_ITK_ITK (uchar, int32);
+	break;
+    case PLM_IMG_TYPE_ITK_INT64:
+	CONVERT_ITK_ITK (uchar, int64);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	CONVERT_ITK_ITK (uchar, float);

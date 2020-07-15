@@ -32,23 +32,27 @@ itk_image_region (const T* image)
 }
 
 /* Explicit instantiations */
-template PLMBASE_API RegionType itk_image_region (const CharImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const UCharImageType::Pointer& image);
-template PLMBASE_API RegionType itk_image_region (const ShortImageType::Pointer& image);
+template PLMBASE_API RegionType itk_image_region (const CharImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const UShortImageType::Pointer& image);
-template PLMBASE_API RegionType itk_image_region (const Int32ImageType::Pointer& image);
+template PLMBASE_API RegionType itk_image_region (const ShortImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const UInt32ImageType::Pointer& image);
+template PLMBASE_API RegionType itk_image_region (const Int32ImageType::Pointer& image);
+template PLMBASE_API RegionType itk_image_region (const UInt64ImageType::Pointer& image);
+template PLMBASE_API RegionType itk_image_region (const Int64ImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const FloatImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const DoubleImageType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const DeformationFieldType::Pointer& image);
 template PLMBASE_API RegionType itk_image_region (const UCharVecImageType::Pointer& image);
 
-template PLMBASE_API RegionType itk_image_region (const CharImageType* image);
 template PLMBASE_API RegionType itk_image_region (const UCharImageType* image);
-template PLMBASE_API RegionType itk_image_region (const ShortImageType* image);
+template PLMBASE_API RegionType itk_image_region (const CharImageType* image);
 template PLMBASE_API RegionType itk_image_region (const UShortImageType* image);
-template PLMBASE_API RegionType itk_image_region (const Int32ImageType* image);
+template PLMBASE_API RegionType itk_image_region (const ShortImageType* image);
 template PLMBASE_API RegionType itk_image_region (const UInt32ImageType* image);
+template PLMBASE_API RegionType itk_image_region (const Int32ImageType* image);
+template PLMBASE_API RegionType itk_image_region (const UInt64ImageType* image);
+template PLMBASE_API RegionType itk_image_region (const Int64ImageType* image);
 template PLMBASE_API RegionType itk_image_region (const FloatImageType* image);
 template PLMBASE_API RegionType itk_image_region (const DoubleImageType* image);
 template PLMBASE_API RegionType itk_image_region (const DeformationFieldType* image);
