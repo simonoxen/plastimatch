@@ -237,24 +237,31 @@ Dcmtk_rt_study::insert_file (const char* fn)
 
     /* Get the SeriesInstanceUID */
     const char *c = NULL;
-    std::string series_uid;
+    std::string series_key;
     c = df->get_cstr (DCM_SeriesInstanceUID);
     if (c) {
-        series_uid = std::string (c);
+        series_key = std::string (c);
     } else {
 	/* 2014-12-17.  Oncentra data missing SeriesInstanceUID?
            If that happens, make something up. */
-        series_uid = dicom_uid ();
+        series_key = dicom_uid ();
+    }
+
+    /* Append modality */
+    std::string series_uid;
+    c = df->get_cstr (DCM_Modality);
+    if (c) {
+        series_key += std::string(c);
     }
 
     /* Look for the SeriesInstanceUID in the map */
     Dcmtk_series_map::iterator it;
-    it = d_ptr->m_smap.find (series_uid);
+    it = d_ptr->m_smap.find (series_key);
 
     /* If we didn't find the UID, add a new entry into the map */
     if (it == d_ptr->m_smap.end()) {
 	std::pair<Dcmtk_series_map::iterator,bool> ret
-	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (series_uid,
+	    = d_ptr->m_smap.insert (Dcmtk_series_map_pair (series_key,
 		    new Dcmtk_series()));
 	if (ret.second == false) {
 	    print_and_exit (
