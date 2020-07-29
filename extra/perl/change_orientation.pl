@@ -10,7 +10,7 @@ $overwrite_study = 1;
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_tt000_v2";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_tt000_v2-stripped";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/test";
-#$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommissSRS_BB";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommissSRS_BB";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_mornqa";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_01";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_02";
@@ -28,7 +28,7 @@ $overwrite_study = 1;
 #$dicom_dir = "/PHShome/gcs6/build/plastimatch/moving";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/2020-05-11-a";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_H20art";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-12";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-12";
 
 $new_name = "";
 $new_id = "";
@@ -46,10 +46,11 @@ $new_series_description = "";
 #$new_sex = "O";
 #$new_name = "Mobius^DoseLab";
 #$new_id = "LN5-MB-IUS";
-$new_birth_date = "20190112";
-$new_sex = "O";
+#$new_birth_date = "20190112";
+#$new_sex = "O";
 
-$new_series_description = "2020-06-29 Mock CSI";
+$new_series_description = "HFP Non-zero ISO";
+#$new_series_description = "2020-06-29 Mock CSI";
 #$new_series_description = "Medcom phantom";
 #$new_series_description = "Var Thick";
 
@@ -58,6 +59,10 @@ $new_image_orientation = "";
 
 #$new_patient_position = "FFS";
 #$new_image_orientation = "-1\\0\\0\\0\\-1\\0";
+
+$new_patient_position = "HFP";
+$new_image_orientation = "-1\\0\\0\\0\\-1\\0";
+
 
 #######################################################################################
 
@@ -97,7 +102,8 @@ sub reorient {
 #    return ($x + 0.800000, $y - 3.900000, $z + 499.399994);
 #    return ($x + 0.34, $y - 1.24, $z + 500.61);
 #    return ($x - 0.38, $y - 3.88, $z + 90);
-    return ($x, $y, $z);
+#    return ($x, $y, $z);
+    return (-$x + 30, -$y + 60, $z + 90);
 }
 
 sub change_isocenter {
@@ -108,7 +114,8 @@ sub change_isocenter {
 #    return (10, 20, 30 - 10);
 #    return (-$x, -$y, $z);
 #    return (0, 0, 0);
-    return ($x, $y, $z);
+    return (30, 60, 90);
+#    return ($x, $y, $z);
 }
 
 sub process_file {
