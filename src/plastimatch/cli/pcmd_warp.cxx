@@ -143,6 +143,8 @@ parse_fn (
     /* Geometry options */
     parser->add_long_option ("F", "fixed", 
         "fixed image (match output size to this image)", 1, "");
+    parser->add_long_option ("", "resize-dose", 
+        "resample dose to match geometry of image", 0);
     parser->add_long_option ("", "origin", 
         "location of first image voxel in mm \"x y z\"", 1, "");
     parser->add_long_option ("", "dim", 
@@ -320,6 +322,10 @@ parse_fn (
     }
 
     /* Geometry options */
+    parms->fixed_img_fn = parser->get_string("fixed").c_str();
+    if (parser->option("resize-dose")) {
+        parms->resize_dose = 1;
+    }
     if (parser->option ("dim")) {
         parms->m_have_dim = true;
         parser->assign_plm_long_13 (parms->m_dim, "dim");
@@ -332,7 +338,6 @@ parse_fn (
         parms->m_have_spacing = true;
         parser->assign_float_13 (parms->m_spacing, "spacing");
     }
-    parms->fixed_img_fn = parser->get_string("fixed").c_str();
 
     /* Direction cosines */
     if (parser->option ("direction-cosines")) {

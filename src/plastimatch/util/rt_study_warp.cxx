@@ -361,11 +361,24 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
        If it doesn't we need to resample to get the output geometry. 
        We need to supply an identity xform if none was supplied, 
        so that the warp function can do the resample. */
-    bool pih_changed = false;
+    bool image_pih_changed = false;
     if (rt_study->get_image()) {
         Plm_image_header pih_input_image (rt_study->get_image());
         if (!Plm_image_header::compare (&pih_input_image, &pih)) {
-            pih_changed = true;
+            image_pih_changed = true;
+            if (parms->xf_in_fn == "") {
+                TranslationTransformType::Pointer trn
+                    = TranslationTransformType::New();
+                xform->set_trn(trn);
+            }
+        }
+    }
+    /* If the user wants to resize the dose, do this as well */
+    bool dose_pih_changed = false;
+    if (parms->resize_dose && rt_study->have_dose()) {
+        Plm_image_header pih_input_dose (rt_study->get_dose());
+        if (!Plm_image_header::compare (&pih_input_dose, &pih)) {
+            dose_pih_changed = true;
             if (parms->xf_in_fn == "") {
                 TranslationTransformType::Pointer trn
                     = TranslationTransformType::New();
@@ -377,7 +390,7 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
     /* Warp the image and create vf */
     if (rt_study->have_image()
         && (parms->xf_in_fn != ""
-            || pih_changed)
+            || image_pih_changed)
         && (parms->output_img_fn != ""
             || parms->output_vf_fn != ""
             || parms->output_dicom != ""))
@@ -401,7 +414,7 @@ rt_study_warp (Rt_study *rt_study, Plm_file_format file_type, Warp_parms *parms)
 
     /* Warp the dose image */
     if (rt_study->has_dose()
-        && parms->xf_in_fn != ""
+        && (parms->xf_in_fn != "" || dose_pih_changed)
         && (parms->output_dose_img_fn != ""
             || parms->output_xio_dirname != ""
             || parms->output_dicom != ""))

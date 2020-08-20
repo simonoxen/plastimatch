@@ -65,6 +65,7 @@ public:
     bool xor_contours;          /* or/xor overlapping structure contours */
 
     /* Geometry options */
+    bool resize_dose;
     bool m_have_dim;
     bool m_have_origin;
     bool m_have_spacing;
@@ -86,6 +87,7 @@ public:
     Warp_parms () {
 
 	/* Geometry options */
+	resize_dose = false;
 	m_have_dim = false;
 	m_have_origin = false;
 	m_have_spacing = false;
