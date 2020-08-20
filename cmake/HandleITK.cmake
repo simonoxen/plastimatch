@@ -5,6 +5,7 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
+include (CheckIncludeFileCXX)
 
 # GCS 2016-10-20
 # The GDCM USE file spews out copious extraneous warnings on Debian.
@@ -39,9 +40,6 @@ elseif (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
     message (FATAL_ERROR 
       "Fatal Error. ITK 4 must be 4.1 or greater")
   endif ()
-else ()
-  message (AUTHOR_WARNING
-    "Warning. ITK version greater than 4.X is not tested")
 endif ()
 message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
 
@@ -71,6 +69,14 @@ if (NOT ${ITK_VERSION} VERSION_GREATER "4.13.2"
   add_definitions (-D__GNUC__=8 -D__GNUC_MINOR__=3)
 endif ()
 
+# Look for itkVectorCentralDifferenceImageFunction.h
+# It is not enabled by default in ITK 5.1.0
+push_vars ("CMAKE_REQUIRED_INCLUDES")
+unset (HAVE_ITK_VECTOR_CD CACHE)
+set (CMAKE_REQUIRED_INCLUDES "${ITK_INCLUDE_DIRS}")
+check_include_file_cxx ("itkVectorCentralDifferenceImageFunction.h" HAVE_ITK_VECTOR_CD)
+pop_vars ("CMAKE_REQUIRED_INCLUDES")
+
 message (STATUS "ITK_BASE = ${ITK_BASE}")
 if (NOT WIN32)
   set (ITK_DLL_DIR "")
@@ -83,4 +89,3 @@ elseif (IS_DIRECTORY "${ITK_BASE}/bin")
 else ()
   set (ITK_DLL_DIR "")
 endif ()
-
