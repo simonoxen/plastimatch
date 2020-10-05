@@ -22,6 +22,7 @@ xio_plan_get_studyset (const char *filename)
 
     /* Get version string
        0062101a - xio version 4.33.02
+       006a101a - ??
        006d101a - xio version 4.50 */
     std::string line;
     getline (ifs, line);
@@ -39,7 +40,7 @@ xio_plan_get_studyset (const char *filename)
     getline (ifs, line);
     getline (ifs, line);
     getline (ifs, line);
-    if (version_int > 0x62101a) {
+    if (version_int > 0x6a101a) {
         getline (ifs, line);
     }
 
