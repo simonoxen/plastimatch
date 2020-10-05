@@ -35,14 +35,18 @@ The following command will install all the needed prerequisites.::
      libgdcm2-dev libinsighttoolkit4-dev \
      libpng-dev libtiff-dev uuid-dev zlib1g-dev 
 
+Centos 8
+^^^^^^^^
+
 Fedora install
 ^^^^^^^^^^^^^^
 On fedora, all the needed dependencies are already included.
-The following command will install all the needed prerequisites.::
+The following command will install all the needed prerequisites
+(Tested on Fedora 32).::
 
    sudo dnf install \
-     cmake git InsightToolkit-devel dcmtk-devel gdcm-devel \
-     vxl-devel fftw-devel
+     make cmake gcc-c++ InsightToolkit-devel dcmtk-devel gdcm-devel \
+     libminc-devel vxl-devel fftw-devel
 
 Cmake (required)
 ^^^^^^^^^^^^^^^^
@@ -51,20 +55,18 @@ before you can build plastimatch.  Download from here:
 
   http://cmake.org/
 
-Cmake 2.8.12 or higher is required.
+Cmake 3.1.3 or higher is required.
 
 C/C++ Compiler (required)
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 You will need a C/C++ compiler.  If you are running 
-Windows, we recommend Microsoft Visual Studio (Express or Full).
-Versions 2008 and higher are supported.
-You can download the Microsoft Visual Studio Express compiler 
-from here:
+Windows, we recommend Microsoft Visual Studio.
+We use the free Visual Studio Community 2017 for development.
+You can download it from here:
 
-  http://www.microsoft.com/Express/
+  https://visualstudio.microsoft.com/
 
-On windows, you may use the MinGW compiler, 
-however, ITK does not support cygwin.
+You may also use the MinGW compiler.
 
 On OSX, you need the Xcode package, and you must also install the 
 command line tools.  
@@ -75,13 +77,11 @@ the following:
 
 ITK (required)
 ^^^^^^^^^^^^^^
-ITK is required for the main plastimatch program.  But if you only 
-want the DRR and FDK programs, you don't need it.  Get ITK from here:
+ITK is required.  Get ITK from here:
 
   http://itk.org/
 
 We currently support ITK 4.1 and greater.
-You will need to install DCMTK if you want DICOM support. ::
 
   ITK < 4.1              Not supported
   ITK >= 4.1             Supported

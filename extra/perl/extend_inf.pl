@@ -53,7 +53,6 @@ sub process_file {
     }
 }
 
-
 opendir (DIR, $ori_copy_dir);
 my @list = sort readdir (DIR);
 print "Processing files in $ori_copy_dir\n";

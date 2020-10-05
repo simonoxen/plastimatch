@@ -5,12 +5,14 @@ use File::Copy qw(copy move);
 $push_to_mim = 0;
 $overwrite_for = 1;
 $overwrite_study = 1;
+$dob_empty = 0;
+$sex_empty = 0;
 
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-14";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_tt000_v2";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_tt000_v2-stripped";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/test";
-$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommissSRS_BB";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommissSRS_BB";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_mornqa";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_01";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_02";
@@ -29,6 +31,10 @@ $dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommissSRS_BB";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/2020-05-11-a";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcommis_H20art";
 #$dicom_dir = "/PHShome/gcs6/shared/ben-1/019-01-12";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/LPcom_pg_hfs";
+#$dicom_dir = "/PHShome/gcs6/conquest-1.4.17/data/LPcom_01";
+#$dicom_dir = "/PHShome/gcs6/shared/ben-1/reference";
+$dicom_dir = "/PHShome/gcs6/shared/ben-1/synth";
 
 $new_name = "";
 $new_id = "";
@@ -39,7 +45,12 @@ $new_series_description = "";
 # $new_name = "LPcom_01^PBS";
 # $new_id = "LPcom_01";
 # $new_birth_date = "20180101";
-# $new_sex = "O";
+# $new_sex = "X";
+
+$new_name = "TESTING^GCSA";
+$new_id = "TESTING-GCSA";
+$new_sex = "M";
+
 #$new_name = "LPcom_02^PBS";
 #$new_id = "LPcom_02";
 #$new_birth_date = "20180725";
@@ -48,11 +59,25 @@ $new_series_description = "";
 #$new_id = "LN5-MB-IUS";
 #$new_birth_date = "20190112";
 #$new_sex = "O";
+# $new_name = "LPcom_03^PBS";
+# $new_id = "LPcom_03";
+# $new_birth_date = "20180101";
+# $new_sex = "O";
+# $new_name = "LPcom_04^PBS";
+# $new_id = "LPcom_04";
+# $new_birth_date = "20180101";
+# $new_sex = "O";
+# $new_name = "GBDAY_01^PBS";
+# $new_id = "GBDAY_01";
+# $new_birth_date = "20200101";
+# $new_sex = "M";
 
-$new_series_description = "HFP Non-zero ISO";
+#$new_series_description = "SACRUM COPY";
+#$new_series_description = "HFP Non-zero ISO";
 #$new_series_description = "2020-06-29 Mock CSI";
 #$new_series_description = "Medcom phantom";
-#$new_series_description = "Var Thick";
+#$new_series_description = "Morning QA 60 Fx";
+$new_series_description = "T GCSA";
 
 $new_patient_position = "";
 $new_image_orientation = "";
@@ -60,9 +85,15 @@ $new_image_orientation = "";
 #$new_patient_position = "FFS";
 #$new_image_orientation = "-1\\0\\0\\0\\-1\\0";
 
-$new_patient_position = "HFP";
-$new_image_orientation = "-1\\0\\0\\0\\-1\\0";
+#$new_patient_position = "HFP";
+#$new_image_orientation = "-1\\0\\0\\0\\-1\\0";
 
+if ($dob_empty) {
+    $new_birth_date = "";
+}
+if ($sex_empty) {
+    $new_sex = "";
+}
 
 #######################################################################################
 
@@ -102,8 +133,8 @@ sub reorient {
 #    return ($x + 0.800000, $y - 3.900000, $z + 499.399994);
 #    return ($x + 0.34, $y - 1.24, $z + 500.61);
 #    return ($x - 0.38, $y - 3.88, $z + 90);
-#    return ($x, $y, $z);
-    return (-$x + 30, -$y + 60, $z + 90);
+    return ($x, $y, $z);
+#    return (-$x + 30, -$y + 60, $z + 90);
 }
 
 sub change_isocenter {
@@ -114,8 +145,8 @@ sub change_isocenter {
 #    return (10, 20, 30 - 10);
 #    return (-$x, -$y, $z);
 #    return (0, 0, 0);
-    return (30, 60, 90);
-#    return ($x, $y, $z);
+#    return (30, 60, 90);
+    return ($x, $y, $z);
 }
 
 sub process_file {
@@ -132,10 +163,19 @@ sub process_file {
     open FIN, "<$dump_in";
     open FOUT, ">$dump_out";
     $sop_instance_uid = "";
+    $coalescing_image_comments = 0;
     while (<FIN>) {
 	if (/^\s*\(([^)]*)\)/) {
 	    $key = $1;
 	} else {
+	    if ($coalescing_image_comments) {
+		if (/\]/) {
+		    $coalescing_image_comments = 0;
+		} else {
+		    $_ = s/\a\r/ /g;
+		}
+		print FOUT;
+	    }
 	    next;
 	}
 	if ($key eq "0002,0003" or $key eq "0008,0018" or $key eq "0020,000d"
@@ -173,11 +213,11 @@ sub process_file {
 	    print FOUT "($key) LO [$new_id] # PatientID\n";
 	    next;
 	}
-	if ($key eq "0010,0030" and $new_birth_date ne "") {
+	if ($key eq "0010,0030" and ($new_birth_date ne "" or $dob_empty)) {
 	    print FOUT "($key) DA [$new_birth_date] # PatientBirthDate\n";
 	    next;
 	}
-	if ($key eq "0010,0040" and $new_sex ne "") {
+	if ($key eq "0010,0040" and ($new_sex ne "" or $sex_empty)) {
 	    print FOUT "($key) CS [$new_sex] # PatientSex\n";
 	    next;
 	}
@@ -224,7 +264,18 @@ sub process_file {
 		$value = $rest;
 	    }
 	    print FOUT "($key) DS [$outvalue]\n";
+	    next;
 	}
+	# ImageComments
+	if ($key eq "0020,4000") {
+	    if (/\[/ and not /\]/) {
+		$coalescing_image_comments = 1;
+		$_ = s/\a\r/ /g;
+	    }
+	    print FOUT $_;
+	    next;
+	}
+	# else...
 	print FOUT $_;
     }
     close FIN;
