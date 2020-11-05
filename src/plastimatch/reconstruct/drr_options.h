@@ -67,6 +67,7 @@ public:
     Drr_algorithm algorithm;
     int geometry_only;
     std::string input_file;
+    std::string output_file;
     std::string output_prefix;
 
     bool autoscale;
