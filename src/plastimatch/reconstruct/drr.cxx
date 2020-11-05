@@ -508,7 +508,13 @@ create_matrix_and_drr (
             autoscale_image (proj, options->autoscale_range);
         }
         timer->start ();
-        proj->save (img_fn, mat_fn);
+        // If defined output file, then use it, otherwise an old method
+        if (options->output_file != "") {
+          proj->save (options->output_file.c_str(), nullptr);
+        }
+        else {
+          proj->save (img_fn, mat_fn);
+        }
         printf ("I/O time: %f sec\n", timer->report ());
     }
 

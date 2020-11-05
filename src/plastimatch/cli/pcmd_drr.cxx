@@ -162,7 +162,6 @@ parse_fn (
     parser->assign_float_3 (options->vup, "vup");
     options->sad = parser->get_float ("sad");
     options->sid = parser->get_float ("sid");
-    options->sid = parser->get_float ("sid");
     parser->assign_int_2 (options->detector_resolution, "dim");
     options->manual_scale = parser->get_float ("intensity-scale");
 
