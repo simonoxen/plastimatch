@@ -556,8 +556,9 @@ set_transform_versor (
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
     xform_to_vrs (xf_out, xf_in, &pih);
-    
-    xf_out->get_vrs()
+
+//    GCS WIP
+//    xf_out->get_vrs()
     registration->SetTransform (xf_out->get_vrs());
 }
 

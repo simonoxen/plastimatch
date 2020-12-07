@@ -334,15 +334,6 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
             V[64*(j+48) + (i+48)] = X[4*3 + 3] * tmp[16*j + i];
         }
     }
-#if defined (commentout)
-    for (i = 0; i < 64; i++) {
-        for (j = 0; j < 64; j++) {
-            printf (" %f", V[64*i + j]);
-        }
-        printf ("\n");
-    }
-    exit (1);
-#endif
 }
 
 void
