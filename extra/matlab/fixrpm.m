@@ -4,7 +4,7 @@ function rpm_out = fixrpm(rpm)
 
 %% This only works for interpolating single values
 timediff = rpm.time(2:end)-rpm.time(1:end-1);
-interp_idx = find (timediff > 1.5*median(timediff));
+interp_idx = find (timediff > 1.4*median(timediff));
 
 rpm_out.amp (1:interp_idx(1)) = rpm.amp (1:interp_idx(1));
 rpm_out.phase (1:interp_idx(1)) = rpm.phase (1:interp_idx(1));

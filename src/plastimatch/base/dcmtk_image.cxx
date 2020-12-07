@@ -587,6 +587,9 @@ dcmtk_save_slice (const Rt_study_metadata::Pointer rsm, Dcmtk_slice_data *dsd)
     dataset->putAndInsertUint16Array (DCM_PixelData, 
         (Uint16*) dsd->slice_int16, dsd->slice_size);
 
+    dataset->putAndInsertString (DCM_StudyInstanceUID,
+        "1.2.826.0.1.3680043.8.274.1.1.8323329.30048.1601408534.362289");
+    
     /* CT Image module */
     tmp = string_format ("%f", dsd->intercept);
     dataset->putAndInsertString (DCM_RescaleIntercept, tmp.c_str());
