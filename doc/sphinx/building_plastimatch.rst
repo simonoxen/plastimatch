@@ -40,13 +40,20 @@ Centos 8
 
 Fedora install
 ^^^^^^^^^^^^^^
-On fedora, all the needed dependencies are already included.
-The following command will install all the needed prerequisites
-(Tested on Fedora 32).::
+On fedora, you would normally do the following::
+
 
    sudo dnf install \
      make cmake gcc-c++ InsightToolkit-devel dcmtk-devel gdcm-devel \
      libminc-devel vxl-devel fftw-devel
+
+However, ITK is broken in Fedora (tested with Fedora 33).  You will need to
+instead do the following::
+
+   sudo dnf install \
+     make cmake gcc-c++ dcmtk-devel fftw-devel
+
+And then download and compile ITK separately.
 
 Cmake (required)
 ^^^^^^^^^^^^^^^^
@@ -98,7 +105,7 @@ When you build ITK, the following settings are recommended or required::
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
 DCMTK is needed for DICOM-RT support.
-The recommended version is 3.6.2.  On linux, feel free to 
+Version 3.6.2 or higher are recommended.  On linux, feel free to 
 use the dcmtk that comes from your package manager (that's what I do).
 
 There are special considerations to building dcmtk:
