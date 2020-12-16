@@ -7,16 +7,6 @@
 ##-----------------------------------------------------------------------------
 include (CheckIncludeFileCXX)
 
-# GCS 2016-10-20
-# The GDCM USE file spews out copious extraneous warnings on Debian.
-# If we are not using GDCM, this might be avoided by setting
-# ITK_USE_SYSTEM_GDCM to FALSE.  However, this has the undesirable
-# effect of removing gdcm includes from include list and gdcm libraries
-# from library list.
-#if (DCMTK_FOUND)
-# set (ITK_USE_SYSTEM_GDCM FALSE)
-#endif ()
-
 # GCS 2017-12-14 On older ITK version, the use file sets variables such
 # as DCMTK_FOUND, DCMTK_DIR.  Needs more investigation.
 include (${ITK_USE_FILE})
@@ -25,26 +15,16 @@ if (NOT ITK_VERSION)
   set (ITK_VERSION
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
 endif ()
-if (${ITK_VERSION} VERSION_LESS "3.16.0")
+
+if (${ITK_VERSION} VERSION_LESS "4.1")
   message (FATAL_ERROR 
-    "Fatal Error. ITK must be version 3.16.0 or higher")
+    "Fatal Error. ITK must be 4.1 or greater")
 endif ()
-if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3")
-  if (NOT ITK_USE_REVIEW)
-    message (FATAL_ERROR 
-      "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
-  endif ()
-  set (ITK_LIBRARIES ${ITK_LIBRARIES} ITKIOReview)
-elseif (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
-  if (${ITK_VERSION} VERSION_LESS "4.1")
-    message (FATAL_ERROR 
-      "Fatal Error. ITK 4 must be 4.1 or greater")
-  endif ()
-endif ()
+
 message (STATUS "ITK_VERSION = ${ITK_VERSION} found")
 
-
-# Find ITK DLL directory.  This is used on Windows for both regression testing and packaging.
+# Find ITK DLL directory.  This is used on Windows for both regression testing
+# and packaging.
 if (NOT ITK_FOUND)
   set (ITK_BASE "${PLM_BINARY_DIR}/ITK-build")
 elseif (${ITK_VERSION} VERSION_LESS "4.1")
@@ -76,6 +56,14 @@ unset (HAVE_ITK_VECTOR_CD CACHE)
 set (CMAKE_REQUIRED_INCLUDES "${ITK_INCLUDE_DIRS}")
 check_include_file_cxx ("itkVectorCentralDifferenceImageFunction.h" HAVE_ITK_VECTOR_CD)
 pop_vars ("CMAKE_REQUIRED_INCLUDES")
+
+# For ITK 4, we need to override the default itkContourExtractor2DImageFilter
+# because it doesn't compile with newer gcc versions
+if ("${ITK_VERSION}" VERSION_LESS "5")
+  set (PLM_USE_PATCHED_CONTOUR_EXTRACTOR ON)
+else ()
+  set (PLM_USE_PATCHED_CONTOUR_EXTRACTOR OFF)
+endif ()
 
 message (STATUS "ITK_BASE = ${ITK_BASE}")
 if (NOT WIN32)

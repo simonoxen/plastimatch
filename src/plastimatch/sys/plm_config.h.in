@@ -68,6 +68,9 @@
 /* Optionally use code change related to ITK 4.13 and higher */
 #cmakedefine PLM_USE_NEW_ITK_DEMONS 1
 
+/* Code shim for ITK 4 with newer compilers */
+#cmakedefine PLM_USE_PATCHED_CONTOUR_EXTRACTOR 1
+
 /* Dicom attributes.  One and only one of these will be true. */
 #cmakedefine PLM_DCM_USE_DCMTK 1
 

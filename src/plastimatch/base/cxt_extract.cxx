@@ -7,7 +7,11 @@
 #include <string.h>
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
+#if PLM_USE_PATCHED_CONTOUR_EXTRACTOR
+#include "itkContourExtractor2DImageFilter_512.h"
+#else
 #include "itkContourExtractor2DImageFilter.h"
+#endif
 #include "itkImage.h"
 #include "itkImageLinearIteratorWithIndex.h"
 #include "itkAndConstantToImageFilter.h"
