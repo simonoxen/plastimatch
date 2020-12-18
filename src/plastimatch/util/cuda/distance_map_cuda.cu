@@ -46,7 +46,7 @@ distance_map_cuda (void *dummy_var)
     myFirstKernel<<<dimGrid, dimBlock>>>(d_a);
 
     // block until the device has completed
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     // check if kernel execution generated an error
     CUDA_check_error("kernel execution");

@@ -440,7 +440,7 @@ drr_cuda_ray_trace_image (
     // In order to accurately time the kernel
     // execution time we need to set a thread
     // barrier here after its execution.
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 #endif
 
     //cudaThreadSynchronize();

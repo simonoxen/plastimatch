@@ -481,7 +481,7 @@ demons_cuda (
     /* Call kernel */
     kernel_timer->start ();
     volume_calc_grad_kernel<<< grid, block>>>(d_m_grad, blockY, 1.0f / (float)blockY);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     kernel_time += kernel_timer->report ();
 
     /* Check for any errors postkernel execution */
@@ -499,7 +499,7 @@ demons_cuda (
     kernel_timer->start ();
     calculate_gradient_magnitude_image_kernel<<< grid, block>>> (
 	d_m_grad_mag, blockY, 1.0f / (float)blockY);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     kernel_time += kernel_timer->report ();
 
     /* Check for any errors postkernel execution */
@@ -572,7 +572,7 @@ demons_cuda (
 	    parms->accel, 
 	    blockY, 
 	    1.0f / (float)blockY);
-	cudaThreadSynchronize ();
+	cudaDeviceSynchronize ();
 	kernel_time += kernel_timer->report ();
 
 	/* Check for any errors postkernel execution */
@@ -587,9 +587,9 @@ demons_cuda (
 	    dim3 reductionGrid(reductionBlocks, 1);
 	    kernel_timer->start ();
 	    reduction<float><<< reductionGrid, block >>>(d_ssd, num_elements);
-	    cudaThreadSynchronize();
+	    cudaDeviceSynchronize();
 	    reduction<int><<< reductionGrid, block >>>(d_inliers, num_elements);
-	    cudaThreadSynchronize();
+	    cudaDeviceSynchronize();
 	    kernel_time += kernel_timer->report ();
 
 	    /* Check for any errors postkernel execution */
@@ -615,7 +615,7 @@ demons_cuda (
 	/* Call kernel */
 	kernel_timer->start ();
 	vf_convolve_x_kernel<<< grid, block >>>(d_vf_smooth, d_kerx, fw[0] / 2, blockY, 1.0f / (float)blockY);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	kernel_time += kernel_timer->report ();
 
 	/* Check for any errors postkernel execution */
@@ -629,7 +629,7 @@ demons_cuda (
 	/* Call kernel */
 	kernel_timer->start ();
 	vf_convolve_y_kernel<<< grid, block >>>(d_vf_est, d_kery, fw[1] / 2, blockY, 1.0f / (float)blockY);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	kernel_time += kernel_timer->report ();
 
 	/* Check for any errors postkernel execution */
@@ -643,7 +643,7 @@ demons_cuda (
 	/* Call kernel */
 	kernel_timer->start ();
 	vf_convolve_z_kernel<<< grid, block >>>(d_vf_smooth, d_kerz, fw[2] / 2, blockY, 1.0f / (float)blockY);
-	cudaThreadSynchronize();
+	cudaDeviceSynchronize();
 	kernel_time += kernel_timer->report ();
 
 	/* Check for any errors postkernel execution */

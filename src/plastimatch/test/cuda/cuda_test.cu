@@ -73,7 +73,7 @@ cuda_test_1 (int argc, char** argv)
     myFirstKernel<<<dimGrid, dimBlock>>>(d_a);
 
     // block until the device has completed
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
 
     // check if kernel execution generated an error
     checkCUDAError("kernel execution");

@@ -833,7 +833,7 @@ CUDA_bspline_mi_hist_fix (
         gbd.mov_spacing             // moving image pixel spacing
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel_bspline_mi_hist_fix");
 
     int num_sub_hists = num_blocks;
@@ -850,7 +850,7 @@ CUDA_bspline_mi_hist_fix (
         num_sub_hists
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel hist_fix_merge");
 
     /* copy result back to host
@@ -935,7 +935,7 @@ CUDA_bspline_mi_hist_mov (
         gbd.mov_spacing             // moving image pixel spacing
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel hist_mov");
 
     int num_sub_hists = num_blocks;
@@ -953,7 +953,7 @@ CUDA_bspline_mi_hist_mov (
         num_sub_hists
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel hist_merge");
 
     /* copy result back to host
@@ -1081,7 +1081,7 @@ CUDA_bspline_mi_hist_jnt (
             gbd.roi_offset              // region offset
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel hist_jnt");
 
     // Merge sub-histograms
@@ -1098,7 +1098,7 @@ CUDA_bspline_mi_hist_jnt (
         num_sub_hists
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error ("kernel hist_jnt_merge");
 
     /* copy result back to host
@@ -1298,7 +1298,7 @@ CUDA_bspline_mi_grad (
 
     ////////////////////////////////
     // Prepare for the next kernel
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_bspline_mi_dc_dv()");
 
     // Clear out the condensed dc_dv streams
@@ -1318,7 +1318,7 @@ CUDA_bspline_mi_grad (
     );
     
     // Prepare for the next kernel
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_bspline_condense ()");
 
     // Clear out the gradient
@@ -1332,7 +1332,7 @@ CUDA_bspline_mi_grad (
     );
 
     // Prepare for the next kernel
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
@@ -1393,7 +1393,7 @@ CUDA_bspline_mse_pt1 (
 #endif
 
     // Prepare for the next kernel
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
 
     // Clear out the condensed dc_dv streams
@@ -1416,7 +1416,7 @@ CUDA_bspline_mse_pt1 (
         bxf->vox_per_rgn, 
         num_tiles
     );
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_bspline_mse_condense()");
 
 #if defined (PROFILE_MSE)
@@ -1436,7 +1436,7 @@ CUDA_bspline_mse_pt1 (
 #endif
 
     // Prepare for the next kernel
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 }
 
@@ -1496,7 +1496,7 @@ CUDA_bspline_mse_pt2 (
         num_elems
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_sum_reduction_pt1()");
 
     kernel_sum_reduction_pt2 <<<dimGrid, dimBlock>>> (
@@ -1505,7 +1505,7 @@ CUDA_bspline_mse_pt2 (
         num_elems
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_sum_reduction_pt2()");
     // ----------------------------------------------------------
 
@@ -1533,7 +1533,7 @@ CUDA_bspline_mse_pt2 (
         num_elems
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("[Kernel Panic!] kernel_sum_reduction_pt1()");
 
     kernel_sum_reduction_pt2 <<<dimGrid, dimBlock>>> (
@@ -1542,7 +1542,7 @@ CUDA_bspline_mse_pt2 (
         num_elems
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_sum_reduction_pt2()");
 
     float skipped;
@@ -1582,7 +1582,7 @@ CUDA_bspline_mse_pt2 (
         num_elems
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_bspline_grad_normalize()");
 
 #if defined (PROFILE_MSE)
@@ -1882,7 +1882,7 @@ CUDA_bspline_interpolate_vf (
             vpr         // in
     );
 
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     CUDA_check_error("kernel_bspline_interpolate_vf()");
 
     // notice that we don't copy the "garbage" at the end of gpu memory
