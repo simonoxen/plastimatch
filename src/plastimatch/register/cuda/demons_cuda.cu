@@ -48,7 +48,7 @@ Constant Memory Functions
 void 
 setConstantDimension (plm_long *h_dim)
 {
-    int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
+    int i_dim[3] = { (int) h_dim[0], (int) h_dim[1], (int) h_dim[2] };
     cudaMemcpyToSymbol (c_dim, i_dim, sizeof(int3));
     //cudaMemcpyToSymbol(c_dim, h_dim, sizeof(int3));
 }
@@ -56,7 +56,7 @@ setConstantDimension (plm_long *h_dim)
 void 
 setConstantMovingDimension (plm_long *h_dim)
 {
-    int i_dim[3] = { h_dim[0], h_dim[1], h_dim[2] };
+    int i_dim[3] = { (int) h_dim[0], (int) h_dim[1], (int) h_dim[2] };
     cudaMemcpyToSymbol (c_moving_dim, i_dim, sizeof(int3));
 }
 
