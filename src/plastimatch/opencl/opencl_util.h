@@ -5,7 +5,7 @@
 #define _opencl_utils_h_
 
 #include "plm_config.h"
-#if (OPENCL_FOUND)
+#if (OpenCL_FOUND)
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
 #else

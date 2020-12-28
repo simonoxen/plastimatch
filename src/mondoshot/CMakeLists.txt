@@ -16,7 +16,7 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
 include_directories (AFTER ${DCMTK_INCLUDE_DIRS})
-include_directories (AFTER ${SQLITE_INCLUDE_DIR})
+include_directories (AFTER ${SQLite3_INCLUDE_DIR})
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
@@ -43,7 +43,7 @@ endif ()
 if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
   target_link_libraries (mondoshot 
-    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES}
+    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLite3_LIBRARIES}
     ${PLASTIMATCH_LIBS})
   if (NOT BUILD_AGAINST_SLICER3)
     install (TARGETS mondoshot DESTINATION bin)

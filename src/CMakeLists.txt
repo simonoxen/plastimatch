@@ -50,7 +50,7 @@ if (PLM_CONFIG_ENABLE_PLASTIMATCH)
       if (NOT DCMTK_FOUND AND PLM_CONFIG_ENABLE_DCMTK)
 	list (APPEND sb_dependencies DCMTK)
       endif ()
-      if (NOT SQLITE_FOUND)
+      if (NOT SQLite3_FOUND)
 	list (APPEND sb_dependencies sqlite3)
       endif ()
 

@@ -34,17 +34,14 @@
 #cmakedefine DCMTK_FOUND 1
 #cmakedefine DCMTK_HAVE_CFUNIX_H 1
 #cmakedefine DCMTK_HAS_EC_INVALIDVALUE 1
-#cmakedefine DCMTK_HAS_DCM_BEAMDOSESPECIFICATIONPOINT 1
 #cmakedefine DLIB_FOUND 1
 #cmakedefine DLIB_HAVE_LIBRARY 1
 #cmakedefine FFTW_FOUND 1
 #cmakedefine ITK_FOUND 1
-#cmakedefine LIBLBFGS_FOUND 1
-#cmakedefine NLOPT_FOUND 1
-#cmakedefine OPENCL_FOUND 1
-#cmakedefine PANTHEIOS_FOUND 1
+#cmakedefine libLBFGS_FOUND 1
+#cmakedefine nlopt_FOUND 1
+#cmakedefine OpenCL_FOUND 1
 #cmakedefine SPECFUN_FOUND 1
-#cmakedefine READLINE_FOUND 1
 #cmakedefine QT4_FOUND 1
 
 /* User options */

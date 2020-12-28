@@ -86,7 +86,7 @@ set (PLMREGISTER_LIBRARY_SRC
   translation_mse.cxx translation_mse.h 
   )
 
-if (OPENCL_FOUND)
+if (OpenCL_FOUND)
   set (PLMREGISTER_LIBRARY_SRC
     ${PLMREGISTER_LIBRARY_SRC}
     demons_opencl.cxx
@@ -107,7 +107,7 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES)
 
 set (PLMREGISTER_LIBRARY_DEPENDENCIES 
   ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-  ${LIBLBFGS_LIBRARIES}
+  ${libLBFGS_LIBRARY}
   plmbase
   plmsys
   plmutil
@@ -124,17 +124,17 @@ if (CUDA_FOUND)
     )
 endif ()
 
-if (OPENCL_FOUND)
+if (OpenCL_FOUND)
   set (PLMREGISTER_LIBRARY_DEPENDENCIES 
     ${PLMREGISTER_LIBRARY_DEPENDENCIES}
     plmopencl
     )
 endif ()
 
-if (NLOPT_FOUND)
+if (nlopt_FOUND)
   set (PLMREGISTER_LIBRARY_DEPENDENCIES 
     ${PLMREGISTER_LIBRARY_DEPENDENCIES}
-    ${NLOPT_LIBRARIES}
+    ${nlopt_LIBRARIES}
     )
 endif ()
 

@@ -12,10 +12,10 @@ set (PLMOPENCL_LIBRARY_SRC
 ##-----------------------------------------------------------------------------
 ##  BUILD TARGETS
 ##-----------------------------------------------------------------------------
-if (OPENCL_FOUND)
+if (OpenCL_FOUND)
   set (PLMOPENCL_LIBRARY_DEPENDENCIES
     plmsys
-    ${OPENCL_LIBRARIES}
+    ${OpenCL_LIBRARIES}
     )
   plm_add_library (
     plmopencl

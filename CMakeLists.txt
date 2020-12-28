@@ -335,9 +335,8 @@ endif ()
 find_package (Etags)
 find_package (FFTW)
 find_package (Git)
-find_package (Kaze)
-find_package (Liblbfgs)
-find_package (NLopt)
+find_package (libLBFGS)
+find_package (nlopt)
 if (PLM_CONFIG_ENABLE_MATLAB)
   find_package (Matlab)
 else ()
@@ -350,38 +349,42 @@ endif ()
 if (PLM_CONFIG_ENABLE_OPENMP)
   find_package (OpenMP)
 endif ()
-if (PLM_CONFIG_DEBIAN_BUILD)
-  set (SQLITE_FOUND false)
-else ()
-  find_package (SQLite)
-endif ()
 if (PLM_CONFIG_ENABLE_SSE2)
   find_package (SSE)
 else ()
   set (SSE2_FOUND false)
 endif ()
-find_package (TR1)
 find_package (wxWidgets)
 
 ##-----------------------------------------------------------------------------
 ##  Use local libsbfgs if not found
 ##-----------------------------------------------------------------------------
-if (NOT LIBLBFGS_FOUND)
+if (NOT libLBFGS_FOUND)
   add_subdirectory (libs/liblbfgs-1.9)
-  sb_set (LIBLBFGS_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/liblbfgs-1.9/include")
-  sb_set (LIBLBFGS_LIBRARIES lbfgs)
+  sb_set (libLBFGS_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/liblbfgs-1.9/include")
+  sb_set (libLBFGS_LIBRARIES lbfgs)
   link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
-  sb_set (LIBLBFGS_FOUND TRUE)
+  sb_set (libLBFGS_FOUND TRUE)
 endif ()
 
 ##-----------------------------------------------------------------------------
-##  Use local sqlite if not found
+##  SQLite3
 ##-----------------------------------------------------------------------------
-if (NOT SQLITE_FOUND AND NOT PLM_CONFIG_DEBIAN_BUILD)
+if (PLM_CONFIG_DEBIAN_BUILD)
+  set (SQLite3_FOUND false)
+else ()
+  if (CMAKE_VERSION VERSION_LESS "3.14")
+    # Local implementation
+    find_package (SQLite)
+  else ()
+    find_package (SQLite3)
+  endif ()
+endif ()
+if (NOT SQLite3_FOUND AND NOT PLM_CONFIG_DEBIAN_BUILD)
   add_subdirectory (libs/sqlite-3.6.21)
-  set (SQLITE_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/sqlite-3.6.21")
-  set (SQLITE_LIBRARIES sqlite3)
-  set (SQLITE_FOUND TRUE)
+  set (SQLite3_INCLUDE_DIR "${PLM_SOURCE_DIR}/libs/sqlite-3.6.21")
+  set (SQLite3_LIBRARIES sqlite3)
+  set (SQLite3_FOUND TRUE)
 endif ()
 
 #-----------------------------------------------------------------------------
@@ -439,10 +442,9 @@ else ()
   set (CUDA_FOUND false)
 endif ()
 
-##-----------------------------------------------------------------------------
-##  Thrust
-##-----------------------------------------------------------------------------
-find_package (Thrust)
+## GCS 2020-12-28.  Not sure what to do with this.  Because Thrust is now included
+## in CUDA, we should be using that one directly.
+# find_package (Thrust)
 
 ##-----------------------------------------------------------------------------
 ## JAS 10.28.2010
@@ -643,7 +645,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  libyaml
 ##-----------------------------------------------------------------------------
-find_package (LibYAML)
+find_package (yaml)
 
 ##-----------------------------------------------------------------------------
 ##  Opt4D

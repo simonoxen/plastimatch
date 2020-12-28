@@ -69,9 +69,9 @@ if (PLM_CONFIG_BUILD_TEST_PROGRAMS)
     endif ()
 
     # Test executable -- libyaml
-    if (LIBYAML_FOUND)
+    if (yaml_FOUND)
       plm_add_executable_v3 (libyaml_test libyaml_test.cxx
-	"" "${LIBYAML_LIBRARIES}" "" ${INSTALL_NEVER})
+	"" "${yaml_LIBRARIES}" "" ${INSTALL_NEVER})
     endif ()
 
     # Test executable -- matlab

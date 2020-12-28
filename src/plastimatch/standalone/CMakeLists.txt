@@ -69,7 +69,7 @@ set (OPENCL_PROBE_SRC
   opencl_probe_main.c
   opencl_probe.cxx
   )
-if (OPENCL_FOUND)
+if (OpenCL_FOUND)
   plm_add_opencl_file (OPENCL_PROBE_SRC opencl_probe.cl)
 endif ()
 set (RAW_TO_MHA_SRC
@@ -284,7 +284,7 @@ endif ()
 #   "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
 # endif ()
 
-if (OPENCL_FOUND)
+if (OpenCL_FOUND)
   plm_add_executable_v3 (opencl_probe "${OPENCL_PROBE_SRC}"
     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
 endif ()
