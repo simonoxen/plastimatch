@@ -32,7 +32,7 @@
     public:                                                     \
     typedef T Self;                                             \
     typedef plm_shared_ptr<Self> Pointer;                       \
-    static T::Pointer New () {                                  \
+    static typename T::Pointer New () {                         \
         return T::Pointer (new T);                              \
     }                                                           \
     static typename T::Pointer New (T* t) {                     \
