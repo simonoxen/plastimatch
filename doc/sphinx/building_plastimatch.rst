@@ -88,10 +88,8 @@ ITK is required.  Get ITK from here:
 
   http://itk.org/
 
-We currently support ITK 4.1 and greater.
-
-  ITK < 4.1              Not supported
-  ITK >= 4.1             Supported
+We currently support ITK 4.12.2 and greater.  Older versions might work,
+but are not tested.
 
 When you build ITK, the following settings are recommended or required::
 
@@ -99,8 +97,8 @@ When you build ITK, the following settings are recommended or required::
   BUILD_EXAMPLES                            OFF
   BUILD_SHARED_LIBS                         (EITHER)
   BUILD_TESTING                             OFF
-  ITK_USE_REVIEW                            ON         # Below ITK 4.5
-  Module_ITKReview                          ON         # ITK 4.5 and greater
+  Module_ITKReview                          ON
+
 
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^

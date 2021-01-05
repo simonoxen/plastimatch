@@ -30,20 +30,10 @@ typedef itk::Image < char, 3 > CharImageType;
 typedef itk::Image < unsigned char, 3 > UCharImageType;
 typedef itk::Image < short, 3 > ShortImageType;
 typedef itk::Image < unsigned short, 3 > UShortImageType;
-#if (CMAKE_SIZEOF_UINT == 4)
-typedef itk::Image < int, 3 > Int32ImageType;
-typedef itk::Image < unsigned int, 3 > UInt32ImageType;
-#else
-typedef itk::Image < long, 3 > Int32ImageType;
-typedef itk::Image < unsigned long, 3 > UInt32ImageType;
-#endif
-#if (CMAKE_SIZEOF_ULONG == 8)
-typedef itk::Image < long, 3 > Int64ImageType;
-typedef itk::Image < unsigned long, 3 > UInt64ImageType;
-#else
-typedef itk::Image < long long, 3 > Int64ImageType;
-typedef itk::Image < unsigned long long, 3 > UInt64ImageType;
-#endif
+typedef itk::Image < int32_t, 3 > Int32ImageType;
+typedef itk::Image < uint32_t, 3 > UInt32ImageType;
+typedef itk::Image < int64_t, 3 > Int64ImageType;
+typedef itk::Image < uint64_t, 3 > UInt64ImageType;
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < double, 3 > DoubleImageType;
 
@@ -53,20 +43,10 @@ typedef itk::VectorImage < unsigned char, 3 > UCharVecImageType;
 typedef itk::Image < unsigned char, 2 > UCharImage2DType;
 typedef itk::Image < short, 2 > ShortImage2DType;
 typedef itk::Image < unsigned short, 2 > UShortImage2DType;
-#if (CMAKE_SIZEOF_UINT == 4)
-typedef itk::Image < int, 2 > Int32Image2DType;
-typedef itk::Image < unsigned int, 2 > UInt32Image2DType;
-#else
-typedef itk::Image < long, 2 > Int32Image2DType;
-typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
-#endif
-#if (CMAKE_SIZEOF_ULONG == 8)
-typedef itk::Image < long, 2 > Int64Image2DType;
-typedef itk::Image < unsigned long, 2 > UInt64Image2DType;
-#else
-typedef itk::Image < long long, 2 > Int64Image2DType;
-typedef itk::Image < unsigned long long, 2 > UInt64Image2DType;
-#endif
+typedef itk::Image < int32_t, 2 > Int32Image2DType;
+typedef itk::Image < uint32_t, 2 > UInt32Image2DType;
+typedef itk::Image < int64_t, 2 > Int64Image2DType;
+typedef itk::Image < uint64_t, 2 > UInt64Image2DType;
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
 
