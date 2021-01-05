@@ -1,3 +1,11 @@
+Version 1.9.1 (tag 1.9.1)
+Tue 05 Jan 2021 04:26:32 PM EST
+* Add point to distance map metric
+* Support for 64-bit integer images
+* Support for JPEG compressed DICOM
+* Several bug fixes
+* Several build fixes
+
 Version 1.9.0 (tag 1.9.0)
 Wed 18 Mar 2020 05:20:55 PM EDT
 * Support for new regularization penalties in B-spline registration: linear elastic,
