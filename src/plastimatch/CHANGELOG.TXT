@@ -1,3 +1,7 @@
+Version 1.9.2 (tag 1.9.2)
+Mon 18 Jan 2021 03:45:00 PM EST
+* Fix Windows packaging bug
+
 Version 1.9.1 (tag 1.9.1)
 Tue 05 Jan 2021 04:26:32 PM EST
 * Add point to distance map metric

@@ -686,7 +686,8 @@ if (ITK_FOUND)
 endif ()
 
 if (DCMTK_FOUND)
-  set (DLL_PATTERNS "oflog.dll" "ofstd.dll" "dcmdata.dll" "dcmjpeg.dll")
+  set (DLL_PATTERNS "oflog.dll" "ofstd.dll" "dcmdata.dll" "dcmjpeg.dll"
+    "dcmimgle.dll" "ijg8.dll" "ijg12.dll" "ijg16.dll")
   foreach (p ${DLL_PATTERNS})
     # .../bin/release/*.dll for build tree, .../bin/*.dll for install tree
     file (GLOB DLLFILES "${DCMTK_DIR}/bin/release/${p}")
