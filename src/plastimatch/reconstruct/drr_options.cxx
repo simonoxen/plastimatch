@@ -39,6 +39,7 @@ Drr_options::Drr_options ()
     this->algorithm = DRR_ALGORITHM_EXACT;
     this->geometry_only = 0;
     this->input_file = "";
+    this->output_file = "";
     this->output_prefix = "out_";
 
     this->autoscale = false;

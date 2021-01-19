@@ -83,6 +83,7 @@ drr_opts_init (Drr_options* options)
     options->output_details_fn = "";
     options->algorithm = DRR_ALGORITHM_EXACT;
     options->input_file = "";
+    options->output_file = "";
     options->geometry_only = 0;
     options->output_prefix = "out_";
 }
