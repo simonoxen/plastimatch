@@ -1,3 +1,7 @@
+Version 1.9.3 (tag 1.9.3)
+Tue 19 Jan 2021 04:32:03 PM EST
+* Fixes for SlicerRT
+
 Version 1.9.2 (tag 1.9.2)
 Mon 18 Jan 2021 03:45:00 PM EST
 * Fix Windows packaging bug
