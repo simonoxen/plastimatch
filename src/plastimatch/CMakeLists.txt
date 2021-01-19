@@ -395,6 +395,11 @@ if (NOT PLM_PACKAGE_LEGACY_CMAKE_CONFIG)
       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/plastimatch/dose>
       )
   endif ()
+  if (PLMLIB_CONFIG_ENABLE_RECONSTRUCT)
+    list (APPEND PLASTIMATCH_INCLUDE_DIRECTORIES
+      $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/plastimatch/reconstruct>
+      )
+  endif ()
 endif ()
 
 # Core
