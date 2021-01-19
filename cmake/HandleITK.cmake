@@ -57,20 +57,22 @@ set (CMAKE_REQUIRED_INCLUDES "${ITK_INCLUDE_DIRS}")
 check_include_file_cxx ("itkVectorCentralDifferenceImageFunction.h" HAVE_ITK_VECTOR_CD)
 pop_vars ("CMAKE_REQUIRED_INCLUDES")
 
-# See if itkArray.h can be included.  ITK 4 is broken on Fedora with gcc 10 compiler.
-# There is no way to fix this.
-set (ITK_TEST_SOURCE 
-  "#include <itkArray.h>
-   int main (int argc, char* argv[]) {return 0;}")
-push_vars ("CMAKE_REQUIRED_INCLUDES")
-set (CMAKE_REQUIRED_INCLUDES ${ITK_INCLUDE_DIRS})
-    set (CMAKE_REQUIRED_QUIET TRUE)
-check_cxx_source_compiles ("${ITK_TEST_SOURCE}" ITK_IS_OK)
-if (NOT ITK_IS_OK)
-  message (STATUS "ITK is broken. Sorry.")
-  set (ITK_FOUND OFF)
-endif ()
-pop_vars ("CMAKE_REQUIRED_INCLUDES")
+if (${ITK_VERSION} VERSION_LESS "5")
+  # See if itkArray.h can be included.  ITK 4 is broken on Fedora with gcc 10 compiler.
+  # There is no way to fix this.
+  set (ITK_TEST_SOURCE
+    "#include <itkArray.h>
+     int main (int argc, char* argv[]) {return 0;}")
+  push_vars ("CMAKE_REQUIRED_INCLUDES")
+  set (CMAKE_REQUIRED_INCLUDES ${ITK_INCLUDE_DIRS})
+      set (CMAKE_REQUIRED_QUIET TRUE)
+  check_cxx_source_compiles ("${ITK_TEST_SOURCE}" ITK_IS_OK)
+  if (NOT ITK_IS_OK)
+    message (STATUS "ITK is broken. Sorry.")
+    set (ITK_FOUND OFF)
+  endif ()
+  pop_vars ("CMAKE_REQUIRED_INCLUDES")
+endif()
 
 push_vars ("CMAKE_REQUIRED_INCLUDES")
 unset (HAVE_ITK_VECTOR_CD CACHE)
