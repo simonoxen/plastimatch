@@ -30,6 +30,8 @@ dcmtk_copy_from_metadata (
     }
     if (default_value) {
         dataset->putAndInsertString (tagkey, default_value);
+    } else {
+        dataset->putAndInsertString (tagkey, "");
     }
 }
 
