@@ -206,7 +206,11 @@ rbf_wendland_warp (Landmark_warp *lw)
 
     //printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
-    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count() * sizeof(float));
+    bool adapt_radius_initialized = (lw->adapt_radius[0] != 0);
+
+    if (!adapt_radius_initialized){
+        lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(float));
+    }
     lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks.get_count() * sizeof(int));
 
     if (lw->num_clusters > 0) {
@@ -215,7 +219,7 @@ rbf_wendland_warp (Landmark_warp *lw)
          // using cluster_id, fill in lw->adapt_radius
         rbf_cluster_find_adapt_radius( lw );
     }
-    else {
+    else if (!adapt_radius_initialized){
         // use the specified radius
         for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
             lw->adapt_radius[i]=lw->rbf_radius;

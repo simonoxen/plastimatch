@@ -543,14 +543,18 @@ rbf_gauss_warp (Landmark_warp *lw)
     Volume::Pointer moving;
     Volume *vf_out, *warped_out;
 
-    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(float));
+    bool adapt_radius_initialized = (lw->adapt_radius[0] != 0);
+
+    if (!adapt_radius_initialized){
+        lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(float));
+    }
     lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks.get_count()*sizeof(int));
 
     if (lw->num_clusters > 0) {
 	rbf_cluster_kmeans_plusplus( lw );
 	rbf_cluster_find_adapt_radius( lw );
     }
-    else {
+    else if (!adapt_radius_initialized){
 	for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
 	    lw->adapt_radius[i]=lw->rbf_radius;
     }
