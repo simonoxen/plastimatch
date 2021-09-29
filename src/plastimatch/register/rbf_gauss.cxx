@@ -552,7 +552,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     }
     else {
 	for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) 
-	    lw->adapt_radius[i]=lw->rbf_radius;
+	    lw->adapt_radius[i]=lw->rbf_radius[i];
     }
 
     for (size_t i = 0; i < lw->m_fixed_landmarks.get_count(); i++) {
